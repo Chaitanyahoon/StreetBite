@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 🍽️ StreetBite - Street Food Discovery Platform
 
 A full-stack application connecting food lovers with local street food vendors, built with **Next.js (Frontend)** and **Spring Boot (Backend)**.
@@ -262,3 +263,6 @@ Built with modern web technologies and best practices for street food discovery.
 Last Updated: 2025
 Version: 1.0.0
 
+=======
+# StreetBite
+>>>>>>> 96d7f132abf32eb97322867558cffb8a226dc8ee
