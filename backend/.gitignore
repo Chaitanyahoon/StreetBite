@@ -1,0 +1,22 @@
+# Firebase service account key (NEVER commit this!)
+firebase-key.json
+*-firebase-adminsdk-*.json
+*.json
+
+# Maven
+target/
+.mvn/wrapper/maven-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.class
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+

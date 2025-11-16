@@ -1,0 +1,65 @@
+# Ignore real Firebase service account key
+# Only commit the placeholder firebase-key.json
+firebase-key.json
+firebase-key.json.real
+firebase-key.json.backup
+*-firebase-adminsdk-*.json
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+.env.production.local
+
+# ============================================================================
+# Frontend (Node.js / Next.js)
+# ============================================================================
+frontend/node_modules/
+frontend/.next/
+frontend/.vercel/
+frontend/dist/
+frontend/build/
+
+# ============================================================================
+# Backend (Maven / Java)
+# ============================================================================
+backend/target/
+backend/.classpath
+backend/.project
+backend/.settings/
+backend/*.jar
+backend/*.war
+
+# ============================================================================
+# Root Node Modules (if any)
+# ============================================================================
+node_modules/
+
+# ============================================================================
+# IDE & Editor
+# ============================================================================
+.vscode/
+.idea/
+*.iml
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-workspace
+*.sublime-project
+
+# ============================================================================
+# Logs
+# ============================================================================
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+logs/
+
+# ============================================================================
+# OS-specific
+# ============================================================================
+.DS_Store
+Thumbs.db
+

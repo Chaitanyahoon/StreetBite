@@ -1,0 +1,14 @@
+{
+  "name": "streetbite",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "cd frontend && npm run dev",
+    "frontend:install": "cd frontend && npm install",
+    "backend:run": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"cd backend; if (Test-Path .\\mvnw.cmd) { .\\mvnw.cmd spring-boot:run } else { mvn spring-boot:run }\"",
+    "start-all": "powershell -NoProfile -ExecutionPolicy Bypass -File .\\start-all.ps1"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
