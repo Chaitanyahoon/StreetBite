@@ -1,6 +1,8 @@
 
 # 🍽️ StreetBite - Street Food Discovery Platform
 
+![Version](https://img.shields.io/badge/version-1.0.0-orange)
+
 A full-stack application connecting food lovers with local street food vendors, built with **Next.js (Frontend)** and **Spring Boot (Backend)**.
 
 ## ✨ Features
