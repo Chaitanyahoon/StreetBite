@@ -93,10 +93,13 @@ export default function SignInPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50/50 flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
+      {/* Subtle Background */}
+      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl -z-10" />
+      
       {/* Back button */}
       <div className="p-4 sm:p-6">
-        <Link href="/" className="inline-flex items-center gap-2 text-orange-600 hover:text-orange-700 font-medium transition-colors">
+        <Link href="/" className="inline-flex items-center gap-2 text-primary hover:text-primary/80 font-medium transition-colors">
           <ArrowLeft size={20} />
           Back to Home
         </Link>
@@ -111,11 +114,11 @@ export default function SignInPage() {
               <Logo />
             </div>
             <h1 className="text-3xl font-bold text-foreground mb-2">Welcome Back</h1>
-            <p className="text-foreground/60">Sign in to discover amazing street food near you</p>
+            <p className="text-muted-foreground">Sign in to discover amazing street food near you</p>
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSignIn} className="space-y-6 bg-white rounded-2xl shadow-lg p-8 border border-orange-100">
+          <form onSubmit={handleSignIn} className="space-y-6 bg-card rounded-2xl shadow-lg p-8 border border-border">
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
                 {error}
@@ -126,7 +129,7 @@ export default function SignInPage() {
             <div>
               <label className="block text-sm font-medium text-foreground mb-2">Email Address</label>
               <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-orange-400 size-5" />
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-primary size-5" />
                 <input
                   type="email"
                   value={email}
@@ -142,7 +145,7 @@ export default function SignInPage() {
             <div>
               <label className="block text-sm font-medium text-foreground mb-2">Password</label>
               <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-orange-400 size-5" />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-primary size-5" />
                 <input
                   type="password"
                   value={password}
@@ -158,7 +161,7 @@ export default function SignInPage() {
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 text-white font-medium py-3 rounded-lg transition-all disabled:opacity-50"
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-3 rounded-lg transition-all disabled:opacity-50"
             >
               {isLoading ? 'Signing In...' : 'Sign In'}
             </Button>
@@ -166,14 +169,14 @@ export default function SignInPage() {
             {/* Divider */}
             <div className="flex items-center gap-3 my-6">
               <div className="flex-1 h-px bg-orange-200" />
-              <span className="text-xs text-foreground/50 font-medium">OR</span>
+              <span className="text-xs text-muted-foreground font-medium">OR</span>
               <div className="flex-1 h-px bg-orange-200" />
             </div>
 
             {/* Sign Up Link */}
-            <p className="text-center text-sm text-foreground/60">
+            <p className="text-center text-sm text-muted-foreground">
               Don't have an account?{' '}
-              <Link href="/signup" className="text-orange-600 hover:text-orange-700 font-semibold">
+              <Link href="/signup" className="text-primary hover:text-primary/80 font-semibold">
                 Sign Up
               </Link>
             </p>

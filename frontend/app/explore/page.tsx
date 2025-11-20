@@ -27,7 +27,7 @@ export default function ExplorePage() {
     const fetchNearby = async (lat: number, lng: number, radiusMeters = 2000) => {
       setLoadingVendors(true)
       try {
-        const backendBase = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080'
+        const backendBase = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8081'
         const url = `${backendBase.replace(/\/$/, '')}/api/vendors/search?lat=${encodeURIComponent(lat)}&lng=${encodeURIComponent(lng)}&radius=${encodeURIComponent(radiusMeters)}`
         const res = await fetch(url)
         if (!res.ok) throw new Error(`Search failed: ${res.status}`)
@@ -39,7 +39,7 @@ export default function ExplorePage() {
         console.error('Error fetching nearby vendors:', err)
         // Fallback: try to fetch all vendors if location search fails
         try {
-          const backendBase = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080'
+          const backendBase = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8081'
           const res = await fetch(`${backendBase}/api/vendors/all`)
           if (res.ok) {
             const data = await res.json()
@@ -63,7 +63,7 @@ export default function ExplorePage() {
       const fetchAll = async () => {
         setLoadingVendors(true)
         try {
-          const backendBase = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080'
+          const backendBase = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8081'
           const res = await fetch(`${backendBase}/api/vendors/all`)
           if (res.ok) {
             const data = await res.json()

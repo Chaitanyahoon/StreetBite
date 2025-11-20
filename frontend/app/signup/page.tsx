@@ -50,6 +50,7 @@ export default function SignUpPage() {
         email: formData.email,
         displayName: `${formData.firstName} ${formData.lastName}`.trim(),
         role: userType === 'vendor' ? 'VENDOR' : 'CUSTOMER',
+        businessName: formData.businessName,
         location: location ? {
           latitude: location.lat,
           longitude: location.lng,
@@ -98,10 +99,13 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50/50 flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
+      {/* Subtle Background */}
+      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl -z-10" />
+      
       {/* Back button */}
       <div className="p-4 sm:p-6">
-        <Link href="/" className="inline-flex items-center gap-2 text-orange-600 hover:text-orange-700 font-medium transition-colors">
+        <Link href="/" className="inline-flex items-center gap-2 text-primary hover:text-primary/80 font-medium transition-colors">
           <ArrowLeft size={20} />
           Back to Home
         </Link>
@@ -116,7 +120,7 @@ export default function SignUpPage() {
               <Logo />
             </div>
             <h1 className="text-3xl font-bold text-foreground mb-2">Join StreetBite</h1>
-            <p className="text-foreground/60">Choose your account type to get started</p>
+            <p className="text-muted-foreground">Choose your account type to get started</p>
           </div>
 
           {/* Step 1: User Type Selection */}
@@ -125,16 +129,16 @@ export default function SignUpPage() {
               {/* Customer Card */}
               <div
                 onClick={() => setUserType('customer')}
-                className={`p-8 rounded-2xl border-2 cursor-pointer transition-all ${
+                className={`p-8 rounded-3xl border-2 cursor-pointer transition-all hover:-translate-y-1 ${
                   userType === 'customer'
-                    ? 'border-orange-500 bg-orange-50 shadow-lg'
-                    : 'border-orange-200 bg-white hover:border-orange-300'
+                    ? 'border-primary glass shadow-xl shadow-primary/10'
+                    : 'border-border bg-card hover:border-primary/50'
                 }`}
               >
                 <div className="text-5xl mb-4">🍔</div>
                 <h2 className="text-2xl font-bold text-foreground mb-2">Customer</h2>
-                <p className="text-foreground/60 mb-6">Discover delicious street food vendors near you, place orders, and enjoy amazing meals</p>
-                <div className="space-y-2 text-sm text-foreground/70">
+                <p className="text-muted-foreground mb-6">Discover delicious street food vendors near you, place orders, and enjoy amazing meals</p>
+                <div className="space-y-2 text-sm text-muted-foreground">
                   <div>✓ Search vendors by location</div>
                   <div>✓ Browse menus and reviews</div>
                   <div>✓ Track orders in real-time</div>
@@ -144,16 +148,16 @@ export default function SignUpPage() {
               {/* Vendor Card */}
               <div
                 onClick={() => setUserType('vendor')}
-                className={`p-8 rounded-2xl border-2 cursor-pointer transition-all ${
+                className={`p-8 rounded-3xl border-2 cursor-pointer transition-all hover:-translate-y-1 ${
                   userType === 'vendor'
-                    ? 'border-orange-500 bg-orange-50 shadow-lg'
-                    : 'border-orange-200 bg-white hover:border-orange-300'
+                    ? 'border-primary glass shadow-xl shadow-primary/10'
+                    : 'border-border bg-card hover:border-primary/50'
                 }`}
               >
                 <div className="text-5xl mb-4">👨‍🍳</div>
                 <h2 className="text-2xl font-bold text-foreground mb-2">Vendor</h2>
-                <p className="text-foreground/60 mb-6">Register your food stand, manage your menu, and reach more customers through our platform</p>
-                <div className="space-y-2 text-sm text-foreground/70">
+                <p className="text-muted-foreground mb-6">Register your food stand, manage your menu, and reach more customers through our platform</p>
+                <div className="space-y-2 text-sm text-muted-foreground">
                   <div>✓ Create your vendor profile</div>
                   <div>✓ Manage menu and pricing</div>
                   <div>✓ Track location and orders</div>
@@ -164,7 +168,7 @@ export default function SignUpPage() {
 
           {/* Step 2: Registration Form */}
           {step === 2 && (
-            <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-lg p-8 border border-orange-100 space-y-6">
+            <form onSubmit={handleSubmit} className="glass rounded-3xl shadow-xl p-8 space-y-6">
               {error && (
                 <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
                   {error}
@@ -240,14 +244,14 @@ export default function SignUpPage() {
                   variant="outline"
                   onClick={() => setStep(1)}
                   disabled={isLoading}
-                  className="flex-1 border-orange-200 text-orange-600 hover:bg-orange-50"
+                  className="flex-1 rounded-full"
                 >
                   Back
                 </Button>
                 <Button
                   type="submit"
                   disabled={isLoading}
-                  className="flex-1 bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 text-white font-medium disabled:opacity-50"
+                  className="flex-1 rounded-full bg-primary hover:bg-primary/90 text-white font-medium disabled:opacity-50 shadow-lg shadow-primary/25"
                 >
                   {isLoading ? 'Creating Account...' : 'Create Account'}
                 </Button>
@@ -255,7 +259,7 @@ export default function SignUpPage() {
 
               <p className="text-center text-sm text-foreground/60">
                 Already have an account?{' '}
-                <Link href="/signin" className="text-orange-600 hover:text-orange-700 font-semibold">
+                <Link href="/signin" className="text-primary hover:text-primary/80 font-semibold">
                   Sign In
                 </Link>
               </p>
@@ -267,7 +271,7 @@ export default function SignUpPage() {
             <div className="mt-8 flex justify-center">
               <Button
                 onClick={handleContinue}
-                className="bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 text-white font-medium px-8 py-3 rounded-lg flex items-center gap-2"
+                className="rounded-full bg-primary hover:bg-primary/90 text-white font-medium px-8 py-3 flex items-center gap-2 shadow-lg shadow-primary/25 transition-all hover:scale-105"
               >
                 Continue
                 <ChevronRight size={20} />

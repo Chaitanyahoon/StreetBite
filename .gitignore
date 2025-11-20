@@ -2,8 +2,11 @@
 # Only commit the placeholder firebase-key.json
 firebase-key.json
 firebase-key.json.real
+firebase-key.json.local
 firebase-key.json.backup
 *-firebase-adminsdk-*.json
+hs_err_pid*.log
+replay_pid*.log
 
 # Environment variables
 .env

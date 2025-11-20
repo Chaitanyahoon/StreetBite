@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -8,9 +8,10 @@ import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Plus, Edit2, Trash2, Copy } from 'lucide-react'
+import { getVendorPromotions, createPromotion, updatePromotion, deletePromotion, type PromotionAPI } from '@/lib/api'
 
 interface Promotion {
-  id: number
+  id: string
   code: string
   description: string
   discount: string
@@ -30,41 +31,10 @@ interface FormData {
 }
 
 export default function Promotions() {
-  const [promotions] = useState<Promotion[]>([
-    {
-      id: 1,
-      code: 'SAVE20',
-      description: '20% off on all orders',
-      discount: '20%',
-      minOrder: 250,
-      expiryDate: '2025-12-31',
-      usageCount: 156,
-      maxUsage: 500,
-      active: true,
-    },
-    {
-      id: 2,
-      code: 'FIRST50',
-      description: '₹50 off for first time customers',
-      discount: '₹50',
-      minOrder: 100,
-      expiryDate: '2025-11-30',
-      usageCount: 234,
-      maxUsage: 1000,
-      active: true,
-    },
-    {
-      id: 3,
-      code: 'BIRYANI15',
-      description: '15% off on biryani items',
-      discount: '15%',
-      minOrder: 200,
-      expiryDate: '2025-10-15',
-      usageCount: 89,
-      maxUsage: 300,
-      active: false,
-    },
-  ])
+  const [promotions, setPromotions] = useState<Promotion[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [vendorId, setVendorId] = useState<string | null>(null)
 
   const [formData, setFormData] = useState<FormData>({
     code: '',
@@ -74,13 +44,176 @@ export default function Promotions() {
     expiryDate: '',
   })
 
-  const handleAddPromotion = () => {
-    console.log('Adding promotion:', formData)
-    setFormData({ code: '', description: '', discount: '', minOrder: '', expiryDate: '' })
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [editingPromo, setEditingPromo] = useState<Promotion | null>(null)
+  const [mounted, setMounted] = useState(false)
+
+  // Fix hydration error
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  // Load promotions from backend
+  useEffect(() => {
+    const loadPromotions = async () => {
+      try {
+        if (typeof window === 'undefined') return
+        
+        const userStr = localStorage.getItem('user')
+        if (!userStr) {
+          setError('Please sign in to view promotions')
+          setLoading(false)
+          return
+        }
+
+        const user = JSON.parse(userStr)
+        const vid = user.userId
+        setVendorId(vid)
+
+        const apiPromotions = await getVendorPromotions(vid)
+        
+        // Convert API format to UI format
+        const uiPromotions: Promotion[] = apiPromotions.map(p => ({
+          id: p.promotionId || '',
+          code: p.promoCode,
+          description: p.title,
+          discount: `${p.discountValue}${p.discountType === 'PERCENTAGE' ? '%' : '₹'}`,
+          minOrder: 0, // Backend doesn't have minOrder, could add if needed
+          expiryDate: p.endDate,
+          usageCount: p.currentUses || 0,
+          maxUsage: p.maxUses,
+          active: p.isActive,
+        }))
+
+        setPromotions(uiPromotions)
+      } catch (err: any) {
+        setError(err.message || 'Failed to load promotions')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    if (mounted) {
+      loadPromotions()
+    }
+  }, [mounted])
+
+  const handleAddPromotion = async () => {
+    if (!formData.code || !formData.description || !formData.discount || !vendorId) {
+      alert('Please fill in all required fields')
+      return
+    }
+
+    try {
+      setLoading(true)
+      
+      // Parse discount (e.g., "20%" or "₹50")
+      const isPercentage = formData.discount.includes('%')
+      const discountValue = parseFloat(formData.discount.replace(/[%₹]/g, ''))
+
+      const promotionData = {
+        title: formData.description,
+        description: formData.description,
+        discountType: isPercentage ? 'PERCENTAGE' : 'FIXED_AMOUNT',
+        discountValue: discountValue,
+        promoCode: formData.code,
+        endDate: formData.expiryDate,
+        isActive: true,
+        maxUses: 1000,
+      }
+
+      if (editingPromo) {
+        // Update existing promotion
+        await updatePromotion(editingPromo.id, promotionData)
+      } else {
+        // Create new promotion
+        await createPromotion(vendorId, promotionData)
+      }
+
+      // Reload promotions
+      const apiPromotions = await getVendorPromotions(vendorId)
+      const uiPromotions: Promotion[] = apiPromotions.map(p => ({
+        id: p.promotionId || '',
+        code: p.promoCode,
+        description: p.title,
+        discount: `${p.discountValue}${p.discountType === 'PERCENTAGE' ? '%' : '₹'}`,
+        minOrder: 0,
+        expiryDate: p.endDate,
+        usageCount: p.currentUses || 0,
+        maxUsage: p.maxUses,
+        active: p.isActive,
+      }))
+      setPromotions(uiPromotions)
+
+      setFormData({ code: '', description: '', discount: '', minOrder: '', expiryDate: '' })
+      setEditingPromo(null)
+      setIsDialogOpen(false)
+    } catch (err: any) {
+      setError(err.message || 'Failed to save promotion')
+      alert(err.message || 'Failed to save promotion')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleEditPromotion = (promo: Promotion) => {
+    setEditingPromo(promo)
+    setFormData({
+      code: promo.code,
+      description: promo.description,
+      discount: promo.discount,
+      minOrder: promo.minOrder.toString(),
+      expiryDate: promo.expiryDate,
+    })
+    setIsDialogOpen(true)
+  }
+
+  const handleDeletePromotion = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this promotion?')) return
+    
+    try {
+      setLoading(true)
+      await deletePromotion(id)
+      
+      // Reload promotions
+      if (vendorId) {
+        const apiPromotions = await getVendorPromotions(vendorId)
+        const uiPromotions: Promotion[] = apiPromotions.map(p => ({
+          id: p.promotionId || '',
+          code: p.promoCode,
+          description: p.title,
+          discount: `${p.discountValue}${p.discountType === 'PERCENTAGE' ? '%' : '₹'}`,
+          minOrder: 0,
+          expiryDate: p.endDate,
+          usageCount: p.currentUses || 0,
+          maxUsage: p.maxUses,
+          active: p.isActive,
+        }))
+        setPromotions(uiPromotions)
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to delete promotion')
+      alert(err.message || 'Failed to delete promotion')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const copyToClipboard = (code: string) => {
     navigator.clipboard.writeText(code)
+    alert(`Copied "${code}" to clipboard!`)
+  }
+
+  if (!mounted) {
+    return null // Prevent hydration mismatch
+  }
+
+  if (loading && promotions.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-[50vh]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"></div>
+      </div>
+    )
   }
 
   return (
@@ -90,7 +223,13 @@ export default function Promotions() {
           <h1 className="text-3xl font-bold">Promotions & Offers</h1>
           <p className="text-muted-foreground mt-1">Create and manage promotional codes</p>
         </div>
-        <Dialog>
+        <Dialog open={isDialogOpen} onOpenChange={(open) => {
+          setIsDialogOpen(open)
+          if (!open) {
+            setEditingPromo(null)
+            setFormData({ code: '', description: '', discount: '', minOrder: '', expiryDate: '' })
+          }
+        }}>
           <DialogTrigger asChild>
             <Button className="bg-orange-600 hover:bg-orange-700 gap-2">
               <Plus className="w-4 h-4" />
@@ -99,8 +238,10 @@ export default function Promotions() {
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Create New Promotion</DialogTitle>
-              <DialogDescription>Set up a new promotional code or offer</DialogDescription>
+              <DialogTitle>{editingPromo ? 'Edit Promotion' : 'Create New Promotion'}</DialogTitle>
+              <DialogDescription>
+                {editingPromo ? 'Update promotion details' : 'Set up a new promotional code or offer'}
+              </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <div>
@@ -150,7 +291,7 @@ export default function Promotions() {
                 />
               </div>
               <Button onClick={handleAddPromotion} className="w-full bg-orange-600 hover:bg-orange-700">
-                Create Promotion
+                {editingPromo ? 'Update Promotion' : 'Create Promotion'}
               </Button>
             </div>
           </DialogContent>
@@ -215,10 +356,20 @@ export default function Promotions() {
                         >
                           <Copy className="w-4 h-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="text-blue-600 hover:text-blue-700"
+                          onClick={() => handleEditPromotion(promo)}
+                        >
                           <Edit2 className="w-4 h-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="text-red-600 hover:text-red-700"
+                          onClick={() => handleDeletePromotion(promo.id)}
+                        >
                           <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>

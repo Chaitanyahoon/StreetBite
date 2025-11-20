@@ -180,7 +180,7 @@ export default function VendorDashboard() {
         <CardHeader>
           <CardTitle>Quick Actions</CardTitle>
         </CardHeader>
-        <CardContent className="flex gap-3">
+        <CardContent className="flex flex-wrap gap-3">
           <Link href="/vendor/menu">
           <Button className="bg-orange-600 hover:bg-orange-700">
             Add New Item

@@ -1,14 +1,49 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Menu, X, User } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { Menu, X, User, LogOut } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Logo } from '@/components/logo'
 
 export function Navbar() {
+  const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [userName, setUserName] = useState<string>('')
+
+  useEffect(() => {
+    // Check if user is logged in
+    const checkAuthState = () => {
+      const userStr = localStorage.getItem('user')
+      if (userStr) {
+        try {
+          const user = JSON.parse(userStr)
+          setIsLoggedIn(true)
+          setUserName(user.displayName || user.email || 'User')
+        } catch (e) {
+          setIsLoggedIn(false)
+        }
+      } else {
+        setIsLoggedIn(false)
+      }
+    }
+
+    checkAuthState()
+    
+    // Listen for storage changes (e.g., login/logout in another tab)
+    window.addEventListener('storage', checkAuthState)
+    return () => window.removeEventListener('storage', checkAuthState)
+  }, [])
+
+  const handleLogout = () => {
+    localStorage.removeItem('user')
+    localStorage.removeItem('firebaseUser')
+    setIsLoggedIn(false)
+    setUserName('')
+    router.push('/')
+  }
 
   const navItems = [
     { label: 'Explore', href: '/explore' },
@@ -42,10 +77,21 @@ export function Navbar() {
           {/* Right: Auth Buttons */}
           <div className="hidden lg:flex items-center gap-3 flex-shrink-0">
             {isLoggedIn ? (
-              <button className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-orange-50 transition-colors">
-                <User size={20} className="text-primary" />
-                <span className="text-sm font-medium text-foreground">Profile</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <Link href="/profile">
+                  <button className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-orange-50 transition-colors">
+                    <User size={20} className="text-primary" />
+                    <span className="text-sm font-medium text-foreground">{userName}</span>
+                  </button>
+                </Link>
+                <button 
+                  onClick={handleLogout}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-red-50 text-red-600 transition-colors"
+                >
+                  <LogOut size={18} />
+                  <span className="text-sm font-medium">Logout</span>
+                </button>
+              </div>
             ) : (
               <>
                 <Link href="/signin">
@@ -86,10 +132,24 @@ export function Navbar() {
             ))}
             <div className="flex flex-col gap-3 pt-4 px-4 border-t border-orange-100">
               {isLoggedIn ? (
-                <button className="w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-orange-50 text-primary font-medium transition-colors">
-                  <User size={20} />
-                  Profile
-                </button>
+                <>
+                  <Link href="/profile" onClick={() => setIsOpen(false)}>
+                    <button className="w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-orange-50 text-primary font-medium transition-colors">
+                      <User size={20} />
+                      {userName}
+                    </button>
+                  </Link>
+                  <button 
+                    onClick={() => {
+                      setIsOpen(false)
+                      handleLogout()
+                    }}
+                    className="w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-red-50 text-red-600 font-medium transition-colors"
+                  >
+                    <LogOut size={20} />
+                    Logout
+                  </button>
+                </>
               ) : (
                 <>
                   <Link href="/signin">

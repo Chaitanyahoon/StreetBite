@@ -18,9 +18,10 @@ A full-stack application connecting food lovers with local street food vendors, 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- **Java 17+** (for backend)
+- **Java 21+** (for backend)
 - **Node.js 18+** (for frontend)
 - **Maven** (or use included wrapper)
+- **JAVA_HOME** environment variable must be set to your Java installation directory
 
 ### One-Command Startup
 ```powershell
@@ -115,7 +116,7 @@ final_project/
    - Authentication → Sign-in methods
    - Enable Email/Password
 
-See **[SETUP.md](SETUP.md)** for detailed instructions.
+See **[SETUP.md](Documentation/SETUP.md)** for detailed instructions.
 
 ---
 
@@ -179,10 +180,10 @@ Full API documentation available at: http://localhost:8080 (when running)
 
 | Document | Purpose |
 |----------|---------|
-| **[SETUP.md](SETUP.md)** | Complete setup & installation guide |
-| **[FIREBASE_SETUP.md](FIREBASE_SETUP.md)** | Firebase configuration for backend |
-| **[FIREBASE_AUTH_SETUP.md](FIREBASE_AUTH_SETUP.md)** | Enable authentication in Firebase |
-| **[DATABASE_STATUS.md](DATABASE_STATUS.md)** | Database schema & Firestore collections |
+| **[SETUP.md](Documentation/SETUP.md)** | Complete setup & installation guide |
+| **[FIREBASE_SETUP.md](Documentation/FIREBASE_SETUP.md)** | Firebase configuration for backend |
+| **[FIREBASE_AUTH_SETUP.md](Documentation/FIREBASE_AUTH_SETUP.md)** | Enable authentication in Firebase |
+| **[DATABASE_STATUS.md](Documentation/DATABASE_STATUS.md)** | Database schema & Firestore collections |
 
 ---
 
@@ -242,7 +243,7 @@ npm run frontend:install
 | Geocoding fails | Ensure `GOOGLE_GEOCODING_API_KEY` is set and API is enabled |
 | Cannot sign up | Enable Email/Password auth in Firebase Console |
 
-For more troubleshooting, see [SETUP.md](SETUP.md#troubleshooting).
+For more troubleshooting, see [SETUP.md](Documentation/SETUP.md#troubleshooting).
 
 ---
 

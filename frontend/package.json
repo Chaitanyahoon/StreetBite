@@ -53,6 +53,7 @@
     "react-day-picker": "latest",
     "react-dom": "19.3.0-canary-52684925-20251110",
     "react-hook-form": "latest",
+    "react-is": "^19.2.0",
     "react-resizable-panels": "latest",
     "recharts": "latest",
     "sonner": "latest",

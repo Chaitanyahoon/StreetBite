@@ -35,11 +35,9 @@ export default function MenuManagement() {
     if (userStr) {
       try {
         const user = JSON.parse(userStr)
-        // For vendors, we need to find their vendor profile
-        // For now, we'll use a placeholder - in production, link user to vendor
-        const vendorIdFromStorage = localStorage.getItem('vendorId') || user.userId
-        setVendorId(vendorIdFromStorage)
-        loadMenu(vendorIdFromStorage)
+        // Use userId as vendorId (1:1 mapping)
+        setVendorId(user.userId)
+        loadMenu(user.userId)
       } catch (e) {
         console.error('Error parsing user:', e)
         setError('Failed to load user data')
@@ -105,7 +103,7 @@ export default function MenuManagement() {
     setFormData({
       name: item.name,
       category: item.category,
-      price: item.price.toString(),
+      price: item.price?.toString() || '',
       description: item.description || '',
       preparationTime: item.preparationTime?.toString() || '',
       imageUrl: item.imageUrl || '',

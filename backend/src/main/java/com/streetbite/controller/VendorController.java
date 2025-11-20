@@ -82,11 +82,13 @@ public class VendorController {
             v.setHours((String) payload.get("hours"));
             v.setDescription((String) payload.get("description"));
 
+
             // Save to Firestore (coordinates are permanent)
-            String id = firestoreService.saveVendor(v);
+            String vendorId = java.util.UUID.randomUUID().toString();
+            firestoreService.saveVendor(v, vendorId);
             return ResponseEntity.ok(Map.of(
                 "ok", true,
-                "id", id,
+                "id", vendorId,
                 "location", Map.of("lat", ll.lat, "lng", ll.lng)
             ));
         } catch (ExecutionException | InterruptedException e) {

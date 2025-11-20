@@ -41,7 +41,7 @@ export function VendorCard({ name, cuisine, rating, distance, image, reviews, ta
 
         {/* CHANGE: improved tags with better spacing */}
         <div className="flex gap-2 flex-wrap">
-          {tags.map((tag) => (
+          {(tags || []).map((tag) => (
             <span key={tag} className="text-xs font-medium bg-primary/10 text-primary px-2.5 py-1 rounded-full">
               {tag}
             </span>

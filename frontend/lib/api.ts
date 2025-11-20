@@ -1,12 +1,13 @@
 // API utility functions for backend communication
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080';
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8081';
 
 export interface RegisterRequest {
   email: string;
   displayName?: string;
   phoneNumber?: string;
   role?: 'CUSTOMER' | 'VENDOR' | 'ADMIN';
+  businessName?: string;
   location?: {
     latitude?: number;
     longitude?: number;
@@ -44,8 +45,14 @@ export async function registerUser(data: RegisterRequest) {
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'Registration failed');
+    const errorText = await response.text();
+    console.error('Registration failed:', response.status, errorText);
+    try {
+      const errorJson = JSON.parse(errorText);
+      throw new Error(errorJson.error || errorJson.message || `Registration failed: ${response.status}`);
+    } catch (e) {
+      throw new Error(`Registration failed: ${response.status} - ${errorText}`);
+    }
   }
 
   return response.json();
@@ -79,6 +86,28 @@ export async function getUser(userId: string) {
   if (!response.ok) {
     const error = await response.json();
     throw new Error(error.error || 'Failed to fetch user');
+  }
+
+  return response.json();
+}
+
+export async function updateUserProfile(userId: string, data: Partial<{
+  displayName?: string;
+  phoneNumber?: string;
+  photoUrl?: string;
+  location?: any;
+}>) {
+  const response = await fetch(`${BACKEND_URL}/api/auth/user/${userId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to update user profile');
   }
 
   return response.json();
@@ -297,6 +326,89 @@ export async function getVendorAnalytics(vendorId: string): Promise<VendorAnalyt
     throw new Error(error.error || 'Failed to fetch analytics');
   }
 
+
   return response.json();
 }
 
+// Promotion APIs
+export interface PromotionAPI {
+  promotionId?: string;
+  vendorId: string;
+  title: string;
+  description: string;
+  discountType: string;
+  discountValue: number;
+  promoCode: string;
+  startDate?: string;
+  endDate: string;
+  isActive: boolean;
+  maxUses: number;
+  currentUses?: number;
+}
+
+export async function getVendorPromotions(vendorId: string): Promise<PromotionAPI[]> {
+  const response = await fetch(`${BACKEND_URL}/api/promotions/vendor/${vendorId}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to fetch promotions');
+  }
+
+  const data = await response.json();
+  return data.promotions || [];
+}
+
+export async function createPromotion(vendorId: string, data: Omit<PromotionAPI, 'promotionId' | 'vendorId' | 'currentUses'>): Promise<PromotionAPI> {
+  const response = await fetch(`${BACKEND_URL}/api/promotions/${vendorId}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to create promotion');
+  }
+
+  const result = await response.json();
+  return result.promotion;
+}
+
+export async function updatePromotion(promotionId: string, data: Partial<PromotionAPI>): Promise<PromotionAPI> {
+  const response = await fetch(`${BACKEND_URL}/api/promotions/${promotionId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to update promotion');
+  }
+
+  const result = await response.json();
+  return result.promotion;
+}
+
+export async function deletePromotion(promotionId: string): Promise<void> {
+  const response = await fetch(`${BACKEND_URL}/api/promotions/${promotionId}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to delete promotion');
+  }
+}

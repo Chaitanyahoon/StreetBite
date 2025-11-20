@@ -25,6 +25,8 @@ export default function Settings() {
     hours: '',
     description: '',
     cuisine: '',
+    latitude: '',
+    longitude: '',
   })
 
   const [settings, setSettings] = useState({
@@ -45,10 +47,10 @@ export default function Settings() {
         }
 
         const user = JSON.parse(userStr)
-        const vid = localStorage.getItem('vendorId') || user.userId
-        setVendorId(vid)
+        // Use userId as vendorId (1:1 mapping)
+        setVendorId(user.userId)
 
-        const vendor = await getVendor(vid)
+        const vendor = await getVendor(user.userId)
         setVendorData({
           name: vendor.name || '',
           address: vendor.address || '',
@@ -56,6 +58,8 @@ export default function Settings() {
           hours: vendor.hours || '',
           description: vendor.description || '',
           cuisine: vendor.cuisine || '',
+          latitude: vendor.location?.latitude?.toString() || '',
+          longitude: vendor.location?.longitude?.toString() || '',
         })
       } catch (err: any) {
         setError(err.message || 'Failed to load vendor data')
@@ -67,9 +71,35 @@ export default function Settings() {
     loadVendorData()
   }, [])
 
+  const validateForm = () => {
+    // Validate required fields
+    if (!vendorData.name || vendorData.name.trim().length < 3) {
+      setError('Business name must be at least 3 characters')
+      return false
+    }
+
+    // Validate phone format (10 digits or with country code)
+    if (vendorData.phone && !/^(\+\d{1,3}[- ]?)?\d{10}$/.test(vendorData.phone.replace(/[- ]/g, ''))) {
+      setError('Phone number must be 10 digits (e.g., 9876543210 or +91-9876543210)')
+      return false
+    }
+
+    // Validate description length
+    if (vendorData.description && vendorData.description.length > 500) {
+      setError('Description must be less than 500 characters')
+      return false
+    }
+
+    return true
+  }
+
   const handleSave = async () => {
     if (!vendorId) {
       setError('Vendor ID not found')
+      return
+    }
+
+    if (!validateForm()) {
       return
     }
 
@@ -78,7 +108,25 @@ export default function Settings() {
       setError(null)
       setSuccess(false)
 
-      await updateVendor(vendorId, vendorData)
+      // Prepare vendor data with location
+      const updateData: any = {
+        name: vendorData.name,
+        address: vendorData.address,
+        phone: vendorData.phone,
+        hours: vendorData.hours,
+        description: vendorData.description,
+        cuisine: vendorData.cuisine,
+      }
+
+      // Add location if both lat and lng are provided
+      if (vendorData.latitude && vendorData.longitude) {
+        updateData.location = {
+          latitude: parseFloat(vendorData.latitude),
+          longitude: parseFloat(vendorData.longitude)
+        }
+      }
+
+      await updateVendor(vendorId, updateData)
       setSuccess(true)
       setTimeout(() => setSuccess(false), 3000)
     } catch (err: any) {
@@ -160,8 +208,9 @@ export default function Settings() {
                 id="phone"
                 value={vendorData.phone}
                 onChange={(e) => setVendorData({ ...vendorData, phone: e.target.value })}
-                placeholder="+91-9876543210"
+                placeholder="9876543210 or +91-9876543210"
               />
+              <p className="text-xs text-muted-foreground mt-1">Format: 10 digits with optional country code</p>
             </div>
             <div>
               <Label htmlFor="hours">Operating Hours</Label>
@@ -169,8 +218,9 @@ export default function Settings() {
                 id="hours"
                 value={vendorData.hours}
                 onChange={(e) => setVendorData({ ...vendorData, hours: e.target.value })}
-                placeholder="10:00 AM - 10:00 PM"
+                placeholder="Mon-Sun: 10:00 AM - 10:00 PM"
               />
+              <p className="text-xs text-muted-foreground mt-1">Example: Mon-Fri: 9AM-9PM or 9:00 AM - 9:00 PM</p>
             </div>
             <div className="md:col-span-2">
               <Label htmlFor="address">Business Address</Label>
@@ -180,6 +230,97 @@ export default function Settings() {
                 onChange={(e) => setVendorData({ ...vendorData, address: e.target.value })}
                 placeholder="Street address, City"
               />
+            </div>
+          </div>
+
+          {/* Location Coordinates */}
+          <div className="space-y-4">
+            <div>
+              <h4 className="font-semibold text-sm mb-2">Location Coordinates</h4>
+              <p className="text-xs text-muted-foreground mb-3">Set your exact location to appear on the map. Use GPS or click on the map.</p>
+            </div>
+            
+            {/* GPS Button */}
+            <Button
+              type="button"
+              onClick={async () => {
+                if (!navigator.geolocation) {
+                  alert('Geolocation is not supported by your browser')
+                  return
+                }
+                
+                try {
+                  const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+                    navigator.geolocation.getCurrentPosition(resolve, reject)
+                  })
+                  
+                  setVendorData({
+                    ...vendorData,
+                    latitude: position.coords.latitude.toString(),
+                    longitude: position.coords.longitude.toString(),
+                  })
+                  alert('Location captured successfully!')
+                } catch (err) {
+                  alert('Failed to get your location. Please enable location permissions.')
+                }
+              }}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              Use My Current Location (GPS)
+            </Button>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="latitude">Latitude</Label>
+                <Input
+                  id="latitude"
+                  type="number"
+                  step="any"
+                  value={vendorData.latitude}
+                  onChange={(e) => setVendorData({ ...vendorData, latitude: e.target.value })}
+                  placeholder="e.g., 19.9975"
+                />
+                <p className="text-xs text-muted-foreground mt-1">North-South position</p>
+              </div>
+              <div>
+                <Label htmlFor="longitude">Longitude</Label>
+                <Input
+                  id="longitude"
+                  type="number"
+                  step="any"
+                  value={vendorData.longitude}
+                  onChange={(e) => setVendorData({ ...vendorData, longitude: e.target.value })}
+                  placeholder="e.g., 73.7898"
+                />
+                <p className="text-xs text-muted-foreground mt-1">East-West position</p>
+              </div>
+            </div>
+
+            {/* Map Preview */}
+            {vendorData.latitude && vendorData.longitude && (
+              <div className="border rounded-lg overflow-hidden">
+                <iframe
+                  width="100%"
+                  height="300"
+                  frameBorder="0"
+                  style={{ border: 0 }}
+                  src={`https://www.google.com/maps?q=${vendorData.latitude},${vendorData.longitude}&output=embed`}
+                  allowFullScreen
+                />
+              </div>
+            )}
+
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <p className="text-xs text-blue-800">
+                <strong>Tips:</strong>
+                <br />• Click "Use My Current Location" to automatically get your GPS coordinates
+                <br />• Or right-click on your location in Google Maps and copy the coordinates
+                <br />• The map preview will show your selected location
+              </p>
             </div>
           </div>
 

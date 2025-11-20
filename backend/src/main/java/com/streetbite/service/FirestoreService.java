@@ -72,14 +72,17 @@ public class FirestoreService {
         }
     }
 
-    // Save vendor (register)
-    public String saveVendor(Vendor vendor) throws ExecutionException, InterruptedException {
+
+    // Save vendor (register) with specific ID
+    public void saveVendor(Vendor vendor, String vendorId) throws ExecutionException, InterruptedException {
+        if (db == null) {
+            throw new IllegalStateException("Firestore database is not initialized. Check server logs for credential errors.");
+        }
+        vendor.setId(vendorId);
         vendor.setCreatedAt(Instant.now().toString());
         vendor.setUpdatedAt(Instant.now().toString());
-        CollectionReference vendors = db.collection("vendors");
-        ApiFuture<DocumentReference> added = vendors.add(asMap(vendor));
-        DocumentReference ref = added.get();
-        return ref.getId();
+        DocumentReference vendorRef = db.collection("vendors").document(vendorId);
+        vendorRef.set(asMap(vendor)).get();
     }
 
     // Update vendor location or fields
@@ -124,6 +127,9 @@ public class FirestoreService {
 
     // User management methods
     public String saveUser(User user) throws ExecutionException, InterruptedException {
+        if (db == null) {
+            throw new IllegalStateException("Firestore database is not initialized. Check server logs for credential errors.");
+        }
         user.setCreatedAt(Instant.now().toString());
         user.setUpdatedAt(Instant.now().toString());
         CollectionReference users = db.collection("users");

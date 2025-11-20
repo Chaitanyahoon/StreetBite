@@ -1,30 +1,12 @@
-import { useState } from 'react'
+import Link from 'next/link'
 
 export function Logo() {
-  const [imgError, setImgError] = useState(false)
-
   return (
-    <div className="flex items-center gap-2">
-      <div className="relative w-10 h-10">
-        {!imgError ? (
-          <img
-            src="/streetbite-logo.png"
-            alt="StreetBite"
-            className="w-full h-full object-contain"
-            onError={() => setImgError(true)}
-          />
-        ) : (
-          <svg
-            viewBox="0 0 40 40"
-            className="w-full h-full"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <circle cx="20" cy="20" r="18" stroke="currentColor" strokeWidth="2" className="text-primary" />
-          </svg>
-        )}
+    <div className="flex items-center gap-2 group">
+      <div className="relative w-10 h-10 flex items-center justify-center bg-primary rounded-xl shadow-lg shadow-primary/30 transition-transform group-hover:scale-110 group-hover:rotate-3">
+        <span className="text-2xl">🍔</span>
       </div>
-      <span className="font-black text-lg text-foreground">
+      <span className="font-heading font-bold text-2xl tracking-tight text-foreground">
         Street<span className="text-primary">Bite</span>
       </span>
     </div>

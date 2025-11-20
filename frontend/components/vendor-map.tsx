@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react'
 import { useUserLocation } from '@/lib/useUserLocation'
+import { MapPin } from 'lucide-react'
 
 type Vendor = {
   id: string | number
@@ -20,14 +21,15 @@ export function VendorMap({ vendors = [], onVendorSelect }: { vendors: Vendor[],
   const markersRef = useRef<any[]>([])
   const infoWindowRef = useRef<any>(null)
   const [loaded, setLoaded] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    // prefer env var but fall back to the key you provided
-    const FALLBACK_KEY = 'AIzaSyBBX6xmTuLo0IcBthGl4KeSFiIMIuBqwYA'
-    const key = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || FALLBACK_KEY
-
+    // Check for API key
+    const key = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+    
     if (!key) {
-      console.warn('Google Maps API key is not set')
+      setError('Google Maps API key not configured')
+      console.warn('Google Maps API key is not set. Map functionality disabled.')
       return
     }
 
@@ -45,19 +47,22 @@ export function VendorMap({ vendors = [], onVendorSelect }: { vendors: Vendor[],
       script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(key)}`
       script.async = true
       script.defer = true
-      script.onload = () => setLoaded(true)
-      script.onerror = () => console.error('Failed to load Google Maps script')
+      script.onload = () => {
+        setLoaded(true)
+        setError(null)
+      }
+      script.onerror = () => {
+        setError('Failed to load Google Maps. Please check your API key.')
+        console.error('Failed to load Google Maps script - API key may be invalid or expired')
+      }
       document.head.appendChild(script)
     } else {
       // script exists but may not be loaded yet
-      const existing = document.getElementById(id) as HTMLScriptElement
-      if (existing && existing.onload) {
-        // nothing
-      } else {
-        setTimeout(() => {
-          if ((window as any).google && (window as any).google.maps) setLoaded(true)
-        }, 500)
-      }
+      setTimeout(() => {
+        if ((window as any).google && (window as any).google.maps) {
+          setLoaded(true)
+        }
+      }, 500)
     }
   }, [])
 
@@ -194,8 +199,23 @@ export function VendorMap({ vendors = [], onVendorSelect }: { vendors: Vendor[],
 
   return (
     <div>
-      <div ref={mapRef} style={{ width: '100%', height: 600 }} />
-      {!loaded && <div className="text-center text-sm text-muted-foreground mt-2">Loading map...</div>}
+      {error ? (
+        <div className="flex flex-col items-center justify-center h-[600px] bg-muted/30 rounded-lg border-2 border-dashed border-border">
+          <MapPin className="h-16 w-16 text-muted-foreground mb-4" />
+          <p className="text-lg font-semibold text-foreground mb-2">Map Unavailable</p>
+          <p className="text-sm text-muted-foreground max-w-md text-center px-4">
+            {error}
+          </p>
+          <p className="text-xs text-muted-foreground mt-4">
+            Please configure a valid Google Maps API key in your environment variables.
+          </p>
+        </div>
+      ) : (
+        <>
+          <div ref={mapRef} style={{ width: '100%', height: 600 }} className="rounded-lg overflow-hidden border border-border" />
+          {!loaded && <div className="text-center text-sm text-muted-foreground mt-2">Loading map...</div>}
+        </>
+      )}
     </div>
   )
 }

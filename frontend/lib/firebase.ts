@@ -5,7 +5,7 @@ import { getAnalytics, Analytics } from 'firebase/analytics'
 
 // Use provided Firebase config (falls back to existing env vars if you prefer)
 const firebaseConfig = {
-  apiKey: api_key,
+  apiKey: "AIzaSyDSGZMx__OvhECxf3mq69oi_2oUU5TbmbA",
   authDomain: "street-bite-v1.firebaseapp.com",
   projectId: "street-bite-v1",
   storageBucket: "street-bite-v1.firebasestorage.app",

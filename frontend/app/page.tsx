@@ -1,264 +1,198 @@
-'use client'
-
-import { Navbar } from '@/components/navbar'
-import { HeroSection } from '@/components/hero-section'
-import { VendorCard } from '@/components/vendor-card'
-import { FeatureCard } from '@/components/feature-card'
-import { Button } from '@/components/ui/button'
-import { MapPin, Zap, Users, TrendingUp, ArrowRight, Flame, Trophy, Smile } from 'lucide-react'
 import Link from 'next/link'
+import { Button } from '@/components/ui/button'
+import { MapPin, Search, Star, ChefHat, ArrowRight, Sparkles, TrendingUp, Clock } from 'lucide-react'
+import { Logo } from '@/components/logo'
+import { Navbar } from '@/components/navbar'
 
 export default function Home() {
-  const vendors = [
-    {
-      id: 1,
-      name: 'Taco Paradise',
-      cuisine: 'Mexican Street Food',
-      rating: 4.8,
-      distance: '0.5 km away',
-      image: '/mexican-tacos-street-food.jpg',
-      reviews: 342,
-      tags: ['Tacos', 'Affordable', 'Popular']
-    },
-    {
-      id: 2,
-      name: 'Spice Route',
-      cuisine: 'Indian Street Food',
-      rating: 4.9,
-      distance: '0.8 km away',
-      image: '/indian-street-food-samosa.jpg',
-      reviews: 528,
-      tags: ['Samosa', 'Chai', 'Authentic']
-    },
-    {
-      id: 3,
-      name: 'Pho King Good',
-      cuisine: 'Vietnamese Street Food',
-      rating: 4.7,
-      distance: '1.2 km away',
-      image: '/vietnamese-pho-street-food.jpg',
-      reviews: 401,
-      tags: ['Pho', 'Fresh', 'Traditional']
-    },
-    {
-      id: 4,
-      name: 'Seoul Bites',
-      cuisine: 'Korean Street Food',
-      rating: 4.8,
-      distance: '1.5 km away',
-      image: '/korean-tteokbokki-street-food.jpg',
-      reviews: 389,
-      tags: ['Tteokbokki', 'Spicy', 'Modern']
-    },
-  ]
-
-  const features = [
-    {
-      icon: <MapPin size={24} />,
-      title: 'Discover Near You',
-      description: 'Find authentic street food vendors within minutes using real-time location-based discovery'
-    },
-    {
-      icon: <Zap size={24} />,
-      title: 'Fast & Fresh',
-      description: 'Quick service without compromise with live vendor status and estimated wait times'
-    },
-    {
-      icon: <Users size={24} />,
-      title: 'Community Driven',
-      description: 'Real reviews from real people sharing authentic food experiences'
-    },
-    {
-      icon: <TrendingUp size={24} />,
-      title: 'Support Local',
-      description: 'Direct support from customers to help local vendors grow their businesses'
-    },
-  ]
-
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen flex flex-col bg-background overflow-hidden">
+      {/* Enhanced Navbar */}
       <Navbar />
-      <HeroSection />
 
-      {/* CHANGE: improved spacing and section structure with better visual hierarchy */}
-      {/* Features Section */}
-      <section className="py-24 px-6 bg-gradient-to-b from-white via-orange-50/50 to-white">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-20">
-            <p className="text-primary font-bold text-sm uppercase tracking-widest mb-4">Why StreetBite</p>
-            <h2 className="text-4xl md:text-5xl font-black text-foreground mb-6 text-balance">
-              Everything You Need for <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">Amazing</span> Street Food
-            </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              The ultimate platform connecting food lovers with authentic street vendors
+      <main className="flex-1 pt-20">
+        {/* Enhanced Hero Section */}
+        <section className="relative py-24 md:py-40 overflow-hidden">
+          {/* Animated Background Elements */}
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-float -z-10" style={{ animationDelay: '0s' }} />
+          <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-secondary/10 rounded-full blur-3xl animate-float -z-10" style={{ animationDelay: '1s' }} />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-primary/5 to-secondary/5 rounded-full blur-3xl -z-20" />
+
+          <div className="container mx-auto px-4 text-center relative z-10">
+            {/* Live Badge */}
+            <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-amber-50 to-orange-50 border border-primary/20 text-sm font-semibold mb-8 animate-scale-in shadow-soft hover-lift">
+              <span className="relative flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-primary shadow-primary"></span>
+              </span>
+              <span className="bg-gradient-to-r from-primary to-orange-600 bg-clip-text text-transparent">
+                Live in Nashik
+              </span>
+            </div>
+            
+            {/* Main Headline */}
+            <h1 className="text-5xl md:text-7xl lg:text-8xl font-black mb-6 tracking-tight text-foreground leading-[1.1] animate-slide-up">
+              Discover the Best <br />
+              <span className="relative inline-block">
+                <span className="text-gradient-animate">
+                  Street Food
+                </span>
+                <div className="absolute -top-6 -right-8 animate-float" style={{ animationDelay: '0.5s' }}>
+                  <Sparkles className="h-8 w-8 text-primary opacity-70" />
+                </div>
+              </span>
+              <br />
+              Near You
+            </h1>
+            
+            {/* Subheadline */}
+            <p className="text-lg md:text-2xl text-muted-foreground mb-12 max-w-3xl mx-auto leading-relaxed animate-slide-up font-medium" style={{ animationDelay: '0.1s' }}>
+              From spicy <span className="text-primary font-semibold">Vada Pav</span> to delicious <span className="text-primary font-semibold">Misal</span>, find authentic local vendors, 
+              view menus, and satisfy your cravings <span className="inline-block">instantly.</span>
             </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {features.map((feature, idx) => (
-              <FeatureCard key={idx} {...feature} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Trending Section */}
-      <section className="py-24 px-6 bg-white">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-16 gap-4">
-            <div>
-              <p className="text-primary font-bold text-sm uppercase tracking-widest mb-4">Popular Vendors</p>
-              <h2 className="text-4xl md:text-5xl font-black text-foreground mb-3">Top Vendors Carousel</h2>
-              <p className="text-muted-foreground text-lg max-w-xl">Trending street food vendors with amazing ratings from our community</p>
+            
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16 animate-slide-up" style={{ animationDelay: '0.2s' }}>
+              <Link href="/explore">
+                <Button size="lg" className="h-16 px-10 rounded-full text-lg font-semibold bg-primary hover:bg-primary/90 text-primary-foreground shadow-primary hover-lift hover-glow group">
+                  <Search className="mr-2 h-6 w-6 group-hover:scale-110 transition-transform" />
+                  Find Food Now
+                  <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </Link>
+              <Link href="/signup?type=vendor">
+                <Button size="lg" variant="outline" className="h-16 px-10 rounded-full text-lg font-semibold border-2 border-primary text-primary hover:bg-primary hover:text-white transition-all hover-lift group">
+                  <ChefHat className="mr-2 h-6 w-6 group-hover:scale-110 transition-transform" />
+                  List Your Stall
+                </Button>
+              </Link>
             </div>
-            <Link href="/explore">
-              <Button className="hidden md:flex gap-2 bg-primary hover:bg-primary/90 text-white shadow-lg text-base px-8 font-semibold">
-                Explore All <ArrowRight size={20} />
-              </Button>
-            </Link>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-            {vendors.map((vendor) => (
-              <VendorCard key={vendor.id} {...vendor} />
-            ))}
-          </div>
-          <div className="flex md:hidden justify-center">
-            <Link href="/explore">
-              <Button className="bg-primary hover:bg-primary/90 text-white gap-2 text-base px-8 font-semibold">
-                Explore All <ArrowRight size={20} />
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
 
-      {/* Special Offers Section */}
-      <section className="py-24 px-6 bg-gradient-to-b from-orange-50/50 to-white">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-16 gap-4">
-            <div>
-              <p className="text-primary font-bold text-sm uppercase tracking-widest mb-4">Limited Time</p>
-              <h2 className="text-4xl md:text-5xl font-black text-foreground mb-3">Special Offers</h2>
-              <p className="text-muted-foreground text-lg max-w-xl">Save big with exclusive deals from your favorite vendors</p>
-            </div>
-            <Link href="/offers">
-              <Button className="hidden md:flex gap-2 bg-primary hover:bg-primary/90 text-white shadow-lg text-base px-8 font-semibold">
-                View All Offers <ArrowRight size={20} />
-              </Button>
-            </Link>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="group rounded-2xl overflow-hidden bg-white border border-border/30 hover:border-primary/40 shadow-md hover:shadow-lg transition-all">
-                <div className="relative h-40 bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center justify-center">
-                  <Flame size={48} className="text-primary/30" />
-                  <div className="absolute top-4 right-4 bg-primary text-white px-3 py-1 rounded-lg font-bold text-sm">30% OFF</div>
-                </div>
-                <div className="p-6">
-                  <h3 className="font-bold text-lg text-foreground mb-2">Amazing Deal</h3>
-                  <p className="text-muted-foreground text-sm mb-4">Limited time offer on premium selections</p>
-                  <Button className="w-full bg-primary hover:bg-primary/90 text-white font-semibold">Claim Offer</Button>
-                </div>
+            {/* Stats */}
+            <div className="grid grid-cols-3 gap-8 max-w-2xl mx-auto animate-fade-in" style={{ animationDelay: '0.3s' }}>
+              <div className="text-center">
+                <div className="text-3xl md:text-4xl font-black text-primary mb-1">500+</div>
+                <div className="text-sm text-muted-foreground font-medium">Vendors</div>
               </div>
-            ))}
-          </div>
-          <div className="flex md:hidden justify-center">
-            <Link href="/offers">
-              <Button className="bg-primary hover:bg-primary/90 text-white gap-2 text-base px-8 font-semibold">
-                View All Offers <ArrowRight size={20} />
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Stats Section */}
-      <section className="py-24 px-6 bg-gradient-to-r from-primary via-orange-500 to-secondary text-white">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {[
-              { label: 'Active Vendors', value: '2,000+' },
-              { label: 'Food Lovers', value: '50K+' },
-              { label: 'Reviews', value: '10K+' },
-              { label: 'Cities', value: '25+' },
-            ].map((stat, idx) => (
-              <div key={idx} className="text-center">
-                <div className="text-4xl md:text-5xl font-black mb-2">{stat.value}</div>
-                <p className="text-white/80 font-medium text-sm md:text-base">{stat.label}</p>
+              <div className="text-center">
+                <div className="text-3xl md:text-4xl font-black text-primary mb-1">10K+</div>
+                <div className="text-sm text-muted-foreground font-medium">Happy Users</div>
               </div>
-            ))}
+              <div className="text-center">
+                <div className="text-3xl md:text-4xl font-black text-primary mb-1">4.9</div>
+                <div className="text-sm text-muted-foreground font-medium">Avg Rating</div>
+              </div>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* CTA Section */}
-      <section className="py-24 px-6 bg-white">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl md:text-5xl font-black text-foreground mb-6 text-balance">Ready to Discover?</h2>
-          <p className="text-xl text-muted-foreground mb-12 leading-relaxed max-w-2xl mx-auto">
-            Join StreetBite today and become part of a vibrant community celebrating authentic street food culture
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/explore">
-              <Button size="lg" className="bg-primary hover:bg-primary/90 text-white shadow-lg text-base px-8 font-semibold">
-                Get Started
-              </Button>
-            </Link>
-            <Button size="lg" variant="outline" className="border-primary/30 text-primary hover:bg-primary/5 text-base px-8 font-semibold">
-              Learn More
-            </Button>
-          </div>
-        </div>
-      </section>
+        {/* Enhanced Features Section */}
+        <section className="py-24 bg-gradient-to-b from-muted/50 to-background">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-16">
+              <div className="inline-block px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-bold mb-4 animate-scale-in">
+                WHY STREETBITE
+              </div>
+              <h2 className="text-4xl md:text-5xl font-black text-foreground mb-4 animate-slide-up">
+                Your Gateway to <span className="text-gradient">Authentic Flavors</span>
+              </h2>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto animate-slide-up">
+                Everything you need to discover, enjoy, and share amazing street food experiences
+              </p>
+            </div>
 
-      {/* Footer */}
-      <footer className="bg-foreground text-background py-16 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-12 mb-12">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center text-white font-black text-lg">
-                  🍽️
+            <div className="grid md:grid-cols-3 gap-8">
+              {/* Feature 1 */}
+              <div className="group bg-card p-8 rounded-3xl border border-border hover:border-primary/50 hover:shadow-elevated transition-all hover:-translate-y-2 animate-slide-up" style={{ animationDelay: '0.1s' }}>
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center mb-6 text-primary group-hover:scale-110 transition-transform">
+                  <MapPin className="h-8 w-8" />
                 </div>
-                <span className="font-black text-xl">StreetBite</span>
+                <h3 className="text-2xl font-bold mb-3 text-card-foreground">Live Tracking</h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  Real-time location updates ensure you never miss your favorite moving food stall.
+                </p>
               </div>
-              <p className="text-background/70 text-sm leading-relaxed">Discover amazing street food and support local vendors in your community</p>
-            </div>
-            <div>
-              <h4 className="font-bold mb-4">Explore</h4>
-              <ul className="space-y-3 text-sm text-background/70">
-                <li><Link href="/explore" className="hover:text-background transition-colors">Browse Vendors</Link></li>
-                <li><a href="#" className="hover:text-background transition-colors">Cuisines</a></li>
-                <li><a href="#" className="hover:text-background transition-colors">Locations</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-bold mb-4">For Vendors</h4>
-              <ul className="space-y-3 text-sm text-background/70">
-                <li><Link href="/signup" className="hover:text-background transition-colors">Join Now</Link></li>
-                <li><a href="#" className="hover:text-background transition-colors">Dashboard</a></li>
-                <li><a href="#" className="hover:text-background transition-colors">Support</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-bold mb-4">Company</h4>
-              <ul className="space-y-3 text-sm text-background/70">
-                <li><Link href="/about" className="hover:text-background transition-colors">About Us</Link></li>
-                <li><a href="#" className="hover:text-background transition-colors">Blog</a></li>
-                <li><a href="#" className="hover:text-background transition-colors">Contact</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-bold mb-4">Legal</h4>
-              <ul className="space-y-3 text-sm text-background/70">
-                <li><a href="#" className="hover:text-background transition-colors">Privacy</a></li>
-                <li><a href="#" className="hover:text-background transition-colors">Terms</a></li>
-                <li><a href="#" className="hover:text-background transition-colors">Cookies</a></li>
-              </ul>
+
+              {/* Feature 2 */}
+              <div className="group bg-card p-8 rounded-3xl border border-border hover:border-secondary/50 hover:shadow-elevated transition-all hover:-translate-y-2 animate-slide-up" style={{ animationDelay: '0.2s' }}>
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-secondary/20 to-secondary/10 flex items-center justify-center mb-6 text-secondary group-hover:scale-110 transition-transform">
+                  <Star className="h-8 w-8" />
+                </div>
+                <h3 className="text-2xl font-bold mb-3 text-card-foreground">Trusted Reviews</h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  Authentic ratings from real foodies help you discover the best hidden gems.
+                </p>
+              </div>
+
+              {/* Feature 3 */}
+              <div className="group bg-card p-8 rounded-3xl border border-border hover:border-primary/50 hover:shadow-elevated transition-all hover:-translate-y-2 animate-slide-up" style={{ animationDelay: '0.3s' }}>
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center mb-6 text-primary group-hover:scale-110 transition-transform">
+                  <ChefHat className="h-8 w-8" />
+                </div>
+                <h3 className="text-2xl font-bold mb-3 text-card-foreground">Vendor Tools</h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  Powerful dashboard with analytics and menu management to grow your business.
+                </p>
+              </div>
             </div>
           </div>
-          <div className="border-t border-background/20 pt-8 text-center text-sm text-background/70">
-            <p>&copy; 2025 StreetBite. Celebrating street food culture worldwide.</p>
+        </section>
+
+        {/* Enhanced CTA Section */}
+        <section className="py-24">
+          <div className="container mx-auto px-4">
+            <div className="relative bg-gradient-to-br from-primary via-primary to-orange-600 rounded-[3rem] p-12 md:p-20 text-center text-primary-foreground overflow-hidden shadow-floating animate-scale-in">
+              {/* Background Pattern */}
+              <div className="absolute inset-0 opacity-10">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-white rounded-full blur-3xl"></div>
+                <div className="absolute bottom-0 left-0 w-80 h-80 bg-white rounded-full blur-3xl"></div>
+              </div>
+              
+              <div className="relative z-10">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 text-white text-sm font-bold mb-6">
+                  <TrendingUp className="h-4 w-4" />
+                  Join the Movement
+                </div>
+                <h2 className="text-4xl md:text-6xl font-black mb-6 leading-tight">
+                  Ready to Start Your<br />Food Journey?
+                </h2>
+                <p className="text-xl md:text-2xl opacity-95 mb-10 max-w-2xl mx-auto font-medium">
+                  Join <span className="font-bold">10,000+ food lovers</span> in Nashik discovering hidden gems every day.
+                </p>
+                <Link href="/signup">
+                  <Button size="lg" className="h-16 px-12 rounded-full text-lg font-bold bg-white text-primary hover:bg-white/95 shadow-floating hover-lift hover-glow group">
+                    Get Started Free
+                    <ArrowRight className="ml-2 h-6 w-6 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      {/* Enhanced Footer */}
+      <footer className="bg-muted/30 border-t py-12">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+            <div className="flex items-center gap-2">
+              <Logo />
+            </div>
+            <div className="text-sm text-muted-foreground flex items-center gap-2">
+              <Clock className="h-4 w-4" />
+              © 2024 StreetBite. Built with ❤️ for Street Food.
+            </div>
+            <div className="flex gap-6 text-sm">
+              <Link href="#" className="text-muted-foreground hover:text-primary transition-colors font-medium">
+                Privacy
+              </Link>
+              <Link href="#" className="text-muted-foreground hover:text-primary transition-colors font-medium">
+                Terms
+              </Link>
+              <Link href="#" className="text-muted-foreground hover:text-primary transition-colors font-medium">
+                Contact
+              </Link>
+            </div>
           </div>
         </div>
       </footer>
