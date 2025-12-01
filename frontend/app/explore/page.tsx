@@ -188,12 +188,14 @@ export default function ExplorePage() {
       {/* Footer */}
       <Footer />
 
-      {/* Vendor Details Sheet */}
-      <VendorDetailsSheet
-        vendor={selectedVendor}
-        open={!!selectedVendor}
-        onOpenChange={(open) => !open && setSelectedVendor(null)}
-      />
+      {/* Vendor Details Sheet - only render when selectedVendor exists */}
+      {selectedVendor && (
+        <VendorDetailsSheet
+          vendor={selectedVendor}
+          open={!!selectedVendor}
+          onOpenChange={(open) => !open && setSelectedVendor(null)}
+        />
+      )}
     </div>
   )
 }

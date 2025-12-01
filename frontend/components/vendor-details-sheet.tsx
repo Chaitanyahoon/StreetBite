@@ -33,6 +33,14 @@ export function VendorDetailsSheet({ vendor, open, onOpenChange }: VendorDetails
     return (
         <Sheet open={open} onOpenChange={onOpenChange}>
             <SheetContent className="w-full sm:max-w-md overflow-y-auto p-0 border-l-2 border-primary/20">
+                {/* Visually hidden title for accessibility */}
+                <SheetHeader className="sr-only">
+                    <SheetTitle>{vendor.name} - Vendor Details</SheetTitle>
+                    <SheetDescription>
+                        View details, ratings, and information about {vendor.name}
+                    </SheetDescription>
+                </SheetHeader>
+
                 {/* Cover Image */}
                 <div className="relative h-64 w-full bg-muted">
                     <img

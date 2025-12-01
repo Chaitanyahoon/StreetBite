@@ -27,6 +27,8 @@ public class Vendor {
     private Double latitude;
     private Double longitude;
     private Double rating;
+    private Integer reviewCount = 0; // Total number of reviews
+    private Double averageRating = 0.0; // Average rating from reviews
     private String phone;
     private String hours;
 
@@ -218,5 +220,21 @@ public class Vendor {
 
     public void setDisplayImageUrl(String displayImageUrl) {
         this.displayImageUrl = displayImageUrl;
+    }
+
+    public Integer getReviewCount() {
+        return reviewCount;
+    }
+
+    public void setReviewCount(Integer reviewCount) {
+        this.reviewCount = reviewCount;
+    }
+
+    public Double getAverageRating() {
+        return averageRating;
+    }
+
+    public void setAverageRating(Double averageRating) {
+        this.averageRating = averageRating;
     }
 }

@@ -108,4 +108,11 @@ export const analyticsApi = {
   getVendorAnalytics: (vendorId: string) => api.get(`/analytics/vendor/${vendorId}`) as Promise<any>,
 };
 
+export const favoriteApi = {
+  getUserFavorites: () => api.get('/favorites') as Promise<any>,
+  checkFavorite: (vendorId: string) => api.get(`/favorites/check/${vendorId}`) as Promise<{ isFavorite: boolean }>,
+  addFavorite: (vendorId: string) => api.post(`/favorites/${vendorId}`) as Promise<any>,
+  removeFavorite: (vendorId: string) => api.delete(`/favorites/${vendorId}`) as Promise<any>,
+};
+
 export default api;
