@@ -25,7 +25,7 @@ public class MenuItem {
     private BigDecimal price;
     private String category;
 
-    @Column(name = "image_url")
+    @Column(name = "image_data", columnDefinition = "LONGTEXT")
     private String imageUrl;
 
     @Column(name = "is_available")

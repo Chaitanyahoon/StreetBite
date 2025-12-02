@@ -10,9 +10,10 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Edit2, Trash2, Plus } from 'lucide-react'
 import { menuApi } from '@/lib/api'
+import { useLiveMenuItem } from '@/hooks/use-live-menu'
 
 interface MenuItem {
-  itemId?: string
+  id?: number
   name: string
   category: string
   price: number
@@ -29,6 +30,7 @@ export default function MenuManagement() {
   const [vendorId, setVendorId] = useState<string | null>(null)
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
 
   const [formData, setFormData] = useState({
     name: '',
@@ -41,13 +43,10 @@ export default function MenuManagement() {
   })
 
   useEffect(() => {
-    // Get vendor ID from localStorage (set during login/signup)
     const userStr = localStorage.getItem('user')
     if (userStr) {
       try {
         const user = JSON.parse(userStr)
-        // Use vendorId from user object (added in backend update)
-        // Fallback to user.id for backward compatibility if vendorId is missing (though it shouldn't be for vendors)
         const vid = user.vendorId || user.id
         setVendorId(vid)
         loadMenu(vid)
@@ -94,17 +93,15 @@ export default function MenuManagement() {
       }
 
       if (editingItem) {
-        // Update existing item
-        await menuApi.update(editingItem.itemId!, itemData)
+        await menuApi.update(editingItem.id!, itemData)
       } else {
-        // Create new item
         await menuApi.create({ ...itemData, vendorId })
       }
 
-      // Reload menu
       await loadMenu(vendorId)
       setIsDialogOpen(false)
       setFormData({ name: '', category: 'Main Course', price: '', description: '', preparationTime: '', imageUrl: '', isAvailable: true })
+      setImagePreview(null)
       setEditingItem(null)
     } catch (err: any) {
       setError(err.message || 'Failed to save item')
@@ -122,10 +119,11 @@ export default function MenuManagement() {
       imageUrl: item.imageUrl || '',
       isAvailable: item.isAvailable ?? true,
     })
+    setImagePreview(item.imageUrl || null)
     setIsDialogOpen(true)
   }
 
-  const handleDelete = async (itemId: string) => {
+  const handleDelete = async (itemId: number) => {
     if (!confirm('Are you sure you want to delete this menu item?')) return
 
     try {
@@ -140,7 +138,10 @@ export default function MenuManagement() {
 
   const handleToggleAvailability = async (item: MenuItem) => {
     try {
-      await menuApi.update(item.itemId!, { isAvailable: !item.isAvailable })
+      await menuApi.update(item.id!, { isAvailable: !item.isAvailable })
+      // We don't strictly need to reload menu here if we trust the real-time hook,
+      // but it's good practice to keep local state in sync for the list itself.
+      // The hook will handle the visual toggle update instantly if Firebase is fast.
       if (vendorId) {
         await loadMenu(vendorId)
       }
@@ -171,6 +172,7 @@ export default function MenuManagement() {
               onClick={() => {
                 setEditingItem(null)
                 setFormData({ name: '', category: 'Main Course', price: '', description: '', preparationTime: '', imageUrl: '', isAvailable: true })
+                setImagePreview(null)
               }}
             >
               <Plus className="w-4 h-4" />
@@ -238,14 +240,57 @@ export default function MenuManagement() {
                 />
               </div>
               <div>
-                <Label htmlFor="imageUrl">Image URL (optional)</Label>
-                <Input
-                  id="imageUrl"
-                  type="url"
-                  placeholder="https://example.com/image.jpg"
-                  value={formData.imageUrl}
-                  onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-                />
+                <Label htmlFor="image">Item Image</Label>
+                <div className="mt-2 space-y-4">
+                  <div className="flex items-center gap-4">
+                    {imagePreview ? (
+                      <div className="relative w-24 h-24 rounded-lg overflow-hidden border border-border">
+                        <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                        <button
+                          onClick={() => {
+                            setImagePreview(null)
+                            setFormData({ ...formData, imageUrl: '' })
+                          }}
+                          className="absolute top-1 right-1 bg-black/50 text-white p-1 rounded-full hover:bg-black/70"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="w-24 h-24 bg-accent rounded-lg flex items-center justify-center text-muted-foreground border border-dashed border-border">
+                        <span className="text-xs">No image</span>
+                      </div>
+                    )}
+
+                    <label className="cursor-pointer">
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0]
+                          if (file) {
+                            if (file.size > 5 * 1024 * 1024) {
+                              alert('Image size must be less than 5MB')
+                              return
+                            }
+                            const reader = new FileReader()
+                            reader.onloadend = () => {
+                              const base64 = reader.result as string
+                              setImagePreview(base64)
+                              setFormData({ ...formData, imageUrl: base64 })
+                            }
+                            reader.readAsDataURL(file)
+                          }
+                        }}
+                      />
+                      <div className="bg-secondary text-secondary-foreground hover:bg-secondary/80 h-9 px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2">
+                        <Plus className="w-4 h-4" />
+                        Upload Image
+                      </div>
+                    </label>
+                  </div>
+                </div>
               </div>
               <div>
                 <Label htmlFor="description">Description</Label>
@@ -296,43 +341,13 @@ export default function MenuManagement() {
                 </TableHeader>
                 <TableBody>
                   {menuItems.map((item) => (
-                    <TableRow key={item.itemId}>
-                      <TableCell className="font-medium">{item.name}</TableCell>
-                      <TableCell>{item.category}</TableCell>
-                      <TableCell>₹{item.price}</TableCell>
-                      <TableCell className="text-sm text-muted-foreground">{item.description || '-'}</TableCell>
-                      <TableCell>
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs font-medium cursor-pointer ${item.isAvailable
-                            ? 'bg-emerald-100 text-emerald-700'
-                            : 'bg-gray-100 text-gray-700'
-                            }`}
-                          onClick={() => handleToggleAvailability(item)}
-                        >
-                          {item.isAvailable ? 'Available' : 'Unavailable'}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-blue-600 hover:text-blue-700"
-                            onClick={() => handleEdit(item)}
-                          >
-                            <Edit2 className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-red-600 hover:text-red-700"
-                            onClick={() => item.itemId && handleDelete(item.itemId)}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
+                    <MenuItemRow
+                      key={item.id}
+                      item={item}
+                      onToggle={handleToggleAvailability}
+                      onEdit={handleEdit}
+                      onDelete={handleDelete}
+                    />
                   ))}
                 </TableBody>
               </Table>
@@ -341,5 +356,59 @@ export default function MenuManagement() {
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+function MenuItemRow({
+  item,
+  onToggle,
+  onEdit,
+  onDelete
+}: {
+  item: MenuItem
+  onToggle: (item: MenuItem) => void
+  onEdit: (item: MenuItem) => void
+  onDelete: (id: number) => void
+}) {
+  const isAvailable = useLiveMenuItem(item.id, item.isAvailable ?? true)
+
+  return (
+    <TableRow>
+      <TableCell className="font-medium">{item.name}</TableCell>
+      <TableCell>{item.category}</TableCell>
+      <TableCell>₹{item.price}</TableCell>
+      <TableCell className="text-sm text-muted-foreground">{item.description || '-'}</TableCell>
+      <TableCell>
+        <span
+          className={`px-2 py-1 rounded-full text-xs font-medium cursor-pointer ${isAvailable
+            ? 'bg-emerald-100 text-emerald-700'
+            : 'bg-gray-100 text-gray-700'
+            }`}
+          onClick={() => onToggle(item)}
+        >
+          {isAvailable ? 'Available' : 'Unavailable'}
+        </span>
+      </TableCell>
+      <TableCell>
+        <div className="flex gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-blue-600 hover:text-blue-700"
+            onClick={() => onEdit(item)}
+          >
+            <Edit2 className="w-4 h-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-red-600 hover:text-red-700"
+            onClick={() => item.id && onDelete(item.id)}
+          >
+            <Trash2 className="w-4 h-4" />
+          </Button>
+        </div>
+      </TableCell>
+    </TableRow>
   )
 }

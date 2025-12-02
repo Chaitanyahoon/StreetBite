@@ -32,14 +32,17 @@ public class Vendor {
     private String phone;
     private String hours;
 
-    @Column(name = "banner_image_url")
+    @Column(name = "banner_image_data", columnDefinition = "LONGTEXT")
     private String bannerImageUrl;
 
-    @Column(name = "display_image_url")
+    @Column(name = "display_image_data", columnDefinition = "LONGTEXT")
     private String displayImageUrl;
 
     @Column(name = "is_active")
     private boolean isActive = true;
+
+    @Enumerated(EnumType.STRING)
+    private VendorStatus status = VendorStatus.AVAILABLE;
 
     @OneToMany(mappedBy = "vendor", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<VendorImage> galleryImages = new ArrayList<>();
@@ -164,6 +167,14 @@ public class Vendor {
 
     public void setActive(boolean active) {
         isActive = active;
+    }
+
+    public VendorStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(VendorStatus status) {
+        this.status = status;
     }
 
     public List<VendorImage> getGalleryImages() {

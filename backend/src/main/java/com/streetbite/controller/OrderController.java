@@ -19,7 +19,7 @@ public class OrderController {
     @PostMapping
     public ResponseEntity<?> createOrder(@RequestBody Order order) {
         try {
-            Order savedOrder = orderService.saveOrder(order);
+            Order savedOrder = orderService.createOrder(order);
             return ResponseEntity.ok(savedOrder);
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
@@ -45,21 +45,19 @@ public class OrderController {
 
     @PutMapping("/{id}/status")
     public ResponseEntity<?> updateOrderStatus(@PathVariable Long id, @RequestBody Map<String, String> payload) {
-        return orderService.getOrderById(id)
-                .map(order -> {
-                    String statusStr = payload.get("status");
-                    if (statusStr != null) {
-                        try {
-                            Order.OrderStatus status = Order.OrderStatus.valueOf(statusStr.toUpperCase());
-                            order.setStatus(status);
-                            orderService.saveOrder(order);
-                            return ResponseEntity.ok(order);
-                        } catch (IllegalArgumentException e) {
-                            return ResponseEntity.badRequest().body(Map.of("error", "Invalid status"));
-                        }
-                    }
-                    return ResponseEntity.badRequest().body(Map.of("error", "Status is required"));
-                })
-                .orElse(ResponseEntity.notFound().build());
+        String statusStr = payload.get("status");
+        if (statusStr == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Status is required"));
+        }
+
+        try {
+            Order.OrderStatus status = Order.OrderStatus.valueOf(statusStr.toUpperCase());
+            Order updatedOrder = orderService.updateOrderStatus(id, status);
+            return ResponseEntity.ok(updatedOrder);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Invalid status"));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

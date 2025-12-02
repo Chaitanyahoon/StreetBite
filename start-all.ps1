@@ -53,7 +53,7 @@ $firebaseCred = if (Test-Path $firebaseKeyPath) { $firebaseKeyPath } else { $env
 # Start backend in background
 Write-Host "Starting Backend (Spring Boot)..." -ForegroundColor Cyan
 $backendJob = Start-Job -ScriptBlock {
-    $env:JAVA_HOME = "C:\Program Files\Java\jdk-21"
+    $env:JAVA_HOME = "C:\Program Files\Java\jdk-22"
     if ($using:firebaseCred) { $env:GOOGLE_APPLICATION_CREDENTIALS = $using:firebaseCred }
     if ($using:geocodeKey) { $env:GOOGLE_MAPS_API_KEY = $using:geocodeKey }
     if ($using:dbPassword) { $env:DB_PASSWORD = $using:dbPassword }

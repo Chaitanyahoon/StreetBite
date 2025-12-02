@@ -31,14 +31,14 @@ public class VendorController {
             return false;
         }
 
-        // Check length constraint (2048 is common max URL length)
-        if (url.length() > 2048) {
-            return false;
-        }
-
-        // Allow data URLs for base64 encoded images
+        // Allow data URLs for base64 encoded images (no length limit)
         if (url.startsWith("data:image/")) {
             return true;
+        }
+
+        // Check length constraint for regular URLs
+        if (url.length() > 2048) {
+            return false;
         }
 
         // Validate HTTP/HTTPS URLs
@@ -89,56 +89,87 @@ public class VendorController {
         }
     }
 
+    @Autowired
+    private com.streetbite.service.RealTimeSyncService realTimeSyncService;
+
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateVendor(@PathVariable Long id, @RequestBody Vendor vendorUpdates) {
+    public ResponseEntity<?> updateVendor(@PathVariable Long id, @RequestBody Map<String, Object> updates) {
         return vendorService.getVendorById(id)
                 .map(existingVendor -> {
-                    if (vendorUpdates.getName() != null)
-                        existingVendor.setName(vendorUpdates.getName());
-                    if (vendorUpdates.getDescription() != null)
-                        existingVendor.setDescription(vendorUpdates.getDescription());
-                    if (vendorUpdates.getCuisine() != null)
-                        existingVendor.setCuisine(vendorUpdates.getCuisine());
-                    if (vendorUpdates.getPhone() != null)
-                        existingVendor.setPhone(vendorUpdates.getPhone());
-                    if (vendorUpdates.getAddress() != null)
-                        existingVendor.setAddress(vendorUpdates.getAddress());
-                    if (vendorUpdates.getLatitude() != null) {
-                        if (vendorUpdates.getLatitude() < -90 || vendorUpdates.getLatitude() > 90) {
+                    if (updates.containsKey("name"))
+                        existingVendor.setName((String) updates.get("name"));
+                    if (updates.containsKey("description"))
+                        existingVendor.setDescription((String) updates.get("description"));
+                    if (updates.containsKey("cuisine"))
+                        existingVendor.setCuisine((String) updates.get("cuisine"));
+                    if (updates.containsKey("phone"))
+                        existingVendor.setPhone((String) updates.get("phone"));
+                    if (updates.containsKey("address"))
+                        existingVendor.setAddress((String) updates.get("address"));
+                    if (updates.containsKey("hours"))
+                        existingVendor.setHours((String) updates.get("hours"));
+
+                    if (updates.containsKey("status")) {
+                        try {
+                            String statusStr = (String) updates.get("status");
+                            com.streetbite.model.VendorStatus status = com.streetbite.model.VendorStatus
+                                    .valueOf(statusStr);
+                            existingVendor.setStatus(status);
+                            // Sync to Firebase
+                            realTimeSyncService.updateVendorStatus(existingVendor.getId(), status);
+                        } catch (IllegalArgumentException e) {
+                            return ResponseEntity.badRequest().body(Map.of("error", "Invalid status value"));
+                        }
+                    }
+
+                    if (updates.containsKey("latitude")) {
+                        Double lat = Double.valueOf(updates.get("latitude").toString());
+                        if (lat < -90 || lat > 90) {
                             return ResponseEntity.badRequest()
                                     .body(Map.of("error", "Invalid latitude: must be between -90 and 90"));
                         }
-                        existingVendor.setLatitude(vendorUpdates.getLatitude());
+                        existingVendor.setLatitude(lat);
                     }
-                    if (vendorUpdates.getLongitude() != null) {
-                        if (vendorUpdates.getLongitude() < -180 || vendorUpdates.getLongitude() > 180) {
+                    if (updates.containsKey("longitude")) {
+                        Double lng = Double.valueOf(updates.get("longitude").toString());
+                        if (lng < -180 || lng > 180) {
                             return ResponseEntity.badRequest()
                                     .body(Map.of("error", "Invalid longitude: must be between -180 and 180"));
                         }
-                        existingVendor.setLongitude(vendorUpdates.getLongitude());
+                        existingVendor.setLongitude(lng);
                     }
-                    if (vendorUpdates.getHours() != null)
-                        existingVendor.setHours(vendorUpdates.getHours());
 
                     // Validate and update banner image URL
-                    if (vendorUpdates.getBannerImageUrl() != null) {
-                        if (isValidUrl(vendorUpdates.getBannerImageUrl())) {
-                            existingVendor.setBannerImageUrl(vendorUpdates.getBannerImageUrl());
+                    if (updates.containsKey("bannerImageUrl")) {
+                        String url = (String) updates.get("bannerImageUrl");
+                        if (isValidUrl(url)) {
+                            existingVendor.setBannerImageUrl(url);
                         } else {
                             return ResponseEntity.badRequest().body(Map.of("error", "Invalid banner image URL"));
                         }
                     }
 
                     // Validate and update display image URL
-                    if (vendorUpdates.getDisplayImageUrl() != null) {
-                        if (isValidUrl(vendorUpdates.getDisplayImageUrl())) {
-                            existingVendor.setDisplayImageUrl(vendorUpdates.getDisplayImageUrl());
+                    if (updates.containsKey("displayImageUrl")) {
+                        String url = (String) updates.get("displayImageUrl");
+                        if (isValidUrl(url)) {
+                            existingVendor.setDisplayImageUrl(url);
                         } else {
                             return ResponseEntity.badRequest().body(Map.of("error", "Invalid display image URL"));
                         }
                     }
 
                     Vendor updated = vendorService.saveVendor(existingVendor);
+
+                    // Sync location to Firebase if lat/lng changed
+                    if (updates.containsKey("latitude") || updates.containsKey("longitude")) {
+                        realTimeSyncService.updateVendorLocation(
+                                updated.getId(),
+                                updated.getLatitude(),
+                                updated.getLongitude(),
+                                updated.getAddress());
+                    }
+
                     return ResponseEntity.ok(updated);
                 })
                 .orElse(ResponseEntity.notFound().build());

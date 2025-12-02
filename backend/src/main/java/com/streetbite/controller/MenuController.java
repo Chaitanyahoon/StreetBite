@@ -2,6 +2,7 @@ package com.streetbite.controller;
 
 import com.streetbite.model.MenuItem;
 import com.streetbite.service.MenuService;
+import com.streetbite.service.RealTimeSyncService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -38,21 +39,31 @@ public class MenuController {
         }
     }
 
+    @Autowired
+    private RealTimeSyncService realTimeSyncService;
+
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateMenuItem(@PathVariable Long id, @RequestBody MenuItem updates) {
+    public ResponseEntity<?> updateMenuItem(@PathVariable Long id, @RequestBody Map<String, Object> updates) {
         return menuService.getMenuItemById(id)
                 .map(existingItem -> {
-                    if (updates.getName() != null)
-                        existingItem.setName(updates.getName());
-                    if (updates.getDescription() != null)
-                        existingItem.setDescription(updates.getDescription());
-                    if (updates.getPrice() != null)
-                        existingItem.setPrice(updates.getPrice());
-                    if (updates.getCategory() != null)
-                        existingItem.setCategory(updates.getCategory());
-                    if (updates.getImageUrl() != null)
-                        existingItem.setImageUrl(updates.getImageUrl());
-                    existingItem.setAvailable(updates.isAvailable());
+                    if (updates.containsKey("name"))
+                        existingItem.setName((String) updates.get("name"));
+                    if (updates.containsKey("description"))
+                        existingItem.setDescription((String) updates.get("description"));
+                    if (updates.containsKey("category"))
+                        existingItem.setCategory((String) updates.get("category"));
+                    if (updates.containsKey("price")) {
+                        Object priceObj = updates.get("price");
+                        existingItem.setPrice(new java.math.BigDecimal(priceObj.toString()));
+                    }
+                    if (updates.containsKey("imageUrl"))
+                        existingItem.setImageUrl((String) updates.get("imageUrl"));
+                    if (updates.containsKey("isAvailable")) {
+                        Boolean isAvailable = (Boolean) updates.get("isAvailable");
+                        existingItem.setAvailable(isAvailable);
+                        // Sync to Firebase for real-time updates
+                        realTimeSyncService.updateMenuAvailability(existingItem.getId(), isAvailable);
+                    }
 
                     MenuItem saved = menuService.saveMenuItem(existingItem);
                     return ResponseEntity.ok(saved);

@@ -29,6 +29,7 @@ export default function Settings() {
     longitude: '',
     bannerImageUrl: '',
     displayImageUrl: '',
+    status: 'AVAILABLE',
   })
 
   // Image previews
@@ -72,6 +73,7 @@ export default function Settings() {
           longitude: vendor.longitude?.toString() || '',
           bannerImageUrl: vendor.bannerImageUrl || '',
           displayImageUrl: vendor.displayImageUrl || '',
+          status: vendor.status || 'AVAILABLE',
         })
 
         if (vendor.bannerImageUrl) setBannerPreview(vendor.bannerImageUrl)
@@ -163,7 +165,6 @@ export default function Settings() {
         updateData.longitude = parseFloat(vendorData.longitude)
       }
 
-      console.log('Sending update data:', updateData)
       await vendorApi.update(vendorId, updateData)
       setSuccess(true)
       setTimeout(() => setSuccess(false), 3000)
@@ -201,6 +202,75 @@ export default function Settings() {
           Settings saved successfully!
         </div>
       )}
+
+      {/* Vendor Status */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Vendor Status</CardTitle>
+          <CardDescription>Update your current operational status</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-4">
+            <Button
+              onClick={async () => {
+                if (!vendorId) return
+                try {
+                  setVendorData(prev => ({ ...prev, status: 'AVAILABLE' }))
+                  await vendorApi.update(vendorId, { status: 'AVAILABLE' })
+                  alert('Status updated to AVAILABLE')
+                } catch (error) {
+                  alert('Failed to update status')
+                }
+              }}
+              className={`flex-1 transition-all duration-200 ${vendorData.status === 'AVAILABLE'
+                ? 'bg-green-600 hover:bg-green-700 ring-4 ring-green-600/30 scale-105 font-bold shadow-lg'
+                : 'bg-green-600/20 text-green-700 hover:bg-green-600/30 hover:text-green-800'
+                }`}
+            >
+              {vendorData.status === 'AVAILABLE' && <span className="mr-2">●</span>}
+              Available
+            </Button>
+            <Button
+              onClick={async () => {
+                if (!vendorId) return
+                try {
+                  setVendorData(prev => ({ ...prev, status: 'BUSY' }))
+                  await vendorApi.update(vendorId, { status: 'BUSY' })
+                  alert('Status updated to BUSY')
+                } catch (error) {
+                  alert('Failed to update status')
+                }
+              }}
+              className={`flex-1 transition-all duration-200 ${vendorData.status === 'BUSY'
+                ? 'bg-orange-500 hover:bg-orange-600 ring-4 ring-orange-500/30 scale-105 font-bold shadow-lg'
+                : 'bg-orange-500/20 text-orange-700 hover:bg-orange-500/30 hover:text-orange-800'
+                }`}
+            >
+              {vendorData.status === 'BUSY' && <span className="mr-2">●</span>}
+              Busy
+            </Button>
+            <Button
+              onClick={async () => {
+                if (!vendorId) return
+                try {
+                  setVendorData(prev => ({ ...prev, status: 'UNAVAILABLE' }))
+                  await vendorApi.update(vendorId, { status: 'UNAVAILABLE' })
+                  alert('Status updated to UNAVAILABLE')
+                } catch (error) {
+                  alert('Failed to update status')
+                }
+              }}
+              className={`flex-1 transition-all duration-200 ${vendorData.status === 'UNAVAILABLE'
+                ? 'bg-red-600 hover:bg-red-700 ring-4 ring-red-600/30 scale-105 font-bold shadow-lg'
+                : 'bg-red-600/20 text-red-700 hover:bg-red-600/30 hover:text-red-800'
+                }`}
+            >
+              {vendorData.status === 'UNAVAILABLE' && <span className="mr-2">●</span>}
+              Unavailable
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Profile Information */}
       <Card>

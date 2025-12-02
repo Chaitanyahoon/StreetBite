@@ -1,7 +1,9 @@
 package com.streetbite.service;
 
 import com.streetbite.model.MenuItem;
+import com.streetbite.model.Vendor;
 import com.streetbite.repository.MenuItemRepository;
+import com.streetbite.repository.VendorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,8 +17,24 @@ public class MenuService {
     @Autowired
     private MenuItemRepository menuItemRepository;
 
+    @Autowired
+    private VendorRepository vendorRepository;
+
     @Transactional
     public MenuItem saveMenuItem(MenuItem menuItem) {
+        return menuItemRepository.save(menuItem);
+    }
+
+    @Transactional
+    public MenuItem saveMenuItem(MenuItem menuItem, Long vendorId) {
+        // Fetch the vendor entity
+        Vendor vendor = vendorRepository.findById(vendorId)
+                .orElseThrow(() -> new RuntimeException("Vendor not found with id: " + vendorId));
+
+        // Set the vendor on the menu item
+        menuItem.setVendor(vendor);
+
+        // Save and return
         return menuItemRepository.save(menuItem);
     }
 

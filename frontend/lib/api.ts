@@ -76,11 +76,11 @@ export const vendorApi = {
 };
 
 export const menuApi = {
-  getByVendor: (vendorId: string) => api.get(`/menu/vendor/${vendorId}`) as Promise<any>,
-  getById: (id: string) => api.get(`/menu/${id}`) as Promise<any>,
+  getByVendor: (vendorId: string | number) => api.get(`/menu/vendor/${vendorId}`) as Promise<any>,
+  getById: (id: string | number) => api.get(`/menu/${id}`) as Promise<any>,
   create: (data: any) => api.post('/menu', data) as Promise<any>,
-  update: (id: string, data: any) => api.put(`/menu/${id}`, data) as Promise<any>,
-  delete: (id: string) => api.delete(`/menu/${id}`) as Promise<any>,
+  update: (id: string | number, data: any) => api.put(`/menu/${id}`, data) as Promise<any>,
+  delete: (id: string | number) => api.delete(`/menu/${id}`) as Promise<any>,
 };
 
 export const reviewApi = {

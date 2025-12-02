@@ -12,7 +12,6 @@ import {
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Star, MapPin, Clock, Phone, Globe, Share2, Heart } from "lucide-react"
-import { useVendorStatus } from "@/hooks/use-vendor-status"
 
 interface VendorDetailsSheetProps {
     vendor: any | null
@@ -23,12 +22,9 @@ interface VendorDetailsSheetProps {
 export function VendorDetailsSheet({ vendor, open, onOpenChange }: VendorDetailsSheetProps) {
     if (!vendor) return null
 
-    // Use the hook to get real-time status if available, otherwise fallback to vendor data
-    // Note: We need to handle the case where vendor.id might be undefined initially
-    const { status } = useVendorStatus(vendor.id || '')
-
-    const isOnline = status ? status.isOnline : (vendor.isOnline || false)
-    const isAcceptingOrders = status ? status.isAcceptingOrders : (vendor.isAcceptingOrders || false)
+    // Use vendor data directly (no real-time status from Firebase)
+    const isOnline = vendor.isOnline || false
+    const isAcceptingOrders = vendor.isAcceptingOrders || false
 
     return (
         <Sheet open={open} onOpenChange={onOpenChange}>

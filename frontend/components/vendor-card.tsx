@@ -2,7 +2,6 @@
 
 import Link from 'next/link'
 import { Star, MapPin, TrendingUp, Clock } from 'lucide-react'
-import { useVendorStatus } from '@/hooks/use-vendor-status'
 
 interface VendorCardProps {
   id: string
@@ -17,9 +16,6 @@ interface VendorCardProps {
 }
 
 export function VendorCard({ id, name, cuisine, rating, distance, image, displayImageUrl, reviews, tags }: VendorCardProps) {
-  // Real-time vendor status from Firebase
-  const { status } = useVendorStatus(id);
-
   return (
     <Link href={`/vendors/${id}`} className="block group">
       <div className="overflow-hidden rounded-2xl bg-white border-2 border-border/20 hover:border-primary/40 shadow-md hover:shadow-2xl transition-all duration-300 cursor-pointer h-full flex flex-col hover:-translate-y-2">
@@ -37,20 +33,6 @@ export function VendorCard({ id, name, cuisine, rating, distance, image, display
             <Star size={14} fill="currentColor" className="drop-shadow" />
             {rating}
           </div>
-
-          {/* Real-time online status badge */}
-          {status && (
-            <div className={`absolute top-4 left-4 px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-lg backdrop-blur-sm ${status.isOnline
-              ? 'bg-green-500/90 text-white'
-              : 'bg-gray-500/90 text-white'
-              }`}>
-              <span className={`w-2 h-2 rounded-full ${status.isOnline ? 'bg-white animate-pulse' : 'bg-gray-300'
-                }`}></span>
-              {status.isOnline ? (
-                status.isAcceptingOrders ? 'Open' : 'Busy'
-              ) : 'Offline'}
-            </div>
-          )}
 
           {/* Hover overlay with view details */}
           <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">

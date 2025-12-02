@@ -25,6 +25,9 @@ export const metadata: Metadata = {
   },
 }
 
+import { NotificationProvider } from '@/components/notification-provider'
+import { Toaster } from 'sonner'
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -33,7 +36,10 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body suppressHydrationWarning className={`${inter.variable} ${outfit.variable} font-sans antialiased bg-background text-foreground selection:bg-primary/20 selection:text-primary`}>
-        {children}
+        <NotificationProvider>
+          {children}
+          <Toaster position="top-center" />
+        </NotificationProvider>
         <Analytics />
       </body>
     </html>

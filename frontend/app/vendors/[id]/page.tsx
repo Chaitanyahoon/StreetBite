@@ -11,6 +11,7 @@ import { DirectionsMap } from '@/components/directions-map'
 import { vendorApi, menuApi, reviewApi } from '@/lib/api'
 import { Footer } from '@/components/footer'
 import { Textarea } from '@/components/ui/textarea'
+import { useLiveVendorStatus } from '@/hooks/use-live-vendor-status'
 
 interface Vendor {
     id: string
@@ -27,6 +28,7 @@ interface Vendor {
     phone?: string
     hours?: string
     galleryImages?: string[]
+    status?: 'AVAILABLE' | 'BUSY' | 'UNAVAILABLE'
 }
 
 interface MenuItem {
@@ -63,6 +65,9 @@ export default function VendorDetailsPage() {
     const [activeTab, setActiveTab] = useState('menu')
     const [isFavorite, setIsFavorite] = useState(false)
 
+    // Real-time vendor status from Firebase
+    const { status: liveStatus } = useLiveVendorStatus(vendorId)
+
     // Review form state
     const [showReviewForm, setShowReviewForm] = useState(false)
     const [reviewRating, setReviewRating] = useState(5)
@@ -72,6 +77,12 @@ export default function VendorDetailsPage() {
     // Directions State
     const [showDirections, setShowDirections] = useState(false)
     const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null)
+
+    // Merge live status with vendor data
+    const displayVendor = vendor ? {
+        ...vendor,
+        status: liveStatus || vendor.status
+    } : null
 
     useEffect(() => {
         if (!vendorId) return
@@ -84,19 +95,6 @@ export default function VendorDetailsPage() {
 
                 // Fetch menu items
                 const menuData = await menuApi.getByVendor(vendorId)
-                setMenuItems(menuData)
-
-                // Fetch reviews
-                try {
-                    const reviewData = await reviewApi.getByVendor(vendorId)
-                    setReviews(reviewData || [])
-                } catch (err) {
-                    console.log('No reviews yet')
-                    setReviews([])
-                }
-            } catch (error) {
-                console.error('Error fetching vendor data:', error)
-            } finally {
                 setLoading(false)
             }
         }
@@ -109,7 +107,7 @@ export default function VendorDetailsPage() {
     }, [vendorId])
 
     const handleGetDirections = () => {
-        if (!vendor) return
+        if (!displayVendor) return
 
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
@@ -122,21 +120,21 @@ export default function VendorDetailsPage() {
                 },
                 (error) => {
                     console.error('Error getting location:', error)
-                    const url = `https://www.google.com/maps/dir/?api=1&destination=${vendor.latitude},${vendor.longitude}`
+                    const url = `https://www.google.com/maps/dir/?api=1&destination=${displayVendor.latitude},${displayVendor.longitude}`
                     window.open(url, '_blank')
                 }
             )
         } else {
-            const url = `https://www.google.com/maps/dir/?api=1&destination=${vendor.latitude},${vendor.longitude}`
+            const url = `https://www.google.com/maps/dir/?api=1&destination=${displayVendor.latitude},${displayVendor.longitude}`
             window.open(url, '_blank')
         }
     }
 
     const handleShare = async () => {
-        if (!vendor) return
+        if (!displayVendor) return
         const shareData = {
-            title: `Check out ${vendor.name} on StreetBite!`,
-            text: `I found this amazing street food vendor: ${vendor.name}. Check them out!`,
+            title: `Check out ${displayVendor.name} on StreetBite!`,
+            text: `I found this amazing street food vendor: ${displayVendor.name}. Check them out!`,
             url: window.location.href,
         }
 
@@ -312,7 +310,7 @@ export default function VendorDetailsPage() {
                     <div className="max-w-7xl mx-auto">
                         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                             <div className="flex-1">
-                                <div className="flex items-center gap-3 mb-3">
+                                <div className="flex items-center gap-3 mb-3 flex-wrap">
                                     <span className="bg-gradient-to-r from-orange-500 to-red-500 text-white text-sm font-bold px-4 py-1.5 rounded-full uppercase tracking-wider shadow-lg">
                                         {vendor.cuisine || 'Street Food'}
                                     </span>
@@ -321,6 +319,20 @@ export default function VendorDetailsPage() {
                                             <Star size={16} className="text-yellow-400 fill-yellow-400" />
                                             <span className="text-sm font-bold">{vendor.rating.toFixed(1)}</span>
                                             <span className="text-xs text-white/80">/ 5.0</span>
+                                        </div>
+                                    )}
+                                    {vendor.status && (
+                                        <div className={`flex items-center gap-2 px-4 py-1.5 rounded-full shadow-lg font-bold text-sm uppercase tracking-wider ${vendor.status === 'AVAILABLE' ? 'bg-green-500 text-white' :
+                                            vendor.status === 'BUSY' ? 'bg-orange-500 text-white' :
+                                                'bg-gray-500 text-white'
+                                            }`}>
+                                            <span className={`w-2 h-2 rounded-full ${vendor.status === 'AVAILABLE' ? 'bg-white animate-pulse' :
+                                                vendor.status === 'BUSY' ? 'bg-white' :
+                                                    'bg-white/60'
+                                                }`}></span>
+                                            {vendor.status === 'AVAILABLE' ? 'Open Now' :
+                                                vendor.status === 'BUSY' ? 'Busy' :
+                                                    'Closed'}
                                         </div>
                                     )}
                                 </div>
@@ -412,7 +424,7 @@ export default function VendorDetailsPage() {
                                     </h2>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                         {items.map((item) => (
-                                            <div key={item.itemId} className="group bg-white border-2 border-gray-100 rounded-2xl overflow-hidden hover:border-primary/40 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                                            <div key={item.id} className="group bg-white border-2 border-gray-100 rounded-2xl overflow-hidden hover:border-primary/40 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
                                                 <div className="relative h-48 bg-gray-100 overflow-hidden">
                                                     <img
                                                         src={item.imageUrl || "/placeholder-food.jpg"}

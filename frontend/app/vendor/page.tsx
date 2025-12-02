@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { TrendingUp, Users, DollarSign, ShoppingCart } from 'lucide-react'
@@ -91,11 +91,11 @@ export default function VendorDashboard() {
               <div>
                 <h3 className="font-semibold mb-1">Complete Your Profile</h3>
                 <p className="text-sm text-muted-foreground mb-3">
-                  Add your business details, location, and operating hours
+                  Add your business details, images, status, and operating hours
                 </p>
                 <Link href="/vendor/settings">
                   <Button variant="outline">
-                    Update Settings
+                    Update Profile Settings
                   </Button>
                 </Link>
               </div>
@@ -293,9 +293,9 @@ export default function VendorDashboard() {
               Create Promotion
             </Button>
           </Link>
-          <Link href="/vendor/analytics">
+          <Link href="/vendor/settings">
             <Button variant="outline">
-              View Analytics
+              Profile Settings
             </Button>
           </Link>
         </CardContent>
