@@ -4,25 +4,17 @@ import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Flame, CheckCircle2, Trophy, Star, Zap } from "lucide-react";
-import { toast } from "sonner";
 import { motion } from "framer-motion";
 
+import { useGamification } from "@/context/GamificationContext";
+
 export function StreakTracker() {
-    const [streak, setStreak] = useState(7);
-    const [checkedIn, setCheckedIn] = useState(false);
-    const [progress, setProgress] = useState(70);
+    const { streak, checkIn, hasCheckedInToday, level } = useGamification();
+    const [progress, setProgress] = useState(70); // This could also be dynamic based on XP
 
     const handleCheckIn = () => {
-        if (checkedIn) return;
-
-        setCheckedIn(true);
-        setStreak(prev => prev + 1);
+        checkIn();
         setProgress(prev => Math.min(prev + 20, 100));
-
-        toast.success("Streak Extended! 🔥", {
-            description: "You're on fire! Keep it up!",
-            style: { background: '#F97316', color: 'white', border: 'none' }
-        });
     };
 
     return (
@@ -46,7 +38,7 @@ export function StreakTracker() {
                     </div>
                     <div className="flex items-center gap-1 bg-white/20 backdrop-blur-md px-3 py-1 rounded-full border border-white/30 shadow-sm">
                         <Star className="w-3 h-3 text-yellow-300 fill-yellow-300" />
-                        <span className="text-xs font-bold">Lvl 5</span>
+                        <span className="text-xs font-bold">Lvl {level}</span>
                     </div>
                 </div>
 
@@ -59,8 +51,8 @@ export function StreakTracker() {
                                 transition={{ repeat: Infinity, duration: 2 }}
                                 className="absolute inset-0 bg-yellow-500 rounded-full blur-lg"
                             />
-                            <div className={`relative p-4 rounded-full transition-all duration-500 ${checkedIn ? "bg-white text-orange-600 shadow-lg" : "bg-white/20 text-white backdrop-blur-sm border border-white/30"}`}>
-                                <Flame className={`w-8 h-8 ${checkedIn ? "fill-orange-500" : "fill-white/50"}`} />
+                            <div className={`relative p-4 rounded-full transition-all duration-500 ${hasCheckedInToday ? "bg-white text-orange-600 shadow-lg" : "bg-white/20 text-white backdrop-blur-sm border border-white/30"}`}>
+                                <Flame className={`w-8 h-8 ${hasCheckedInToday ? "fill-orange-500" : "fill-white/50"}`} />
                             </div>
                         </div>
                         <div>
@@ -81,13 +73,13 @@ export function StreakTracker() {
 
                     <Button
                         onClick={handleCheckIn}
-                        disabled={checkedIn}
-                        className={`h-12 px-6 rounded-xl font-bold transition-all shadow-lg ${checkedIn
-                                ? "bg-white/20 text-white border border-white/30 hover:bg-white/30"
-                                : "bg-white text-orange-600 hover:bg-orange-50 hover:scale-105 active:scale-95"
+                        disabled={hasCheckedInToday}
+                        className={`h-12 px-6 rounded-xl font-bold transition-all shadow-lg ${hasCheckedInToday
+                            ? "bg-white/20 text-white border border-white/30 hover:bg-white/30"
+                            : "bg-white text-orange-600 hover:bg-orange-50 hover:scale-105 active:scale-95"
                             }`}
                     >
-                        {checkedIn ? (
+                        {hasCheckedInToday ? (
                             <motion.div
                                 initial={{ scale: 0 }}
                                 animate={{ scale: 1 }}
@@ -108,7 +100,7 @@ export function StreakTracker() {
                 {/* Liquid Progress Bar */}
                 <div className="space-y-2 mb-4">
                     <div className="flex justify-between text-xs font-bold text-orange-100">
-                        <span>Progress to Level 6</span>
+                        <span>Progress to Level {level + 1}</span>
                         <span>{progress}%</span>
                     </div>
                     <div className="h-3 w-full bg-black/20 rounded-full overflow-hidden backdrop-blur-sm border border-white/10">

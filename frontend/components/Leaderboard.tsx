@@ -11,15 +11,45 @@ interface User {
     avatar: string;
 }
 
-const LEADERBOARD_DATA: User[] = [
-    { id: 1, name: "foodie_king", xp: 8450, level: 42, avatar: "👑" },
-    { id: 2, name: "street_master", xp: 7830, level: 39, avatar: "🌟" },
-    { id: 3, name: "spice_guru", xp: 7210, level: 36, avatar: "🔥" },
-    { id: 4, name: "chaat_lover", xp: 6890, level: 34, avatar: "💫" },
-    { id: 5, name: "vada_champion", xp: 6520, level: 33, avatar: "⚡" },
-];
+import { gamificationApi } from "@/lib/api";
+import { useEffect, useState } from "react";
+
+// ... User interface ...
 
 export function Leaderboard() {
+    const [leaderboard, setLeaderboard] = useState<User[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchLeaderboard();
+    }, []);
+
+    const fetchLeaderboard = async () => {
+        try {
+            const data = await gamificationApi.getLeaderboard();
+            // Map backend user to frontend user format if needed
+            // Assuming backend returns list of users with xp, level, displayName
+            const formattedData = data.map((user: any, index: number) => ({
+                id: user.id,
+                name: user.displayName || "Anonymous",
+                xp: user.xp || 0,
+                level: user.level || 1,
+                avatar: getAvatarForRank(index + 1)
+            }));
+            setLeaderboard(formattedData);
+        } catch (error) {
+            console.error("Failed to fetch leaderboard", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const getAvatarForRank = (rank: number) => {
+        if (rank === 1) return "👑";
+        if (rank === 2) return "🌟";
+        if (rank === 3) return "🔥";
+        return "👤";
+    };
     const getRankIcon = (rank: number) => {
         switch (rank) {
             case 1: return <Crown className="w-5 h-5 text-yellow-500 fill-yellow-500 animate-pulse" />;
@@ -52,44 +82,50 @@ export function Leaderboard() {
                 </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 pt-4 px-4">
-                {LEADERBOARD_DATA.map((user, index) => (
-                    <div
-                        key={user.id}
-                        className={`flex items-center gap-3 p-3 rounded-xl border transition-all duration-300 hover:scale-[1.01] ${getRankStyles(index + 1)}`}
-                    >
-                        <div className="flex items-center justify-center w-8 font-bold text-lg">
-                            {getRankIcon(index + 1)}
-                        </div>
-
-                        <div className="relative">
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-100 to-red-100 flex items-center justify-center text-xl shadow-inner border-2 border-white">
-                                {user.avatar}
+                {loading ? (
+                    <div className="text-center py-8 text-muted-foreground">Loading leaderboard...</div>
+                ) : leaderboard.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">No players yet. Be the first!</div>
+                ) : (
+                    leaderboard.map((user, index) => (
+                        <div
+                            key={user.id}
+                            className={`flex items-center gap-3 p-3 rounded-xl border transition-all duration-300 hover:scale-[1.01] ${getRankStyles(index + 1)}`}
+                        >
+                            <div className="flex items-center justify-center w-8 font-bold text-lg">
+                                {getRankIcon(index + 1)}
                             </div>
-                            {index === 0 && (
-                                <div className="absolute -top-1 -right-1">
-                                    <Sparkles className="w-4 h-4 text-yellow-500 fill-yellow-500 animate-spin-slow" />
+
+                            <div className="relative">
+                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-100 to-red-100 flex items-center justify-center text-xl shadow-inner border-2 border-white">
+                                    {user.avatar}
                                 </div>
-                            )}
-                        </div>
+                                {index === 0 && (
+                                    <div className="absolute -top-1 -right-1">
+                                        <Sparkles className="w-4 h-4 text-yellow-500 fill-yellow-500 animate-spin-slow" />
+                                    </div>
+                                )}
+                            </div>
 
-                        <div className="flex-1 min-w-0">
-                            <div className="font-bold text-sm text-foreground truncate flex items-center gap-1">
-                                {user.name}
-                                {index < 3 && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-orange-100 text-orange-700 font-bold">PRO</span>}
+                            <div className="flex-1 min-w-0">
+                                <div className="font-bold text-sm text-foreground truncate flex items-center gap-1">
+                                    {user.name}
+                                    {index < 3 && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-orange-100 text-orange-700 font-bold">PRO</span>}
+                                </div>
+                                <div className="text-xs text-muted-foreground font-medium">
+                                    Level {user.level}
+                                </div>
                             </div>
-                            <div className="text-xs text-muted-foreground font-medium">
-                                Level {user.level}
-                            </div>
-                        </div>
 
-                        <div className="text-right">
-                            <div className="text-sm font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-red-600">
-                                {user.xp.toLocaleString()}
+                            <div className="text-right">
+                                <div className="text-sm font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-red-600">
+                                    {user.xp.toLocaleString()}
+                                </div>
+                                <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">XP</div>
                             </div>
-                            <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">XP</div>
                         </div>
-                    </div>
-                ))}
+                    ))
+                )}
 
                 <div className="pt-2 mt-2">
                     <div className="flex items-center justify-between p-3 bg-gradient-to-r from-gray-900 to-gray-800 rounded-xl shadow-lg text-white transform transition-transform hover:scale-[1.02] cursor-pointer group">

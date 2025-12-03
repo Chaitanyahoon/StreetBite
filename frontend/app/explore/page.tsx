@@ -7,10 +7,10 @@ import { Input } from '@/components/ui/input'
 import { MapListToggle } from '@/components/map-list-toggle'
 import { VendorMap } from '@/components/vendor-map'
 import { VendorDetailsSheet } from '@/components/vendor-details-sheet'
-import { MapPin, Search, ChefHat, Flame, Star, Sparkles } from 'lucide-react'
+import { MapPin, Search, ChefHat, Flame, Star, Sparkles, Heart } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useUserLocation } from '@/lib/useUserLocation'
-import { vendorApi } from '@/lib/api'
+import { vendorApi, favoriteApi } from '@/lib/api'
 import { Footer } from '@/components/footer'
 
 export default function ExplorePage() {
@@ -21,6 +21,22 @@ export default function ExplorePage() {
 
   const [vendors, setVendors] = useState<any[]>([])
   const [loadingVendors, setLoadingVendors] = useState<boolean>(true)
+  const [favorites, setFavorites] = useState<any[]>([])
+
+  // Fetch favorites
+  useEffect(() => {
+    const fetchFavorites = async () => {
+      try {
+        const data = await favoriteApi.getUserFavorites()
+        if (Array.isArray(data)) {
+          setFavorites(data)
+        }
+      } catch (error) {
+        console.error('Error fetching favorites:', error)
+      }
+    }
+    fetchFavorites()
+  }, [])
 
   // use location hook
   const { location, loading: loadingLocation, error: locationError } = useUserLocation()
@@ -156,6 +172,26 @@ export default function ExplorePage() {
       {/* Vendors Grid */}
       <section className="py-12 px-6 bg-gradient-to-b from-transparent to-muted/20">
         <div className="max-w-7xl mx-auto">
+
+          {/* Favorites Section */}
+          {favorites.length > 0 && !searchTerm && selectedFilter === 'all' && (
+            <div className="mb-16 animate-slide-up" style={{ animationDelay: '0.3s' }}>
+              <h2 className="text-2xl font-bold text-foreground flex items-center gap-2 mb-6">
+                <Heart className="text-red-500 fill-red-500 w-6 h-6" />
+                Your Favorites
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                {favorites.map((vendor, index) => (
+                  <div key={vendor.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+                    <div className="card-tilt hover-lift h-full">
+                      <VendorCard id={vendor.id} {...vendor} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="mb-12 flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
@@ -194,6 +230,13 @@ export default function ExplorePage() {
           vendor={selectedVendor}
           open={!!selectedVendor}
           onOpenChange={(open) => !open && setSelectedVendor(null)}
+          onFavoriteToggle={(vendorId, isFavorite) => {
+            if (isFavorite) {
+              favoriteApi.getUserFavorites().then(data => setFavorites(data || []))
+            } else {
+              setFavorites(prev => prev.filter(v => String(v.id) !== String(vendorId)))
+            }
+          }}
         />
       )}
     </div>

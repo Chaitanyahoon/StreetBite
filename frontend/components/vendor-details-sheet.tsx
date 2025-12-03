@@ -17,14 +17,92 @@ interface VendorDetailsSheetProps {
     vendor: any | null
     open: boolean
     onOpenChange: (open: boolean) => void
+    onFavoriteToggle?: (vendorId: string | number, isFavorite: boolean) => void
 }
 
-export function VendorDetailsSheet({ vendor, open, onOpenChange }: VendorDetailsSheetProps) {
+import Link from "next/link"
+import { useToast } from "@/hooks/use-toast"
+import { useState, useEffect } from "react"
+import { favoriteApi } from "@/lib/api"
+
+export function VendorDetailsSheet({ vendor, open, onOpenChange, onFavoriteToggle }: VendorDetailsSheetProps) {
+    const { toast } = useToast()
+    const [isFavorite, setIsFavorite] = useState(false)
+    const [loading, setLoading] = useState(false)
+
     if (!vendor) return null
 
     // Use vendor data directly (no real-time status from Firebase)
     const isOnline = vendor.isOnline || false
     const isAcceptingOrders = vendor.isAcceptingOrders || false
+
+    useEffect(() => {
+        const checkFavoriteStatus = async () => {
+            if (!vendor?.id) return
+            try {
+                const response = await favoriteApi.checkFavorite(vendor.id)
+                setIsFavorite(response.isFavorite)
+            } catch (error) {
+                console.error('Error checking favorite status:', error)
+            }
+        }
+        checkFavoriteStatus()
+    }, [vendor?.id])
+
+    const handleShare = async () => {
+        const shareData = {
+            title: `Check out ${vendor.name} on StreetBite!`,
+            text: `Delicious street food at ${vendor.name}. ${vendor.description || ''}`,
+            url: window.location.origin + `/vendors/${vendor.id}`
+        }
+
+        try {
+            if (navigator.share) {
+                await navigator.share(shareData)
+            } else {
+                await navigator.clipboard.writeText(shareData.url)
+                toast({
+                    title: "Link copied!",
+                    description: "Vendor link copied to clipboard.",
+                })
+            }
+        } catch (err) {
+            console.error('Error sharing:', err)
+        }
+    }
+
+    const handleFavorite = async () => {
+        if (!vendor?.id) return
+        setLoading(true)
+        try {
+            if (isFavorite) {
+                await favoriteApi.removeFavorite(vendor.id)
+                setIsFavorite(false)
+                onFavoriteToggle?.(vendor.id, false)
+                toast({
+                    title: "Removed from Favorites",
+                    description: `${vendor.name} has been removed from your favorites.`,
+                })
+            } else {
+                await favoriteApi.addFavorite(vendor.id)
+                setIsFavorite(true)
+                onFavoriteToggle?.(vendor.id, true)
+                toast({
+                    title: "Added to Favorites",
+                    description: `${vendor.name} has been added to your favorites.`,
+                })
+            }
+        } catch (error) {
+            console.error('Error toggling favorite:', error)
+            toast({
+                title: "Error",
+                description: "Failed to update favorite status. Please try again.",
+                variant: "destructive"
+            })
+        } finally {
+            setLoading(false)
+        }
+    }
 
     return (
         <Sheet open={open} onOpenChange={onOpenChange}>
@@ -126,20 +204,22 @@ export function VendorDetailsSheet({ vendor, open, onOpenChange }: VendorDetails
 
                     {/* Actions */}
                     <div className="grid grid-cols-2 gap-3">
-                        <Button variant="outline" className="w-full gap-2">
+                        <Button variant="outline" className="w-full gap-2" onClick={handleShare}>
                             <Share2 className="w-4 h-4" />
                             Share
                         </Button>
-                        <Button variant="outline" className="w-full gap-2">
-                            <Heart className="w-4 h-4" />
-                            Favorite
+                        <Button variant="outline" className="w-full gap-2" onClick={handleFavorite} disabled={loading}>
+                            <Heart className={`w-4 h-4 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
+                            {isFavorite ? 'Favorited' : 'Favorite'}
                         </Button>
                     </div>
 
                     <SheetFooter className="pt-4">
-                        <Button className="w-full h-12 text-lg font-bold shadow-primary hover-lift" size="lg">
-                            View Full Menu
-                        </Button>
+                        <Link href={`/vendors/${vendor.id}`} className="w-full" onClick={() => onOpenChange(false)}>
+                            <Button className="w-full h-12 text-lg font-bold shadow-primary hover-lift" size="lg">
+                                View Full Menu
+                            </Button>
+                        </Link>
                     </SheetFooter>
                 </div>
             </SheetContent>

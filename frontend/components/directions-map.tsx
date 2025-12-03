@@ -122,7 +122,15 @@ export function DirectionsMap({ origin, destination }: DirectionsMapProps) {
             {error ? (
                 <div className="flex flex-col items-center justify-center h-full bg-gray-100 text-gray-500 p-4 text-center">
                     <MapPin className="h-8 w-8 mb-2 opacity-50" />
-                    <p>{error}</p>
+                    <p className="mb-4">{error}</p>
+                    <a
+                        href={`https://www.google.com/maps/dir/?api=1&origin=${origin.lat},${origin.lng}&destination=${destination.lat},${destination.lng}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700 transition-colors"
+                    >
+                        Open in Google Maps
+                    </a>
                 </div>
             ) : (
                 <>

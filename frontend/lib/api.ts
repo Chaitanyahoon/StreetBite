@@ -97,6 +97,7 @@ export const orderApi = {
 
 export const promotionApi = {
   getAll: () => api.get('/promotions/all') as Promise<any>,
+  getAllActive: () => api.get('/promotions/active') as Promise<any>,
   getByVendor: (vendorId: string) => api.get(`/promotions/vendor/${vendorId}`) as Promise<any>,
   getActiveByVendor: (vendorId: string) => api.get(`/promotions/vendor/${vendorId}/active`) as Promise<any>,
   create: (data: any) => api.post('/promotions', data) as Promise<any>,
@@ -113,6 +114,12 @@ export const favoriteApi = {
   checkFavorite: (vendorId: string) => api.get(`/favorites/check/${vendorId}`) as Promise<{ isFavorite: boolean }>,
   addFavorite: (vendorId: string) => api.post(`/favorites/${vendorId}`) as Promise<any>,
   removeFavorite: (vendorId: string) => api.delete(`/favorites/${vendorId}`) as Promise<any>,
+};
+
+export const gamificationApi = {
+  getLeaderboard: () => api.get('/gamification/leaderboard') as Promise<any>,
+  getUserStats: () => api.get('/gamification/stats') as Promise<any>,
+  performAction: (actionType: string) => api.post(`/gamification/action/${actionType}`) as Promise<any>,
 };
 
 export default api;

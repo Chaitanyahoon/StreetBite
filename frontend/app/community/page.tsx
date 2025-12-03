@@ -34,7 +34,11 @@ const DISCUSSIONS = [
     { id: 3, text: "Spicy vs. Sweet - what's your vibe?", replies: 67, likes: 112, author: "taste_master", time: "1d ago", tags: ["Debate"] },
     { id: 4, text: "Hidden gem near you?", replies: 234, likes: 178, author: "street_hunter", time: "3h ago", tags: ["Discovery"] },
     { id: 5, text: "Favorite chaat combination?", replies: 156, likes: 134, author: "chaat_lover", time: "12h ago", tags: ["Chaat"] },
-    { id: 6, text: "Rainy day food mood?", replies: 198, likes: 201, author: "monsoon_foodie", time: "6h ago", tags: ["Weather", "Comfort Food"] }
+    { id: 6, text: "Rainy day food mood?", replies: 198, likes: 201, author: "monsoon_foodie", time: "6h ago", tags: ["Weather", "Comfort Food"] },
+    { id: 7, text: "Best Vada Pav in Mumbai?", replies: 300, likes: 450, author: "mumbai_local", time: "1h ago", tags: ["Mumbai", "Vada Pav"] },
+    { id: 8, text: "Filter Coffee vs Masala Chai", replies: 500, likes: 600, author: "chai_wala", time: "4h ago", tags: ["Debate", "Drinks"] },
+    { id: 9, text: "Underrated Street Foods", replies: 120, likes: 90, author: "explorer_101", time: "8h ago", tags: ["Discovery"] },
+    { id: 10, text: "Street Food Hygiene Tips", replies: 80, likes: 150, author: "health_nut", time: "1d ago", tags: ["Tips", "Health"] }
 ];
 
 const SAMPLE_COMMENTS = [
@@ -43,9 +47,18 @@ const SAMPLE_COMMENTS = [
     { id: 3, author: "chai_addict", text: "Chai and pakoras for sure!", likes: 15, time: "30m ago" }
 ];
 
+import { useGamification } from '@/context/GamificationContext'
+
+// ... existing imports ...
+
+import { vendorApi } from '@/lib/api';
+
+// ... existing imports ...
+
 export default function CommunityPage() {
-    const [vendor, setVendor] = useState(VENDORS[0]);
-    const [discussions, setDiscussions] = useState(DISCUSSIONS.slice(0, 4));
+    const { performAction } = useGamification()
+    const [vendor, setVendor] = useState<any>(null); // Use proper type if available
+    const [discussions, setDiscussions] = useState(DISCUSSIONS);
     const [searchQuery, setSearchQuery] = useState('');
     const [activeTab, setActiveTab] = useState('games');
     const [selectedDiscussion, setSelectedDiscussion] = useState<typeof DISCUSSIONS[0] | null>(null);
@@ -54,12 +67,26 @@ export default function CommunityPage() {
     const [hasLiked, setHasLiked] = useState(false);
 
     useEffect(() => {
-        const randomVendor = VENDORS[Math.floor(Math.random() * VENDORS.length)];
-        setVendor(randomVendor);
+        fetchRandomVendor();
 
+        // Randomize discussions order
         const shuffled = [...DISCUSSIONS].sort(() => Math.random() - 0.5);
-        setDiscussions(shuffled.slice(0, 4));
+        setDiscussions(shuffled);
     }, []);
+
+    const fetchRandomVendor = async () => {
+        try {
+            const vendors = await vendorApi.getAll();
+            if (vendors && vendors.length > 0) {
+                const random = vendors[Math.floor(Math.random() * vendors.length)];
+                setVendor(random);
+            }
+        } catch (error) {
+            console.error("Failed to fetch vendor for spotlight", error);
+            // Fallback to a default if fetch fails
+            setVendor(VENDORS[0]);
+        }
+    };
 
     const handleDiscussionClick = (discussion: typeof DISCUSSIONS[0]) => {
         setSelectedDiscussion(discussion);
@@ -84,7 +111,13 @@ export default function CommunityPage() {
         };
         setComments([comment, ...comments]);
         setNewComment('');
-        toast.success("Comment posted! 💬");
+
+        // Award XP for commenting
+        performAction('complete_challenge'); // Using complete_challenge (50 XP) or maybe we need a smaller one?
+        // Ideally backend should have 'comment' action type with smaller XP.
+        // For now let's use what we have or assume backend handles 'comment' type gracefully (returns 0 if unknown or we add it)
+
+        toast.success("Comment posted! +XP 💬");
     };
 
     const handleVendorClick = () => {
@@ -304,12 +337,12 @@ export default function CommunityPage() {
                                             <span className="text-6xl animate-bounce">🍛</span>
                                         </div>
                                         <div>
-                                            <h4 className="font-black text-lg">{vendor.name}</h4>
+                                            <h4 className="font-black text-lg">{vendor?.name || "Loading..."}</h4>
                                             <div className="flex items-center gap-2 text-white/90 text-sm mt-1">
                                                 <MapPin className="w-3.5 h-3.5" />
-                                                {vendor.location}
+                                                {vendor?.location || "Unknown Location"}
                                                 <span className="w-1 h-1 bg-white/50 rounded-full"></span>
-                                                <span className="font-bold text-yellow-300">{vendor.rating}</span>
+                                                <span className="font-bold text-yellow-300">{vendor?.rating || "New"}★</span>
                                             </div>
                                         </div>
                                         <Button

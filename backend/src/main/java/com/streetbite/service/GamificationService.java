@@ -32,6 +32,30 @@ public class GamificationService {
         int currentXp = user.getXp() != null ? user.getXp() : 0;
         user.setXp(currentXp + xpToAward);
 
+        // Update Level
+        int newLevel = calculateLevel(user.getXp());
+        user.setLevel(newLevel);
+
+        // Handle Daily Login Streak
+        if ("daily_login".equalsIgnoreCase(actionType)) {
+            java.time.LocalDate today = java.time.LocalDate.now();
+            java.time.LocalDate lastCheckIn = user.getLastCheckIn();
+
+            if (lastCheckIn != null) {
+                if (lastCheckIn.plusDays(1).equals(today)) {
+                    // Consecutive day
+                    user.setStreak((user.getStreak() != null ? user.getStreak() : 0) + 1);
+                } else if (!lastCheckIn.equals(today)) {
+                    // Broken streak (unless it's same day)
+                    user.setStreak(1);
+                }
+            } else {
+                // First check-in
+                user.setStreak(1);
+            }
+            user.setLastCheckIn(today);
+        }
+
         return userRepository.save(user);
     }
 
@@ -74,10 +98,12 @@ public class GamificationService {
 
         Map<String, Object> stats = new HashMap<>();
         stats.put("xp", xp);
-        stats.put("level", level);
+        stats.put("level", user.getLevel() != null ? user.getLevel() : level);
+        stats.put("streak", user.getStreak() != null ? user.getStreak() : 0);
         stats.put("rank", rank);
         stats.put("displayName", user.getDisplayName());
         stats.put("email", user.getEmail());
+        stats.put("lastCheckIn", user.getLastCheckIn());
 
         return stats;
     }

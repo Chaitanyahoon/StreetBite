@@ -41,6 +41,15 @@ public class User {
     @Column(name = "xp")
     private Integer xp = 0;
 
+    @Column(name = "level")
+    private Integer level = 1;
+
+    @Column(name = "streak")
+    private Integer streak = 0;
+
+    @Column(name = "last_check_in")
+    private java.time.LocalDate lastCheckIn;
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "user_favorites", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "vendor_id"))
     @com.fasterxml.jackson.annotation.JsonIgnore
@@ -148,5 +157,29 @@ public class User {
 
     public void setXp(Integer xp) {
         this.xp = xp;
+    }
+
+    public Integer getLevel() {
+        return level;
+    }
+
+    public void setLevel(Integer level) {
+        this.level = level;
+    }
+
+    public Integer getStreak() {
+        return streak;
+    }
+
+    public void setStreak(Integer streak) {
+        this.streak = streak;
+    }
+
+    public java.time.LocalDate getLastCheckIn() {
+        return lastCheckIn;
+    }
+
+    public void setLastCheckIn(java.time.LocalDate lastCheckIn) {
+        this.lastCheckIn = lastCheckIn;
     }
 }

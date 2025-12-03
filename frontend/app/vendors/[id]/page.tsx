@@ -2,16 +2,17 @@
 
 import { Navbar } from '@/components/navbar'
 import { Button } from '@/components/ui/button'
-import { MapPin, Clock, Star, Phone, Share2, Navigation, ChevronLeft, Utensils, Heart, Send } from 'lucide-react'
+import { MapPin, Clock, Star, Phone, Share2, Navigation, ChevronLeft, Utensils, Heart, Send, CheckCircle2, Wifi, CreditCard, ShieldCheck } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { DirectionsMap } from '@/components/directions-map'
-import { vendorApi, menuApi, reviewApi } from '@/lib/api'
+import { vendorApi, menuApi, reviewApi, promotionApi, favoriteApi } from '@/lib/api'
 import { Footer } from '@/components/footer'
 import { Textarea } from '@/components/ui/textarea'
 import { useLiveVendorStatus } from '@/hooks/use-live-vendor-status'
+import { useToast } from '@/hooks/use-toast'
 
 interface Vendor {
     id: string
@@ -57,6 +58,7 @@ export default function VendorDetailsPage() {
     const params = useParams()
     const router = useRouter()
     const vendorId = params?.id as string
+    const { toast } = useToast()
 
     const [vendor, setVendor] = useState<Vendor | null>(null)
     const [menuItems, setMenuItems] = useState<MenuItem[]>([])
@@ -64,6 +66,11 @@ export default function VendorDetailsPage() {
     const [loading, setLoading] = useState(true)
     const [activeTab, setActiveTab] = useState('menu')
     const [isFavorite, setIsFavorite] = useState(false)
+    const [promotions, setPromotions] = useState<any[]>([])
+
+    // Offers filter and sort state
+    const [offerFilter, setOfferFilter] = useState<'all' | 'percentage' | 'fixed'>('all')
+    const [offerSort, setOfferSort] = useState<'discount' | 'ending' | 'popular'>('discount')
 
     // Real-time vendor status from Firebase
     const { status: liveStatus } = useLiveVendorStatus(vendorId)
@@ -89,21 +96,47 @@ export default function VendorDetailsPage() {
 
         const fetchData = async () => {
             try {
+                if (!vendorId || vendorId === 'undefined' || isNaN(Number(vendorId))) {
+                    console.error('Invalid vendor ID:', vendorId)
+                    setLoading(false)
+                    return
+                }
+
                 // Fetch vendor details
                 const vendorData = await vendorApi.getById(vendorId)
                 setVendor(vendorData)
 
                 // Fetch menu items
                 const menuData = await menuApi.getByVendor(vendorId)
+
+                // Fetch active promotions
+                try {
+                    const promos = await promotionApi.getActiveByVendor(vendorId)
+                    setPromotions(promos)
+                } catch (err) {
+                    console.error('Failed to fetch promotions:', err)
+                }
+
+                setLoading(false)
+            } catch (error) {
+                console.error('Error fetching vendor data:', error)
                 setLoading(false)
             }
         }
 
         fetchData()
 
-        // Load favorite status from localStorage
-        const favorites = JSON.parse(localStorage.getItem('favorites') || '[]')
-        setIsFavorite(favorites.includes(vendorId))
+        // Check favorite status
+        const checkFavoriteStatus = async () => {
+            if (!vendorId) return
+            try {
+                const response = await favoriteApi.checkFavorite(vendorId)
+                setIsFavorite(response.isFavorite)
+            } catch (error) {
+                console.error('Error checking favorite status:', error)
+            }
+        }
+        checkFavoriteStatus()
     }, [vendorId])
 
     const handleGetDirections = () => {
@@ -150,20 +183,33 @@ export default function VendorDetailsPage() {
         }
     }
 
-    const toggleFavorite = () => {
-        const favorites = JSON.parse(localStorage.getItem('favorites') || '[]')
-        let newFavorites: string[]
+    const toggleFavorite = async () => {
+        if (!vendorId) return
 
-        if (isFavorite) {
-            // Remove from favorites
-            newFavorites = favorites.filter((id: string) => id !== vendorId)
-        } else {
-            // Add to favorites
-            newFavorites = [...favorites, vendorId]
+        try {
+            if (isFavorite) {
+                await favoriteApi.removeFavorite(vendorId)
+                setIsFavorite(false)
+                toast({
+                    title: "Removed from Favorites",
+                    description: `${vendor?.name || 'Vendor'} has been removed from your favorites.`,
+                })
+            } else {
+                await favoriteApi.addFavorite(vendorId)
+                setIsFavorite(true)
+                toast({
+                    title: "Added to Favorites",
+                    description: `${vendor?.name || 'Vendor'} has been added to your favorites.`,
+                })
+            }
+        } catch (error) {
+            console.error('Error toggling favorite:', error)
+            toast({
+                title: "Error",
+                description: "Failed to update favorite status. Please try again.",
+                variant: "destructive"
+            })
         }
-
-        localStorage.setItem('favorites', JSON.stringify(newFavorites))
-        setIsFavorite(!isFavorite)
     }
 
     const handleSubmitReview = async () => {
@@ -335,6 +381,11 @@ export default function VendorDetailsPage() {
                                                     'Closed'}
                                         </div>
                                     )}
+                                    {promotions.length > 0 && (
+                                        <div className="flex items-center gap-2 px-4 py-1.5 rounded-full shadow-lg font-bold text-sm uppercase tracking-wider bg-red-600 text-white animate-pulse">
+                                            🔥 SALE!
+                                        </div>
+                                    )}
                                 </div>
                                 <h1 className="text-4xl md:text-6xl font-black mb-4 leading-tight">{vendor.name}</h1>
                                 <div className="flex flex-col sm:flex-row sm:items-center gap-3 text-sm md:text-base text-white/90">
@@ -381,7 +432,7 @@ export default function VendorDetailsPage() {
             <div className="sticky top-16 z-30 bg-white border-b border-gray-200 shadow-sm">
                 <div className="max-w-7xl mx-auto px-6">
                     <div className="flex gap-8 overflow-x-auto no-scrollbar">
-                        {['Menu', 'About', 'Reviews'].map((tab) => (
+                        {['Menu', 'Offers', 'About', 'Reviews'].map((tab) => (
                             <button
                                 key={tab}
                                 onClick={() => setActiveTab(tab.toLowerCase())}
@@ -392,8 +443,13 @@ export default function VendorDetailsPage() {
                             >
                                 {tab}
                                 {tab === 'Reviews' && reviews.length > 0 && (
-                                    <span className="ml-2 bg-primary text-white text-xs px-2 py-0.5 rounded-full">
+                                    <span className="ml-2 bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-full">
                                         {reviews.length}
+                                    </span>
+                                )}
+                                {tab === 'Offers' && promotions.length > 0 && (
+                                    <span className="ml-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full animate-pulse shadow-sm">
+                                        {promotions.length}
                                     </span>
                                 )}
                                 {activeTab === tab.toLowerCase() && (
@@ -424,7 +480,7 @@ export default function VendorDetailsPage() {
                                     </h2>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                         {items.map((item) => (
-                                            <div key={item.id} className="group bg-white border-2 border-gray-100 rounded-2xl overflow-hidden hover:border-primary/40 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                                            <div key={item.itemId} className="group bg-white border-2 border-gray-100 rounded-2xl overflow-hidden hover:border-primary/40 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
                                                 <div className="relative h-48 bg-gray-100 overflow-hidden">
                                                     <img
                                                         src={item.imageUrl || "/placeholder-food.jpg"}
@@ -471,33 +527,281 @@ export default function VendorDetailsPage() {
                     </div>
                 )}
 
+                {activeTab === 'offers' && (
+                    <div className="space-y-6">
+                        {/* Filter and Sort Controls */}
+                        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
+                            <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+                                <div className="flex-1">
+                                    <label className="text-sm font-semibold text-gray-700 mb-2 block">Filter by Type</label>
+                                    <div className="flex gap-2 flex-wrap">
+                                        <button
+                                            onClick={() => setOfferFilter('all')}
+                                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${offerFilter === 'all' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                                        >
+                                            All Offers
+                                        </button>
+                                        <button
+                                            onClick={() => setOfferFilter('percentage')}
+                                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${offerFilter === 'percentage' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                                        >
+                                            % OFF
+                                        </button>
+                                        <button
+                                            onClick={() => setOfferFilter('fixed')}
+                                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${offerFilter === 'fixed' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                                        >
+                                            ₹ OFF
+                                        </button>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="text-sm font-semibold text-gray-700 mb-2 block">Sort By</label>
+                                    <select
+                                        value={offerSort}
+                                        onChange={(e) => setOfferSort(e.target.value as any)}
+                                        className="px-4 py-2 rounded-lg border border-gray-300 text-sm font-medium focus:ring-2 focus:ring-primary focus:border-primary"
+                                    >
+                                        <option value="discount">Highest Discount</option>
+                                        <option value="ending">Ending Soon</option>
+                                        <option value="popular">Most Popular</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        {promotions.length === 0 ? (
+                            <div className="text-center py-20 bg-white rounded-2xl border-2 border-dashed border-gray-200">
+                                <div className="text-6xl mb-4">🎁</div>
+                                <h3 className="text-xl font-bold text-gray-900 mb-2">No Active Offers</h3>
+                                <p className="text-gray-500">Check back soon for exciting deals!</p>
+                            </div>
+                        ) : (() => {
+                            // Filter promotions
+                            let filtered = promotions.filter(promo => {
+                                if (offerFilter === 'all') return true
+                                if (offerFilter === 'percentage') return promo.discountType === 'PERCENTAGE'
+                                if (offerFilter === 'fixed') return promo.discountType === 'FIXED'
+                                return true
+                            })
+
+                            // Sort promotions
+                            filtered = [...filtered].sort((a, b) => {
+                                if (offerSort === 'discount') {
+                                    return b.discountValue - a.discountValue
+                                }
+                                if (offerSort === 'ending') {
+                                    if (!a.endDate) return 1
+                                    if (!b.endDate) return -1
+                                    return new Date(a.endDate).getTime() - new Date(b.endDate).getTime()
+                                }
+                                // popular - use id as proxy for now
+                                return b.id - a.id
+                            })
+
+                            const getBadges = (promo: any) => {
+                                const badges = []
+
+                                // Hot Deal Badge
+                                if (promo.discountValue >= 30) {
+                                    badges.push({ text: '🔥 HOT DEAL', color: 'bg-red-500' })
+                                }
+
+                                // Ending Soon Badge
+                                if (promo.endDate) {
+                                    const daysLeft = Math.ceil((new Date(promo.endDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+                                    if (daysLeft <= 7 && daysLeft > 0) {
+                                        badges.push({ text: `⏰ ${daysLeft}d LEFT`, color: 'bg-yellow-500' })
+                                    }
+                                }
+
+                                // Best Value Badge
+                                if (promo.minOrderValue < 200) {
+                                    badges.push({ text: '💰 LOW MIN', color: 'bg-green-500' })
+                                }
+
+                                return badges
+                            }
+
+                            const handleGetDirections = () => {
+                                if (vendor?.latitude && vendor?.longitude) {
+                                    window.open(`https://www.google.com/maps/dir/?api=1&destination=${vendor.latitude},${vendor.longitude}`, '_blank')
+                                }
+                            }
+
+                            const handleShare = (promo: any) => {
+                                const shareText = `Check out this amazing offer at ${vendor?.name}!\n\n${promo.title}\nCode: ${promo.promoCode}\n${promo.discountType === 'PERCENTAGE' ? `${promo.discountValue}% OFF` : `₹${promo.discountValue} OFF`}\n\nFound on StreetBite 🍔`
+
+                                if (navigator.share) {
+                                    navigator.share({
+                                        title: `Offer at ${vendor?.name}`,
+                                        text: shareText,
+                                        url: window.location.href
+                                    }).catch(() => { })
+                                } else {
+                                    navigator.clipboard.writeText(shareText)
+                                    alert('Offer details copied to clipboard!')
+                                }
+                            }
+
+                            return (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {filtered.map((promo) => {
+                                        const badges = getBadges(promo)
+
+                                        return (
+                                            <div key={promo.id} className="bg-gradient-to-br from-orange-50 to-red-50 border-2 border-orange-200 rounded-2xl p-6 hover:shadow-xl transition-all hover:-translate-y-1 relative overflow-hidden">
+                                                {/* Decorative corner */}
+                                                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-orange-400 to-red-500 opacity-10 rounded-bl-full"></div>
+
+                                                <div className="flex items-start justify-between mb-4 relative z-10">
+                                                    <div className="flex-1">
+                                                        {/* Badges */}
+                                                        <div className="flex items-center gap-2 mb-3 flex-wrap">
+                                                            <span className="bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wider shadow-md">
+                                                                {promo.discountType === 'PERCENTAGE' ? `${promo.discountValue}% OFF` : `₹${promo.discountValue} OFF`}
+                                                            </span>
+                                                            {badges.map((badge, i) => (
+                                                                <span key={i} className={`${badge.color} text-white text-xs font-bold px-2 py-1 rounded-full shadow-sm`}>
+                                                                    {badge.text}
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                        <h3 className="text-xl font-bold text-gray-900 mb-2">{promo.title}</h3>
+                                                        <p className="text-sm text-gray-600 mb-3">{promo.description}</p>
+                                                    </div>
+                                                </div>
+
+                                                {/* Promo Code */}
+                                                <div className="bg-white rounded-lg p-3 mb-4 shadow-sm">
+                                                    <div className="flex items-center justify-between mb-2">
+                                                        <span className="text-xs text-gray-500 font-medium">Promo Code</span>
+                                                        <button
+                                                            onClick={() => {
+                                                                navigator.clipboard.writeText(promo.promoCode)
+                                                                alert('Code copied!')
+                                                            }}
+                                                            className="text-xs text-primary font-bold hover:underline"
+                                                        >
+                                                            📋 Copy
+                                                        </button>
+                                                    </div>
+                                                    <div className="font-mono font-bold text-lg tracking-wider text-primary border-2 border-dashed border-primary rounded px-3 py-2 text-center bg-orange-50">
+                                                        {promo.promoCode}
+                                                    </div>
+                                                </div>
+
+                                                {/* Details */}
+                                                <div className="flex gap-4 text-xs text-gray-600 mb-4">
+                                                    {promo.minOrderValue > 0 && (
+                                                        <div className="flex items-center gap-1">
+                                                            <span className="font-semibold">Min Order:</span>
+                                                            <span>₹{promo.minOrderValue}</span>
+                                                        </div>
+                                                    )}
+                                                    {promo.maxUses > 0 && (
+                                                        <div className="flex items-center gap-1">
+                                                            <span className="font-semibold">Used:</span>
+                                                            <span>{promo.currentUses || 0}/{promo.maxUses}</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                {promo.endDate && (
+                                                    <div className="text-xs text-gray-500 mb-4">
+                                                        Valid till: {new Date(promo.endDate).toLocaleDateString()}
+                                                    </div>
+                                                )}
+
+                                                {/* Action Buttons */}
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    <button
+                                                        onClick={handleGetDirections}
+                                                        className="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-bold py-2.5 px-4 rounded-lg transition-colors"
+                                                    >
+                                                        <Navigation size={16} />
+                                                        Directions
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleShare(promo)}
+                                                        className="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white text-sm font-bold py-2.5 px-4 rounded-lg transition-colors"
+                                                    >
+                                                        <Share2 size={16} />
+                                                        Share
+                                                    </button>
+                                                </div>
+
+                                                {/* How to Redeem */}
+                                                <div className="mt-4 pt-4 border-t border-orange-200">
+                                                    <p className="text-xs font-semibold text-gray-700 mb-2">📋 How to Redeem:</p>
+                                                    <ol className="text-xs text-gray-600 space-y-1 list-decimal list-inside">
+                                                        <li>Visit {vendor?.name}</li>
+                                                        <li>Show code: <span className="font-mono font-bold text-primary">{promo.promoCode}</span></li>
+                                                        <li>Mention "StreetBite offer"</li>
+                                                        <li>Enjoy your discount!</li>
+                                                    </ol>
+                                                </div>
+                                            </div>
+                                        )
+                                    })}
+                                </div>
+                            )
+                        })()}
+                    </div>
+                )}
+
                 {activeTab === 'about' && (
                     <div className="grid md:grid-cols-3 gap-8">
                         <div className="md:col-span-2 space-y-8">
                             <div className="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm">
-                                <h3 className="text-2xl font-bold mb-4 flex items-center gap-3">
-                                    <span className="h-1 w-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-full"></span>
-                                    About {vendor.name}
+                                <h3 className="text-2xl font-black text-gray-900 mb-6 flex items-center gap-3">
+                                    <span className="h-8 w-1 bg-gradient-to-b from-orange-500 to-red-500 rounded-full"></span>
+                                    Our Story
                                 </h3>
-                                <p className="text-gray-700 leading-relaxed text-lg">
-                                    {vendor.description || 'No description available for this vendor yet.'}
-                                </p>
+                                <div className="prose prose-lg text-gray-700 leading-relaxed">
+                                    <p>
+                                        {vendor.description || 'Welcome to our street food stall! We take pride in serving authentic, delicious, and hygienic food to our customers. Our recipes have been passed down through generations, ensuring you get the true taste of tradition in every bite.'}
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Features Section */}
+                            <div className="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm">
+                                <h3 className="text-xl font-bold text-gray-900 mb-6">Why Choose Us?</h3>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="flex items-center gap-3 p-3 rounded-xl bg-green-50 text-green-800">
+                                        <ShieldCheck className="w-6 h-6" />
+                                        <span className="font-semibold">Hygienic Preparation</span>
+                                    </div>
+                                    <div className="flex items-center gap-3 p-3 rounded-xl bg-blue-50 text-blue-800">
+                                        <CreditCard className="w-6 h-6" />
+                                        <span className="font-semibold">Digital Payments</span>
+                                    </div>
+                                    <div className="flex items-center gap-3 p-3 rounded-xl bg-orange-50 text-orange-800">
+                                        <Utensils className="w-6 h-6" />
+                                        <span className="font-semibold">Fresh Ingredients</span>
+                                    </div>
+                                    <div className="flex items-center gap-3 p-3 rounded-xl bg-purple-50 text-purple-800">
+                                        <Star className="w-6 h-6" />
+                                        <span className="font-semibold">Top Rated Vendor</span>
+                                    </div>
+                                </div>
                             </div>
 
                             {/* Gallery Section */}
                             {vendor.galleryImages && vendor.galleryImages.length > 0 && (
                                 <div>
-                                    <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
-                                        <span className="h-1 w-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-full"></span>
-                                        Gallery
+                                    <h3 className="text-2xl font-black text-gray-900 mb-6 flex items-center gap-3">
+                                        <span className="h-8 w-1 bg-gradient-to-b from-orange-500 to-red-500 rounded-full"></span>
+                                        Photo Gallery
                                     </h3>
                                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                                         {vendor.galleryImages.map((imgUrl, i) => (
-                                            <div key={i} className="aspect-square bg-gray-100 rounded-2xl overflow-hidden group cursor-pointer">
+                                            <div key={i} className="aspect-square bg-gray-100 rounded-2xl overflow-hidden group cursor-pointer shadow-sm hover:shadow-md transition-all">
                                                 <img
                                                     src={imgUrl}
                                                     alt={`Gallery ${i + 1}`}
-                                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                                                     onError={(e) => {
                                                         (e.target as HTMLImageElement).src = '/placeholder-food.jpg'
                                                     }}
@@ -510,40 +814,62 @@ export default function VendorDetailsPage() {
                         </div>
 
                         <div className="space-y-6">
-                            <div className="bg-gradient-to-br from-orange-50 to-red-50 rounded-2xl p-6 border border-orange-100">
-                                <h3 className="font-bold text-lg mb-6">Contact & Hours</h3>
-                                <div className="space-y-5">
-                                    <div className="flex items-start gap-4">
-                                        <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center flex-shrink-0 shadow-sm">
-                                            <MapPin className="text-primary" size={20} />
+                            <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm sticky top-24">
+                                <h3 className="font-bold text-lg mb-6 border-b pb-4">Contact & Location</h3>
+                                <div className="space-y-6">
+                                    {/* Mini Map Visual */}
+                                    <div className="relative h-48 bg-gray-100 rounded-xl overflow-hidden group cursor-pointer" onClick={handleGetDirections}>
+                                        <div className="absolute inset-0 bg-[url('https://maps.googleapis.com/maps/api/staticmap?center=40.714728,-73.998672&zoom=12&size=400x400&key=YOUR_API_KEY')] bg-cover bg-center opacity-50 group-hover:opacity-75 transition-opacity" />
+                                        <div className="absolute inset-0 flex items-center justify-center bg-black/5 group-hover:bg-black/0 transition-colors">
+                                            <div className="bg-white p-3 rounded-full shadow-lg animate-bounce">
+                                                <MapPin className="text-red-500 w-6 h-6 fill-current" />
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p className="font-semibold text-sm text-gray-900 mb-1">Address</p>
-                                            <p className="text-sm text-gray-600 leading-relaxed">{vendor.address || 'Location on map'}</p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-start gap-4">
-                                        <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center flex-shrink-0 shadow-sm">
-                                            <Clock className="text-primary" size={20} />
-                                        </div>
-                                        <div>
-                                            <p className="font-semibold text-sm text-gray-900 mb-1">Opening Hours</p>
-                                            <p className="text-sm text-gray-600">{vendor.hours || 'Not specified'}</p>
+                                        <div className="absolute bottom-3 left-3 right-3">
+                                            <Button size="sm" className="w-full bg-white text-gray-900 hover:bg-gray-50 shadow-md">
+                                                View on Map
+                                            </Button>
                                         </div>
                                     </div>
-                                    {vendor.phone && (
+
+                                    <div className="space-y-5">
                                         <div className="flex items-start gap-4">
-                                            <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center flex-shrink-0 shadow-sm">
-                                                <Phone className="text-primary" size={20} />
+                                            <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center flex-shrink-0">
+                                                <MapPin className="text-orange-600" size={20} />
                                             </div>
                                             <div>
-                                                <p className="font-semibold text-sm text-gray-900 mb-1">Phone</p>
-                                                <a href={`tel:${vendor.phone}`} className="text-sm text-primary hover:underline font-medium">
-                                                    {vendor.phone}
-                                                </a>
+                                                <p className="font-semibold text-sm text-gray-900 mb-1">Address</p>
+                                                <p className="text-sm text-gray-600 leading-relaxed">{vendor.address || 'Location on map'}</p>
                                             </div>
                                         </div>
-                                    )}
+                                        <div className="flex items-start gap-4">
+                                            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
+                                                <Clock className="text-blue-600" size={20} />
+                                            </div>
+                                            <div>
+                                                <p className="font-semibold text-sm text-gray-900 mb-1">Opening Hours</p>
+                                                <p className="text-sm text-gray-600">{vendor.hours || '10:00 AM - 10:00 PM'}</p>
+                                            </div>
+                                        </div>
+                                        {vendor.phone && (
+                                            <div className="flex items-start gap-4">
+                                                <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center flex-shrink-0">
+                                                    <Phone className="text-green-600" size={20} />
+                                                </div>
+                                                <div>
+                                                    <p className="font-semibold text-sm text-gray-900 mb-1">Phone</p>
+                                                    <a href={`tel:${vendor.phone}`} className="text-sm text-primary hover:underline font-medium">
+                                                        {vendor.phone}
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <Button className="w-full gap-2 font-bold shadow-lg shadow-primary/20" size="lg" onClick={handleGetDirections}>
+                                        <Navigation size={18} />
+                                        Get Directions
+                                    </Button>
                                 </div>
                             </div>
                         </div>
@@ -679,10 +1005,11 @@ export default function VendorDetailsPage() {
                             </div>
                         )}
                     </div>
-                )}
-            </div>
+                )
+                }
+            </div >
 
             <Footer />
-        </div>
+        </div >
     )
 }

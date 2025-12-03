@@ -58,7 +58,7 @@ export function useUserLocation() {
   const readCookie = useCallback((): UserLocation => {
     const raw = getCookie(COOKIE_NAME)
     if (!raw) return null
-    
+
     try {
       const parsed = JSON.parse(raw)
       // Validate structure: { lat: number, lng: number }
@@ -97,48 +97,57 @@ export function useUserLocation() {
   /**
    * Request geolocation from browser (only called once if no cookie)
    */
-  const requestGeolocation = useCallback(() => {
-    if (!('geolocation' in navigator)) {
-      setError('Geolocation not available in this browser')
-      setLoading(false)
-      return
-    }
-
-    const options: PositionOptions = {
-      enableHighAccuracy: false, // Use less accurate but faster method
-      maximumAge: 0, // Don't use cached position
-      timeout: 10000 // 10 second timeout
-    }
-
-    const onSuccess = (pos: GeolocationPosition) => {
-      const loc = {
-        lat: pos.coords.latitude,
-        lng: pos.coords.longitude
+  /**
+   * Request geolocation from browser (only called once if no cookie)
+   */
+  const requestGeolocation = useCallback((): Promise<string | null> => {
+    return new Promise((resolve) => {
+      if (!('geolocation' in navigator)) {
+        const msg = 'Geolocation not available in this browser'
+        setError(msg)
+        setLoading(false)
+        resolve(msg)
+        return
       }
-      // Store in cookie immediately to avoid future API calls
-      storeCookie(loc)
-      setLoading(false)
-      setError(null)
-    }
 
-    const onError = (err: GeolocationPositionError) => {
-      let errorMessage = 'Failed to get location'
-      switch (err.code) {
-        case err.PERMISSION_DENIED:
-          errorMessage = 'Location permission denied'
-          break
-        case err.POSITION_UNAVAILABLE:
-          errorMessage = 'Location information unavailable'
-          break
-        case err.TIMEOUT:
-          errorMessage = 'Location request timed out'
-          break
+      const options: PositionOptions = {
+        enableHighAccuracy: false, // Use less accurate but faster method
+        maximumAge: 0, // Don't use cached position
+        timeout: 10000 // 10 second timeout
       }
-      setError(errorMessage)
-      setLoading(false)
-    }
 
-    navigator.geolocation.getCurrentPosition(onSuccess, onError, options)
+      const onSuccess = (pos: GeolocationPosition) => {
+        const loc = {
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude
+        }
+        // Store in cookie immediately to avoid future API calls
+        storeCookie(loc)
+        setLoading(false)
+        setError(null)
+        resolve(null) // Success (no error)
+      }
+
+      const onError = (err: GeolocationPositionError) => {
+        let errorMessage = 'Failed to get location'
+        switch (err.code) {
+          case err.PERMISSION_DENIED:
+            errorMessage = 'Location permission denied'
+            break
+          case err.POSITION_UNAVAILABLE:
+            errorMessage = 'Location information unavailable'
+            break
+          case err.TIMEOUT:
+            errorMessage = 'Location request timed out'
+            break
+        }
+        setError(errorMessage)
+        setLoading(false)
+        resolve(errorMessage)
+      }
+
+      navigator.geolocation.getCurrentPosition(onSuccess, onError, options)
+    })
   }, [storeCookie])
 
   /**
@@ -150,13 +159,13 @@ export function useUserLocation() {
     setError(null)
 
     // Step 1: Check cookie first (avoids geolocation API call)
-    const existing = readCookie()
-    if (existing) {
-      // Cookie exists and is valid - use it immediately
-      setLocation(existing)
-      setLoading(false)
-      return
-    }
+    // const existing = readCookie()
+    // if (existing) {
+    //   // Cookie exists and is valid - use it immediately
+    //   setLocation(existing)
+    //   setLoading(false)
+    //   return
+    // }
 
     // Step 2: No cookie - request geolocation ONCE
     requestGeolocation()
@@ -174,6 +183,7 @@ export function useUserLocation() {
     location,
     loading,
     error,
-    setUserLocation
+    setUserLocation,
+    requestGeolocation
   }
 }

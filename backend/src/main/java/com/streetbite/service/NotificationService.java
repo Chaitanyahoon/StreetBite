@@ -54,7 +54,7 @@ public class NotificationService {
                 messageBuilder.putAllData(data);
             }
 
-            BatchResponse response = FirebaseMessaging.getInstance().sendMulticast(messageBuilder.build());
+            BatchResponse response = FirebaseMessaging.getInstance().sendEachForMulticast(messageBuilder.build());
             System.out.println("✅ Sent " + response.getSuccessCount() + " messages successfully");
 
             if (response.getFailureCount() > 0) {

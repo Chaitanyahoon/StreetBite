@@ -24,7 +24,7 @@ public class PromotionService {
     }
 
     public List<Promotion> getActivePromotionsByVendor(Long vendorId) {
-        return promotionRepository.findByVendorIdAndIsActiveTrueAndEndDateAfter(vendorId, LocalDateTime.now());
+        return promotionRepository.findByVendorIdAndIsActiveTrue(vendorId);
     }
 
     public Optional<Promotion> getPromotionById(Long id) {
@@ -37,5 +37,9 @@ public class PromotionService {
 
     public List<Promotion> getAllPromotions() {
         return promotionRepository.findAll();
+    }
+
+    public List<Promotion> getAllActivePromotions() {
+        return promotionRepository.findByIsActiveTrue();
     }
 }

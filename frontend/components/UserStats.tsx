@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Trophy, Flame, Star, TrendingUp, UtensilsCrossed } from "lucide-react";
 import { RESULTS } from "./FoodPersonalityQuiz";
+import { useGamification } from "@/context/GamificationContext";
 
 interface UserStats {
     xp: number;
@@ -13,9 +14,8 @@ interface UserStats {
 }
 
 export function UserStats() {
+    const { xp, level, rank, displayName, streak } = useGamification();
     const [archetype, setArchetype] = useState<keyof typeof RESULTS | null>(null);
-    const [stats, setStats] = useState<UserStats | null>(null);
-    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const loadArchetype = () => {
@@ -34,41 +34,12 @@ export function UserStats() {
         return () => window.removeEventListener("storage", loadArchetype);
     }, []);
 
-    useEffect(() => {
-        fetchUserStats();
-    }, []);
-
-    const fetchUserStats = async () => {
-        try {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                setLoading(false);
-                return;
-            }
-
-            const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/gamification/stats`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                setStats(data);
-            }
-        } catch (error) {
-            console.error("Failed to fetch user stats:", error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const statItems = stats ? [
-        { label: "Total XP", value: stats.xp.toLocaleString(), icon: Trophy, color: "text-yellow-500" },
-        { label: "Streak", value: "0 days", icon: Flame, color: "text-orange-500" },
+    const statItems = [
+        { label: "Total XP", value: xp.toLocaleString(), icon: Trophy, color: "text-yellow-500" },
+        { label: "Streak", value: `${streak} days`, icon: Flame, color: "text-orange-500" },
         { label: "Badges", value: "0", icon: Star, color: "text-purple-500" },
-        { label: "Rank", value: `#${stats.rank}`, icon: TrendingUp, color: "text-blue-500" },
-    ] : [];
+        { label: "Rank", value: `#${rank || '-'}`, icon: TrendingUp, color: "text-blue-500" },
+    ];
 
     return (
         <Card className="bg-[#1a103c] border-none shadow-xl relative overflow-hidden ring-1 ring-white/10">
@@ -87,10 +58,21 @@ export function UserStats() {
                         )}
                     </div>
                     <h3 className="font-black text-xl text-white tracking-tight">
-                        {loading ? "Loading..." : stats?.displayName || "Your Stats"}
+                        {displayName || "Your Stats"}
                     </h3>
                     <p className="text-xs text-indigo-200 uppercase tracking-widest font-medium mt-1">
-                        {stats ? `Level ${stats.level} Foodie` : "Level 1 Foodie"}
+                        {`Level ${level} Foodie`}
+                    </p>
+
+                    {/* Progress Bar */}
+                    <div className="w-32 mx-auto mt-2 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                        <div
+                            className="h-full bg-gradient-to-r from-orange-400 to-pink-500 rounded-full transition-all duration-1000"
+                            style={{ width: `${xp % 100}%` }}
+                        />
+                    </div>
+                    <p className="text-[10px] text-indigo-300 mt-1">
+                        {`${100 - (xp % 100)} XP to next level`}
                     </p>
 
                     {archetype && (
@@ -105,24 +87,18 @@ export function UserStats() {
                     )}
                 </div>
 
-                {loading ? (
-                    <div className="text-center text-white/50 text-sm py-4">Loading stats...</div>
-                ) : stats ? (
-                    <div className="grid grid-cols-2 gap-3">
-                        {statItems.map((stat, index) => {
-                            const Icon = stat.icon;
-                            return (
-                                <div key={index} className="bg-white/5 p-3 rounded-xl text-center border border-white/5 hover:bg-white/10 transition-colors backdrop-blur-sm group">
-                                    <Icon className={`w-5 h-5 mx-auto mb-2 ${stat.color} group-hover:scale-110 transition-transform duration-300`} />
-                                    <div className="text-lg font-black text-white">{stat.value}</div>
-                                    <div className="text-[10px] text-indigo-200 uppercase tracking-wider font-medium">{stat.label}</div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                ) : (
-                    <div className="text-center text-white/50 text-sm py-4">Log in to see your stats</div>
-                )}
+                <div className="grid grid-cols-2 gap-3">
+                    {statItems.map((stat, index) => {
+                        const Icon = stat.icon;
+                        return (
+                            <div key={index} className="bg-white/5 p-3 rounded-xl text-center border border-white/5 hover:bg-white/10 transition-colors backdrop-blur-sm group">
+                                <Icon className={`w-5 h-5 mx-auto mb-2 ${stat.color} group-hover:scale-110 transition-transform duration-300`} />
+                                <div className="text-lg font-black text-white">{stat.value}</div>
+                                <div className="text-[10px] text-indigo-200 uppercase tracking-wider font-medium">{stat.label}</div>
+                            </div>
+                        );
+                    })}
+                </div>
             </CardContent>
         </Card>
     );

@@ -12,9 +12,8 @@ public class Promotion {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "vendor_id", nullable = false)
-    @com.fasterxml.jackson.annotation.JsonIgnore
     private Vendor vendor;
 
     private String title;
@@ -22,12 +21,24 @@ public class Promotion {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @Column(name = "promo_code", unique = true)
+    private String promoCode;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "discount_type")
     private DiscountType discountType;
 
     @Column(name = "discount_value")
     private BigDecimal discountValue;
+
+    @Column(name = "min_order_value")
+    private BigDecimal minOrderValue;
+
+    @Column(name = "max_uses")
+    private Integer maxUses;
+
+    @Column(name = "current_uses")
+    private Integer currentUses = 0;
 
     @Column(name = "start_date")
     private LocalDateTime startDate;
@@ -60,6 +71,7 @@ public class Promotion {
     }
 
     // Getters and Setters
+    @com.fasterxml.jackson.annotation.JsonProperty("id")
     public Long getId() {
         return id;
     }
@@ -92,6 +104,14 @@ public class Promotion {
         this.description = description;
     }
 
+    public String getPromoCode() {
+        return promoCode;
+    }
+
+    public void setPromoCode(String promoCode) {
+        this.promoCode = promoCode;
+    }
+
     public DiscountType getDiscountType() {
         return discountType;
     }
@@ -106,6 +126,30 @@ public class Promotion {
 
     public void setDiscountValue(BigDecimal discountValue) {
         this.discountValue = discountValue;
+    }
+
+    public BigDecimal getMinOrderValue() {
+        return minOrderValue;
+    }
+
+    public void setMinOrderValue(BigDecimal minOrderValue) {
+        this.minOrderValue = minOrderValue;
+    }
+
+    public Integer getMaxUses() {
+        return maxUses;
+    }
+
+    public void setMaxUses(Integer maxUses) {
+        this.maxUses = maxUses;
+    }
+
+    public Integer getCurrentUses() {
+        return currentUses;
+    }
+
+    public void setCurrentUses(Integer currentUses) {
+        this.currentUses = currentUses;
     }
 
     public LocalDateTime getStartDate() {
@@ -124,6 +168,7 @@ public class Promotion {
         this.endDate = endDate;
     }
 
+    @com.fasterxml.jackson.annotation.JsonProperty("active")
     public boolean isActive() {
         return isActive;
     }

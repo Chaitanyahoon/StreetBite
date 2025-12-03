@@ -8,8 +8,8 @@ Write-Host "==========================================================" -Foregro
 Write-Host ""
 
 # Set Google Maps API Key
-$env:GOOGLE_MAPS_API_KEY = "AIzaSyBSYt6G0FIxdN4IGwQij78gxe-DMIjDBoU"
-$env:NEXT_PUBLIC_GOOGLE_MAPS_API_KEY = "AIzaSyBSYt6G0FIxdN4IGwQij78gxe-DMIjDBoU"
+$env:GOOGLE_MAPS_API_KEY = "AIzaSyDw3ybS2HYFZuvDIkyZXUiyfJOxBjLw9t8"
+$env:NEXT_PUBLIC_GOOGLE_MAPS_API_KEY = "AIzaSyDw3ybS2HYFZuvDIkyZXUiyfJOxBjLw9t8"
 Write-Host "Google Maps API key configured" -ForegroundColor Green
 
 # Check for DB Password
@@ -53,7 +53,7 @@ $firebaseCred = if (Test-Path $firebaseKeyPath) { $firebaseKeyPath } else { $env
 # Start backend in background
 Write-Host "Starting Backend (Spring Boot)..." -ForegroundColor Cyan
 $backendJob = Start-Job -ScriptBlock {
-    $env:JAVA_HOME = "C:\Program Files\Java\jdk-22"
+    $env:JAVA_HOME = "C:\Program Files\Java\jdk-21"
     if ($using:firebaseCred) { $env:GOOGLE_APPLICATION_CREDENTIALS = $using:firebaseCred }
     if ($using:geocodeKey) { $env:GOOGLE_MAPS_API_KEY = $using:geocodeKey }
     if ($using:dbPassword) { $env:DB_PASSWORD = $using:dbPassword }

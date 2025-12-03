@@ -6,6 +6,8 @@ import { Grid3x3, Trophy, RotateCcw, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 
+import { useGamification } from "@/context/GamificationContext";
+
 interface BingoItem {
     id: number;
     name: string;
@@ -42,6 +44,7 @@ const FOOD_ITEMS = [
 ];
 
 export function FoodBingo() {
+    const { performAction } = useGamification();
     const [grid, setGrid] = useState<BingoItem[]>([]);
     const [completedLines, setCompletedLines] = useState(0);
     const [totalXP, setTotalXP] = useState(0);
@@ -87,6 +90,9 @@ export function FoodBingo() {
             const newXP = totalXP + xpGained;
             setTotalXP(newXP);
             localStorage.setItem("bingoXP", newXP.toString());
+
+            // Award XP via backend
+            performAction('complete_challenge');
 
             // Show celebration and auto-hide
             setShowCelebration(true);
@@ -168,8 +174,8 @@ export function FoodBingo() {
                             whileTap={{ scale: 0.9 }}
                             onClick={() => toggleItem(item.id)}
                             className={`aspect-square flex flex-col items-center justify-center p-0.5 rounded-lg transition-all duration-200 relative overflow-hidden ${item.completed
-                                    ? "bg-emerald-500 shadow-inner ring-1 ring-emerald-600/20"
-                                    : "bg-white shadow-sm hover:shadow-md"
+                                ? "bg-emerald-500 shadow-inner ring-1 ring-emerald-600/20"
+                                : "bg-white shadow-sm hover:shadow-md"
                                 }`}
                         >
                             <span className={`text-base mb-0.5 filter transition-transform duration-300 ${item.completed ? "scale-110 drop-shadow-md" : "grayscale opacity-80"}`}>

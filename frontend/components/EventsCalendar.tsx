@@ -73,6 +73,39 @@ const SAMPLE_EVENTS: Event[] = [
         attendees: 800,
         description: "South Indian breakfast festival",
         emoji: "☕"
+    },
+    {
+        id: 6,
+        title: "Midnight Maggi Party",
+        date: new Date(2025, 11, 22),
+        time: "11:00 PM - 2:00 AM",
+        location: "Marine Drive, Mumbai",
+        type: "meetup",
+        attendees: 120,
+        description: "Late night Maggi and stories by the sea",
+        emoji: "🍜"
+    },
+    {
+        id: 7,
+        title: "Kebab & Biryani Night",
+        date: new Date(2025, 11, 25),
+        time: "7:00 PM - 11:00 PM",
+        location: "Lucknow Chowk",
+        type: "festival",
+        attendees: 1500,
+        description: "A royal feast of kebabs and biryanis",
+        emoji: "🍖"
+    },
+    {
+        id: 8,
+        title: "Vegan Street Food Tour",
+        date: new Date(2025, 11, 28),
+        time: "4:00 PM - 7:00 PM",
+        location: "Bandra, Mumbai",
+        type: "tour",
+        attendees: 25,
+        description: "Exploring the best vegan street eats",
+        emoji: "🥗"
     }
 ];
 
@@ -168,8 +201,8 @@ export function EventsCalendar() {
                                         key={day}
                                         onClick={() => hasEvents && setSelectedEvent(dayEvents[0])}
                                         className={`aspect-square rounded-lg border p-1 text-sm transition-all ${hasEvents
-                                                ? "border-indigo-300 bg-indigo-50 hover:bg-indigo-100 cursor-pointer"
-                                                : "border-gray-200 bg-white"
+                                            ? "border-indigo-300 bg-indigo-50 hover:bg-indigo-100 cursor-pointer"
+                                            : "border-gray-200 bg-white"
                                             }`}
                                     >
                                         <div className="font-medium">{day}</div>

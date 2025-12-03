@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Facebook, Instagram, Twitter, Mail, Phone, MapPin, Heart, ArrowRight, Sparkles } from 'lucide-react'
+import { Instagram, Twitter, Linkedin, Mail, Phone, MapPin, Heart, ArrowRight, Sparkles } from 'lucide-react'
 
 export function Footer() {
     const currentYear = new Date().getFullYear()
@@ -61,16 +61,7 @@ export function Footer() {
                         {/* Social Links with Premium Styling */}
                         <div className="flex gap-3">
                             <Link
-                                href="https://facebook.com"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                aria-label="Visit our Facebook page"
-                                className="group relative w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100 hover:from-blue-600 hover:to-blue-700 flex items-center justify-center text-blue-600 hover:text-white transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-blue-500/30 border border-blue-200 hover:border-blue-600"
-                            >
-                                <Facebook className="w-6 h-6 relative z-10" />
-                            </Link>
-                            <Link
-                                href="https://instagram.com"
+                                href="https://instagram.com/streetbiteeats"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 aria-label="Follow us on Instagram"
@@ -79,13 +70,22 @@ export function Footer() {
                                 <Instagram className="w-6 h-6 relative z-10" />
                             </Link>
                             <Link
-                                href="https://twitter.com"
+                                href="https://twitter.com/streetbiteeats"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 aria-label="Follow us on Twitter"
                                 className="group relative w-14 h-14 rounded-2xl bg-gradient-to-br from-sky-50 to-blue-100 hover:from-sky-400 hover:to-blue-600 flex items-center justify-center text-sky-600 hover:text-white transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-sky-500/30 border border-sky-200 hover:border-sky-500"
                             >
                                 <Twitter className="w-6 h-6 relative z-10" />
+                            </Link>
+                            <Link
+                                href="https://linkedin.com/company/streetbiteeats"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                aria-label="Follow us on LinkedIn"
+                                className="group relative w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100 hover:from-blue-600 hover:to-blue-700 flex items-center justify-center text-blue-600 hover:text-white transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-blue-500/30 border border-blue-200 hover:border-blue-600"
+                            >
+                                <Linkedin className="w-6 h-6 relative z-10" />
                             </Link>
                         </div>
                     </div>
