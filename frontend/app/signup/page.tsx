@@ -25,6 +25,8 @@ export default function SignUpPage() {
   const [passwordStrength, setPasswordStrength] = useState(0)
   const { location } = useUserLocation()
 
+  const [showUserExistsModal, setShowUserExistsModal] = useState(false)
+
   const handleContinue = () => {
     if (step === 1 && userType) {
       setStep(2)
@@ -56,6 +58,9 @@ export default function SignUpPage() {
       localStorage.setItem('token', response.token)
       localStorage.setItem('user', JSON.stringify(response.user))
 
+      // Notify other components (Navbar) of the update
+      window.dispatchEvent(new Event('user-updated'))
+
       // Redirect based on user type
       if (userType === 'vendor') {
         router.push('/vendor')
@@ -64,6 +69,13 @@ export default function SignUpPage() {
       }
     } catch (err: any) {
       console.error('Registration error:', err)
+
+      // Handle User Already Exists (409)
+      if (err.response?.status === 409 || err.message?.includes('409')) {
+        setShowUserExistsModal(true)
+        setIsLoading(false)
+        return
+      }
 
       let errorMessage = 'Registration failed. Please try again.'
 
@@ -83,6 +95,35 @@ export default function SignUpPage() {
       {/* Animated Background */}
       <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl animate-float -z-10" />
       <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-secondary/5 rounded-full blur-3xl animate-float -z-10" style={{ animationDelay: '2s' }} />
+
+      {/* User Exists Modal */}
+      {showUserExistsModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-card p-8 rounded-3xl shadow-2xl max-w-md w-full mx-4 text-center animate-scale-in border border-primary/20">
+            <div className="w-20 h-20 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Sparkles size={40} />
+            </div>
+            <h3 className="text-2xl font-bold mb-2">Account Already Exists</h3>
+            <p className="text-muted-foreground mb-8">
+              It looks like <strong>{formData.email}</strong> is already registered with us. Would you like to sign in instead?
+            </p>
+            <div className="flex flex-col gap-3">
+              <Link href="/signin">
+                <Button className="w-full btn-gradient h-12 rounded-xl text-lg font-semibold shadow-lg hover-lift">
+                  Sign In
+                </Button>
+              </Link>
+              <Button
+                variant="ghost"
+                onClick={() => setShowUserExistsModal(false)}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Back button */}
       <div className="p-4 sm:p-6 relative z-10">

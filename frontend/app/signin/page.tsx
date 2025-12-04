@@ -15,6 +15,11 @@ export default function SignInPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  // Forgot Password State
+  const [showForgotPassword, setShowForgotPassword] = useState(false)
+  const [resetEmail, setResetEmail] = useState('')
+  const [resetStatus, setResetStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
+
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
@@ -30,6 +35,9 @@ export default function SignInPage() {
       // Store JWT token and user info
       localStorage.setItem('token', response.token)
       localStorage.setItem('user', JSON.stringify(response.user))
+
+      // Notify other components (Navbar) of the update
+      window.dispatchEvent(new Event('user-updated'))
 
       // Redirect based on user role
       const role = response.user.role?.toUpperCase()
@@ -57,6 +65,17 @@ export default function SignInPage() {
     }
   }
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setResetStatus('sending')
+    try {
+      await authApi.forgotPassword(resetEmail)
+      setResetStatus('sent')
+    } catch (err) {
+      setResetStatus('error')
+    }
+  }
+
   return (
     <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
       {/* Animated Background */}
@@ -80,83 +99,169 @@ export default function SignInPage() {
               <Logo />
             </div>
             <h1 className="text-3xl font-bold mb-2">
-              <span className="text-shine-amber">Welcome Back</span>
+              <span className="text-shine-amber">
+                {showForgotPassword ? 'Reset Password' : 'Welcome Back'}
+              </span>
             </h1>
-            <p className="text-muted-foreground">Sign in to discover amazing street food near you</p>
+            <p className="text-muted-foreground">
+              {showForgotPassword
+                ? 'Enter your email to receive a reset link'
+                : 'Sign in to discover amazing street food near you'}
+            </p>
           </div>
 
-          {/* Form */}
-          <form onSubmit={handleSignIn} className="space-y-6 glass rounded-3xl shadow-elevated p-8 border border-white/20">
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm animate-fade-in flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-red-500" />
-                {error}
-              </div>
-            )}
-
-            {/* Email Input */}
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-foreground ml-1">Email Address</label>
-              <div className="relative group">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-primary/60 group-hover:text-primary transition-colors size-5" />
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
-                  className="w-full pl-12 pr-4 py-3.5 border-2 border-primary/10 rounded-xl focus:outline-none focus:border-primary bg-white/50 transition-all hover:bg-white/80"
-                  required
-                />
-              </div>
-            </div>
-
-            {/* Password Input */}
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-foreground ml-1">Password</label>
-              <div className="relative group">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-primary/60 group-hover:text-primary transition-colors size-5" />
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
-                  className="w-full pl-12 pr-4 py-3.5 border-2 border-primary/10 rounded-xl focus:outline-none focus:border-primary bg-white/50 transition-all hover:bg-white/80"
-                  required
-                />
-              </div>
-            </div>
-
-            {/* Sign In Button */}
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="w-full btn-gradient h-12 rounded-xl text-lg font-semibold shadow-lg hover-lift hover-glow disabled:opacity-50 disabled:hover:transform-none"
-            >
-              {isLoading ? (
-                <span className="flex items-center gap-2">
-                  <span className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
-                  Signing In...
-                </span>
+          {showForgotPassword ? (
+            /* Forgot Password Form */
+            <form onSubmit={handleForgotPassword} className="space-y-6 glass rounded-3xl shadow-elevated p-8 border border-white/20">
+              {resetStatus === 'sent' ? (
+                <div className="text-center space-y-4">
+                  <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto">
+                    <Mail size={32} />
+                  </div>
+                  <div className="space-y-2">
+                    <h3 className="text-xl font-semibold text-foreground">Check your email</h3>
+                    <p className="text-muted-foreground text-sm">
+                      We have sent a password reset link to <span className="font-medium text-foreground">{resetEmail}</span>
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full mt-4"
+                    onClick={() => {
+                      setShowForgotPassword(false)
+                      setResetStatus('idle')
+                      setResetEmail('')
+                    }}
+                  >
+                    Back to Sign In
+                  </Button>
+                </div>
               ) : (
-                'Sign In'
+                <>
+                  {resetStatus === 'error' && (
+                    <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-red-500" />
+                      Failed to send reset link. Please try again.
+                    </div>
+                  )}
+
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-foreground ml-1">Email Address</label>
+                    <div className="relative group">
+                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-primary/60 group-hover:text-primary transition-colors size-5" />
+                      <input
+                        type="email"
+                        value={resetEmail}
+                        onChange={(e) => setResetEmail(e.target.value)}
+                        placeholder="you@example.com"
+                        className="w-full pl-12 pr-4 py-3.5 border-2 border-primary/10 rounded-xl focus:outline-none focus:border-primary bg-white/50 transition-all hover:bg-white/80"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <Button
+                    type="submit"
+                    disabled={resetStatus === 'sending'}
+                    className="w-full btn-gradient h-12 rounded-xl text-lg font-semibold shadow-lg hover-lift hover-glow disabled:opacity-50"
+                  >
+                    {resetStatus === 'sending' ? 'Sending...' : 'Send Reset Link'}
+                  </Button>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowForgotPassword(false)}
+                    className="w-full text-sm text-muted-foreground hover:text-primary transition-colors font-medium"
+                  >
+                    Back to Sign In
+                  </button>
+                </>
               )}
-            </Button>
+            </form>
+          ) : (
+            /* Login Form */
+            <form onSubmit={handleSignIn} className="space-y-6 glass rounded-3xl shadow-elevated p-8 border border-white/20">
+              {error && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm animate-fade-in flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-red-500" />
+                  {error}
+                </div>
+              )}
 
-            {/* Divider */}
-            <div className="flex items-center gap-3 my-6">
-              <div className="flex-1 h-px bg-primary/10" />
-              <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">OR</span>
-              <div className="flex-1 h-px bg-primary/10" />
-            </div>
+              {/* Email Input */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-foreground ml-1">Email Address</label>
+                <div className="relative group">
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-primary/60 group-hover:text-primary transition-colors size-5" />
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="you@example.com"
+                    className="w-full pl-12 pr-4 py-3.5 border-2 border-primary/10 rounded-xl focus:outline-none focus:border-primary bg-white/50 transition-all hover:bg-white/80"
+                    required
+                  />
+                </div>
+              </div>
 
-            {/* Sign Up Link */}
-            <p className="text-center text-sm text-muted-foreground">
-              Don't have an account?{' '}
-              <Link href="/signup" className="text-primary hover:text-primary/80 font-bold hover:underline decoration-2 underline-offset-4">
-                Sign Up
-              </Link>
-            </p>
-          </form>
+              {/* Password Input */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-foreground ml-1">Password</label>
+                <div className="relative group">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-primary/60 group-hover:text-primary transition-colors size-5" />
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Enter your password"
+                    className="w-full pl-12 pr-4 py-3.5 border-2 border-primary/10 rounded-xl focus:outline-none focus:border-primary bg-white/50 transition-all hover:bg-white/80"
+                    required
+                  />
+                </div>
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setShowForgotPassword(true)}
+                    className="text-sm text-primary hover:text-primary/80 font-medium hover:underline transition-all"
+                  >
+                    Forgot Password?
+                  </button>
+                </div>
+              </div>
+
+              {/* Sign In Button */}
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="w-full btn-gradient h-12 rounded-xl text-lg font-semibold shadow-lg hover-lift hover-glow disabled:opacity-50 disabled:hover:transform-none"
+              >
+                {isLoading ? (
+                  <span className="flex items-center gap-2">
+                    <span className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+                    Signing In...
+                  </span>
+                ) : (
+                  'Sign In'
+                )}
+              </Button>
+
+              {/* Divider */}
+              <div className="flex items-center gap-3 my-6">
+                <div className="flex-1 h-px bg-primary/10" />
+                <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">OR</span>
+                <div className="flex-1 h-px bg-primary/10" />
+              </div>
+
+              {/* Sign Up Link */}
+              <p className="text-center text-sm text-muted-foreground">
+                Don't have an account?{' '}
+                <Link href="/signup" className="text-primary hover:text-primary/80 font-bold hover:underline decoration-2 underline-offset-4">
+                  Sign Up
+                </Link>
+              </p>
+            </form>
+          )}
         </div>
       </div>
     </div>

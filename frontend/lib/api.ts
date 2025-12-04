@@ -58,6 +58,8 @@ export const authApi = {
   login: (data: any) => api.post('/auth/login', data) as Promise<any>,
   getUser: (id: string) => api.get(`/auth/user/${id}`) as Promise<any>,
   getUserByUid: (uid: string) => api.get(`/auth/user/uid/${uid}`) as Promise<any>,
+  forgotPassword: (email: string) => api.post('/auth/forgot-password', { email }) as Promise<any>,
+  resetPassword: (data: any) => api.post('/auth/reset-password', data) as Promise<any>,
 };
 
 export const userApi = {
