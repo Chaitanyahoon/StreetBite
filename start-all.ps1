@@ -8,8 +8,8 @@ Write-Host "==========================================================" -Foregro
 Write-Host ""
 
 # Set Google Maps API Key
-$env:GOOGLE_MAPS_API_KEY = "AIzaSyDw3ybS2HYFZuvDIkyZXUiyfJOxBjLw9t8"
-$env:NEXT_PUBLIC_GOOGLE_MAPS_API_KEY = "AIzaSyDw3ybS2HYFZuvDIkyZXUiyfJOxBjLw9t8"
+$env:GOOGLE_MAPS_API_KEY = "AIzaSyB17r6uTSS55RZVTOSoHpQwxxGsUWwpeUc"
+$env:NEXT_PUBLIC_GOOGLE_MAPS_API_KEY = "AIzaSyB17r6uTSS55RZVTOSoHpQwxxGsUWwpeUc"
 Write-Host "Google Maps API key configured" -ForegroundColor Green
 
 # Check for DB Password
@@ -81,7 +81,7 @@ Write-Host "===========================================================" -Foregr
 Write-Host "  Servers are starting in the background..." -ForegroundColor White
 Write-Host ""
 Write-Host "  Frontend: http://localhost:3000" -ForegroundColor Green
-Write-Host "  Backend:  http://localhost:8080" -ForegroundColor Green
+Write-Host "  Backend:  http://localhost:8081" -ForegroundColor Green
 Write-Host ""
 Write-Host "  Waiting for servers to be ready..." -ForegroundColor Yellow
 Write-Host "===========================================================" -ForegroundColor Cyan
@@ -98,7 +98,7 @@ while ($waited -lt $maxWait -and (-not $backendReady -or -not $frontendReady)) {
     $waited += 2
     
     if (-not $backendReady) {
-        $backendReady = Test-NetConnection -ComputerName localhost -Port 8080 -InformationLevel Quiet -WarningAction SilentlyContinue
+        $backendReady = Test-NetConnection -ComputerName localhost -Port 8081 -InformationLevel Quiet -WarningAction SilentlyContinue
         if ($backendReady) {
             Write-Host "Backend is ready!" -ForegroundColor Green
         }

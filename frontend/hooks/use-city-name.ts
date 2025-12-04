@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useUserLocation } from '@/lib/useUserLocation'
+import { GOOGLE_MAPS_API_KEY } from '@/lib/maps-config'
 
 export function useCityName() {
     const { location } = useUserLocation()
@@ -19,7 +20,7 @@ export function useCityName() {
             const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
 
             try {
-                const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+                const apiKey = GOOGLE_MAPS_API_KEY
                 if (!apiKey) {
                     console.warn('Google Maps API key not found')
                     setLoading(false) // Reset loading before early return

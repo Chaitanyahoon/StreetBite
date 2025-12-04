@@ -1,4 +1,6 @@
 import type { Metadata } from 'next'
+import Script from 'next/script'
+import { GOOGLE_MAPS_API_KEY } from '@/lib/maps-config'
 import { Outfit, Inter } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
@@ -45,6 +47,10 @@ export default function RootLayout({
           </NotificationProvider>
         </GamificationProvider>
         <Analytics />
+        <Script
+          src={`https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places`}
+          strategy="beforeInteractive"
+        />
       </body>
     </html>
   )

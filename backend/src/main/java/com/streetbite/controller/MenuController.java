@@ -30,12 +30,97 @@ public class MenuController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createMenuItem(@RequestBody MenuItem menuItem) {
+    public ResponseEntity<?> createMenuItem(@RequestBody MenuItemRequest request) {
         try {
-            MenuItem savedItem = menuService.saveMenuItem(menuItem);
+            MenuItem menuItem = new MenuItem();
+            menuItem.setName(request.getName());
+            menuItem.setDescription(request.getDescription());
+            menuItem.setPrice(request.getPrice());
+            menuItem.setCategory(request.getCategory());
+            menuItem.setImageUrl(request.getImageUrl());
+            menuItem.setAvailable(request.isAvailable());
+            menuItem.setPreparationTime(request.getPreparationTime());
+
+            MenuItem savedItem = menuService.saveMenuItem(menuItem, request.getVendorId());
             return ResponseEntity.ok(savedItem);
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    public static class MenuItemRequest {
+        private String name;
+        private String description;
+        private java.math.BigDecimal price;
+        private String category;
+        private String imageUrl;
+        private boolean isAvailable;
+        private Long vendorId;
+        private Integer preparationTime;
+
+        // Getters and Setters
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
+        }
+
+        public java.math.BigDecimal getPrice() {
+            return price;
+        }
+
+        public void setPrice(java.math.BigDecimal price) {
+            this.price = price;
+        }
+
+        public String getCategory() {
+            return category;
+        }
+
+        public void setCategory(String category) {
+            this.category = category;
+        }
+
+        public String getImageUrl() {
+            return imageUrl;
+        }
+
+        public void setImageUrl(String imageUrl) {
+            this.imageUrl = imageUrl;
+        }
+
+        public boolean isAvailable() {
+            return isAvailable;
+        }
+
+        public void setAvailable(boolean available) {
+            isAvailable = available;
+        }
+
+        public Long getVendorId() {
+            return vendorId;
+        }
+
+        public void setVendorId(Long vendorId) {
+            this.vendorId = vendorId;
+        }
+
+        public Integer getPreparationTime() {
+            return preparationTime;
+        }
+
+        public void setPreparationTime(Integer preparationTime) {
+            this.preparationTime = preparationTime;
         }
     }
 

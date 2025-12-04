@@ -31,6 +31,9 @@ public class MenuItem {
     @Column(name = "is_available")
     private boolean isAvailable = true;
 
+    @Column(name = "preparation_time")
+    private Integer preparationTime;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
@@ -111,6 +114,14 @@ public class MenuItem {
 
     public void setAvailable(boolean available) {
         isAvailable = available;
+    }
+
+    public Integer getPreparationTime() {
+        return preparationTime;
+    }
+
+    public void setPreparationTime(Integer preparationTime) {
+        this.preparationTime = preparationTime;
     }
 
     public LocalDateTime getCreatedAt() {

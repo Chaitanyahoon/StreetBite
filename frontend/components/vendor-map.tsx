@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useUserLocation } from '@/lib/useUserLocation'
 import { MapPin } from 'lucide-react'
+import { GOOGLE_MAPS_API_KEY } from '@/lib/maps-config'
 
 type Vendor = {
   id: string | number
@@ -25,7 +26,7 @@ export function VendorMap({ vendors = [], onVendorSelect }: { vendors: Vendor[],
 
   useEffect(() => {
     // Check for API key
-    const key = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+    const key = GOOGLE_MAPS_API_KEY
 
     if (!key) {
       setError('Google Maps API key not configured')

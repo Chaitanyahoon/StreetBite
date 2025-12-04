@@ -225,7 +225,7 @@ export default function MenuManagement() {
                   onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                   required
                   min="0"
-                  step="0.01"
+                  step="1"
                 />
               </div>
               <div>

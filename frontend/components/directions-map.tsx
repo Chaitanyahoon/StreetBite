@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react'
 import { MapPin, Navigation } from 'lucide-react'
+import { GOOGLE_MAPS_API_KEY } from '@/lib/maps-config'
 
 interface DirectionsMapProps {
     origin: { lat: number; lng: number }
@@ -19,7 +20,7 @@ export function DirectionsMap({ origin, destination }: DirectionsMapProps) {
     const [routeInfo, setRouteInfo] = useState<{ distance: string; duration: string } | null>(null)
 
     useEffect(() => {
-        const key = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+        const key = GOOGLE_MAPS_API_KEY
 
         if (!key) {
             setError('Google Maps API key not configured')
