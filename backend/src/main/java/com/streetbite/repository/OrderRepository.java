@@ -19,3 +19,4 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     @org.springframework.data.jpa.repository.Query("SELECT COUNT(DISTINCT o.user.id) FROM Order o WHERE o.vendor.id = :vendorId")
     Long countDistinctUserIdByVendorId(Long vendorId);
+}

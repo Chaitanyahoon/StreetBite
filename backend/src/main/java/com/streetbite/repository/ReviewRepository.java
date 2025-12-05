@@ -14,3 +14,4 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     @org.springframework.data.jpa.repository.Query("SELECT COUNT(r) FROM Review r WHERE r.vendor.id = :vendorId")
     Long countByVendorId(Long vendorId);
+}

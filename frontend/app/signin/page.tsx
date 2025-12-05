@@ -20,16 +20,15 @@ export default function SignInPage() {
   const [resetEmail, setResetEmail] = useState('')
   const [resetStatus, setResetStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
 
-  const handleSignIn = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const performLogin = async (emailInput: string, passwordInput: string) => {
     setIsLoading(true)
     setError(null)
 
     try {
       // Direct backend login (no Firebase)
       const response = await authApi.login({
-        email,
-        password
+        email: emailInput,
+        password: passwordInput
       })
 
       // Store JWT token and user info
@@ -63,6 +62,11 @@ export default function SignInPage() {
       setError(errorMessage)
       setIsLoading(false)
     }
+  }
+
+  const handleSignIn = async (e: React.FormEvent) => {
+    e.preventDefault()
+    await performLogin(email, password)
   }
 
   const handleForgotPassword = async (e: React.FormEvent) => {
@@ -260,6 +264,44 @@ export default function SignInPage() {
                   Sign Up
                 </Link>
               </p>
+
+              {/* Quick Login for Development */}
+              {process.env.NODE_ENV === 'development' && (
+                <div className="mt-8 pt-6 border-t border-primary/10">
+                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider text-center mb-4">
+                    Development Quick Login
+                  </p>
+                  <div className="grid grid-cols-3 gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => performLogin('admin@streetbite.com', 'admin123')}
+                      className="text-xs"
+                    >
+                      Admin
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => performLogin('user@streetbite.com', 'user123')}
+                      className="text-xs"
+                    >
+                      User
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => performLogin('vendor1@streetbite.com', 'vendor123')}
+                      className="text-xs"
+                    >
+                      Vendor
+                    </Button>
+                  </div>
+                </div>
+              )}
             </form>
           )}
         </div>

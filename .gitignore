@@ -26,6 +26,7 @@ frontend/build/
 # ============================================================================
 # Backend (Maven / Java)
 # ============================================================================
+backend/src/main/resources/application.properties
 backend/target/
 backend/.classpath
 backend/.project

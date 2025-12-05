@@ -18,6 +18,8 @@ public class RealTimeSyncService {
      * Updates menu item availability in Firestore for real-time sync
      */
     public void updateMenuAvailability(Long itemId, Boolean isAvailable) {
+        if (itemId == null)
+            return;
         try {
             Firestore db = getFirestore();
             Map<String, Object> data = new HashMap<>();
@@ -39,6 +41,8 @@ public class RealTimeSyncService {
      * Updates vendor online status in Firestore
      */
     public void updateVendorStatus(Long vendorId, com.streetbite.model.VendorStatus status) {
+        if (vendorId == null)
+            return;
         try {
             Firestore db = getFirestore();
             Map<String, Object> data = new HashMap<>();
@@ -59,6 +63,8 @@ public class RealTimeSyncService {
      * Updates vendor location in Firestore for real-time sync
      */
     public void updateVendorLocation(Long vendorId, Double latitude, Double longitude, String address) {
+        if (vendorId == null)
+            return;
         try {
             Firestore db = getFirestore();
             Map<String, Object> data = new HashMap<>();

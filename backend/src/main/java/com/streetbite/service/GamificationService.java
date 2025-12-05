@@ -19,6 +19,7 @@ public class GamificationService {
     private static final int XP_DAILY_LOGIN = 50;
     private static final int XP_COMPLETE_CHALLENGE = 50;
     private static final int XP_WIN_GAME = 100;
+    private static final int XP_COMMUNITY_POST = 10;
     private static final int XP_PER_LEVEL = 1000;
 
     /**
@@ -67,6 +68,7 @@ public class GamificationService {
             case "daily_login" -> XP_DAILY_LOGIN;
             case "complete_challenge" -> XP_COMPLETE_CHALLENGE;
             case "win_game" -> XP_WIN_GAME;
+            case "community_post" -> XP_COMMUNITY_POST;
             default -> 0;
         };
     }

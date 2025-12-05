@@ -113,40 +113,19 @@ export function DirectionsMap({ origin, destination }: DirectionsMapProps) {
             })
         }
 
-        // Create custom origin marker (user location) - Animated Pulsing Design
+        // Simple blue dot for user location
         if (!originMarker.current) {
             originMarker.current = new gm.Marker({
                 position: origin,
                 map: mapInstance.current,
                 title: 'Your Location',
                 icon: {
-                    url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
-                        <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 60 60">
-                            <defs>
-                                <radialGradient id="pulse" cx="50%" cy="50%" r="50%">
-                                    <stop offset="0%" style="stop-color:#4285F4;stop-opacity:1" />
-                                    <stop offset="100%" style="stop-color:#4285F4;stop-opacity:0" />
-                                </radialGradient>
-                            </defs>
-                            
-                            <!-- Outer pulse ring (animated effect) -->
-                            <circle cx="30" cy="30" r="25" fill="url(#pulse)" opacity="0.3"/>
-                            
-                            <!-- Middle ring -->
-                            <circle cx="30" cy="30" r="15" fill="#4285F4" opacity="0.3"/>
-                            
-                            <!-- Center dot with glow -->
-                            <circle cx="30" cy="30" r="8" fill="#4285F4" stroke="#fff" stroke-width="3"/>
-                            
-                            <!-- Crosshair -->
-                            <line x1="30" y1="18" x2="30" y2="8" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
-                            <line x1="30" y1="42" x2="30" y2="52" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
-                            <line x1="18" y1="30" x2="8" y2="30" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
-                            <line x1="42" y1="30" x2="52" y2="30" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
-                        </svg>
-                    `),
-                    scaledSize: new gm.Size(60, 60),
-                    anchor: new gm.Point(30, 30),
+                    path: gm.SymbolPath.CIRCLE,
+                    scale: 10,
+                    fillColor: '#4285F4',
+                    fillOpacity: 1,
+                    strokeColor: '#ffffff',
+                    strokeWeight: 3,
                 },
                 animation: gm.Animation.DROP,
             })
@@ -154,69 +133,14 @@ export function DirectionsMap({ origin, destination }: DirectionsMapProps) {
             originMarker.current.setPosition(origin)
         }
 
-        // Create custom destination marker (vendor location) - 3D Pin with Shadow
+        // Default Google Maps pin for vendor
         if (!destinationMarker.current) {
             destinationMarker.current = new gm.Marker({
                 position: destination,
                 map: mapInstance.current,
                 title: 'Vendor Location',
-                icon: {
-                    url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
-                        <svg xmlns="http://www.w3.org/2000/svg" width="50" height="70" viewBox="0 0 50 70">
-                            <defs>
-                                <linearGradient id="pinGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                                    <stop offset="0%" style="stop-color:#FF6B35;stop-opacity:1" />
-                                    <stop offset="100%" style="stop-color:#F7931E;stop-opacity:1" />
-                                </linearGradient>
-                                <filter id="shadow3d" x="-50%" y="-50%" width="200%" height="200%">
-                                    <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
-                                    <feOffset dx="2" dy="4" result="offsetblur"/>
-                                    <feComponentTransfer>
-                                        <feFuncA type="linear" slope="0.5"/>
-                                    </feComponentTransfer>
-                                    <feMerge>
-                                        <feMergeNode/>
-                                        <feMergeNode in="SourceGraphic"/>
-                                    </feMerge>
-                                </filter>
-                            </defs>
-                            
-                            <g filter="url(#shadow3d)">
-                                <!-- 3D Pin shape with gradient -->
-                                <path d="M25 5 C15 5 7 13 7 23 C7 35 25 50 25 50 S43 35 43 23 C43 13 35 5 25 5 Z" 
-                                      fill="url(#pinGradient)" 
-                                      stroke="#fff" 
-                                      stroke-width="2.5"/>
-                                
-                                <!-- Inner white circle -->
-                                <circle cx="25" cy="23" r="10" fill="#fff"/>
-                                
-                                <!-- Food truck icon -->
-                                <g transform="translate(25, 23)">
-                                    <rect x="-6" y="-4" width="12" height="6" fill="#FF6B35" rx="1"/>
-                                    <rect x="-5" y="-2" width="3" height="3" fill="#fff" opacity="0.7"/>
-                                    <rect x="2" y="-2" width="3" height="3" fill="#fff" opacity="0.7"/>
-                                    <circle cx="-3" cy="3" r="1.5" fill="#333"/>
-                                    <circle cx="3" cy="3" r="1.5" fill="#333"/>
-                                </g>
-                                
-                                <!-- Highlight shine effect -->
-                                <ellipse cx="19" cy="15" rx="4" ry="6" fill="#fff" opacity="0.3"/>
-                            </g>
-                        </svg>
-                    `),
-                    scaledSize: new gm.Size(50, 70),
-                    anchor: new gm.Point(25, 70),
-                },
-                animation: gm.Animation.BOUNCE,
+                animation: gm.Animation.DROP,
             })
-
-            // Stop bouncing after 2 seconds
-            setTimeout(() => {
-                if (destinationMarker.current) {
-                    destinationMarker.current.setAnimation(null)
-                }
-            }, 2000)
         } else {
             destinationMarker.current.setPosition(destination)
         }
@@ -252,8 +176,13 @@ export function DirectionsMap({ origin, destination }: DirectionsMapProps) {
                         })
                     } else if (status === gm.DirectionsStatus.OVER_QUERY_LIMIT) {
                         setError('Too many requests. Please try again later.')
+                    } else if (status === gm.DirectionsStatus.ZERO_RESULTS) {
+                        // Expected case: no route found (e.g., vendor location invalid or too far)
+                        console.warn('No route available:', status)
+                        setError('Directions not available for this location')
                     } else {
-                        console.error('Directions request failed due to ' + status)
+                        // Unexpected errors
+                        console.warn('Directions request failed:', status)
                         setError(`Could not calculate directions: ${status}`)
                     }
                 }

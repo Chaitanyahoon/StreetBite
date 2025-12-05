@@ -65,8 +65,22 @@ export default function CommunityPage() {
     const [newComment, setNewComment] = useState('');
     const [comments, setComments] = useState(SAMPLE_COMMENTS);
     const [hasLiked, setHasLiked] = useState(false);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [userRole, setUserRole] = useState<string | null>(null);
 
     useEffect(() => {
+        // Check authentication
+        const userStr = localStorage.getItem('user');
+        if (userStr) {
+            try {
+                const user = JSON.parse(userStr);
+                setIsLoggedIn(true);
+                setUserRole(user.role);
+            } catch (error) {
+                console.error('Failed to parse user data', error);
+            }
+        }
+
         fetchRandomVendor();
 
         // Randomize discussions order
@@ -102,6 +116,15 @@ export default function CommunityPage() {
 
     const handlePostComment = () => {
         if (!newComment.trim()) return;
+
+        if (!isLoggedIn) {
+            toast('Please sign in to comment', {
+                description: 'You need to be logged in to participate in discussions',
+            });
+            setTimeout(() => window.location.href = '/signin', 1500);
+            return;
+        }
+
         const comment = {
             id: comments.length + 1,
             author: "you",
@@ -112,12 +135,13 @@ export default function CommunityPage() {
         setComments([comment, ...comments]);
         setNewComment('');
 
-        // Award XP for commenting
-        performAction('complete_challenge'); // Using complete_challenge (50 XP) or maybe we need a smaller one?
-        // Ideally backend should have 'comment' action type with smaller XP.
-        // For now let's use what we have or assume backend handles 'comment' type gracefully (returns 0 if unknown or we add it)
-
-        toast.success("Comment posted! +XP 💬");
+        // Award XP for commenting (only for customers)
+        if (userRole !== 'VENDOR') {
+            performAction('community_post');
+            toast.success("Comment posted! +10 XP 💬");
+        } else {
+            toast.success("Comment posted!");
+        }
     };
 
     const handleVendorClick = () => {
@@ -216,7 +240,32 @@ export default function CommunityPage() {
                                 <VendorBattle />
                             </div>
                             <div className="transform hover:-translate-y-1 transition-transform duration-300">
-                                <StreakTracker />
+                                {isLoggedIn ? (
+                                    <StreakTracker />
+                                ) : (
+                                    <Card className="h-full border-none shadow-soft bg-gradient-to-br from-orange-500 to-red-600 text-white flex flex-col items-center justify-center p-6 text-center relative overflow-hidden group">
+                                        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+                                        <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full blur-2xl -mr-12 -mt-12"></div>
+                                        <div className="absolute bottom-0 left-0 w-20 h-20 bg-black/10 rounded-full blur-xl -ml-10 -mb-10"></div>
+
+                                        <div className="relative z-10 flex flex-col items-center">
+                                            <div className="p-3 bg-white/20 rounded-full mb-4 backdrop-blur-sm shadow-lg group-hover:scale-110 transition-transform duration-300">
+                                                <Flame className="w-8 h-8 text-yellow-300 fill-yellow-300 animate-pulse" />
+                                            </div>
+                                            <h3 className="font-black text-xl mb-2 tracking-tight">Ignite Your Streak! 🔥</h3>
+                                            <p className="text-white/90 mb-5 text-sm font-medium leading-relaxed max-w-[200px]">
+                                                Log in daily to build your flame and earn exclusive spicy rewards.
+                                            </p>
+                                            <Button
+                                                className="bg-white text-orange-600 hover:bg-orange-50 font-bold border-none shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5"
+                                                size="sm"
+                                                onClick={() => window.location.href = '/signin'}
+                                            >
+                                                Start Streak
+                                            </Button>
+                                        </div>
+                                    </Card>
+                                )}
                             </div>
                         </div>
 
@@ -334,9 +383,29 @@ export default function CommunityPage() {
                     {/* Right Sidebar - Sticky (4 cols) */}
                     <div className="lg:col-span-4 space-y-6">
                         <div className="sticky top-24 space-y-6">
-                            <UserStats />
-
-                            <Leaderboard />
+                            {isLoggedIn ? (
+                                <>
+                                    <UserStats />
+                                    <Leaderboard />
+                                </>
+                            ) : (
+                                <Card className="border-none shadow-soft bg-white p-6 text-center relative overflow-hidden group hover:shadow-lg transition-all duration-300">
+                                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-400 to-red-500"></div>
+                                    <div className="w-16 h-16 bg-gradient-to-br from-orange-100 to-orange-50 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                                        <Award className="w-8 h-8 text-orange-600" />
+                                    </div>
+                                    <h3 className="font-bold text-lg mb-2 text-gray-900">Join the Leaderboard 🏆</h3>
+                                    <p className="text-gray-500 mb-6 text-sm leading-relaxed">
+                                        Compete with top foodies, earn XP, and unlock exclusive badges!
+                                    </p>
+                                    <Button
+                                        className="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-bold shadow-lg shadow-orange-500/20"
+                                        onClick={() => window.location.href = '/signin'}
+                                    >
+                                        Sign In to Play
+                                    </Button>
+                                </Card>
+                            )}
 
                             <DailyPoll />
 

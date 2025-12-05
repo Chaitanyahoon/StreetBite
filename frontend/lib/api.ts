@@ -23,12 +23,16 @@ api.interceptors.request.use(async (config) => {
 
 // Add a response interceptor to handle errors
 api.interceptors.response.use((res) => res.data, (error: any) => {
-  console.error('API Error Details:', {
-    status: error.response?.status,
-    data: error.response?.data,
-    message: error.message,
-    url: error.config?.url
-  })
+  if (error.response) {
+    console.error('API Error Details:', {
+      status: error.response.status,
+      data: error.response.data,
+      message: error.message,
+      url: error.config?.url
+    })
+  } else {
+    console.error('API Error (Network/Unknown):', error.message || 'Network Error')
+  }
   console.error('Raw API Error:', error)
 
   // If 401 Unauthorized, clear token and redirect to login
