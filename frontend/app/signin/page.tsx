@@ -48,7 +48,8 @@ export default function SignInPage() {
         router.push('/community')
       }
     } catch (err: any) {
-      console.error('Login error:', err)
+      // Use warn instead of error to avoid popping up the Next.js error overlay
+      console.warn('Login failed:', err.message)
       let errorMessage = 'Login failed. Please check your credentials.'
 
       if (err.response?.status === 401) {
@@ -265,43 +266,7 @@ export default function SignInPage() {
                 </Link>
               </p>
 
-              {/* Quick Login for Development */}
-              {process.env.NODE_ENV === 'development' && (
-                <div className="mt-8 pt-6 border-t border-primary/10">
-                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider text-center mb-4">
-                    Development Quick Login
-                  </p>
-                  <div className="grid grid-cols-3 gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => performLogin('admin@streetbite.com', 'admin123')}
-                      className="text-xs"
-                    >
-                      Admin
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => performLogin('user@streetbite.com', 'user123')}
-                      className="text-xs"
-                    >
-                      User
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => performLogin('vendor1@streetbite.com', 'vendor123')}
-                      className="text-xs"
-                    >
-                      Vendor
-                    </Button>
-                  </div>
-                </div>
-              )}
+
             </form>
           )}
         </div>

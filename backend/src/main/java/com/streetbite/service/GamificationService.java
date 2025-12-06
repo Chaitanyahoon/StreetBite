@@ -75,9 +75,16 @@ public class GamificationService {
 
     /**
      * Calculate user level from XP
+     * Formula matches frontend: XP = level * (level - 1) * 50
+     * Inverse: Level = (1 + sqrt(1 + 0.08 * XP)) / 2
      */
     public int calculateLevel(int xp) {
-        return (xp / XP_PER_LEVEL) + 1;
+        if (xp < 0)
+            return 1;
+        // Using the quadratic formula solution for L^2 - L - (xp/50) = 0
+        // L = (1 + Math.sqrt(1 + 4 * (xp / 50.0))) / 2
+        double level = (1 + Math.sqrt(1 + 0.08 * xp)) / 2;
+        return (int) Math.floor(level);
     }
 
     /**

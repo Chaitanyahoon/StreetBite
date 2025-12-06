@@ -42,7 +42,7 @@ public class Vendor {
     private boolean isActive = true;
 
     @Enumerated(EnumType.STRING)
-    private VendorStatus status = VendorStatus.AVAILABLE;
+    private VendorStatus status = VendorStatus.PENDING;
 
     @OneToMany(mappedBy = "vendor", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<VendorImage> galleryImages = new ArrayList<>();

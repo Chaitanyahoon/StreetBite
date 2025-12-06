@@ -8,19 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import {
-  Select,
-  SelectGroup,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectLabel,
-  SelectItem,
-  SelectSeparator,
-  SelectScrollUpButton,
-  SelectScrollDownButton
-} from '@/components/ui/select'
-import { Eye, Trash2, CheckCircle, XCircle, Filter } from 'lucide-react'
+import { Eye, Trash2, CheckCircle, XCircle } from 'lucide-react'
 
 interface Vendor {
   id: number
@@ -29,7 +17,7 @@ interface Vendor {
   city: string
   email: string
   phone: string
-  status: 'Approved' | 'Pending' | 'Suspended'
+  status: 'APPROVED' | 'PENDING' | 'SUSPENDED' | 'REJECTED' | 'AVAILABLE' | 'BUSY' | 'UNAVAILABLE'
   joined: string
   rating: number
   revenue: string
@@ -47,15 +35,15 @@ export default function VendorManagement() {
       const data = await vendorApi.getAll()
       // Map API response to UI model
       const mappedVendors = data.map((v: any) => ({
-        id: v.vendorId,
-        name: v.businessName,
-        owner: v.ownerName || 'Unknown', // Backend might need to return owner name
-        city: 'Unknown', // Backend doesn't have city in Vendor entity yet
-        email: v.email || 'unknown@example.com',
-        phone: v.phoneNumber || 'Unknown',
-        status: v.isActive ? 'Approved' : 'Pending', // Simplified status mapping
-        joined: new Date(v.createdAt).toLocaleDateString(),
-        rating: 0, // Placeholder
+        id: v.id,
+        name: v.name || 'Unknown Vendor',
+        owner: v.owner?.displayName || 'Unknown',
+        city: v.address || 'Unknown',
+        email: v.owner?.email || 'unknown@example.com',
+        phone: v.phone || 'Unknown',
+        status: v.status || (v.isActive ? 'APPROVED' : 'PENDING'),
+        joined: v.createdAt ? new Date(v.createdAt).toLocaleDateString() : 'Unknown',
+        rating: v.rating || 0,
         revenue: '₹0', // Placeholder
         orders: 0, // Placeholder
       }))
@@ -77,18 +65,20 @@ export default function VendorManagement() {
 
   const filteredVendors = vendors.filter(vendor => {
     const matchesStatus = filterStatus === 'All' || vendor.status === filterStatus
-    const matchesSearch = vendor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      vendor.owner.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesSearch = (vendor.name?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+      (vendor.owner?.toLowerCase() || '').includes(searchQuery.toLowerCase())
     return matchesStatus && matchesSearch
   })
 
   const getStatusColor = (status: string): string => {
     switch (status) {
-      case 'Approved':
+      case 'APPROVED':
+      case 'AVAILABLE':
         return 'bg-emerald-100 text-emerald-700'
-      case 'Pending':
+      case 'PENDING':
         return 'bg-yellow-100 text-yellow-700'
-      case 'Suspended':
+      case 'SUSPENDED':
+      case 'REJECTED':
         return 'bg-red-100 text-red-700'
       default:
         return 'bg-gray-100 text-gray-700'
@@ -121,9 +111,10 @@ export default function VendorManagement() {
               onChange={(e) => setFilterStatus(e.target.value)}
             >
               <option>All</option>
-              <option>Approved</option>
-              <option>Pending</option>
-              <option>Suspended</option>
+              <option value="APPROVED">Approved</option>
+              <option value="PENDING">Pending</option>
+              <option value="REJECTED">Rejected</option>
+              <option value="SUSPENDED">Suspended</option>
             </select>
           </div>
         </CardContent>
@@ -214,12 +205,12 @@ export default function VendorManagement() {
                                 <p className="font-medium">{vendor.status}</p>
                               </div>
                             </div>
-                            {vendor.status === 'Pending' && (
+                            {vendor.status === 'PENDING' && (
                               <div className="flex gap-2 pt-4 border-t">
                                 <Button
                                   className="flex-1 bg-emerald-600 hover:bg-emerald-700 gap-2"
                                   onClick={async () => {
-                                    await vendorApi.update(vendor.id.toString(), { isActive: true })
+                                    await vendorApi.updateStatus(vendor.id.toString(), 'APPROVED')
                                     fetchVendors()
                                   }}
                                 >
@@ -230,8 +221,7 @@ export default function VendorManagement() {
                                   variant="destructive"
                                   className="flex-1 gap-2"
                                   onClick={async () => {
-                                    // For now just deactivate/keep inactive
-                                    await vendorApi.update(vendor.id.toString(), { isActive: false })
+                                    await vendorApi.updateStatus(vendor.id.toString(), 'REJECTED')
                                     fetchVendors()
                                   }}
                                 >
@@ -240,13 +230,13 @@ export default function VendorManagement() {
                                 </Button>
                               </div>
                             )}
-                            {vendor.status === 'Approved' && (
+                            {(vendor.status === 'APPROVED' || vendor.status === 'AVAILABLE') && (
                               <div className="flex gap-2 pt-4 border-t">
                                 <Button
                                   variant="destructive"
                                   className="flex-1 gap-2"
                                   onClick={async () => {
-                                    await vendorApi.update(vendor.id.toString(), { isActive: false })
+                                    await vendorApi.updateStatus(vendor.id.toString(), 'SUSPENDED')
                                     fetchVendors()
                                   }}
                                 >
@@ -254,10 +244,34 @@ export default function VendorManagement() {
                                 </Button>
                               </div>
                             )}
+                            {vendor.status === 'SUSPENDED' && (
+                              <div className="flex gap-2 pt-4 border-t">
+                                <Button
+                                  className="flex-1 bg-blue-600 hover:bg-blue-700 gap-2"
+                                  onClick={async () => {
+                                    await vendorApi.updateStatus(vendor.id.toString(), 'APPROVED')
+                                    fetchVendors()
+                                  }}
+                                >
+                                  <CheckCircle className="w-4 h-4" />
+                                  Unsuspend / Re-activate
+                                </Button>
+                              </div>
+                            )}
                           </DialogContent>
                         </Dialog>
 
-                        <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-red-600 hover:text-red-700"
+                          onClick={async () => {
+                            if (confirm('Are you sure you want to delete this vendor? This action cannot be undone.')) {
+                              await vendorApi.delete(vendor.id)
+                              fetchVendors()
+                            }
+                          }}
+                        >
                           <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>

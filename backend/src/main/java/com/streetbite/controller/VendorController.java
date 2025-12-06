@@ -174,4 +174,49 @@ public class VendorController {
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
+
+    @Autowired
+    private com.streetbite.service.UserService userService;
+
+    @PutMapping("/{id}/status")
+    public ResponseEntity<?> updateVendorStatus(@PathVariable Long id, @RequestBody Map<String, String> payload) {
+        try {
+            String statusStr = payload.get("status");
+            if (statusStr == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Status is required"));
+            }
+
+            com.streetbite.model.VendorStatus status = com.streetbite.model.VendorStatus.valueOf(statusStr);
+
+            return vendorService.getVendorById(id)
+                    .map(vendor -> {
+                        vendor.setStatus(status);
+                        // If approved, ensure it's active
+                        if (status == com.streetbite.model.VendorStatus.APPROVED
+                                || status == com.streetbite.model.VendorStatus.AVAILABLE) {
+                            vendor.setActive(true);
+                            // Also reactivate the owner user if they exist
+                            if (vendor.getOwner() != null) {
+                                vendor.getOwner().setActive(true);
+                                userService.saveUser(vendor.getOwner());
+                            }
+                        }
+                        vendorService.saveVendor(vendor);
+                        return ResponseEntity.ok(vendor);
+                    })
+                    .orElse(ResponseEntity.notFound().build());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Invalid status value"));
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteVendor(@PathVariable Long id) {
+        try {
+            vendorService.deleteVendor(id);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", "Failed to delete vendor"));
+        }
+    }
 }

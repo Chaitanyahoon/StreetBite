@@ -17,6 +17,8 @@ import java.util.stream.Collectors;
 @Service
 public class AnalyticsService {
 
+    // Service for handling analytics data and events
+
     private final AnalyticsRepository analyticsRepository;
     private final MenuItemRepository menuItemRepository;
     private final com.streetbite.repository.OrderRepository orderRepository;

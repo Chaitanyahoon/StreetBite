@@ -111,7 +111,15 @@ export default function CommunityPage() {
     const handleLikeDiscussion = () => {
         if (!selectedDiscussion) return;
         setHasLiked(!hasLiked);
-        toast.success(hasLiked ? "Like removed" : "Discussion liked! ❤️");
+        toast.success(hasLiked ? "Like removed" : "Discussion liked! ❤️", {
+            style: {
+                background: '#3B82F6',
+                color: 'white',
+                border: 'none',
+                fontWeight: 'bold'
+            },
+            icon: hasLiked ? '💔' : '❤️'
+        });
     };
 
     const handlePostComment = () => {
@@ -138,7 +146,16 @@ export default function CommunityPage() {
         // Award XP for commenting (only for customers)
         if (userRole !== 'VENDOR') {
             performAction('community_post');
-            toast.success("Comment posted! +10 XP 💬");
+            toast.success("Comment posted! +10 XP 💬", {
+                description: "Great contribution! Keep it up!",
+                style: {
+                    background: '#10B981',
+                    color: 'white',
+                    border: 'none',
+                    fontWeight: 'bold'
+                },
+                icon: '✅'
+            });
         } else {
             toast.success("Comment posted!");
         }

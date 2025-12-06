@@ -59,6 +59,9 @@ public class User {
     @Column(name = "last_check_in")
     private java.time.LocalDate lastCheckIn;
 
+    @Column(name = "is_active")
+    private Boolean isActive = true;
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "user_favorites", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "vendor_id"))
     @com.fasterxml.jackson.annotation.JsonIgnore
@@ -214,5 +217,13 @@ public class User {
 
     public void setLastCheckIn(java.time.LocalDate lastCheckIn) {
         this.lastCheckIn = lastCheckIn;
+    }
+
+    public Boolean getActive() {
+        return isActive != null ? isActive : true;
+    }
+
+    public void setActive(Boolean active) {
+        isActive = active;
     }
 }

@@ -24,6 +24,13 @@ public class VendorSearchService {
         // Filter by distance using Haversine formula
         return allVendors.stream()
                 .filter(v -> {
+                    // Filter by status: Only show APPROVED, AVAILABLE, or BUSY
+                    com.streetbite.model.VendorStatus status = v.getStatus();
+                    return status == com.streetbite.model.VendorStatus.APPROVED ||
+                            status == com.streetbite.model.VendorStatus.AVAILABLE ||
+                            status == com.streetbite.model.VendorStatus.BUSY;
+                })
+                .filter(v -> {
                     // Assuming Vendor entity has latitude and longitude fields (primitive double or
                     // Double)
                     // If they are Double objects, check for nulls

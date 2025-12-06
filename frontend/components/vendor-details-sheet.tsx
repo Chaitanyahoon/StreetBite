@@ -39,6 +39,11 @@ export function VendorDetailsSheet({ vendor, open, onOpenChange, onFavoriteToggl
     useEffect(() => {
         const checkFavoriteStatus = async () => {
             if (!vendor?.id) return
+
+            // Check if user is logged in
+            const userStr = localStorage.getItem('user')
+            if (!userStr) return
+
             try {
                 const response = await favoriteApi.checkFavorite(vendor.id)
                 setIsFavorite(response.isFavorite)
@@ -73,6 +78,18 @@ export function VendorDetailsSheet({ vendor, open, onOpenChange, onFavoriteToggl
 
     const handleFavorite = async () => {
         if (!vendor?.id) return
+
+        // Check if user is logged in
+        const userStr = localStorage.getItem('user')
+        if (!userStr) {
+            toast({
+                title: "Login Required",
+                description: "Please log in to add favorites.",
+                variant: "default"
+            })
+            return
+        }
+
         setLoading(true)
         try {
             if (isFavorite) {

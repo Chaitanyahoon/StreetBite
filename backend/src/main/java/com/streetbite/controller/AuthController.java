@@ -146,6 +146,10 @@ public class AuthController {
                 return ResponseEntity.status(401).body(Map.of("error", "Invalid email or password"));
             }
 
+            if (!user.getActive()) {
+                return ResponseEntity.status(403).body(Map.of("error", "Account is banned or inactive"));
+            }
+
             // Generate JWT token
             String token = jwtUtil.generateToken(user.getEmail(), user.getId(), user.getRole().name());
 

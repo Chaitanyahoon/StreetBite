@@ -44,56 +44,60 @@ export default function ExplorePage() {
   // use location hook
   const { location, loading: loadingLocation, error: locationError } = useUserLocation()
 
+  // Helper for distance calculation
+  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+    const R = 6371 // Radius of the earth in km
+    const dLat = (lat2 - lat1) * (Math.PI / 180)
+    const dLon = (lon2 - lon1) * (Math.PI / 180)
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2)
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+    return R * c
+  }
+
   useEffect(() => {
     let mounted = true
-    const fetchNearby = async (lat: number, lng: number, radiusMeters = 2000) => {
+
+    const fetchVendors = async () => {
       setLoadingVendors(true)
       try {
-        const data = await vendorApi.search(lat, lng, radiusMeters)
-        // handle both shapes: { vendors: [...] } or [...] or { source, vendors }
-        const vendorsList = Array.isArray(data) ? data : (data.vendors || data || data?.vendors)
+        // Always fetch all vendors to ensure visibility regardless of location
+        const data = await vendorApi.getAll()
+        let vendorsList = Array.isArray(data) ? data : (data.vendors || data || [])
 
-        if (vendorsList && vendorsList.length > 0) {
-          if (mounted) setVendors(vendorsList)
-        } else {
-          throw new Error('No nearby vendors')
+        // Filter out non-public vendors (PENDING, REJECTED, SUSPENDED, UNAVAILABLE)
+        vendorsList = vendorsList.filter((v: any) =>
+          v.status === 'APPROVED' ||
+          v.status === 'AVAILABLE' ||
+          v.status === 'BUSY'
+        )
+
+        // If we have user location, sort by distance
+        if (location && vendorsList.length > 0) {
+          vendorsList = vendorsList.map((v: any) => {
+            if (v.latitude && v.longitude) {
+              const dist = calculateDistance(location.lat, location.lng, v.latitude, v.longitude)
+              return { ...v, distance: dist }
+            }
+            return { ...v, distance: Infinity }
+          }).sort((a: any, b: any) => a.distance - b.distance)
         }
+
+        if (mounted) setVendors(vendorsList)
       } catch (err) {
-        try {
-          const data = await vendorApi.getAll()
-          const vendorsList = Array.isArray(data) ? data : []
-          if (mounted) setVendors(vendorsList)
-        } catch (fallbackErr) {
-          if (mounted) setVendors([])
-        }
+        console.error('Error fetching vendors:', err)
+        if (mounted) setVendors([])
       } finally {
         if (mounted) setLoadingVendors(false)
       }
     }
 
-    // Only call backend search when we have a location (cookie or freshly obtained)
-    if (!loadingLocation && location) {
-      fetchNearby(location.lat, location.lng)
-    } else if (!loadingLocation && !location) {
-      // If no location, fetch all vendors
-      const fetchAll = async () => {
-        setLoadingVendors(true)
-        try {
-          const data = await vendorApi.getAll()
-          const vendorsList = Array.isArray(data) ? data : []
-          if (mounted) setVendors(vendorsList)
-        } catch (err) {
-          console.error('Error fetching all vendors:', err)
-          if (mounted) setVendors([])
-        } finally {
-          if (mounted) setLoadingVendors(false)
-        }
-      }
-      fetchAll()
-    }
+    fetchVendors()
 
     return () => { mounted = false }
-  }, [location, loadingLocation, locationError])
+  }, [location])
 
   const cuisineFilters = [
     { id: 'all', label: 'All Cuisines' },

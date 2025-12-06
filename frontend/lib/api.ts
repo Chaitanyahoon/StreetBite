@@ -24,17 +24,18 @@ api.interceptors.request.use(async (config) => {
 // Add a response interceptor to handle errors
 api.interceptors.response.use((res) => res.data, (error: any) => {
   if (error.response) {
-    console.error('API Error Details:', {
-      status: error.response.status,
-      data: error.response.data,
-      message: error.message,
-      url: error.config?.url
-    })
+    // Don't log 403 errors to console to avoid development overlay for banned users
+    if (error.response.status !== 403) {
+      console.error('API Error Details:', {
+        status: error.response.status,
+        data: error.response.data,
+        message: error.message,
+        url: error.config?.url
+      })
+    }
   } else {
     console.error('API Error (Network/Unknown):', error.message || 'Network Error')
   }
-  console.error('Raw API Error:', error)
-
   // If 401 Unauthorized, clear token and redirect to login
   if (error.response?.status === 401) {
     localStorage.removeItem('token');
@@ -67,8 +68,10 @@ export const authApi = {
 };
 
 export const userApi = {
+  getAll: () => api.get('/users') as Promise<any>,
   getById: (id: string) => api.get(`/users/${id}`) as Promise<any>,
   update: (id: string, data: any) => api.put(`/users/${id}`, data) as Promise<any>,
+  updateStatus: (id: string | number, isActive: boolean) => api.put(`/users/${id}/status`, { isActive }) as Promise<any>,
   getByFirebaseUid: (uid: string) => api.get(`/users/firebase/${uid}`) as Promise<any>,
 };
 
@@ -77,6 +80,8 @@ export const vendorApi = {
   getById: (id: string) => api.get(`/vendors/${id}`) as Promise<any>,
   create: (data: any) => api.post('/vendors', data) as Promise<any>,
   update: (id: string, data: any) => api.put(`/vendors/${id}`, data) as Promise<any>,
+  updateStatus: (id: string | number, status: string) => api.put(`/vendors/${id}/status`, { status }) as Promise<any>,
+  delete: (id: string | number) => api.delete(`/vendors/${id}`) as Promise<any>,
   search: (lat: number, lng: number, radius: number = 2000) =>
     api.get(`/vendors/search`, { params: { lat, lng, radius } }) as Promise<any>,
 };
@@ -113,6 +118,7 @@ export const promotionApi = {
 
 export const analyticsApi = {
   getVendorAnalytics: (vendorId: string) => api.get(`/analytics/vendor/${vendorId}`) as Promise<any>,
+  getPlatformAnalytics: () => api.get('/analytics/platform') as Promise<any>,
   logEvent: (vendorId: string | number, eventType: string, additionalData: any = {}) =>
     api.post('/analytics/event', { vendorId, eventType, ...additionalData }) as Promise<any>,
 };
@@ -128,6 +134,20 @@ export const gamificationApi = {
   getLeaderboard: () => api.get('/gamification/leaderboard') as Promise<any>,
   getUserStats: () => api.get('/gamification/stats') as Promise<any>,
   performAction: (actionType: string) => api.post(`/gamification/action/${actionType}`) as Promise<any>,
+};
+
+export const announcementApi = {
+  getActive: () => api.get('/announcements/active') as Promise<any>,
+  getAll: () => api.get('/announcements') as Promise<any>,
+  create: (data: any) => api.post('/announcements', data) as Promise<any>,
+  updateStatus: (id: string | number, isActive: boolean) => api.put(`/announcements/${id}/status`, { isActive }) as Promise<any>,
+};
+
+export const reportApi = {
+  getAll: () => api.get('/reports') as Promise<any>,
+  getByStatus: (status: string) => api.get(`/reports/status/${status}`) as Promise<any>,
+  create: (data: any) => api.post('/reports', data) as Promise<any>,
+  updateStatus: (id: string | number, status: string) => api.put(`/reports/${id}/status`, { status }) as Promise<any>,
 };
 
 export default api;

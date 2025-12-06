@@ -36,4 +36,26 @@ public class UserController {
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
+
+    @GetMapping
+    public ResponseEntity<?> getAllUsers() {
+        return ResponseEntity.ok(userService.getAllUsers());
+    }
+
+    @PutMapping("/{id}/status")
+    public ResponseEntity<?> updateUserStatus(@PathVariable Long id,
+            @RequestBody java.util.Map<String, Boolean> payload) {
+        Boolean isActive = payload.get("isActive");
+        if (isActive == null) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", "isActive is required"));
+        }
+
+        return userService.getUserById(id)
+                .map(user -> {
+                    user.setActive(isActive);
+                    userService.saveUser(user);
+                    return ResponseEntity.ok(user);
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
 }

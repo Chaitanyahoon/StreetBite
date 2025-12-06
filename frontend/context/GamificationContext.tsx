@@ -65,35 +65,12 @@ export function GamificationProvider({ children }: { children: React.ReactNode }
         }
     }, [])
 
-    // Recalculate level whenever XP changes
-    useEffect(() => {
-        const calculatedLevel = getLevelFromXP(xp)
-        if (calculatedLevel !== level) {
-            // Only show notification if user is logged in and level actually increased
-            const previousLevel = parseInt(localStorage.getItem('userLevel') || '0', 10)
-
-            setLevel(calculatedLevel)
-
-            // Only show level-up toast if this is a genuine increase (not initial load)
-            if (calculatedLevel > previousLevel && previousLevel > 0) {
-                toast.success(`Level Up! 🎉`, {
-                    description: `You reached Level ${calculatedLevel}!`,
-                    style: { background: '#8B5CF6', color: 'white', border: 'none' }
-                })
-            }
-
-            // Store the new level
-            localStorage.setItem('userLevel', calculatedLevel.toString())
-        }
-    }, [xp])
+    // Recalculate level whenever XP changes - REMOVED to prevent refresh bug
+    // Level is now managed explicitly in addXP, performAction, and fetchStats
 
     const fetchStats = async () => {
         try {
             const stats = await gamificationApi.getUserStats()
-
-            // Store current level BEFORE updating state to prevent false notifications
-            localStorage.setItem('userLevel', stats.level.toString())
-
             setXp(stats.xp)
             setLevel(stats.level)
             setStreak(stats.streak)
@@ -122,9 +99,15 @@ export function GamificationProvider({ children }: { children: React.ReactNode }
         // Calculate new level with scaling
         const estimatedLevel = getLevelFromXP(newXP)
         if (estimatedLevel > level) {
-            toast.success(`Level Up! 🎉`, {
-                description: `You reached Level ${estimatedLevel}!`,
-                style: { background: '#8B5CF6', color: 'white', border: 'none' }
+            toast.success(`Level Up! 🌟`, {
+                description: `Congratulations! You reached Level ${estimatedLevel}!`,
+                style: {
+                    background: 'linear-gradient(135deg, #FFD700 0%, #F59E0B 100%)',
+                    color: '#000',
+                    border: '1px solid #FCD34D',
+                    fontWeight: 'bold'
+                },
+                icon: '🏆'
             })
             setLevel(estimatedLevel)
         }
@@ -141,9 +124,15 @@ export function GamificationProvider({ children }: { children: React.ReactNode }
                 setLevel(response.level)
 
                 if (response.level > level) {
-                    toast.success(`Level Up! 🎉`, {
-                        description: `You reached Level ${response.level}!`,
-                        style: { background: '#8B5CF6', color: 'white', border: 'none' }
+                    toast.success(`Level Up! 🌟`, {
+                        description: `Congratulations! You reached Level ${response.level}!`,
+                        style: {
+                            background: 'linear-gradient(135deg, #FFD700 0%, #F59E0B 100%)',
+                            color: '#000',
+                            border: '1px solid #FCD34D',
+                            fontWeight: 'bold'
+                        },
+                        icon: '🏆'
                     })
                 }
             }
@@ -164,7 +153,12 @@ export function GamificationProvider({ children }: { children: React.ReactNode }
 
             toast.success("Streak Extended! 🔥", {
                 description: "You're on fire! Keep it up!",
-                style: { background: '#F97316', color: 'white', border: 'none' }
+                style: {
+                    background: 'linear-gradient(135deg, #F97316 0%, #EF4444 100%)',
+                    color: 'white',
+                    border: '1px solid #FCA5A5',
+                    fontWeight: 'bold'
+                }
             })
         } catch (error) {
             toast.error("Failed to check in")

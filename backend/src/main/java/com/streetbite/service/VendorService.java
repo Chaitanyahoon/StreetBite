@@ -35,4 +35,9 @@ public class VendorService {
     public List<Vendor> getVendorsByOwner(Long ownerId) {
         return vendorRepository.findByOwnerId(ownerId);
     }
+
+    @Transactional
+    public void deleteVendor(Long id) {
+        vendorRepository.deleteById(id);
+    }
 }
