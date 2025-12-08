@@ -13,6 +13,11 @@ public class EmailService {
     private String fromEmail;
 
     public void sendPasswordResetEmail(String to, String token) {
+
+        if (mailSender == null) {
+            System.out.println("Email service not configured. Password reset email not sent to: " + to);
+            return;
+        }
         try {
             org.springframework.mail.SimpleMailMessage message = new org.springframework.mail.SimpleMailMessage();
             message.setFrom(fromEmail);

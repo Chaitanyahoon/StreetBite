@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 @Service
 public class RealTimeSyncService {
@@ -27,7 +28,7 @@ public class RealTimeSyncService {
             data.put("lastUpdated", System.currentTimeMillis());
 
             db.collection("live_menu_items")
-                    .document(String.valueOf(itemId))
+                    .document(Objects.requireNonNull(String.valueOf(itemId)))
                     .set(data);
 
             System.out.println("Synced menu item " + itemId + " availability to Firebase: " + isAvailable);
@@ -50,7 +51,7 @@ public class RealTimeSyncService {
             data.put("lastUpdated", System.currentTimeMillis());
 
             db.collection("live_vendors")
-                    .document(String.valueOf(vendorId))
+                    .document(Objects.requireNonNull(String.valueOf(vendorId)))
                     .set(data);
 
             System.out.println("Synced vendor " + vendorId + " status to Firebase: " + status);
@@ -76,7 +77,7 @@ public class RealTimeSyncService {
             data.put("lastUpdated", System.currentTimeMillis());
 
             db.collection("live_vendors")
-                    .document(String.valueOf(vendorId))
+                    .document(Objects.requireNonNull(String.valueOf(vendorId)))
                     .set(data);
 
             System.out.println(

@@ -196,8 +196,8 @@ public class AuthController {
 
         Optional<User> userOpt = userService.getUserByEmail(email);
         if (userOpt.isEmpty()) {
-            // Don't reveal that user doesn't exist
-            return ResponseEntity.ok(Map.of("message", "If an account exists, a reset link has been sent."));
+            // Return error when account doesn't exist
+            return ResponseEntity.status(404).body(Map.of("error", "No account found with this email address"));
         }
 
         User user = userOpt.get();
@@ -208,7 +208,7 @@ public class AuthController {
 
         emailService.sendPasswordResetEmail(email, token);
 
-        return ResponseEntity.ok(Map.of("message", "If an account exists, a reset link has been sent."));
+        return ResponseEntity.ok(Map.of("message", "Password reset link has been sent to your email."));
     }
 
     @PostMapping("/reset-password")

@@ -8,6 +8,11 @@ firebase-key.json.backup
 hs_err_pid*.log
 replay_pid*.log
 
+# Backup files
+*.backup
+*.bak
+*.orig
+
 # Environment variables
 .env
 .env.local
@@ -33,6 +38,7 @@ backend/.project
 backend/.settings/
 backend/*.jar
 backend/*.war
+backend/uploads/
 
 # ============================================================================
 # Root Node Modules (if any)

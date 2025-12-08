@@ -9,7 +9,14 @@ import { Switch } from '@/components/ui/switch'
 import { User, Lock, Bell, Shield } from 'lucide-react'
 
 export default function AdminSettingsPage() {
-    const [adminProfile, setAdminProfile] = useState<any>(null)
+    const [adminProfile, setAdminProfile] = useState({
+        id: '',
+        email: '',
+        displayName: '',
+        phoneNumber: '',
+        role: ''
+    })
+    const [isLoading, setIsLoading] = useState(true)
     const [maintenanceMode, setMaintenanceMode] = useState(false)
     const [emailNotifications, setEmailNotifications] = useState(true)
 
@@ -17,11 +24,19 @@ export default function AdminSettingsPage() {
         // Load admin profile from local storage
         const userStr = localStorage.getItem('user')
         if (userStr) {
-            setAdminProfile(JSON.parse(userStr))
+            const userData = JSON.parse(userStr)
+            setAdminProfile({
+                id: userData.id || '',
+                email: userData.email || '',
+                displayName: userData.displayName || '',
+                phoneNumber: userData.phoneNumber || '',
+                role: userData.role || ''
+            })
         }
+        setIsLoading(false)
     }, [])
 
-    if (!adminProfile) {
+    if (isLoading) {
         return <div className="p-8">Loading settings...</div>
     }
 
@@ -64,7 +79,11 @@ export default function AdminSettingsPage() {
                                 </div>
                                 <div className="space-y-2">
                                     <Label>Phone</Label>
-                                    <Input defaultValue="+91 98765 43210" />
+                                    <Input
+                                        value={adminProfile.phoneNumber || ''}
+                                        placeholder="Enter phone number"
+                                        onChange={(e) => setAdminProfile({ ...adminProfile, phoneNumber: e.target.value })}
+                                    />
                                 </div>
                             </div>
                             <div className="flex justify-end">

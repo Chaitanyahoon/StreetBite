@@ -70,14 +70,23 @@ export default function SignInPage() {
     await performLogin(email, password)
   }
 
+  const [resetErrorMessage, setResetErrorMessage] = useState<string | null>(null)
+
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault()
     setResetStatus('sending')
+    setResetErrorMessage(null)
     try {
       await authApi.forgotPassword(resetEmail)
       setResetStatus('sent')
-    } catch (err) {
+    } catch (err: any) {
       setResetStatus('error')
+      // Get error message from backend response
+      if (err.response?.data?.error) {
+        setResetErrorMessage(err.response.data.error)
+      } else {
+        setResetErrorMessage('Failed to send reset link. Please try again.')
+      }
     }
   }
 
@@ -147,7 +156,7 @@ export default function SignInPage() {
                   {resetStatus === 'error' && (
                     <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full bg-red-500" />
-                      Failed to send reset link. Please try again.
+                      {resetErrorMessage || 'Failed to send reset link. Please try again.'}
                     </div>
                   )}
 
