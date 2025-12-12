@@ -8,9 +8,13 @@ Write-Host "==========================================================" -Foregro
 Write-Host ""
 
 # Set Google Maps API Key
-$env:GOOGLE_MAPS_API_KEY = "AIzaSyDXS0S_mY0DYrQdHVRKSk50elUlDtEL4pE"
-$env:NEXT_PUBLIC_GOOGLE_MAPS_API_KEY = "AIzaSyDXS0S_mY0DYrQdHVRKSk50elUlDtEL4pE"
-Write-Host "Google Maps API key configured" -ForegroundColor Green
+if ($env:GOOGLE_MAPS_API_KEY) {
+    $env:NEXT_PUBLIC_GOOGLE_MAPS_API_KEY = $env:GOOGLE_MAPS_API_KEY
+    Write-Host "Google Maps API key configured from environment" -ForegroundColor Green
+}
+else {
+    Write-Host "WARNING: GOOGLE_MAPS_API_KEY is not set in environment!" -ForegroundColor Red
+}
 
 # Check for DB Password
 if (-not $env:DB_PASSWORD) {
