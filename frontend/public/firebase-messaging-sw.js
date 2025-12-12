@@ -1,40 +1,53 @@
-// ⚠️ IMPORTANT: Replace these values with your actual Firebase config
-// Copy these from Firebase Console > Project Settings > General > Your apps > Firebase SDK snippet
-const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT.firebaseapp.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT.firebasestorage.app",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID",
-    measurementId: "YOUR_MEASUREMENT_ID"
-};
-
 // Import Firebase scripts
 importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js')
 importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js')
 
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig)
+// Firebase config is passed via URL search params during service worker registration
+// This avoids hardcoding sensitive values
+const urlParams = new URLSearchParams(self.location.search);
+const firebaseConfig = {
+    apiKey: urlParams.get('apiKey') || '',
+    authDomain: urlParams.get('authDomain') || '',
+    projectId: urlParams.get('projectId') || '',
+    storageBucket: urlParams.get('storageBucket') || '',
+    messagingSenderId: urlParams.get('messagingSenderId') || '',
+    appId: urlParams.get('appId') || '',
+    measurementId: urlParams.get('measurementId') || ''
+};
 
-const messaging = firebase.messaging()
+let messaging = null;
 
-// Handle background messages
-messaging.onBackgroundMessage((payload) => {
-    console.log('[firebase-messaging-sw.js] Received background message', payload)
-
-    const notificationTitle = payload.notification?.title || 'StreetBite Notification'
-    const notificationOptions = {
-        body: payload.notification?.body || 'You have a new notification',
-        icon: '/logo.png',
-        badge: '/logo.png',
-        data: payload.data,
-        tag: payload.data?.type || 'general',
-        requireInteraction: false
+// Initialize Firebase only if we have the config
+if (firebaseConfig.apiKey && firebaseConfig.projectId) {
+    try {
+        firebase.initializeApp(firebaseConfig);
+        messaging = firebase.messaging();
+        console.log('[firebase-messaging-sw.js] Firebase initialized successfully');
+    } catch (error) {
+        console.error('[firebase-messaging-sw.js] Failed to initialize Firebase:', error);
     }
+} else {
+    console.warn('[firebase-messaging-sw.js] Firebase config not provided via URL params - push notifications will not work until page is reloaded');
+}
 
-    self.registration.showNotification(notificationTitle, notificationOptions)
-})
+// Handle background messages only if messaging is initialized
+if (messaging) {
+    messaging.onBackgroundMessage((payload) => {
+        console.log('[firebase-messaging-sw.js] Received background message', payload)
+
+        const notificationTitle = payload.notification?.title || 'StreetBite Notification'
+        const notificationOptions = {
+            body: payload.notification?.body || 'You have a new notification',
+            icon: '/logo.png',
+            badge: '/logo.png',
+            data: payload.data,
+            tag: payload.data?.type || 'general',
+            requireInteraction: false
+        }
+
+        self.registration.showNotification(notificationTitle, notificationOptions)
+    });
+}
 
 // Handle notification click
 self.addEventListener('notificationclick', (event) => {
@@ -56,3 +69,4 @@ self.addEventListener('notificationclick', (event) => {
         clients.openWindow(url)
     )
 })
+

@@ -10,6 +10,9 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  // Suppress hydration warnings (caused by browser extensions like Bitdefender)
+  reactStrictMode: false,
 }
 
 export default nextConfig
+

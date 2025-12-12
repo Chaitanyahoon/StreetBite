@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { TrendingUp, Users, ShoppingCart, AlertCircle, ShieldCheck, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { analyticsApi, vendorApi, announcementApi } from '@/lib/api'
+import { HotTopicsManager } from '@/components/HotTopicsManager'
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState<any>({
@@ -228,6 +229,9 @@ export default function AdminDashboard() {
         </Card>
       </div>
 
+      {/* Hot Topics Management (Moved to top for visibility) */}
+      <HotTopicsManager />
+
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="border-none shadow-lg">
@@ -273,6 +277,9 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Hot Topics Management */}
+
 
       {/* Pending Approvals */}
       {recentVendors.some(v => v.status === 'PENDING') && (

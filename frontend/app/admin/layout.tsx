@@ -49,10 +49,10 @@ export default function AdminLayout({
   // Show loading while checking auth
   if (isLoading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-background">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Verifying access...</p>
+      <div className="flex h-screen items-center justify-center bg-background" suppressHydrationWarning>
+        <div className="text-center" suppressHydrationWarning>
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent mx-auto mb-4" suppressHydrationWarning></div>
+          <p className="text-muted-foreground" suppressHydrationWarning>Verifying access...</p>
         </div>
       </div>
     )

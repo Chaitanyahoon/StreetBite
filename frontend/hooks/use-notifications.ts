@@ -32,7 +32,7 @@ export function useNotifications(userId?: number) {
 
             if (permission === 'granted') {
                 // Get FCM token
-                const vapidKey = "G10L_5paf5oCTUr_DaxXSeKfx46nslgW-3Im9beWsOc";
+                const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY || "";
                 console.log('🔔 useNotifications: VAPID Key available:', !!vapidKey)
 
                 const currentToken = await getToken(messaging, { vapidKey });

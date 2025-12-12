@@ -151,4 +151,20 @@ export const reportApi = {
   updateStatus: (id: string | number, status: string) => api.put(`/reports/${id}/status`, { status }) as Promise<any>,
 };
 
+export const discussionApi = {
+  // Public endpoints
+  getAll: () => api.get('/discussions') as Promise<any>,
+  getComments: (id: string | number) => api.get(`/discussions/${id}/comments`) as Promise<any>,
+  addComment: (id: string | number, text: string) => api.post(`/discussions/${id}/comments`, { text }) as Promise<any>,
+  like: (id: string | number) => api.post(`/discussions/${id}/like`) as Promise<any>,
+
+  // Admin endpoints
+  getAllAdmin: () => api.get('/admin/discussions') as Promise<any>,
+  create: (data: { title: string; tags?: string[] }) => api.post('/admin/discussions', data) as Promise<any>,
+  update: (id: string | number, data: any) => api.put(`/admin/discussions/${id}`, data) as Promise<any>,
+  toggle: (id: string | number) => api.put(`/admin/discussions/${id}/toggle`) as Promise<any>,
+  delete: (id: string | number) => api.delete(`/admin/discussions/${id}`) as Promise<any>,
+};
+
 export default api;
+

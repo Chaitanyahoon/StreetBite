@@ -60,19 +60,41 @@ export function VendorBattle() {
         setVotes(newVotes);
         setHasVoted(true);
 
-        // Award XP via backend
-        performAction('complete_challenge');
+        // Calculate total votes including base votes from server
+        const totalVotesA = (pair[0].votes || 0) + newVotes[0];
+        const totalVotesB = (pair[1].votes || 0) + newVotes[1];
 
-        toast.success(`Voted for ${pair[index].name}!`, {
-            description: "You earned 50 XP! 🌟",
-            style: {
-                background: '#10B981',
-                color: 'white',
-                border: 'none',
-                fontWeight: 'bold'
-            },
-            icon: '✅'
-        });
+        // Determine if user voted for the winner
+        const userPickedWinner =
+            (index === 0 && totalVotesA >= totalVotesB) ||
+            (index === 1 && totalVotesB >= totalVotesA);
+
+        if (userPickedWinner) {
+            // Award XP only if user picked the winner
+            performAction('complete_challenge');
+            toast.success(`🏆 ${pair[index].name} is winning!`, {
+                description: "Great pick! You earned 50 XP! 🌟",
+                style: {
+                    background: '#10B981',
+                    color: 'white',
+                    border: 'none',
+                    fontWeight: 'bold'
+                },
+                icon: '✅'
+            });
+        } else {
+            // No XP for losing pick
+            toast.error(`${pair[index].name} is trailing...`, {
+                description: "Better luck next time! No XP this round.",
+                style: {
+                    background: '#EF4444',
+                    color: 'white',
+                    border: 'none',
+                    fontWeight: 'bold'
+                },
+                icon: '😅'
+            });
+        }
     };
 
     const handleSkip = () => {
@@ -101,7 +123,6 @@ export function VendorBattle() {
     return (
         <Card className="overflow-hidden border-none shadow-xl bg-gradient-to-br from-indigo-950 via-purple-900 to-indigo-900 text-white relative group h-full flex flex-col">
             {/* Background Effects */}
-            <div className="absolute inset-0 bg-[url('/noise.png')] opacity-10 mix-blend-overlay" />
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-gradient-to-b from-white/5 to-transparent pointer-events-none" />
 
             {/* Animated background blobs */}

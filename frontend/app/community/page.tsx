@@ -28,42 +28,25 @@ const VENDORS = [
     { name: "Arjun's Momos", location: "Kolkata", rating: "4.8★" }
 ];
 
-const DISCUSSIONS = [
-    { id: 1, text: "What's your go-to midnight snack?", replies: 142, likes: 89, author: "foodie_raj", time: "2h ago", tags: ["Late Night", "Snacks"] },
-    { id: 2, text: "Best street food in Pune?", replies: 89, likes: 56, author: "pune_explorer", time: "5h ago", tags: ["Pune", "Recommendations"] },
-    { id: 3, text: "Spicy vs. Sweet - what's your vibe?", replies: 67, likes: 112, author: "taste_master", time: "1d ago", tags: ["Debate"] },
-    { id: 4, text: "Hidden gem near you?", replies: 234, likes: 178, author: "street_hunter", time: "3h ago", tags: ["Discovery"] },
-    { id: 5, text: "Favorite chaat combination?", replies: 156, likes: 134, author: "chaat_lover", time: "12h ago", tags: ["Chaat"] },
-    { id: 6, text: "Rainy day food mood?", replies: 198, likes: 201, author: "monsoon_foodie", time: "6h ago", tags: ["Weather", "Comfort Food"] },
-    { id: 7, text: "Best Vada Pav in Mumbai?", replies: 300, likes: 450, author: "mumbai_local", time: "1h ago", tags: ["Mumbai", "Vada Pav"] },
-    { id: 8, text: "Filter Coffee vs Masala Chai", replies: 500, likes: 600, author: "chai_wala", time: "4h ago", tags: ["Debate", "Drinks"] },
-    { id: 9, text: "Underrated Street Foods", replies: 120, likes: 90, author: "explorer_101", time: "8h ago", tags: ["Discovery"] },
-    { id: 10, text: "Street Food Hygiene Tips", replies: 80, likes: 150, author: "health_nut", time: "1d ago", tags: ["Tips", "Health"] }
-];
-
-const SAMPLE_COMMENTS = [
-    { id: 1, author: "vada_pav_fan", text: "Vada pav all the way! Nothing beats it! 🥪", likes: 12, time: "1h ago" },
-    { id: 2, author: "samosa_king", text: "Has to be samosas with green chutney 😋", likes: 8, time: "45m ago" },
-    { id: 3, author: "chai_addict", text: "Chai and pakoras for sure!", likes: 15, time: "30m ago" }
-];
+const DISCUSSIONS: any[] = [];
+const SAMPLE_COMMENTS: any[] = [];
 
 import { useGamification } from '@/context/GamificationContext'
 
 // ... existing imports ...
 
-import { vendorApi } from '@/lib/api';
-
-// ... existing imports ...
+import { vendorApi, discussionApi } from '@/lib/api';
 
 export default function CommunityPage() {
     const { performAction } = useGamification()
     const [vendor, setVendor] = useState<any>(null); // Use proper type if available
-    const [discussions, setDiscussions] = useState(DISCUSSIONS);
+    const [discussions, setDiscussions] = useState<any[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [activeTab, setActiveTab] = useState('games');
-    const [selectedDiscussion, setSelectedDiscussion] = useState<typeof DISCUSSIONS[0] | null>(null);
+    const [selectedDiscussion, setSelectedDiscussion] = useState<any | null>(null);
     const [newComment, setNewComment] = useState('');
-    const [comments, setComments] = useState(SAMPLE_COMMENTS);
+    const [comments, setComments] = useState<any[]>([]);
+    const [loadingComments, setLoadingComments] = useState(false);
     const [hasLiked, setHasLiked] = useState(false);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [userRole, setUserRole] = useState<string | null>(null);
@@ -82,10 +65,7 @@ export default function CommunityPage() {
         }
 
         fetchRandomVendor();
-
-        // Randomize discussions order
-        const shuffled = [...DISCUSSIONS].sort(() => Math.random() - 0.5);
-        setDiscussions(shuffled);
+        fetchDiscussions();
     }, []);
 
     const fetchRandomVendor = async () => {
@@ -102,27 +82,100 @@ export default function CommunityPage() {
         }
     };
 
-    const handleDiscussionClick = (discussion: typeof DISCUSSIONS[0]) => {
+    const fetchDiscussions = async () => {
+        try {
+            const data = await discussionApi.getAll();
+            setDiscussions(data || []);
+        } catch (error) {
+            console.error('Failed to fetch discussions', error);
+            setDiscussions([]);
+        }
+    };
+
+    const fetchComments = async (discussionId: number) => {
+        setLoadingComments(true);
+        try {
+            const data = await discussionApi.getComments(discussionId);
+            if (data && data.length > 0) {
+                setComments(data);
+            } else {
+                setComments([]);
+            }
+        } catch (error) {
+            console.error('Failed to fetch comments', error);
+            setComments([]);
+        } finally {
+            setLoadingComments(false);
+        }
+    };
+
+    const handleDiscussionClick = (discussion: any) => {
         setSelectedDiscussion(discussion);
         setHasLiked(false);
         setNewComment('');
+        // Fetch comments for this discussion if it has a real ID
+        if (discussion.id && typeof discussion.id === 'number') {
+            fetchComments(discussion.id);
+        } else {
+            setComments([]);
+        }
     };
 
-    const handleLikeDiscussion = () => {
+    const handleLikeDiscussion = async () => {
         if (!selectedDiscussion) return;
-        setHasLiked(!hasLiked);
-        toast.success(hasLiked ? "Like removed" : "Discussion liked! ❤️", {
-            style: {
-                background: '#3B82F6',
-                color: 'white',
-                border: 'none',
-                fontWeight: 'bold'
-            },
-            icon: hasLiked ? '💔' : '❤️'
-        });
+
+        // Persist like to API if real discussion
+        if (selectedDiscussion?.id && typeof selectedDiscussion.id === 'number') {
+            try {
+                const response = await discussionApi.like(selectedDiscussion.id);
+                // response = { likes: number, liked: boolean }
+
+                setHasLiked(response.liked);
+
+                // Update selected discussion
+                setSelectedDiscussion((prev: any) => ({
+                    ...prev,
+                    likes: response.likes
+                }));
+
+                // Update main list
+                setDiscussions(prev => prev.map(d =>
+                    d.id === selectedDiscussion.id ? { ...d, likes: response.likes } : d
+                ));
+
+                if (response.liked && userRole !== 'VENDOR') {
+                    // Award XP for liking (only when liking)
+                    performAction('community_post');
+                    toast.success("Discussion liked! +10 XP ❤️", {
+                        description: "Thanks for engaging!",
+                        style: {
+                            background: '#10B981',
+                            color: 'white',
+                            border: 'none',
+                            fontWeight: 'bold'
+                        },
+                        icon: '❤️'
+                    });
+                } else {
+                    toast.success(response.liked ? "Discussion liked! ❤️" : "Like removed", {
+                        style: {
+                            background: response.liked ? '#3B82F6' : '#EF4444',
+                            color: 'white',
+                            border: 'none',
+                            fontWeight: 'bold'
+                        },
+                        icon: response.liked ? '❤️' : '💔'
+                    });
+                }
+
+            } catch (error) {
+                console.error('Failed to like discussion', error);
+                toast.error('Failed to update like');
+            }
+        }
     };
 
-    const handlePostComment = () => {
+    const handlePostComment = async () => {
         if (!newComment.trim()) return;
 
         if (!isLoggedIn) {
@@ -133,15 +186,19 @@ export default function CommunityPage() {
             return;
         }
 
-        const comment = {
-            id: comments.length + 1,
-            author: "you",
-            text: newComment,
-            likes: 0,
-            time: "Just now"
-        };
-        setComments([comment, ...comments]);
-        setNewComment('');
+        // Try to save via API if this is a real discussion
+        if (selectedDiscussion?.id && typeof selectedDiscussion.id === 'number') {
+            try {
+                const savedComment = await discussionApi.addComment(selectedDiscussion.id, newComment.trim());
+                setComments([savedComment, ...comments]);
+                setNewComment('');
+            } catch (error) {
+                console.error('Failed to save comment', error);
+                toast.error('Failed to post comment');
+            }
+        } else {
+            toast.error('Cannot comment on offline discussion');
+        }
 
         // Award XP for commenting (only for customers)
         if (userRole !== 'VENDOR') {
@@ -326,7 +383,7 @@ export default function CommunityPage() {
                                             >
                                                 <div className="flex justify-between items-start mb-2">
                                                     <div className="flex gap-2">
-                                                        {discussion.tags?.map(tag => (
+                                                        {discussion.tags?.map((tag: string) => (
                                                             <span key={tag} className="px-2 py-0.5 rounded-md bg-gray-100 text-gray-600 text-[10px] font-bold uppercase tracking-wider">
                                                                 {tag}
                                                             </span>

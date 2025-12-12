@@ -21,11 +21,42 @@ if (typeof window !== 'undefined') {
     analytics = getAnalytics(app);
 }
 
+// Register Firebase messaging service worker with config params
+async function registerFirebaseMessagingSW(): Promise<ServiceWorkerRegistration | null> {
+    if (typeof window === 'undefined' || !('serviceWorker' in navigator)) {
+        return null;
+    }
+
+    // Build query string with Firebase config for service worker
+    const swParams = new URLSearchParams({
+        apiKey: firebaseConfig.apiKey,
+        authDomain: firebaseConfig.authDomain,
+        projectId: firebaseConfig.projectId,
+        storageBucket: firebaseConfig.storageBucket,
+        messagingSenderId: firebaseConfig.messagingSenderId,
+        appId: firebaseConfig.appId,
+        measurementId: firebaseConfig.measurementId
+    });
+
+    try {
+        const registration = await navigator.serviceWorker.register(
+            `/firebase-messaging-sw.js?${swParams.toString()}`
+        );
+        console.log('Firebase messaging service worker registered');
+        return registration;
+    } catch (err) {
+        console.error('Failed to register firebase messaging service worker:', err);
+        return null;
+    }
+}
+
 // Initialize Firebase Cloud Messaging (only in browser)
 let messaging: ReturnType<typeof getMessaging> | null = null
 if (typeof window !== 'undefined') {
-    isSupported().then(supported => {
+    isSupported().then(async (supported) => {
         if (supported) {
+            // Register SW first, then get messaging instance
+            await registerFirebaseMessagingSW();
             messaging = getMessaging(app)
         }
     }).catch(err => console.error('FCM not supported:', err))

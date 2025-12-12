@@ -8,8 +8,8 @@ Write-Host "==========================================================" -Foregro
 Write-Host ""
 
 # Set Google Maps API Key
-$env:GOOGLE_MAPS_API_KEY = "AIzaSyB17r6uTSS55RZVTOSoHpQwxxGsUWwpeUc"
-$env:NEXT_PUBLIC_GOOGLE_MAPS_API_KEY = "AIzaSyB17r6uTSS55RZVTOSoHpQwxxGsUWwpeUc"
+$env:GOOGLE_MAPS_API_KEY = "AIzaSyDXS0S_mY0DYrQdHVRKSk50elUlDtEL4pE"
+$env:NEXT_PUBLIC_GOOGLE_MAPS_API_KEY = "AIzaSyDXS0S_mY0DYrQdHVRKSk50elUlDtEL4pE"
 Write-Host "Google Maps API key configured" -ForegroundColor Green
 
 # Check for DB Password
@@ -70,9 +70,19 @@ $backendJob = Start-Job -ScriptBlock {
 # Start frontend in background
 Write-Host "Starting Frontend (Next.js)..." -ForegroundColor Cyan
 $frontendJob = Start-Job -ScriptBlock {
-    if ($using:geocodeKey) { $env:NEXT_PUBLIC_GOOGLE_MAPS_API_KEY = $using:geocodeKey }
+    # Set all environment variables for frontend
+    $env:NEXT_PUBLIC_GOOGLE_MAPS_API_KEY = $using:geocodeKey
+    $env:NEXT_PUBLIC_FIREBASE_API_KEY = "AIzaSyAKDqyaU7Jvk49urkUuj69dv929sI3ADto"
+    $env:NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN = "streetbite-go.firebaseapp.com"
+    $env:NEXT_PUBLIC_FIREBASE_PROJECT_ID = "streetbite-go"
+    $env:NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET = "streetbite-go.firebasestorage.app"
+    $env:NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID = "683361671426"
+    $env:NEXT_PUBLIC_FIREBASE_APP_ID = "1:683361671426:web:76a5505163d225b0f8ca1b"
+    $env:NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID = "G-K3KTYWTLB2"
+    $env:NEXT_PUBLIC_FIREBASE_VAPID_KEY = "G10L_5paf5oCTUr_DaxXSeKfx46nslgW-3Im9beWsOc"
+    $env:NEXT_PUBLIC_BACKEND_URL = "http://localhost:8081/api"
+    
     Set-Location (Join-Path $using:PSScriptRoot "frontend")
-    # $env:NEXT_PUBLIC_BACKEND_URL = "http://localhost:8080"
     npm run dev 2>&1
 }
 

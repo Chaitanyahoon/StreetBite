@@ -60,6 +60,15 @@ export default function ExplorePage() {
     return R * c
   }
 
+  // Helper for formatting distance
+  const formatDistance = (distanceKm: number): string => {
+    if (distanceKm === Infinity || isNaN(distanceKm)) return 'N/A'
+    if (distanceKm < 1) {
+      return `${Math.round(distanceKm * 1000)} m`
+    }
+    return `${distanceKm.toFixed(1)} km`
+  }
+
   useEffect(() => {
     let mounted = true
 
@@ -82,10 +91,10 @@ export default function ExplorePage() {
           vendorsList = vendorsList.map((v: any) => {
             if (v.latitude && v.longitude) {
               const dist = calculateDistance(location.lat, location.lng, v.latitude, v.longitude)
-              return { ...v, distance: dist }
+              return { ...v, distanceRaw: dist, distance: formatDistance(dist) }
             }
-            return { ...v, distance: Infinity }
-          }).sort((a: any, b: any) => a.distance - b.distance)
+            return { ...v, distanceRaw: Infinity, distance: 'N/A' }
+          }).sort((a: any, b: any) => a.distanceRaw - b.distanceRaw)
         }
 
         if (mounted) setVendors(vendorsList)
@@ -103,18 +112,29 @@ export default function ExplorePage() {
   }, [location])
 
   const cuisineFilters = [
-    { id: 'all', label: 'All Cuisines' },
-    { id: 'mexican', label: 'Mexican' },
-    { id: 'indian', label: 'Indian' },
-    { id: 'asian', label: 'Asian' },
-    { id: 'middle-east', label: 'Middle Eastern' },
+    { id: 'all', label: 'All' },
+    { id: 'chaat', label: 'Chaat' },
+    { id: 'biryani', label: 'Biryani' },
+    { id: 'south-indian', label: 'South Indian' },
+    { id: 'north-indian', label: 'North Indian' },
+    { id: 'fast-food', label: 'Fast Food' },
+    { id: 'sweets', label: 'Sweets' },
   ]
 
-  // filter from Firestore-backed vendors
-  const filteredVendors = vendors.filter(vendor =>
-    vendor.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (vendor.cuisine || '').toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  // Filter vendors by search term AND cuisine filter
+  const filteredVendors = vendors.filter(vendor => {
+    // Search filter
+    const matchesSearch =
+      vendor.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (vendor.cuisine || '').toLowerCase().includes(searchTerm.toLowerCase())
+
+    // Cuisine filter
+    const matchesCuisine =
+      selectedFilter === 'all' ||
+      (vendor.cuisine || '').toLowerCase().includes(selectedFilter.replace('-', ' '))
+
+    return matchesSearch && matchesCuisine
+  })
 
   return (
     <div className="min-h-screen bg-background">

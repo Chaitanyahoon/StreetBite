@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Star, MapPin, Clock, Phone, Globe, Share2, Heart } from "lucide-react"
+import { Star, MapPin, Clock, Phone, Globe, Share2, Heart, ArrowLeft, X } from "lucide-react"
 
 interface VendorDetailsSheetProps {
     vendor: any | null
@@ -141,14 +141,26 @@ export function VendorDetailsSheet({ vendor, open, onOpenChange, onFavoriteToggl
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
+                    {/* Back Button - Top Left */}
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="absolute top-4 right-4 text-white hover:bg-white/20 rounded-full"
+                        className="absolute top-4 left-4 text-white bg-black/30 hover:bg-black/50 rounded-full w-10 h-10"
                         onClick={() => onOpenChange(false)}
                     >
+                        <ArrowLeft className="w-5 h-5" />
+                        <span className="sr-only">Go Back</span>
+                    </Button>
+
+                    {/* Close Button - Top Right */}
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="absolute top-4 right-4 text-white bg-black/30 hover:bg-black/50 rounded-full w-10 h-10"
+                        onClick={() => onOpenChange(false)}
+                    >
+                        <X className="w-5 h-5" />
                         <span className="sr-only">Close</span>
-                        {/* Close icon is handled by Sheet primitive usually, but we can add custom controls */}
                     </Button>
 
                     <div className="absolute bottom-4 left-6 right-6 text-white">
