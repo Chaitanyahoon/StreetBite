@@ -424,6 +424,20 @@
   }
 
   @layer utilities {
+    /* 3D Transform Utilities */
+    .perspective-1000 {
+      perspective: 1000px;
+    }
+
+    .preserve-3d {
+      transform-style: preserve-3d;
+      -webkit-transform-style: preserve-3d;
+    }
+
+    .backface-hidden {
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
 
     /* Utility Classes - Enhanced */
     .animate-fade-in {

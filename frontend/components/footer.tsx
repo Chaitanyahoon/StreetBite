@@ -243,7 +243,7 @@ export function Footer() {
                                 </div>
                                 <div>
                                     <p className="font-bold text-foreground mb-1 text-sm">Address</p>
-                                    <p className="text-muted-foreground text-sm leading-relaxed">StreetBite HQ<br />Your City, India</p>
+                                    <p className="text-muted-foreground text-sm leading-relaxed">StreetBite HQ<br />Nashik, Maharashtra</p>
                                 </div>
                             </li>
                             <li className="flex items-start gap-3 group">
@@ -267,10 +267,10 @@ export function Footer() {
                                 <div>
                                     <p className="font-bold text-foreground mb-1 text-sm">Email</p>
                                     <a
-                                        href="mailto:hello@streetbite.com"
+                                        href="mailto:teamstreetbite@gmail.com"
                                         className="text-muted-foreground hover:text-primary transition-colors text-sm font-medium"
                                     >
-                                        hello@streetbite.com
+                                        teamstreetbite@gmail.com
                                     </a>
                                 </div>
                             </li>
