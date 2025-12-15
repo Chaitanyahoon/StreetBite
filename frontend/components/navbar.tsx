@@ -118,55 +118,52 @@ export function Navbar() {
   return (
     <>
       {announcement && (
-        <div className={`w-full py-2 px-4 text-center text-sm font-medium ${announcement.type === 'WARNING' ? 'bg-red-500 text-white' :
+        <div className={`w-full py-3 px-4 text-center text-sm font-black uppercase tracking-wider border-b-4 border-black ${announcement.type === 'WARNING' ? 'bg-red-500 text-white' :
           announcement.type === 'ALERT' ? 'bg-yellow-400 text-black' :
-            'bg-indigo-600 text-white'
+            'bg-black text-white'
           }`}>
           {announcement.message}
         </div>
       )}
       <nav className={`sticky top-0 z-50 transition-all duration-300 ${scrolled
-        ? 'bg-white/90 backdrop-blur-xl shadow-lg border-b border-orange-100/50'
-        : 'bg-white/80 backdrop-blur-md border-b border-orange-100/30 shadow-sm'
+        ? 'bg-white border-b-4 border-black shadow-[0px_4px_0px_0px_rgba(0,0,0,0.1)]'
+        : 'bg-white border-b-4 border-black'
         } ${announcement ? '' : ''}`}>
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex justify-between items-center h-16">
+        <div className="max-w-screen-2xl mx-auto px-6">
+          <div className="flex justify-between items-center h-20">
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity flex-shrink-0 group">
-              <div className="transform group-hover:scale-105 transition-transform">
+            <Link href="/" className="flex items-center gap-2 hover:opacity-100 transition-opacity flex-shrink-0 group">
+              <div className="transform group-hover:scale-105 transition-transform group-hover:rotate-2">
                 <Logo />
               </div>
             </Link>
 
             {/* Center: Navigation Menu */}
-            <div className="hidden lg:flex items-center gap-1">
+            <div className="hidden lg:flex items-center gap-2">
               {navItems.map((item) => {
                 const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href))
                 return (
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`relative px-4 py-2 font-medium text-sm rounded-lg transition-all duration-200 group ${isActive
-                      ? 'text-primary'
-                      : 'text-foreground/70 hover:text-primary hover:bg-orange-50'
+                    className={`relative px-6 py-2 font-black text-sm uppercase tracking-wider rounded-lg border-2 transition-all duration-200 transform hover:-translate-y-1 ${isActive
+                      ? 'bg-yellow-400 text-black border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
+                      : 'bg-transparent text-black border-transparent hover:bg-orange-50 hover:border-black hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
                       }`}
                   >
                     {item.label}
-                    {/* Gradient underline */}
-                    <span className={`absolute bottom-0 left-1/2 -translate-x-1/2 h-0.5 bg-gradient-to-r from-orange-500 to-red-500 transition-all duration-300 ${isActive ? 'w-3/4' : 'w-0 group-hover:w-3/4'
-                      }`} />
                   </Link>
                 )
               })}
             </div>
 
             {/* Right: Auth Buttons */}
-            <div className="hidden lg:flex items-center gap-3 flex-shrink-0">
+            <div className="hidden lg:flex items-center gap-4 flex-shrink-0">
               {isLoggedIn ? (
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                   <Link href="/profile">
-                    <button className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-orange-50 transition-all duration-200 hover:scale-105 group">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-white font-semibold text-sm group-hover:shadow-lg transition-shadow overflow-hidden">
+                    <button className="flex items-center gap-3 px-2 py-1 rounded-xl hover:bg-orange-50 transition-all duration-200 group">
+                      <div className="w-10 h-10 rounded-lg bg-black flex items-center justify-center text-white font-black text-sm border-2 border-black group-hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-shadow overflow-hidden">
                         {userProfilePic ? (
                           <img
                             src={getImageUrl(userProfilePic)}
@@ -181,26 +178,25 @@ export function Navbar() {
                           userName.charAt(0).toUpperCase()
                         )}
                       </div>
-                      <span className="text-sm font-medium text-foreground">{userName}</span>
+                      <span className="text-sm font-black text-black uppercase tracking-wide hidden xl:block">{userName}</span>
                     </button>
                   </Link>
                   <button
                     onClick={handleLogout}
-                    className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-red-50 text-red-600 transition-all duration-200 hover:scale-105"
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white border-2 border-black hover:bg-red-500 hover:text-white text-black transition-all duration-200 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px]"
                   >
-                    <LogOut size={18} />
-                    <span className="text-sm font-medium">Logout</span>
+                    <LogOut size={18} className="stroke-[3px]" />
                   </button>
                 </div>
               ) : (
                 <>
                   <Link href="/signin">
-                    <Button variant="outline" className="border-primary/20 text-primary hover:bg-primary/5 hover:scale-105 transition-all duration-200">
+                    <Button variant="outline" className="font-black uppercase border-2 border-black bg-white text-black hover:bg-black hover:text-white hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all">
                       Sign In
                     </Button>
                   </Link>
                   <Link href="/signup">
-                    <Button className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200">
+                    <Button className="font-black uppercase border-2 border-black bg-orange-500 text-white hover:bg-orange-600 hover:translate-y-[-2px] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all">
                       Register
                     </Button>
                   </Link>
@@ -210,26 +206,26 @@ export function Navbar() {
 
             {/* Mobile Menu Button */}
             <button
-              className="lg:hidden p-2 hover:bg-orange-50 rounded-lg transition-all duration-200 hover:scale-110"
+              className="lg:hidden p-2 border-2 border-black bg-white hover:bg-yellow-400 rounded-lg transition-all duration-200 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-y-[2px] active:shadow-none"
               onClick={() => setIsOpen(!isOpen)}
               aria-label="Toggle menu"
             >
-              {isOpen ? <X size={24} className="text-primary" /> : <Menu size={24} className="text-primary" />}
+              {isOpen ? <X size={24} className="text-black stroke-[3px]" /> : <Menu size={24} className="text-black stroke-[3px]" />}
             </button>
           </div>
 
           {/* Mobile Menu */}
           {isOpen && (
-            <div className="lg:hidden border-t border-orange-100 pb-6 pt-4 space-y-2 animate-in slide-in-from-top duration-300">
+            <div className="lg:hidden border-t-4 border-black pb-8 pt-4 space-y-3 animate-in slide-in-from-top duration-300 bg-white absolute left-0 right-0 px-6 shadow-xl border-b-4">
               {navItems.map((item) => {
                 const isActive = pathname === item.href
                 return (
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`block px-4 py-3 font-medium text-sm rounded-lg transition-all duration-200 ${isActive
-                      ? 'text-primary bg-orange-50 border-l-4 border-primary'
-                      : 'text-foreground/70 hover:text-primary hover:bg-orange-50'
+                    className={`block px-6 py-4 font-black text-lg uppercase tracking-wider rounded-xl border-2 transition-all duration-200 ${isActive
+                      ? 'bg-yellow-400 text-black border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
+                      : 'bg-white text-black border-black/10 hover:border-black hover:bg-orange-50'
                       }`}
                     onClick={() => setIsOpen(false)}
                   >
@@ -237,12 +233,12 @@ export function Navbar() {
                   </Link>
                 )
               })}
-              <div className="flex flex-col gap-3 pt-4 px-4 border-t border-orange-100">
+              <div className="flex flex-col gap-4 pt-6 border-t-4 border-black">
                 {isLoggedIn ? (
                   <>
                     <Link href="/profile" onClick={() => setIsOpen(false)}>
-                      <button className="w-full flex items-center justify-center gap-2 py-3 rounded-lg bg-gradient-to-r from-orange-50 to-red-50 text-primary font-medium transition-all duration-200 hover:shadow-md">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-white font-semibold text-sm overflow-hidden">
+                      <button className="w-full flex items-center justify-center gap-3 py-4 rounded-xl bg-black text-white font-black border-2 border-black shadow-[4px_4px_0px_0px_#9ca3af] hover:shadow-[4px_4px_0px_0px_#000000] active:translate-y-[2px] transition-all">
+                        <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-black font-black text-sm overflow-hidden">
                           {userProfilePic ? (
                             <img
                               src={getImageUrl(userProfilePic)}
@@ -265,21 +261,21 @@ export function Navbar() {
                         setIsOpen(false)
                         handleLogout()
                       }}
-                      className="w-full flex items-center justify-center gap-2 py-3 rounded-lg bg-red-50 text-red-600 font-medium transition-all duration-200 hover:shadow-md"
+                      className="w-full flex items-center justify-center gap-2 py-4 rounded-xl bg-white text-red-600 border-2 border-black font-black uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-y-[2px] transition-all"
                     >
-                      <LogOut size={20} />
+                      <LogOut size={20} className="stroke-[3px]" />
                       Logout
                     </button>
                   </>
                 ) : (
                   <>
                     <Link href="/signin" onClick={() => setIsOpen(false)}>
-                      <Button variant="outline" className="w-full border-primary/20 text-primary hover:bg-primary/5">
+                      <Button variant="outline" className="w-full h-12 font-black uppercase border-2 border-black bg-white text-black hover:bg-gray-100 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-y-[2px] transition-all">
                         Sign In
                       </Button>
                     </Link>
                     <Link href="/signup" onClick={() => setIsOpen(false)}>
-                      <Button className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white shadow-md">
+                      <Button className="w-full h-12 font-black uppercase border-2 border-black bg-orange-500 text-white hover:bg-orange-600 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-y-[2px] transition-all">
                         Register
                       </Button>
                     </Link>

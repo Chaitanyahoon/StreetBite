@@ -117,62 +117,70 @@ export default function ExplorePage() {
   )
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[#FADFA1] bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px]">
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative py-20 px-6 overflow-hidden">
-        {/* Animated Background */}
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-float -z-10" />
-        <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-secondary/5 rounded-full blur-3xl animate-float -z-10" style={{ animationDelay: '1s' }} />
+      <section className="relative py-32 px-4 overflow-hidden">
+        {/* Animated Background Elements */}
+        <div className="absolute top-20 left-10 w-32 h-32 bg-yellow-400 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
+        <div className="absolute top-20 right-10 w-32 h-32 bg-orange-400 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-8 left-20 w-32 h-32 bg-pink-400 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-4000"></div>
 
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center mb-16 animate-slide-up">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-bold mb-6 animate-scale-in">
-              <Sparkles className="w-4 h-4" />
-              BROWSE VENDORS
+            <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-black text-white text-sm font-black tracking-wider mb-8 shadow-[4px_4px_0px_0px_rgba(234,179,8,1)] border-2 border-black transform hover:-translate-y-1 transition-transform">
+              <Sparkles className="w-4 h-4 text-yellow-400 animate-pulse" />
+              EXPLORE THE STREETS
             </div>
-            <h1 className="text-5xl md:text-6xl font-black text-foreground mb-6 text-balance">
-              Explore Street Food <br />
-              <span className="text-shine-amber">Near You</span>
+            <h1 className="text-6xl md:text-8xl font-black text-black mb-8 leading-[0.9] tracking-tighter">
+              Discover Local <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-600 drop-shadow-[4px_4px_0px_rgba(0,0,0,1)]">
+                Street Flavors
+              </span>
             </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Discover {vendors.length}+ amazing street food vendors serving authentic flavors in your area
+            <p className="text-2xl text-black font-bold max-w-2xl mx-auto leading-relaxed">
+              Find <span className="inline-block px-2 bg-yellow-300 border-2 border-black rounded transform -rotate-2">{vendors.length}+</span> authentic vendors serving happiness near you!
             </p>
           </div>
 
           {/* Search Bar */}
-          <div className="max-w-2xl mx-auto mb-12 animate-slide-up" style={{ animationDelay: '0.1s' }}>
-            <div className="relative group search-bar">
-              <Input
-                placeholder="Search vendors or cuisines..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-14 pr-4 py-6 text-lg border-2 border-primary/10 focus:border-primary rounded-full shadow-soft group-hover:shadow-elevated transition-all bg-white/80 backdrop-blur-sm"
-              />
-              <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-primary/60 group-hover:text-primary transition-colors" size={24} />
+          <div className="max-w-3xl mx-auto mb-16 animate-scale-in">
+            <div className="relative group">
+              <div className="absolute inset-0 bg-black rounded-full translate-x-2 translate-y-2"></div>
+              <div className="relative flex items-center bg-white rounded-full border-4 border-black p-2 transition-transform group-hover:-translate-y-1">
+                <Search className="ml-4 w-8 h-8 text-black" strokeWidth={3} />
+                <Input
+                  placeholder="Search for tacos, pani puri, burgers..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="border-none text-xl font-bold placeholder:text-gray-400 focus-visible:ring-0 h-14 bg-transparent"
+                />
+                <Button className="rounded-full px-8 h-14 bg-orange-500 hover:bg-orange-600 text-white font-black text-lg border-l-4 border-black rounded-l-none">
+                  SEARCH
+                </Button>
+              </div>
             </div>
           </div>
 
           {/* View Toggle and Filters */}
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6 animate-slide-up" style={{ animationDelay: '0.2s' }}>
-            <div className="mb-6">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-8 mb-12">
+            <div className="bg-white p-2 rounded-2xl border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
               <MapListToggle onViewChange={setViewMode} />
             </div>
 
-            <div className="flex flex-wrap gap-3 justify-center md:justify-end">
+            <div className="flex flex-wrap gap-3 justify-center">
               {cuisineFilters.map((filter) => (
-                <Button
+                <button
                   key={filter.id}
                   onClick={() => setSelectedFilter(filter.id)}
-                  variant={selectedFilter === filter.id ? 'default' : 'outline'}
-                  className={`rounded-full px-6 transition-all hover-lift ${selectedFilter === filter.id
-                    ? 'btn-gradient border-none shadow-md'
-                    : 'border-primary/20 text-foreground hover:border-primary/40 hover:bg-primary/5'
+                  className={`px-6 py-3 rounded-xl font-black border-4 border-black transition-all transform hover:-translate-y-1 ${selectedFilter === filter.id
+                      ? 'bg-yellow-400 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
+                      : 'bg-white hover:bg-gray-50 shadow-[4px_4px_0px_0px_rgba(200,200,200,1)]'
                     }`}
                 >
                   {filter.label}
-                </Button>
+                </button>
               ))}
             </div>
           </div>
@@ -180,22 +188,22 @@ export default function ExplorePage() {
       </section>
 
       {/* Vendors Grid */}
-      <section className="py-12 px-6 bg-gradient-to-b from-transparent to-muted/20">
+      <section className="py-12 px-4 pb-32">
         <div className="max-w-7xl mx-auto">
 
           {/* Favorites Section */}
           {favorites.length > 0 && !searchTerm && selectedFilter === 'all' && (
-            <div className="mb-16 animate-slide-up" style={{ animationDelay: '0.3s' }}>
-              <h2 className="text-2xl font-bold text-foreground flex items-center gap-2 mb-6">
-                <Heart className="text-red-500 fill-red-500 w-6 h-6" />
+            <div className="mb-20">
+              <h2 className="text-4xl font-black text-black flex items-center gap-4 mb-10 transform -rotate-1">
+                <div className="bg-red-500 p-3 rounded-xl border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                  <Heart className="text-white fill-white w-8 h-8" />
+                </div>
                 Your Favorites
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                 {favorites.map((vendor, index) => (
                   <div key={vendor.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
-                    <div className="card-tilt hover-lift h-full">
-                      <VendorCard id={vendor.id} {...vendor} />
-                    </div>
+                    <VendorCard id={vendor.id} {...vendor} />
                   </div>
                 ))}
               </div>
@@ -203,27 +211,26 @@ export default function ExplorePage() {
           )}
 
           <div className="mb-12 flex items-center justify-between">
-            <div>
-              <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
-                <Flame className="text-primary w-6 h-6" />
-                Top Results
-              </h2>
-              <p className="text-muted-foreground">{filteredVendors.length} vendors found</p>
+            <h2 className="text-4xl font-black text-black flex items-center gap-4">
+              <div className="bg-orange-500 p-3 rounded-xl border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                <Flame className="text-white w-8 h-8 animate-bounce-slow" />
+              </div>
+              Top Spots
+            </h2>
+            <div className="hidden md:block px-4 py-2 bg-black text-white font-bold rounded-lg transform rotate-2">
+              {filteredVendors.length} results found
             </div>
           </div>
 
           {viewMode === 'map' ? (
-            // use filtered vendors on the map (search + filters apply)
-            <div className="rounded-3xl overflow-hidden shadow-elevated border-4 border-white">
+            <div className="rounded-3xl overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] border-4 border-black h-[600px] bg-white">
               <VendorMap vendors={filteredVendors} onVendorSelect={(v) => setSelectedVendor(v)} />
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
               {filteredVendors.map((vendor, index) => (
-                <div key={vendor.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
-                  <div className="card-tilt hover-lift h-full">
-                    <VendorCard id={vendor.id} {...vendor} />
-                  </div>
+                <div key={vendor.id} className="hover:z-10 transition-all duration-300">
+                  <VendorCard id={vendor.id} {...vendor} />
                 </div>
               ))}
             </div>
@@ -231,10 +238,9 @@ export default function ExplorePage() {
         </div>
       </section>
 
-      {/* Footer */}
       <Footer />
 
-      {/* Vendor Details Sheet - only render when selectedVendor exists */}
+      {/* Vendor Details Sheet */}
       {selectedVendor && (
         <VendorDetailsSheet
           vendor={selectedVendor}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useInView, useMotionValue, useSpring } from 'framer-motion'
+import { useInView, useMotionValue, useSpring, useTransform, motion } from 'framer-motion'
 import { useEffect, useRef } from 'react'
 
 export function Counter({
@@ -26,14 +26,7 @@ export function Counter({
         }
     }, [isInView, value, motionValue])
 
-    useEffect(() => {
-        springValue.on("change", (latest) => {
-            if (ref.current) {
-                // @ts-ignore
-                ref.current.textContent = Math.floor(latest).toLocaleString() + suffix
-            }
-        })
-    }, [springValue, suffix])
+    const display = useTransform(springValue, (latest) => Math.floor(latest).toLocaleString() + suffix)
 
-    return <span ref={ref} className={className}>0{suffix}</span>
+    return <motion.span ref={ref} className={className}>{display}</motion.span>
 }

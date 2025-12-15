@@ -751,5 +751,52 @@
       animation: shine 3s linear infinite;
       text-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
     }
+
+    .bg-dot-pattern {
+      background-image: radial-gradient(rgba(0, 0, 0, 0.1) 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+
+    .dark .bg-dot-pattern {
+      background-image: radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+    }
+
+    @keyframes spin-slow {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .animate-spin-slow {
+      animation: spin-slow 8s linear infinite;
+    }
+
+    @keyframes gradient-x {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    .animate-gradient-x {
+      background-size: 200% 200%;
+      animation: gradient-x 4s ease infinite;
+    }
+
+    @keyframes scale-x {
+      from { transform: scaleX(0); }
+      to { transform: scaleX(1); }
+    }
+
+    .animate-scale-x {
+      animation: scale-x 0.8s ease-out forwards;
+    }
+    
+    @keyframes float-delayed {
+      0%, 100% { transform: translateY(0px) rotate(-12deg); }
+      50% { transform: translateY(-15px) rotate(-8deg); }
+    }
+
+    .animate-float-delayed {
+      animation: float-delayed 4s ease-in-out infinite;
+      animation-delay: 1.5s;
+    }
   }
 }

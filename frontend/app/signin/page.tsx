@@ -82,16 +82,16 @@ export default function SignInPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
+    <div className="min-h-screen bg-[#FADFA1] bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] flex flex-col relative overflow-hidden">
       {/* Animated Background */}
-      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl animate-float -z-10" />
-      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-secondary/5 rounded-full blur-3xl animate-float -z-10" style={{ animationDelay: '2s' }} />
+      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-yellow-400 rounded-full blur-[100px] opacity-40 animate-blob -z-10" />
+      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-orange-400 rounded-full blur-[100px] opacity-40 animate-blob animation-delay-2000 -z-10" />
 
       {/* Back button */}
-      <div className="p-4 sm:p-6 relative z-10">
-        <Link href="/" className="inline-flex items-center gap-2 text-primary hover:text-primary/80 font-medium transition-colors hover-lift">
-          <ArrowLeft size={20} />
-          Back to Home
+      <div className="p-6 relative z-10">
+        <Link href="/" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white text-black font-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-all">
+          <ArrowLeft size={24} strokeWidth={3} />
+          BACK TO HOME
         </Link>
       </div>
 
@@ -100,67 +100,65 @@ export default function SignInPage() {
         <div className="w-full max-w-md animate-slide-up">
           {/* Logo and Heading */}
           <div className="text-center mb-8">
-            <div className="flex justify-center mb-4 hover-lift">
+            <div className="flex justify-center mb-6 transform hover:scale-110 transition-transform duration-300">
               <Logo />
             </div>
-            <h1 className="text-3xl font-bold mb-2">
-              <span className="text-shine-amber">
-                {showForgotPassword ? 'Reset Password' : 'Welcome Back'}
-              </span>
+            <h1 className="text-4xl md:text-5xl font-black mb-4 text-black tracking-tight">
+              {showForgotPassword ? 'RESET PASSWORD' : 'WELCOME BACK!'}
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-xl font-bold text-gray-700">
               {showForgotPassword
-                ? 'Enter your email to receive a reset link'
-                : 'Sign in to discover amazing street food near you'}
+                ? 'Don\'t worry, we\'ll get you back in!'
+                : 'Ready to satisfy those cravings?'}
             </p>
           </div>
 
           {showForgotPassword ? (
             /* Forgot Password Form */
-            <form onSubmit={handleForgotPassword} className="space-y-6 glass rounded-3xl shadow-elevated p-8 border border-white/20">
+            <form onSubmit={handleForgotPassword} className="bg-white rounded-[2rem] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-8 border-4 border-black relative overflow-hidden">
               {resetStatus === 'sent' ? (
-                <div className="text-center space-y-4">
-                  <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto">
-                    <Mail size={32} />
+                <div className="text-center space-y-6">
+                  <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full border-4 border-black flex items-center justify-center mx-auto shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                    <Mail size={32} strokeWidth={3} />
                   </div>
                   <div className="space-y-2">
-                    <h3 className="text-xl font-semibold text-foreground">Check your email</h3>
-                    <p className="text-muted-foreground text-sm">
-                      We have sent a password reset link to <span className="font-medium text-foreground">{resetEmail}</span>
+                    <h3 className="text-2xl font-black text-black">CHECK YOUR EMAIL</h3>
+                    <p className="text-gray-600 font-medium">
+                      We sent a recovery link to <br /><span className="font-bold text-black bg-yellow-200 px-1">{resetEmail}</span>
                     </p>
                   </div>
                   <Button
                     type="button"
                     variant="outline"
-                    className="w-full mt-4"
+                    className="w-full mt-4 h-14 rounded-xl border-4 border-black font-black text-lg shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
                     onClick={() => {
                       setShowForgotPassword(false)
                       setResetStatus('idle')
                       setResetEmail('')
                     }}
                   >
-                    Back to Sign In
+                    BACK TO LOGIN
                   </Button>
                 </div>
               ) : (
                 <>
                   {resetStatus === 'error' && (
-                    <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-red-500" />
-                      Failed to send reset link. Please try again.
+                    <div className="bg-red-100 border-4 border-black text-black px-4 py-3 rounded-xl font-bold flex items-center gap-2 mb-4">
+                      <div className="w-3 h-3 bg-red-500 rounded-full border border-black" />
+                      Failed to send. Try again!
                     </div>
                   )}
 
-                  <div className="space-y-2">
-                    <label className="block text-sm font-medium text-foreground ml-1">Email Address</label>
+                  <div className="space-y-4">
+                    <label className="block text-sm font-black text-black uppercase tracking-wider ml-1">Email Address</label>
                     <div className="relative group">
-                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-primary/60 group-hover:text-primary transition-colors size-5" />
+                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-black transition-colors size-6" strokeWidth={2.5} />
                       <input
                         type="email"
                         value={resetEmail}
                         onChange={(e) => setResetEmail(e.target.value)}
                         placeholder="you@example.com"
-                        className="w-full pl-12 pr-4 py-3.5 border-2 border-primary/10 rounded-xl focus:outline-none focus:border-primary bg-white/50 transition-all hover:bg-white/80"
+                        className="w-full pl-12 pr-4 py-4 border-4 border-black rounded-xl text-lg font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400 bg-gray-50 transition-all placeholder:text-gray-400"
                         required
                       />
                     </div>
@@ -169,58 +167,58 @@ export default function SignInPage() {
                   <Button
                     type="submit"
                     disabled={resetStatus === 'sending'}
-                    className="w-full btn-gradient h-12 rounded-xl text-lg font-semibold shadow-lg hover-lift hover-glow disabled:opacity-50"
+                    className="w-full mt-6 h-14 bg-black text-white rounded-xl border-4 border-black font-black text-xl shadow-[4px_4px_0px_0px_#fbbf24] hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_#fbbf24] transition-all disabled:opacity-50 disabled:hover:translate-y-0"
                   >
-                    {resetStatus === 'sending' ? 'Sending...' : 'Send Reset Link'}
+                    {resetStatus === 'sending' ? 'SENDING...' : 'SEND RESET LINK'}
                   </Button>
 
                   <button
                     type="button"
                     onClick={() => setShowForgotPassword(false)}
-                    className="w-full text-sm text-muted-foreground hover:text-primary transition-colors font-medium"
+                    className="w-full mt-4 text-sm font-bold text-gray-500 hover:text-black hover:underline transition-colors uppercase tracking-wide"
                   >
-                    Back to Sign In
+                    Cancel
                   </button>
                 </>
               )}
             </form>
           ) : (
             /* Login Form */
-            <form onSubmit={handleSignIn} className="space-y-6 glass rounded-3xl shadow-elevated p-8 border border-white/20">
+            <form onSubmit={handleSignIn} className="bg-white rounded-[2rem] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-8 border-4 border-black relative overflow-hidden">
               {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm animate-fade-in flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-red-500" />
+                <div className="bg-red-100 border-4 border-black text-black px-4 py-3 rounded-xl font-bold flex items-center gap-3 mb-6 animate-shake">
+                  <div className="w-4 h-4 bg-red-500 rounded-full border border-black flex-shrink-0" />
                   {error}
                 </div>
               )}
 
               {/* Email Input */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-foreground ml-1">Email Address</label>
+              <div className="space-y-4 mb-6">
+                <label className="block text-sm font-black text-black uppercase tracking-wider ml-1">Email Address</label>
                 <div className="relative group">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-primary/60 group-hover:text-primary transition-colors size-5" />
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-black transition-colors size-6" strokeWidth={2.5} />
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@example.com"
-                    className="w-full pl-12 pr-4 py-3.5 border-2 border-primary/10 rounded-xl focus:outline-none focus:border-primary bg-white/50 transition-all hover:bg-white/80"
+                    className="w-full pl-14 pr-4 py-4 border-4 border-black rounded-xl text-lg font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400 bg-gray-50 transition-all placeholder:text-gray-400"
                     required
                   />
                 </div>
               </div>
 
               {/* Password Input */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-foreground ml-1">Password</label>
+              <div className="space-y-4 mb-8">
+                <label className="block text-sm font-black text-black uppercase tracking-wider ml-1">Password</label>
                 <div className="relative group">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-primary/60 group-hover:text-primary transition-colors size-5" />
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-black transition-colors size-6" strokeWidth={2.5} />
                   <input
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Enter your password"
-                    className="w-full pl-12 pr-4 py-3.5 border-2 border-primary/10 rounded-xl focus:outline-none focus:border-primary bg-white/50 transition-all hover:bg-white/80"
+                    placeholder="••••••••"
+                    className="w-full pl-14 pr-4 py-4 border-4 border-black rounded-xl text-lg font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400 bg-gray-50 transition-all placeholder:text-gray-400"
                     required
                   />
                 </div>
@@ -228,9 +226,9 @@ export default function SignInPage() {
                   <button
                     type="button"
                     onClick={() => setShowForgotPassword(true)}
-                    className="text-sm text-primary hover:text-primary/80 font-medium hover:underline transition-all"
+                    className="text-sm font-bold text-gray-500 hover:text-black hover:underline transition-all"
                   >
-                    Forgot Password?
+                    FORGOT PASSWORD?
                   </button>
                 </div>
               </div>
@@ -239,34 +237,32 @@ export default function SignInPage() {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full btn-gradient h-12 rounded-xl text-lg font-semibold shadow-lg hover-lift hover-glow disabled:opacity-50 disabled:hover:transform-none"
+                className="w-full h-16 bg-orange-500 hover:bg-orange-600 text-white rounded-xl border-4 border-black font-black text-2xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all disabled:opacity-70 disabled:hover:translate-y-0"
               >
                 {isLoading ? (
-                  <span className="flex items-center gap-2">
-                    <span className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
-                    Signing In...
+                  <span className="flex items-center gap-3">
+                    <span className="animate-spin rounded-full h-6 w-6 border-4 border-white border-t-transparent" />
+                    COOKING...
                   </span>
                 ) : (
-                  'Sign In'
+                  'LET\'S EAT!'
                 )}
               </Button>
 
               {/* Divider */}
-              <div className="flex items-center gap-3 my-6">
-                <div className="flex-1 h-px bg-primary/10" />
-                <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">OR</span>
-                <div className="flex-1 h-px bg-primary/10" />
+              <div className="flex items-center gap-3 my-8">
+                <div className="flex-1 h-1 bg-gray-200 rounded-full" />
+                <span className="text-xs text-gray-400 font-black uppercase tracking-widest">OR</span>
+                <div className="flex-1 h-1 bg-gray-200 rounded-full" />
               </div>
 
               {/* Sign Up Link */}
-              <p className="text-center text-sm text-muted-foreground">
-                Don't have an account?{' '}
-                <Link href="/signup" className="text-primary hover:text-primary/80 font-bold hover:underline decoration-2 underline-offset-4">
-                  Sign Up
+              <p className="text-center text-lg font-medium text-gray-600">
+                New to StreetBite?{' '}
+                <Link href="/signup" className="text-black font-black decoration-4 underline decoration-yellow-400 hover:bg-yellow-400 transition-colors px-1">
+                  CREATE ACCOUNT
                 </Link>
               </p>
-
-
             </form>
           )}
         </div>

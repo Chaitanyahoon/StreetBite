@@ -36,6 +36,11 @@ const navItems = [
     href: '/admin/settings',
     icon: Settings,
   },
+  {
+    label: 'Hot Topics',
+    href: '/admin/hot-topics',
+    icon: Store, // Reusing Store icon or finding a better one like Flame if available, using Store for now to match safety
+  },
 ]
 
 export function AdminSidebar() {

@@ -28,45 +28,23 @@ const VENDORS = [
     { name: "Arjun's Momos", location: "Kolkata", rating: "4.8★" }
 ];
 
-const DISCUSSIONS = [
-    { id: 1, text: "What's your go-to midnight snack?", replies: 142, likes: 89, author: "foodie_raj", time: "2h ago", tags: ["Late Night", "Snacks"] },
-    { id: 2, text: "Best street food in Pune?", replies: 89, likes: 56, author: "pune_explorer", time: "5h ago", tags: ["Pune", "Recommendations"] },
-    { id: 3, text: "Spicy vs. Sweet - what's your vibe?", replies: 67, likes: 112, author: "taste_master", time: "1d ago", tags: ["Debate"] },
-    { id: 4, text: "Hidden gem near you?", replies: 234, likes: 178, author: "street_hunter", time: "3h ago", tags: ["Discovery"] },
-    { id: 5, text: "Favorite chaat combination?", replies: 156, likes: 134, author: "chaat_lover", time: "12h ago", tags: ["Chaat"] },
-    { id: 6, text: "Rainy day food mood?", replies: 198, likes: 201, author: "monsoon_foodie", time: "6h ago", tags: ["Weather", "Comfort Food"] },
-    { id: 7, text: "Best Vada Pav in Mumbai?", replies: 300, likes: 450, author: "mumbai_local", time: "1h ago", tags: ["Mumbai", "Vada Pav"] },
-    { id: 8, text: "Filter Coffee vs Masala Chai", replies: 500, likes: 600, author: "chai_wala", time: "4h ago", tags: ["Debate", "Drinks"] },
-    { id: 9, text: "Underrated Street Foods", replies: 120, likes: 90, author: "explorer_101", time: "8h ago", tags: ["Discovery"] },
-    { id: 10, text: "Street Food Hygiene Tips", replies: 80, likes: 150, author: "health_nut", time: "1d ago", tags: ["Tips", "Health"] }
-];
-
-const SAMPLE_COMMENTS = [
-    { id: 1, author: "vada_pav_fan", text: "Vada pav all the way! Nothing beats it! 🥪", likes: 12, time: "1h ago" },
-    { id: 2, author: "samosa_king", text: "Has to be samosas with green chutney 😋", likes: 8, time: "45m ago" },
-    { id: 3, author: "chai_addict", text: "Chai and pakoras for sure!", likes: 15, time: "30m ago" }
-];
-
 import { useGamification } from '@/context/GamificationContext'
-
-// ... existing imports ...
-
-import { vendorApi } from '@/lib/api';
+import { hotTopicApi, vendorApi } from '@/lib/api';
 
 // ... existing imports ...
 
 export default function CommunityPage() {
     const { performAction } = useGamification()
-    const [vendor, setVendor] = useState<any>(null); // Use proper type if available
-    const [discussions, setDiscussions] = useState(DISCUSSIONS);
+    const [vendor, setVendor] = useState<any>(null);
+    const [discussions, setDiscussions] = useState<any[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [activeTab, setActiveTab] = useState('games');
-    const [selectedDiscussion, setSelectedDiscussion] = useState<typeof DISCUSSIONS[0] | null>(null);
+    const [selectedDiscussion, setSelectedDiscussion] = useState<any | null>(null);
     const [newComment, setNewComment] = useState('');
-    const [comments, setComments] = useState(SAMPLE_COMMENTS);
     const [hasLiked, setHasLiked] = useState(false);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [userRole, setUserRole] = useState<string | null>(null);
+    const [currentUser, setCurrentUser] = useState<any>(null);
 
     useEffect(() => {
         // Check authentication
@@ -76,17 +54,25 @@ export default function CommunityPage() {
                 const user = JSON.parse(userStr);
                 setIsLoggedIn(true);
                 setUserRole(user.role);
+                setCurrentUser(user);
             } catch (error) {
                 console.error('Failed to parse user data', error);
             }
         }
 
         fetchRandomVendor();
-
-        // Randomize discussions order
-        const shuffled = [...DISCUSSIONS].sort(() => Math.random() - 0.5);
-        setDiscussions(shuffled);
+        fetchHotTopics();
     }, []);
+
+    const fetchHotTopics = async () => {
+        try {
+            const data = await hotTopicApi.getAllActive();
+            setDiscussions(data);
+        } catch (error) {
+            console.error('Failed to fetch hot topics:', error);
+            // toast.error('Failed to load hot topics');
+        }
+    };
 
     const fetchRandomVendor = async () => {
         try {
@@ -97,32 +83,62 @@ export default function CommunityPage() {
             }
         } catch (error) {
             console.error("Failed to fetch vendor for spotlight", error);
-            // Fallback to a default if fetch fails
-            setVendor(VENDORS[0]);
         }
     };
 
-    const handleDiscussionClick = (discussion: typeof DISCUSSIONS[0]) => {
+    const handleDiscussionClick = (discussion: any) => {
         setSelectedDiscussion(discussion);
-        setHasLiked(false);
+        // Check if current user has liked
+        if (currentUser && discussion.likes) {
+            const liked = discussion.likes.some((l: any) => l.user?.id === currentUser.id);
+            setHasLiked(liked);
+        } else {
+            setHasLiked(false);
+        }
         setNewComment('');
     };
 
-    const handleLikeDiscussion = () => {
+    const handleLikeDiscussion = async () => {
         if (!selectedDiscussion) return;
-        setHasLiked(!hasLiked);
-        toast.success(hasLiked ? "Like removed" : "Discussion liked! ❤️", {
-            style: {
-                background: '#3B82F6',
-                color: 'white',
-                border: 'none',
-                fontWeight: 'bold'
-            },
-            icon: hasLiked ? '💔' : '❤️'
-        });
+
+        if (!isLoggedIn) {
+            toast('Please sign in to like', {
+                description: 'You need to be logged in to interact',
+            });
+            setTimeout(() => window.location.href = '/signin', 1500);
+            return;
+        }
+
+        try {
+            await hotTopicApi.toggleLike(selectedDiscussion.id);
+            // Refresh data
+            const updatedTopics = await hotTopicApi.getAllActive();
+            setDiscussions(updatedTopics);
+
+            // Update selected discussion view
+            const updatedSelected = updatedTopics.find((d: any) => d.id === selectedDiscussion.id);
+            if (updatedSelected) {
+                setSelectedDiscussion(updatedSelected);
+                const liked = updatedSelected.likes.some((l: any) => l.user?.id === currentUser.id);
+                setHasLiked(liked);
+
+                toast.success(liked ? "Discussion liked! ❤️" : "Like removed", {
+                    style: {
+                        background: '#3B82F6',
+                        color: 'white',
+                        border: 'none',
+                        fontWeight: 'bold'
+                    },
+                    icon: liked ? '❤️' : '💔'
+                });
+            }
+        } catch (error) {
+            console.error('Failed to toggle like', error);
+            toast.error('Failed to update like');
+        }
     };
 
-    const handlePostComment = () => {
+    const handlePostComment = async () => {
         if (!newComment.trim()) return;
 
         if (!isLoggedIn) {
@@ -133,31 +149,40 @@ export default function CommunityPage() {
             return;
         }
 
-        const comment = {
-            id: comments.length + 1,
-            author: "you",
-            text: newComment,
-            likes: 0,
-            time: "Just now"
-        };
-        setComments([comment, ...comments]);
-        setNewComment('');
+        try {
+            await hotTopicApi.addComment(selectedDiscussion.id, newComment);
 
-        // Award XP for commenting (only for customers)
-        if (userRole !== 'VENDOR') {
-            performAction('community_post');
-            toast.success("Comment posted! +10 XP 💬", {
-                description: "Great contribution! Keep it up!",
-                style: {
-                    background: '#10B981',
-                    color: 'white',
-                    border: 'none',
-                    fontWeight: 'bold'
-                },
-                icon: '✅'
-            });
-        } else {
-            toast.success("Comment posted!");
+            // Refresh data
+            const updatedTopics = await hotTopicApi.getAllActive();
+            setDiscussions(updatedTopics);
+
+            // Update selected discussion view
+            const updatedSelected = updatedTopics.find((d: any) => d.id === selectedDiscussion.id);
+            if (updatedSelected) {
+                setSelectedDiscussion(updatedSelected);
+            }
+
+            setNewComment('');
+
+            // Award XP for commenting (only for customers)
+            if (userRole !== 'VENDOR') {
+                performAction('community_post');
+                toast.success("Comment posted! +10 XP 💬", {
+                    description: "Great contribution! Keep it up!",
+                    style: {
+                        background: '#10B981',
+                        color: 'white',
+                        border: 'none',
+                        fontWeight: 'bold'
+                    },
+                    icon: '✅'
+                });
+            } else {
+                toast.success("Comment posted!");
+            }
+        } catch (error) {
+            console.error('Failed to post comment', error);
+            toast.error('Failed to post comment');
         }
     };
 
@@ -186,58 +211,46 @@ export default function CommunityPage() {
     ];
 
     return (
-        <div className="min-h-screen bg-gray-50/50">
+        <div className="min-h-screen bg-[#FADFA1] bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px]">
             <Navbar />
 
             {/* Dynamic Hero Section */}
-            <section className="relative pt-32 pb-20 overflow-hidden bg-white">
-                {/* Background Pattern */}
-                <div className="absolute inset-0 opacity-[0.03]" style={{
-                    backgroundImage: 'radial-gradient(#F97316 1px, transparent 1px)',
-                    backgroundSize: '30px 30px'
-                }}></div>
-
-                {/* Floating Elements */}
-                <div className="absolute top-20 left-10 animate-float" style={{ animationDelay: '0s' }}>
-                    <span className="text-4xl">🍔</span>
-                </div>
-                <div className="absolute bottom-20 right-10 animate-float" style={{ animationDelay: '1.5s' }}>
-                    <span className="text-4xl">🍕</span>
-                </div>
-                <div className="absolute top-40 right-20 animate-float" style={{ animationDelay: '0.8s' }}>
-                    <span className="text-4xl">🌮</span>
-                </div>
+            <section className="relative pt-32 pb-16 overflow-hidden">
+                {/* Floating Elements - keeping animations but making them bolder */}
+                <div className="absolute top-20 left-10 animate-blob mix-blend-multiply filter blur-xl opacity-70 w-32 h-32 bg-purple-400 rounded-full"></div>
+                <div className="absolute top-20 right-10 animate-blob animation-delay-2000 mix-blend-multiply filter blur-xl opacity-70 w-32 h-32 bg-yellow-400 rounded-full"></div>
+                <div className="absolute -bottom-8 left-20 animate-blob animation-delay-4000 mix-blend-multiply filter blur-xl opacity-70 w-32 h-32 bg-pink-400 rounded-full"></div>
 
                 <div className="max-w-6xl mx-auto px-6 relative z-10 text-center">
-                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-orange-50 border border-orange-100 text-orange-600 text-sm font-bold mb-6 animate-scale-in">
-                        <Flame className="w-4 h-4 fill-orange-500 animate-pulse" />
+                    <div className="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-black text-white border-2 border-black text-sm font-black uppercase tracking-wider mb-8 shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] transform -rotate-1">
+                        <Flame className="w-4 h-4 text-orange-500 animate-pulse" />
                         500+ Foodies Active Now
                     </div>
 
-                    <h1 className="text-5xl md:text-7xl font-black mb-6 tracking-tight leading-tight animate-slide-up">
-                        The <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-600 drop-shadow-[0_0_15px_rgba(249,115,22,0.5)]">Foodie</span> Social
+                    <h1 className="text-6xl md:text-8xl font-black mb-6 tracking-tighter leading-[0.9] text-black">
+                        THE <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-red-600 drop-shadow-[4px_4px_0px_rgba(0,0,0,1)]">FOODIE</span> SOCIAL
                     </h1>
 
-                    <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-10 animate-slide-up" style={{ animationDelay: '0.1s' }}>
-                        Connect with local food lovers, compete in challenges, and discover the best street food hidden gems near you.
+                    <p className="text-2xl text-black font-bold max-w-2xl mx-auto mb-10 border-b-4 border-black pb-8 inline-block transform rotate-1">
+                        Connect, compete, and discover hidden gems.
                     </p>
 
-                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-slide-up" style={{ animationDelay: '0.2s' }}>
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
                         <Button
                             size="lg"
-                            className="h-14 px-8 rounded-full text-lg font-bold bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 shadow-lg hover:shadow-xl hover:scale-105 transition-all"
+                            className="h-16 px-10 rounded-full text-xl font-black uppercase bg-black text-white border-4 border-black hover:bg-white hover:text-black shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all hover:-translate-y-1"
                             onClick={() => scrollToSection('discussions')}
                         >
-                            <MessageSquare className="w-5 h-5 mr-2" />
-                            Join Discussion
+                            <MessageSquare className="w-6 h-6 mr-3" />
+                            Start Yap
                         </Button>
                         <Button
                             size="lg"
                             variant="outline"
-                            className="h-14 px-8 rounded-full text-lg font-bold border-2 hover:bg-gray-50"
+                            className="h-16 px-10 rounded-full text-xl font-black uppercase bg-white text-black border-4 border-black hover:bg-orange-400 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all hover:-translate-y-1"
                             onClick={handlePlayGames}
                         >
-                            <Gamepad2 className="w-5 h-5 mr-2" />
+                            <Gamepad2 className="w-6 h-6 mr-3" />
                             Play Games
                         </Button>
                     </div>
@@ -249,33 +262,30 @@ export default function CommunityPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
                     {/* Left Column - Main Feed (8 cols) */}
-                    <div className="lg:col-span-8 space-y-8">
+                    <div className="lg:col-span-8 space-y-10">
 
                         {/* Featured Challenges Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="transform hover:-translate-y-1 transition-transform duration-300">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="transform hover:-translate-y-2 transition-transform duration-300">
                                 <VendorBattle />
                             </div>
-                            <div className="transform hover:-translate-y-1 transition-transform duration-300">
+                            <div className="transform hover:-translate-y-2 transition-transform duration-300">
                                 {isLoggedIn ? (
                                     <StreakTracker />
                                 ) : (
-                                    <Card className="h-full border-none shadow-soft bg-gradient-to-br from-orange-500 to-red-600 text-white flex flex-col items-center justify-center p-6 text-center relative overflow-hidden group">
+                                    <Card className="h-full border-4 border-black rounded-[2rem] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-orange-500 text-white flex flex-col items-center justify-center p-8 text-center relative overflow-hidden group">
                                         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
-                                        <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full blur-2xl -mr-12 -mt-12"></div>
-                                        <div className="absolute bottom-0 left-0 w-20 h-20 bg-black/10 rounded-full blur-xl -ml-10 -mb-10"></div>
 
                                         <div className="relative z-10 flex flex-col items-center">
-                                            <div className="p-3 bg-white/20 rounded-full mb-4 backdrop-blur-sm shadow-lg group-hover:scale-110 transition-transform duration-300">
-                                                <Flame className="w-8 h-8 text-yellow-300 fill-yellow-300 animate-pulse" />
+                                            <div className="p-4 bg-black rounded-full mb-6 shadow-xl group-hover:scale-110 transition-transform duration-300 border-4 border-white">
+                                                <Flame className="w-10 h-10 text-orange-500 fill-orange-500 animate-pulse" />
                                             </div>
-                                            <h3 className="font-black text-xl mb-2 tracking-tight">Ignite Your Streak! 🔥</h3>
-                                            <p className="text-white/90 mb-5 text-sm font-medium leading-relaxed max-w-[200px]">
-                                                Log in daily to build your flame and earn exclusive spicy rewards.
+                                            <h3 className="font-black text-3xl mb-2 tracking-tight uppercase">Ignite Your Streak! 🔥</h3>
+                                            <p className="text-black font-bold mb-8 text-lg leading-relaxed max-w-[200px]">
+                                                Log in daily to build your flame and earn spicy rewards.
                                             </p>
                                             <Button
-                                                className="bg-white text-orange-600 hover:bg-orange-50 font-bold border-none shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5"
-                                                size="sm"
+                                                className="bg-white text-black hover:bg-black hover:text-white font-black border-4 border-black text-lg py-6 px-8 rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all transform hover:-translate-y-1"
                                                 onClick={() => window.location.href = '/signin'}
                                             >
                                                 Start Streak
@@ -287,88 +297,97 @@ export default function CommunityPage() {
                         </div>
 
                         {/* Interactive Map */}
-                        <CommunityMap />
+                        <div className="border-4 border-black rounded-3xl overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+                            <CommunityMap />
+                        </div>
 
                         {/* Daily Activity */}
-                        <ZodiacCard />
+                        <div className="border-4 border-black rounded-3xl overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white">
+                            <ZodiacCard />
+                        </div>
 
                         {/* Hot Discussions */}
-                        <Card id="discussions" className="border-none shadow-soft bg-white/80 backdrop-blur-xl overflow-hidden">
-                            <CardHeader className="pb-4 border-b border-gray-100">
+                        <Card id="discussions" className="border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white rounded-[2rem] overflow-hidden">
+                            <CardHeader className="pb-6 border-b-4 border-black bg-yellow-300 p-6">
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                                    <CardTitle className="text-xl flex items-center gap-2">
-                                        <div className="p-2 bg-green-100 rounded-lg">
-                                            <MessageSquare className="w-5 h-5 text-green-600" />
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-3 bg-black rounded-xl -rotate-3 shadow-md">
+                                            <MessageSquare className="w-6 h-6 text-white" />
                                         </div>
-                                        Hot Topics
-                                    </CardTitle>
-                                    <div className="relative w-full sm:w-64">
-                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                        <CardTitle className="text-3xl font-black uppercase tracking-tight text-black">
+                                            Hot Topics
+                                        </CardTitle>
+                                    </div>
+                                    <div className="relative w-full sm:w-72">
+                                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-black" />
                                         <Input
                                             type="text"
-                                            placeholder="Search discussions..."
+                                            placeholder="Search yaps..."
                                             value={searchQuery}
                                             onChange={(e) => setSearchQuery(e.target.value)}
-                                            className="pl-9 h-10 bg-gray-50 border-gray-200 focus:bg-white transition-colors rounded-xl"
+                                            className="pl-12 h-12 bg-white border-4 border-black rounded-xl font-bold placeholder:text-gray-400 focus:ring-0 focus:border-black focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all"
                                         />
                                     </div>
                                 </div>
                             </CardHeader>
-                            <CardContent className="pt-6">
-                                <div className="grid grid-cols-1 gap-3">
+                            <CardContent className="p-6 bg-white">
+                                <div className="grid grid-cols-1 gap-4">
                                     {discussions
-                                        .filter(d => d.text.toLowerCase().includes(searchQuery.toLowerCase()))
+                                        .filter(d => d.title.toLowerCase().includes(searchQuery.toLowerCase()))
                                         .map((discussion) => (
                                             <button
                                                 key={discussion.id}
                                                 onClick={() => handleDiscussionClick(discussion)}
-                                                className="group p-4 bg-white hover:bg-orange-50/50 rounded-2xl border border-gray-100 hover:border-orange-200 transition-all text-left shadow-sm hover:shadow-md"
+                                                className="group p-5 bg-white hover:bg-orange-50 rounded-2xl border-4 border-black transition-all text-left shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 active:translate-y-0 active:shadow-none"
                                             >
-                                                <div className="flex justify-between items-start mb-2">
-                                                    <div className="flex gap-2">
-                                                        {discussion.tags?.map(tag => (
-                                                            <span key={tag} className="px-2 py-0.5 rounded-md bg-gray-100 text-gray-600 text-[10px] font-bold uppercase tracking-wider">
-                                                                {tag}
-                                                            </span>
-                                                        ))}
+                                                <div className="flex justify-between items-start mb-3">
+                                                    <div className="flex gap-2 flex-wrap">
+                                                        {/* Static tags for now or map if added to backend */}
+                                                        <span className="px-2 py-1 rounded-md bg-black text-white text-[10px] font-black uppercase tracking-wider border border-black transform group-hover:rotate-2 transition-transform">
+                                                            HOT
+                                                        </span>
+                                                        <span className="px-2 py-1 rounded-md bg-orange-500 text-white text-[10px] font-black uppercase tracking-wider border border-black transform group-hover:-rotate-2 transition-transform">
+                                                            FEATURED
+                                                        </span>
                                                     </div>
-                                                    <span className="text-xs text-gray-400 font-medium">{discussion.time}</span>
+                                                    <span className="text-xs text-gray-500 font-black uppercase tracking-wide">{new Date(discussion.createdAt).toLocaleDateString()}</span>
                                                 </div>
-                                                <h3 className="font-bold text-base text-gray-900 mb-3 group-hover:text-orange-600 transition-colors line-clamp-1">
-                                                    {discussion.text}
+                                                <h3 className="font-black text-xl text-black mb-4 group-hover:text-orange-600 transition-colors line-clamp-2">
+                                                    {discussion.title}
                                                 </h3>
-                                                <div className="flex items-center gap-4 text-xs text-gray-500 font-medium">
-                                                    <span className="flex items-center gap-1.5">
-                                                        <MessageSquare className="w-3.5 h-3.5" />
-                                                        {discussion.replies} replies
+                                                <p className="text-sm text-gray-600 mb-4 line-clamp-2">{discussion.content}</p>
+                                                <div className="flex items-center gap-6 text-sm text-gray-600 font-bold">
+                                                    <span className="flex items-center gap-2">
+                                                        <MessageSquare className="w-4 h-4" />
+                                                        {discussion.comments?.length || 0}
                                                     </span>
-                                                    <span className="flex items-center gap-1.5">
-                                                        <Heart className="w-3.5 h-3.5" />
-                                                        {discussion.likes} likes
+                                                    <span className="flex items-center gap-2">
+                                                        <Heart className="w-4 h-4" />
+                                                        {discussion.likes?.length || 0}
                                                     </span>
-                                                    <span className="flex items-center gap-1.5 ml-auto text-gray-400">
-                                                        by @{discussion.author}
+                                                    <span className="flex items-center gap-2 ml-auto text-black">
+                                                        by @StreetBiteTeam
                                                     </span>
                                                 </div>
                                             </button>
                                         ))}
                                 </div>
-                                {searchQuery && discussions.filter(d => d.text.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && (
-                                    <div className="text-center py-12 text-gray-500">
-                                        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                {searchQuery && discussions.filter(d => d.title.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && (
+                                    <div className="text-center py-16">
+                                        <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-black border-dashed">
                                             <Search className="w-8 h-8 text-gray-400" />
                                         </div>
-                                        <p className="font-medium">No discussions found</p>
-                                        <p className="text-sm mt-1">Try searching for something else</p>
+                                        <p className="font-black text-xl text-black">NO YAPS FOUND</p>
+                                        <p className="text-gray-500 font-medium mt-2">Try searching for something else</p>
                                     </div>
                                 )}
                             </CardContent>
                         </Card>
 
                         {/* Content Tabs */}
-                        <Card id="games" className="border-none shadow-soft bg-white/80 backdrop-blur-xl overflow-hidden">
-                            <div className="border-b border-gray-100">
-                                <div className="flex p-2 gap-2 overflow-x-auto">
+                        <Card id="games" className="border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white rounded-[2rem] overflow-hidden">
+                            <div className="border-b-4 border-black bg-black p-4">
+                                <div className="flex gap-4 overflow-x-auto no-scrollbar justify-center">
                                     {tabs.map(tab => {
                                         const Icon = tab.icon;
                                         const isActive = activeTab === tab.id;
@@ -376,9 +395,9 @@ export default function CommunityPage() {
                                             <button
                                                 key={tab.id}
                                                 onClick={() => setActiveTab(tab.id)}
-                                                className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all whitespace-nowrap ${isActive
-                                                    ? 'bg-orange-500 text-white shadow-md'
-                                                    : 'bg-transparent text-gray-600 hover:bg-gray-50'
+                                                className={`flex items-center gap-2 px-6 py-3 rounded-xl font-black text-sm uppercase tracking-wider transition-all whitespace-nowrap border-2 ${isActive
+                                                    ? 'bg-yellow-400 text-black border-black shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] transform -translate-y-1'
+                                                    : 'bg-black text-gray-400 border-transparent hover:text-white'
                                                     }`}
                                             >
                                                 <Icon className="w-4 h-4" />
@@ -398,25 +417,29 @@ export default function CommunityPage() {
                     </div>
 
                     {/* Right Sidebar - Sticky (4 cols) */}
-                    <div className="lg:col-span-4 space-y-6">
-                        <div className="sticky top-24 space-y-6">
+                    <div className="lg:col-span-4 space-y-8">
+                        <div className="sticky top-24 space-y-8">
                             {isLoggedIn ? (
                                 <>
-                                    <UserStats />
-                                    <Leaderboard />
+                                    <div className="border-4 border-black rounded-3xl overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white">
+                                        <UserStats />
+                                    </div>
+                                    <div className="border-4 border-black rounded-3xl overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white">
+                                        <Leaderboard />
+                                    </div>
                                 </>
                             ) : (
-                                <Card className="border-none shadow-soft bg-white p-6 text-center relative overflow-hidden group hover:shadow-lg transition-all duration-300">
-                                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-400 to-red-500"></div>
-                                    <div className="w-16 h-16 bg-gradient-to-br from-orange-100 to-orange-50 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
-                                        <Award className="w-8 h-8 text-orange-600" />
+                                <Card className="border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white p-8 text-center relative overflow-hidden group rounded-[2rem]">
+                                    <div className="absolute top-0 left-0 w-full h-4 bg-gradient-to-r from-orange-400 to-red-500 border-b-4 border-black"></div>
+                                    <div className="w-20 h-20 bg-yellow-100 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:rotate-6 transition-transform duration-300 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                                        <Award className="w-10 h-10 text-black" />
                                     </div>
-                                    <h3 className="font-bold text-lg mb-2 text-gray-900">Join the Leaderboard 🏆</h3>
-                                    <p className="text-gray-500 mb-6 text-sm leading-relaxed">
+                                    <h3 className="font-black text-2xl mb-2 text-black leading-none">JOIN THE <br /> HALL OF FAME</h3>
+                                    <p className="text-gray-600 mb-6 text-sm font-bold leading-relaxed px-4">
                                         Compete with top foodies, earn XP, and unlock exclusive badges!
                                     </p>
                                     <Button
-                                        className="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-bold shadow-lg shadow-orange-500/20"
+                                        className="w-full bg-black text-white hover:bg-orange-500 font-black border-4 border-black shadow-[4px_4px_0px_0px_#9ca3af] hover:shadow-[4px_4px_0px_0px_#000000] rounded-xl h-12 uppercase"
                                         onClick={() => window.location.href = '/signin'}
                                     >
                                         Sign In to Play
@@ -424,38 +447,43 @@ export default function CommunityPage() {
                                 </Card>
                             )}
 
-                            <DailyPoll />
+                            <div className="border-4 border-black rounded-3xl overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white">
+                                <DailyPoll />
+                            </div>
 
-                            <FoodPersonalityQuiz />
+                            <div className="border-4 border-black rounded-3xl overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white">
+                                <FoodPersonalityQuiz />
+                            </div>
 
-                            <Card className="border-none shadow-soft bg-gradient-to-br from-orange-500 to-red-600 text-white overflow-hidden relative">
-                                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16"></div>
-                                <div className="absolute bottom-0 left-0 w-24 h-24 bg-black/10 rounded-full blur-2xl -ml-12 -mb-12"></div>
+                            <Card className="border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-[#000] text-white overflow-hidden relative rounded-[2rem]">
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-gray-800 rounded-full opacity-50 -mr-16 -mt-16"></div>
+                                <div className="absolute bottom-0 left-0 w-24 h-24 bg-gray-800 rounded-full opacity-50 -ml-12 -mb-12"></div>
 
-                                <CardHeader className="pb-2 relative z-10">
-                                    <CardTitle className="text-base flex items-center gap-2 text-white">
-                                        <Award className="w-5 h-5 text-yellow-300" />
+                                <CardHeader className="pb-4 relative z-10 border-b-2 border-gray-800">
+                                    <CardTitle className="text-lg font-black uppercase tracking-wider flex items-center gap-2 text-yellow-400">
+                                        <Award className="w-5 h-5" />
                                         Vendor Spotlight
                                     </CardTitle>
                                 </CardHeader>
-                                <CardContent className="relative z-10">
-                                    <div className="space-y-4">
-                                        <div className="w-full aspect-video bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/20">
-                                            <span className="text-6xl animate-bounce">🍛</span>
+                                <CardContent className="relative z-10 p-6">
+                                    <div className="space-y-6">
+                                        <div className="w-full aspect-video bg-white rounded-xl flex items-center justify-center border-4 border-white overflow-hidden relative group">
+                                            <div className="absolute inset-0 bg-yellow-400 opacity-20 group-hover:opacity-0 transition-opacity"></div>
+                                            <span className="text-7xl animate-bounce drop-shadow-lg">🍛</span>
                                         </div>
                                         <div>
-                                            <h4 className="font-black text-lg">{vendor?.name || "Loading..."}</h4>
-                                            <div className="flex items-center gap-2 text-white/90 text-sm mt-1">
-                                                <MapPin className="w-3.5 h-3.5" />
-                                                {vendor?.location || "Unknown Location"}
-                                                <span className="w-1 h-1 bg-white/50 rounded-full"></span>
-                                                <span className="font-bold text-yellow-300">{vendor?.rating || "New"}★</span>
+                                            <h4 className="font-black text-2xl mb-2">{vendor?.name || "Loading..."}</h4>
+                                            <div className="flex items-center gap-3 text-gray-300 text-sm font-bold">
+                                                <div className="flex items-center gap-1">
+                                                    <MapPin className="w-4 h-4 text-orange-500" />
+                                                    {vendor?.location || "Unknown Location"}
+                                                </div>
+                                                <span className="w-1.5 h-1.5 bg-gray-600 rounded-full"></span>
+                                                <span className="text-yellow-400">{vendor?.rating || "New"}★</span>
                                             </div>
                                         </div>
                                         <Button
-                                            variant="secondary"
-                                            size="sm"
-                                            className="w-full font-bold bg-white text-orange-600 hover:bg-orange-50 border-none"
+                                            className="w-full font-black bg-white text-black hover:bg-yellow-400 border-none h-12 rounded-xl text-lg uppercase tracking-wide"
                                             onClick={handleVendorClick}
                                         >
                                             View Profile
@@ -471,64 +499,66 @@ export default function CommunityPage() {
 
             {/* Discussion Modal */}
             {selectedDiscussion && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setSelectedDiscussion(null)}>
-                    <div className="relative bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
-                        <Button variant="ghost" size="icon" className="absolute top-4 right-4 z-10 text-white hover:bg-white/20" onClick={() => setSelectedDiscussion(null)}>
-                            <X className="w-5 h-5" />
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setSelectedDiscussion(null)}>
+                    <div className="relative bg-white rounded-[2rem] max-w-2xl w-full max-h-[90vh] overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200 border-4 border-black" onClick={(e) => e.stopPropagation()}>
+                        <Button variant="ghost" size="icon" className="absolute top-4 right-4 z-10 text-white hover:bg-black/20 rounded-full" onClick={() => setSelectedDiscussion(null)}>
+                            <X className="w-6 h-6" />
                         </Button>
 
-                        <div className="bg-gradient-to-r from-orange-500 to-red-600 text-white p-8 relative overflow-hidden">
-                            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-20 -mt-20"></div>
+                        <div className="bg-orange-500 text-white p-8 relative overflow-hidden border-b-4 border-black">
+                            <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
 
                             <div className="relative z-10 flex items-start gap-4 mb-6">
-                                <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/20 shadow-lg">
-                                    <MessageSquare className="w-6 h-6" />
+                                <div className="w-14 h-14 bg-black rounded-2xl flex items-center justify-center border-4 border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)]">
+                                    <MessageSquare className="w-7 h-7 text-white" />
                                 </div>
                                 <div className="flex-1">
-                                    <div className="flex items-center gap-2 mb-2 text-sm font-medium text-white/90">
-                                        <span className="bg-white/20 px-2 py-0.5 rounded-md">@{selectedDiscussion.author}</span>
-                                        <span>• {selectedDiscussion.time}</span>
+                                    <div className="flex items-center gap-2 mb-2 text-sm font-bold text-black/80">
+                                        <span className="bg-white px-3 py-1 rounded-lg border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">@StreetBiteTeam</span>
+                                        <span className="text-white">• {new Date(selectedDiscussion.createdAt).toLocaleDateString()}</span>
                                     </div>
-                                    <h3 className="text-2xl font-black leading-tight">{selectedDiscussion.text}</h3>
+                                    <h3 className="text-3xl font-black leading-tight drop-shadow-md mb-2">{selectedDiscussion.title}</h3>
+                                    <p className="text-white/90 font-medium text-lg">{selectedDiscussion.content}</p>
                                 </div>
                             </div>
 
-                            <div className="relative z-10 flex gap-3">
-                                <button onClick={handleLikeDiscussion} className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all ${hasLiked ? 'bg-white text-red-500 shadow-lg scale-105' : 'bg-white/20 hover:bg-white/30 text-white'}`}>
+                            <div className="relative z-10 flex gap-4">
+                                <button onClick={handleLikeDiscussion} className={`flex items-center gap-2 px-6 py-2 rounded-xl text-sm font-black uppercase tracking-wider transition-all border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 active:translate-y-0 active:shadow-none ${hasLiked ? 'bg-pink-500 text-white' : 'bg-white text-black'}`}>
                                     <Heart className={`w-4 h-4 ${hasLiked ? 'fill-current' : ''}`} />
-                                    <span>{selectedDiscussion.likes + (hasLiked ? 1 : 0)}</span>
+                                    <span>{selectedDiscussion.likes?.length || 0} LIKES</span>
                                 </button>
-                                <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/20 text-sm font-bold text-white">
+                                <div className="flex items-center gap-2 px-6 py-2 rounded-xl bg-black/20 text-sm font-black text-white border-2 border-white/30 backdrop-blur-sm">
                                     <MessageSquare className="w-4 h-4" />
-                                    <span>{comments.length} replies</span>
+                                    <span>{selectedDiscussion.comments?.length || 0} replies</span>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="p-6 max-h-[400px] overflow-y-auto space-y-4 bg-gray-50/50">
-                            {comments.map((comment) => (
-                                <div key={comment.id} className="p-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
+                        <div className="p-6 max-h-[400px] overflow-y-auto space-y-4 bg-gray-50">
+                            {selectedDiscussion.comments?.slice().reverse().map((comment: any) => (
+                                <div key={comment.id} className="p-4 bg-white rounded-2xl border-2 border-black shadow-[4px_4px_0px_0px_#e5e7eb]">
                                     <div className="flex items-start justify-between mb-2">
                                         <div className="flex items-center gap-3">
-                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shadow-sm ${comment.author === 'you' ? 'bg-orange-100 text-orange-600' : 'bg-gray-100 text-gray-600'}`}>
-                                                {comment.author.charAt(0).toUpperCase()}
+                                            <div className={`w-10 h-10 rounded-xl border-2 border-black flex items-center justify-center text-sm font-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] ${comment.user?.id === currentUser?.id ? 'bg-orange-400 text-white' : 'bg-gray-200 text-gray-600'}`}>
+                                                {(comment.user?.displayName || 'U').charAt(0).toUpperCase()}
                                             </div>
                                             <div>
-                                                <div className="font-bold text-sm text-gray-900">@{comment.author}</div>
-                                                <div className="text-[10px] text-gray-400 font-medium">{comment.time}</div>
+                                                <div className="font-black text-sm text-black uppercase">@{comment.user?.displayName || 'Unknown'}</div>
+                                                <div className="text-[10px] text-gray-500 font-bold">{new Date(comment.createdAt).toLocaleString()}</div>
                                             </div>
                                         </div>
-                                        <button className="flex items-center gap-1.5 text-gray-400 hover:text-orange-500 transition-colors">
-                                            <ThumbsUp className="w-3.5 h-3.5" />
-                                            <span className="text-xs font-bold">{comment.likes}</span>
-                                        </button>
                                     </div>
-                                    <p className="text-sm text-gray-600 pl-11 leading-relaxed">{comment.text}</p>
+                                    <p className="text-base font-medium text-gray-800 pl-13 leading-relaxed">{comment.text}</p>
                                 </div>
                             ))}
+                            {(!selectedDiscussion.comments || selectedDiscussion.comments.length === 0) && (
+                                <div className="text-center py-10 text-gray-400">
+                                    <p>No comments yet. Be the first to yap!</p>
+                                </div>
+                            )}
                         </div>
 
-                        <div className="p-4 bg-white border-t border-gray-100">
+                        <div className="p-4 bg-white border-t-4 border-black">
                             <div className="flex gap-3">
                                 <input
                                     type="text"
@@ -536,10 +566,10 @@ export default function CommunityPage() {
                                     onChange={(e) => setNewComment(e.target.value)}
                                     onKeyPress={(e) => e.key === 'Enter' && handlePostComment()}
                                     placeholder="Add a comment..."
-                                    className="flex-1 px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-100 focus:outline-none text-sm bg-gray-50 focus:bg-white transition-all"
+                                    className="flex-1 px-4 py-3 rounded-xl border-4 border-black font-bold placeholder:text-gray-400 focus:ring-0 focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-sm bg-white transition-all"
                                 />
-                                <Button onClick={handlePostComment} disabled={!newComment.trim()} className="h-auto px-5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white shadow-md">
-                                    <Send className="w-4 h-4" />
+                                <Button onClick={handlePostComment} disabled={!newComment.trim()} className="h-auto px-6 rounded-xl bg-orange-500 hover:bg-orange-600 text-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-all">
+                                    <Send className="w-5 h-5" />
                                 </Button>
                             </div>
                         </div>

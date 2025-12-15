@@ -100,45 +100,45 @@ export function Leaderboard() {
     };
 
     return (
-        <Card className="border-none shadow-soft overflow-hidden bg-white/80 backdrop-blur-xl">
-            <CardHeader className="pb-4 border-b border-orange-100/50 bg-gradient-to-r from-orange-50/50 to-amber-50/50">
-                <CardTitle className="text-lg flex items-center justify-between text-foreground">
-                    <div className="flex items-center gap-2">
-                        <div className="p-2 bg-orange-100 rounded-lg">
-                            <Trophy className="w-5 h-5 text-orange-600" />
+        <Card className="border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] overflow-hidden bg-white rounded-[2rem]">
+            <CardHeader className="pb-4 border-b-4 border-black bg-yellow-300 p-6">
+                <CardTitle className="text-xl flex items-center justify-between text-black">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-black rounded-lg transform -rotate-3 hover:rotate-0 transition-transform">
+                            <Trophy className="w-6 h-6 text-yellow-300" />
                         </div>
                         <div>
-                            <span className="block text-base font-bold">Top Foodies</span>
-                            <span className="block text-xs font-normal text-muted-foreground">Weekly Ranking</span>
+                            <span className="block text-xl font-black uppercase tracking-tight">Top Foodies</span>
+                            <span className="block text-xs font-bold text-black/60 uppercase tracking-wide">Weekly Ranking</span>
                         </div>
                     </div>
                     <button
                         onClick={() => fetchLeaderboard()}
                         disabled={refreshing}
-                        className="p-2 hover:bg-orange-100 rounded-lg transition-colors disabled:opacity-50"
+                        className="p-2 hover:bg-black hover:text-white rounded-lg transition-colors disabled:opacity-50 border-2 border-black bg-white"
                         title="Refresh leaderboard"
                     >
-                        <RefreshCw className={`w-4 h-4 text-orange-600 ${refreshing ? 'animate-spin' : ''}`} />
+                        <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
                     </button>
                 </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3 pt-4 px-4">
+            <CardContent className="space-y-4 pt-6 px-6">
                 {loading ? (
-                    <div className="text-center py-8 text-muted-foreground">Loading leaderboard...</div>
+                    <div className="text-center py-8 text-gray-500 font-bold animate-pulse">Loading rankings...</div>
                 ) : leaderboard.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">No players yet. Be the first!</div>
+                    <div className="text-center py-8 text-gray-500 font-bold">No players yet. Be the first!</div>
                 ) : (
                     leaderboard.map((user, index) => (
                         <div
                             key={user.id}
-                            className={`flex items-center gap-3 p-3 rounded-xl border transition-all duration-300 hover:scale-[1.01] ${getRankStyles(index + 1)}`}
+                            className={`flex items-center gap-4 p-4 rounded-xl border-2 border-black transition-all duration-300 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 bg-white`}
                         >
-                            <div className="flex items-center justify-center w-8 font-bold text-lg">
-                                {getRankIcon(index + 1)}
+                            <div className="flex items-center justify-center w-8 font-black text-xl text-black">
+                                {index + 1}
                             </div>
 
                             <div className="relative">
-                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-100 to-red-100 flex items-center justify-center text-xl shadow-inner border-2 border-white overflow-hidden">
+                                <div className={`w-12 h-12 rounded-full flex items-center justify-center text-xl border-2 border-black overflow-hidden ${index === 0 ? 'bg-yellow-100 ring-2 ring-yellow-400 ring-offset-2' : 'bg-gray-100'}`}>
                                     {user.profilePicture ? (
                                         <img
                                             src={user.profilePicture.startsWith('http') || user.profilePicture.startsWith('/') ? user.profilePicture : `/avatars/${user.profilePicture}`}
@@ -153,37 +153,37 @@ export function Leaderboard() {
                                     )}
                                 </div>
                                 {index === 0 && (
-                                    <div className="absolute -top-1 -right-1">
-                                        <Sparkles className="w-4 h-4 text-yellow-500 fill-yellow-500 animate-spin-slow" />
+                                    <div className="absolute -top-3 -right-2 transform rotate-12">
+                                        <Crown className="w-6 h-6 text-yellow-500 fill-yellow-500 drop-shadow-sm" />
                                     </div>
                                 )}
                             </div>
 
                             <div className="flex-1 min-w-0">
-                                <div className="font-bold text-sm text-foreground truncate flex items-center gap-1">
+                                <div className="font-black text-base text-black truncate flex items-center gap-2">
                                     {user.name}
-                                    {index < 3 && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-orange-100 text-orange-700 font-bold">PRO</span>}
+                                    {index < 3 && <span className="text-[10px] px-2 py-0.5 rounded-full bg-black text-white font-bold uppercase tracking-wider">TOP {index + 1}</span>}
                                 </div>
-                                <div className="text-xs text-muted-foreground font-medium">
-                                    Level {user.level}
+                                <div className="text-xs text-gray-500 font-bold uppercase tracking-wide">
+                                    Level {user.level} {index === 0 ? "🔥" : ""}
                                 </div>
                             </div>
 
                             <div className="text-right">
-                                <div className="text-sm font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-red-600">
+                                <div className="text-lg font-black text-black">
                                     {user.xp.toLocaleString()}
                                 </div>
-                                <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">XP</div>
+                                <div className="text-[10px] text-gray-400 font-black uppercase tracking-wider">XP</div>
                             </div>
                         </div>
                     ))
                 )}
 
                 {isAuthenticated && (
-                    <div className="pt-2 mt-2">
-                        <div className="flex items-center justify-between p-3 bg-gradient-to-r from-gray-900 to-gray-800 rounded-xl shadow-lg text-white transform transition-transform hover:scale-[1.02] cursor-pointer group">
+                    <div className="pt-4 border-t-2 border-dashed border-gray-300 mt-2">
+                        <div className="flex items-center justify-between p-4 bg-black rounded-xl shadow-[4px_4px_0px_0px_#9ca3af] text-white">
                             <div className="flex items-center gap-3">
-                                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-lg shadow-lg ring-2 ring-white/20 overflow-hidden">
+                                <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-lg border-2 border-gray-500 overflow-hidden">
                                     {userProfilePic ? (
                                         <img
                                             src={userProfilePic.startsWith('http') || userProfilePic.startsWith('/') ? userProfilePic : `/avatars/${userProfilePic}`}
@@ -198,12 +198,12 @@ export function Leaderboard() {
                                     )}
                                 </div>
                                 <div>
-                                    <div className="font-bold text-sm text-white group-hover:text-orange-300 transition-colors">You ({displayName || 'User'})</div>
+                                    <div className="font-bold text-sm text-yellow-400">You ({displayName || 'User'})</div>
                                     <div className="text-[10px] text-gray-400 uppercase tracking-wider font-medium">Level {level}</div>
                                 </div>
                             </div>
                             <div className="text-right">
-                                <div className="text-sm font-black text-orange-400">{xp.toLocaleString()}</div>
+                                <div className="text-lg font-black text-white">{xp.toLocaleString()}</div>
                                 <div className="text-[10px] text-gray-500 font-bold">#{rank > 0 ? rank : '-'}</div>
                             </div>
                         </div>

@@ -66,14 +66,10 @@ export function UserStats() {
     ];
 
     return (
-        <Card className="bg-[#1a103c] border-none shadow-xl relative overflow-hidden ring-1 ring-white/10">
-            {/* Background Accents */}
-            <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-            <div className="absolute bottom-0 left-0 w-32 h-32 bg-orange-500/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
-
-            <CardContent className="pt-6 pb-4 relative z-10">
+        <Card className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden rounded-[2rem]">
+            <CardContent className="pt-8 pb-6 relative z-10">
                 <div className="text-center mb-6">
-                    <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-orange-400 to-pink-600 flex items-center justify-center text-4xl mb-3 shadow-[0_0_20px_rgba(249,115,22,0.3)] relative border-2 border-white/10 overflow-hidden">
+                    <div className="w-24 h-24 mx-auto rounded-full bg-yellow-300 flex items-center justify-center text-5xl mb-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] relative border-4 border-black overflow-hidden group">
                         {profilePicture ? (
                             <img
                                 src={profilePicture.startsWith('http') || profilePicture.startsWith('/') ? profilePicture : `/avatars/${profilePicture}`}
@@ -86,37 +82,38 @@ export function UserStats() {
                                 }}
                             />
                         ) : (
-                            <span>👤</span>
+                            <span className="group-hover:scale-110 transition-transform block">👤</span>
                         )}
                         {archetype && (
-                            <div className="absolute -bottom-2 -right-2 bg-[#1a103c] text-white text-sm p-1.5 rounded-full border border-white/20 shadow-lg" title={RESULTS[archetype].title}>
+                            <div className="absolute -bottom-1 -right-1 bg-white text-black text-lg p-1.5 rounded-full border-2 border-black shadow-sm z-10" title={RESULTS[archetype].title}>
                                 {RESULTS[archetype].icon}
                             </div>
                         )}
                     </div>
-                    <h3 className="font-black text-xl text-white tracking-tight">
+                    <h3 className="font-black text-2xl text-black tracking-tight uppercase">
                         {displayName || "Your Stats"}
                     </h3>
-                    <p className="text-xs text-indigo-200 uppercase tracking-widest font-medium mt-1">
+                    <div className="inline-block px-3 py-1 bg-black text-white text-xs font-black uppercase tracking-widest mt-2 rounded-lg border-2 border-black transform -rotate-2">
                         {`Level ${level} Foodie`}
-                    </p>
+                    </div>
 
                     {/* Progress Bar */}
-                    <div className="w-32 mx-auto mt-2 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                    <div className="w-40 mx-auto mt-4 h-4 bg-gray-200 rounded-full overflow-hidden border-2 border-black relative">
                         <div
-                            className="h-full bg-gradient-to-r from-orange-400 to-pink-500 rounded-full transition-all duration-1000"
+                            className="h-full bg-orange-500 rounded-full transition-all duration-1000"
                             style={{ width: `${Math.min(xpProgress, 100)}%` }}
                         />
+                        <div className="absolute inset-0 bg-[linear-gradient(45deg,rgba(0,0,0,0.1)_25%,transparent_25%,transparent_50%,rgba(0,0,0,0.1)_50%,rgba(0,0,0,0.1)_75%,transparent_75%,transparent)] bg-[length:10px_10px]" />
                     </div>
-                    <p className="text-[10px] text-indigo-300 mt-1">
+                    <p className="text-[10px] text-gray-500 font-bold mt-1.5 uppercase tracking-wide">
                         {`${xpNeeded} XP to next level`}
                     </p>
 
                     {archetype && (
-                        <div className="mt-4 inline-block px-4 py-1.5 bg-white/5 rounded-full border border-white/10 backdrop-blur-md">
+                        <div className="mt-5 inline-block px-4 py-2 bg-yellow-50 rounded-xl border-2 border-black hover:-translate-y-1 transition-transform shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
                             <div className="flex items-center gap-2">
-                                <UtensilsCrossed className="w-3 h-3 text-orange-400" />
-                                <span className="text-[10px] font-bold text-orange-100 uppercase tracking-[0.15em]">
+                                <UtensilsCrossed className="w-4 h-4 text-black" />
+                                <span className="text-xs font-black text-black uppercase tracking-wider">
                                     {RESULTS[archetype].title}
                                 </span>
                             </div>
@@ -124,14 +121,14 @@ export function UserStats() {
                     )}
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-3 px-2">
                     {statItems.map((stat, index) => {
                         const Icon = stat.icon;
                         return (
-                            <div key={index} className="bg-white/5 p-3 rounded-xl text-center border border-white/5 hover:bg-white/10 transition-colors backdrop-blur-sm group">
-                                <Icon className={`w-5 h-5 mx-auto mb-2 ${stat.color} group-hover:scale-110 transition-transform duration-300`} />
-                                <div className="text-lg font-black text-white">{stat.value}</div>
-                                <div className="text-[10px] text-indigo-200 uppercase tracking-wider font-medium">{stat.label}</div>
+                            <div key={index} className="bg-white p-3 rounded-xl text-center border-2 border-black hover:bg-orange-50 transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5 group">
+                                <Icon className={`w-5 h-5 mx-auto mb-2 text-black group-hover:scale-110 transition-transform duration-300`} />
+                                <div className="text-lg font-black text-black leading-none mb-1">{stat.value}</div>
+                                <div className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">{stat.label}</div>
                             </div>
                         );
                     })}

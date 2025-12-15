@@ -8,9 +8,24 @@ Write-Host "==========================================================" -Foregro
 Write-Host ""
 
 # Set Google Maps API Key
-$env:GOOGLE_MAPS_API_KEY = "AIzaSyB17r6uTSS55RZVTOSoHpQwxxGsUWwpeUc"
-$env:NEXT_PUBLIC_GOOGLE_MAPS_API_KEY = "AIzaSyB17r6uTSS55RZVTOSoHpQwxxGsUWwpeUc"
-Write-Host "Google Maps API key configured" -ForegroundColor Green
+# Try to read from frontend/.env.local if available
+if (Test-Path "frontend/.env.local") {
+    $envContent = Get-Content "frontend/.env.local"
+    foreach ($line in $envContent) {
+        if ($line -match "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=(.*)") {
+            $env:GOOGLE_MAPS_API_KEY = $matches[1]
+            $env:NEXT_PUBLIC_GOOGLE_MAPS_API_KEY = $matches[1]
+            Write-Host "Google Maps API key loaded from .env.local" -ForegroundColor Green
+            break
+        }
+    }
+}
+
+if (-not $env:GOOGLE_MAPS_API_KEY) {
+    Write-Host "Warning: GOOGLE_MAPS_API_KEY not set. Maps may not work." -ForegroundColor Yellow
+    # $env:GOOGLE_MAPS_API_KEY = "YOUR_API_KEY_HERE" 
+    # $env:NEXT_PUBLIC_GOOGLE_MAPS_API_KEY = "YOUR_API_KEY_HERE"
+}
 
 # Check for DB Password
 if (-not $env:DB_PASSWORD) {

@@ -91,34 +91,34 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
+    <div className="min-h-screen bg-[#FADFA1] bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] flex flex-col relative overflow-hidden">
       {/* Animated Background */}
-      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl animate-float -z-10" />
-      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-secondary/5 rounded-full blur-3xl animate-float -z-10" style={{ animationDelay: '2s' }} />
+      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-yellow-400 rounded-full blur-[100px] opacity-40 animate-blob -z-10" />
+      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-orange-400 rounded-full blur-[100px] opacity-40 animate-blob animation-delay-2000 -z-10" />
 
       {/* User Exists Modal */}
       {showUserExistsModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white dark:bg-card p-8 rounded-3xl shadow-2xl max-w-md w-full mx-4 text-center animate-scale-in border border-primary/20">
-            <div className="w-20 h-20 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Sparkles size={40} />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md animate-fade-in">
+          <div className="bg-white p-8 rounded-[2rem] border-4 border-black shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] max-w-md w-full mx-4 text-center animate-scale-in">
+            <div className="w-20 h-20 bg-yellow-400 text-black border-4 border-black rounded-full flex items-center justify-center mx-auto mb-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+              <Sparkles size={40} className="animate-spin-slow" />
             </div>
-            <h3 className="text-2xl font-bold mb-2">Account Already Exists</h3>
-            <p className="text-muted-foreground mb-8">
-              It looks like <strong>{formData.email}</strong> is already registered with us. Would you like to sign in instead?
+            <h3 className="text-3xl font-black mb-2 uppercase">Already Loaded?</h3>
+            <p className="text-gray-600 mb-8 font-medium text-lg">
+              The email <strong>{formData.email}</strong> is already satisfying cravings here.
             </p>
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-4">
               <Link href="/signin">
-                <Button className="w-full btn-gradient h-12 rounded-xl text-lg font-semibold shadow-lg hover-lift">
-                  Sign In
+                <Button className="w-full h-14 bg-black text-white rounded-xl border-4 border-black font-black text-xl shadow-[4px_4px_0px_0px_#fbbf24] hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_#fbbf24] transition-all">
+                  LOG IN NOW
                 </Button>
               </Link>
               <Button
                 variant="ghost"
                 onClick={() => setShowUserExistsModal(false)}
-                className="text-muted-foreground hover:text-foreground"
+                className="text-gray-500 font-bold hover:text-black uppercase tracking-wide hover:bg-transparent"
               >
-                Cancel
+                Let me try again
               </Button>
             </div>
           </div>
@@ -126,10 +126,10 @@ export default function SignUpPage() {
       )}
 
       {/* Back button */}
-      <div className="p-4 sm:p-6 relative z-10">
-        <Link href="/" className="inline-flex items-center gap-2 text-primary hover:text-primary/80 font-medium transition-colors hover-lift">
-          <ArrowLeft size={20} />
-          Back to Home
+      <div className="p-6 relative z-10">
+        <Link href="/" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white text-black font-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-all">
+          <ArrowLeft size={24} strokeWidth={3} />
+          BACK TO HOME
         </Link>
       </div>
 
@@ -137,52 +137,52 @@ export default function SignUpPage() {
       <div className="flex-1 flex items-center justify-center px-4 py-8 relative z-10">
         <div className="w-full max-w-2xl animate-slide-up">
           {/* Logo and Heading */}
-          <div className="text-center mb-8">
-            <div className="flex justify-center mb-4 hover-lift">
+          <div className="text-center mb-10">
+            <div className="flex justify-center mb-6 transform hover:scale-110 transition-transform duration-300">
               <Logo />
             </div>
-            <h1 className="text-3xl font-bold mb-2">
-              <span className="text-shine-amber">Join StreetBite</span>
+            <h1 className="text-5xl font-black mb-4 text-black tracking-tight uppercase">
+              Join the Feast
             </h1>
-            <p className="text-muted-foreground">Choose your account type to get started</p>
+            <p className="text-xl font-bold text-gray-700">Choose your flavor to get started</p>
           </div>
 
           {/* Step 1: User Type Selection */}
           {step === 1 && (
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid md:grid-cols-2 gap-8">
               {/* Customer Card */}
               <div
                 onClick={() => setUserType('customer')}
-                className={`p-8 rounded-3xl border-2 cursor-pointer transition-all card-tilt ${userType === 'customer'
-                  ? 'border-primary glass shadow-xl shadow-primary/10 scale-105'
-                  : 'border-border bg-card/80 hover:border-primary/50 hover:shadow-lg'
+                className={`p-8 rounded-[2rem] border-4 cursor-pointer transition-all transform hover:-translate-y-2 ${userType === 'customer'
+                  ? 'bg-yellow-400 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] scale-105 z-10'
+                  : 'bg-white border-black hover:bg-yellow-50 hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]'
                   }`}
               >
-                <div className="text-5xl mb-4 animate-bounce" style={{ animationDuration: '3s' }}>🍔</div>
-                <h2 className="text-2xl font-bold text-foreground mb-2">Customer</h2>
-                <p className="text-muted-foreground mb-6">Discover delicious street food vendors near you, place orders, and enjoy amazing meals</p>
-                <div className="space-y-2 text-sm text-muted-foreground">
-                  <div className="flex items-center gap-2"><Sparkles className="w-4 h-4 text-primary" /> Search vendors by location</div>
-                  <div className="flex items-center gap-2"><Sparkles className="w-4 h-4 text-primary" /> Browse menus and reviews</div>
-                  <div className="flex items-center gap-2"><Sparkles className="w-4 h-4 text-primary" /> Track orders in real-time</div>
+                <div className="text-6xl mb-6 animate-bounce" style={{ animationDuration: '3s' }}>🍔</div>
+                <h2 className="text-3xl font-black text-black mb-2 uppercase">Foodie</h2>
+                <p className="text-gray-700 font-medium mb-6 leading-relaxed">Discover hidden gems, rate your bites, and follow your favorite trucks.</p>
+                <div className="space-y-3 font-bold text-sm text-black/80">
+                  <div className="flex items-center gap-2"><Sparkles className="w-5 h-5 text-black" /> Epic Food Discovery</div>
+                  <div className="flex items-center gap-2"><Sparkles className="w-5 h-5 text-black" /> Real-time Updates</div>
+                  <div className="flex items-center gap-2"><Sparkles className="w-5 h-5 text-black" /> Exclusive Deals</div>
                 </div>
               </div>
 
               {/* Vendor Card */}
               <div
                 onClick={() => setUserType('vendor')}
-                className={`p-8 rounded-3xl border-2 cursor-pointer transition-all card-tilt ${userType === 'vendor'
-                  ? 'border-primary glass shadow-xl shadow-primary/10 scale-105'
-                  : 'border-border bg-card/80 hover:border-primary/50 hover:shadow-lg'
+                className={`p-8 rounded-[2rem] border-4 cursor-pointer transition-all transform hover:-translate-y-2 ${userType === 'vendor'
+                  ? 'bg-orange-500 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] scale-105 z-10'
+                  : 'bg-white border-black hover:bg-orange-50 hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]'
                   }`}
               >
-                <div className="text-5xl mb-4 animate-bounce" style={{ animationDuration: '3s', animationDelay: '0.5s' }}>👨‍🍳</div>
-                <h2 className="text-2xl font-bold text-foreground mb-2">Vendor</h2>
-                <p className="text-muted-foreground mb-6">Register your food stand, manage your menu, and reach more customers through our platform</p>
-                <div className="space-y-2 text-sm text-muted-foreground">
-                  <div className="flex items-center gap-2"><Sparkles className="w-4 h-4 text-primary" /> Create your vendor profile</div>
-                  <div className="flex items-center gap-2"><Sparkles className="w-4 h-4 text-primary" /> Manage menu and pricing</div>
-                  <div className="flex items-center gap-2"><Sparkles className="w-4 h-4 text-primary" /> Track location and orders</div>
+                <div className="text-6xl mb-6 animate-bounce" style={{ animationDuration: '3s', animationDelay: '0.5s' }}>👨‍🍳</div>
+                <h2 className="text-3xl font-black text-black mb-2 uppercase">Old Master</h2>
+                <p className="text-black/80 font-medium mb-6 leading-relaxed">Showcase your menu, manage orders, and feed the hungry masses.</p>
+                <div className="space-y-3 font-bold text-sm text-black/80">
+                  <div className="flex items-center gap-2"><Sparkles className="w-5 h-5 text-black" /> Build Your Brand</div>
+                  <div className="flex items-center gap-2"><Sparkles className="w-5 h-5 text-black" /> Live Location Tracking</div>
+                  <div className="flex items-center gap-2"><Sparkles className="w-5 h-5 text-black" /> Grow Your Audience</div>
                 </div>
               </div>
             </div>
@@ -190,144 +190,138 @@ export default function SignUpPage() {
 
           {/* Step 2: Registration Form */}
           {step === 2 && (
-            <form onSubmit={handleSubmit} className="glass rounded-3xl shadow-elevated p-8 space-y-6 border border-white/20 animate-fade-in">
+            <form onSubmit={handleSubmit} className="bg-white rounded-[2rem] shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] p-8 md:p-12 space-y-6 border-4 border-black animate-slide-up relative overflow-hidden">
+              {/* Decorative Element */}
+              <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-400 rounded-bl-[100%] z-0 opacity-20"></div>
+
               {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-red-500" />
+                <div className="bg-red-100 border-4 border-black text-black px-4 py-3 rounded-xl font-bold flex items-center gap-3 relative z-10 animate-shake">
+                  <div className="w-4 h-4 bg-red-500 rounded-full border border-black flex-shrink-0" />
                   {error}
                 </div>
               )}
 
-              <div className="grid md:grid-cols-2 gap-4">
+              <div className="grid md:grid-cols-2 gap-6 relative z-10">
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-foreground ml-1">First Name</label>
+                  <label className="block text-sm font-black text-black uppercase tracking-wider ml-1">First Name</label>
                   <input
                     type="text"
-                    placeholder="John"
+                    placeholder="JOHN"
                     value={formData.firstName}
                     onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                     required
-                    className="w-full px-4 py-3.5 border-2 border-primary/10 rounded-xl focus:outline-none focus:border-primary bg-white/50 transition-all hover:bg-white/80"
+                    className="w-full px-4 py-4 border-4 border-black rounded-xl text-lg font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400 bg-gray-50 transition-all placeholder:text-gray-300 uppercase"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-foreground ml-1">Last Name</label>
+                  <label className="block text-sm font-black text-black uppercase tracking-wider ml-1">Last Name</label>
                   <input
                     type="text"
-                    placeholder="Doe"
+                    placeholder="DOE"
                     value={formData.lastName}
                     onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                     required
-                    className="w-full px-4 py-3.5 border-2 border-primary/10 rounded-xl focus:outline-none focus:border-primary bg-white/50 transition-all hover:bg-white/80"
+                    className="w-full px-4 py-4 border-4 border-black rounded-xl text-lg font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400 bg-gray-50 transition-all placeholder:text-gray-300 uppercase"
                   />
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-foreground ml-1">Email Address</label>
+              <div className="space-y-2 relative z-10">
+                <label className="block text-sm font-black text-black uppercase tracking-wider ml-1">Email Address</label>
                 <input
                   type="email"
-                  placeholder="you@example.com"
+                  placeholder="YOU@EXAMPLE.COM"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   required
-                  className="w-full px-4 py-3.5 border-2 border-primary/10 rounded-xl focus:outline-none focus:border-primary bg-white/50 transition-all hover:bg-white/80"
+                  className="w-full px-4 py-4 border-4 border-black rounded-xl text-lg font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400 bg-gray-50 transition-all placeholder:text-gray-300 uppercase"
                 />
               </div>
 
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-foreground ml-1">Password</label>
+              <div className="space-y-2 relative z-10">
+                <label className="block text-sm font-black text-black uppercase tracking-wider ml-1">Password</label>
                 <input
                   type="password"
-                  placeholder="Create a strong password"
+                  placeholder="MAKE IT STRONG"
                   value={formData.password}
                   onChange={(e) => {
                     const newPass = e.target.value
                     setFormData({ ...formData, password: newPass })
 
-                    // Password Strength Logic
+                    // Password Strength Logic (Simplified for brevity in UI, logic remains same)
                     let score = 0
                     if (newPass.length >= 8) score++
                     if (/[A-Z]/.test(newPass)) score++
                     if (/[a-z]/.test(newPass)) score++
                     if (/[0-9]/.test(newPass)) score++
                     if (/[^A-Za-z0-9]/.test(newPass)) score++
-
-                    // Common password check
                     const common = ['password', '123456', 'qwerty', 'streetbite', '12345678']
                     if (common.some(c => newPass.toLowerCase().includes(c))) score = 0
-
                     setPasswordStrength(score)
                   }}
                   required
                   minLength={8}
-                  className="w-full px-4 py-3.5 border-2 border-primary/10 rounded-xl focus:outline-none focus:border-primary bg-white/50 transition-all hover:bg-white/80"
+                  className="w-full px-4 py-4 border-4 border-black rounded-xl text-lg font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400 bg-gray-50 transition-all placeholder:text-gray-300"
                 />
 
                 {/* Password Strength Meter */}
                 {formData.password && (
-                  <div className="space-y-1 pt-1">
-                    <div className="flex gap-1 h-1.5">
+                  <div className="space-y-2 pt-2">
+                    <div className="flex gap-2 h-3">
                       {[1, 2, 3, 4, 5].map((level) => (
                         <div
                           key={level}
-                          className={`flex-1 rounded-full transition-all duration-300 ${passwordStrength >= level
+                          className={`flex-1 rounded-full border-2 border-black transition-all duration-300 ${passwordStrength >= level
                             ? (passwordStrength <= 2 ? 'bg-red-500' : passwordStrength <= 3 ? 'bg-yellow-500' : 'bg-green-500')
                             : 'bg-gray-200'
                             }`}
                         />
                       ))}
                     </div>
-                    <p className={`text-xs text-right font-medium ${passwordStrength <= 2 ? 'text-red-500' : passwordStrength <= 3 ? 'text-yellow-600' : 'text-green-600'
+                    <p className={`text-xs text-right font-black uppercase tracking-wider ${passwordStrength <= 2 ? 'text-red-600' : passwordStrength <= 3 ? 'text-yellow-600' : 'text-green-600'
                       }`}>
-                      {passwordStrength <= 2 ? 'Weak' : passwordStrength <= 3 ? 'Medium' : 'Strong'}
+                      {passwordStrength <= 2 ? 'Weak Sauce' : passwordStrength <= 3 ? 'Getting Spicy' : 'Fiery Hot!'}
                     </p>
-                    <ul className="text-xs text-muted-foreground space-y-0.5 pl-1">
-                      <li className={formData.password.length >= 8 ? 'text-green-600' : ''}>• At least 8 characters</li>
-                      <li className={/[A-Z]/.test(formData.password) ? 'text-green-600' : ''}>• One uppercase letter</li>
-                      <li className={/[0-9]/.test(formData.password) ? 'text-green-600' : ''}>• One number</li>
-                      <li className={/[^A-Za-z0-9]/.test(formData.password) ? 'text-green-600' : ''}>• One special character</li>
-                    </ul>
                   </div>
                 )}
               </div>
 
               {userType === 'vendor' && (
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-foreground ml-1">Business Name</label>
+                <div className="space-y-2 relative z-10">
+                  <label className="block text-sm font-black text-black uppercase tracking-wider ml-1">Business Name</label>
                   <input
                     type="text"
-                    placeholder="Your food stand name"
+                    placeholder="YOUR FOOD STAND NAME"
                     value={formData.businessName}
                     onChange={(e) => setFormData({ ...formData, businessName: e.target.value })}
-                    className="w-full px-4 py-3.5 border-2 border-primary/10 rounded-xl focus:outline-none focus:border-primary bg-white/50 transition-all hover:bg-white/80"
+                    className="w-full px-4 py-4 border-4 border-black rounded-xl text-lg font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400 bg-gray-50 transition-all placeholder:text-gray-300 uppercase"
                   />
                 </div>
               )}
 
-              <div className="flex gap-3 pt-4">
+              <div className="flex gap-4 pt-6 relative z-10">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => setStep(1)}
                   disabled={isLoading}
-                  className="flex-1 rounded-xl h-12 border-2 hover:bg-muted"
+                  className="flex-1 rounded-xl h-14 border-4 border-black font-black text-lg hover:bg-gray-100"
                 >
-                  Back
+                  BACK
                 </Button>
                 <Button
                   type="submit"
                   disabled={isLoading}
-                  className="flex-1 btn-gradient h-12 rounded-xl text-lg font-semibold shadow-lg hover-lift hover-glow disabled:opacity-50"
+                  className="flex-[2] bg-orange-500 hover:bg-orange-600 text-white rounded-xl h-14 border-4 border-black font-black text-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all disabled:opacity-70 disabled:hover:translate-y-0"
                 >
-                  {isLoading ? 'Creating Account...' : 'Create Account'}
+                  {isLoading ? 'COOKING...' : 'CREATE ACCOUNT'}
                 </Button>
               </div>
 
-              <p className="text-center text-sm text-foreground/60">
-                Already have an account?{' '}
-                <Link href="/signin" className="text-primary hover:text-primary/80 font-bold hover:underline decoration-2 underline-offset-4">
-                  Sign In
+              <p className="text-center text-lg font-medium text-gray-600 relative z-10">
+                Already part of the crew?{' '}
+                <Link href="/signin" className="text-black font-black decoration-4 underline decoration-yellow-400 hover:bg-yellow-400 transition-colors px-1">
+                  SIGN IN
                 </Link>
               </p>
             </form>
@@ -335,13 +329,13 @@ export default function SignUpPage() {
 
           {/* Continue Button for Step 1 */}
           {step === 1 && userType && (
-            <div className="mt-8 flex justify-center animate-fade-in">
+            <div className="mt-12 flex justify-center animate-bounce-slow">
               <Button
                 onClick={handleContinue}
-                className="btn-gradient rounded-full px-10 py-6 text-lg font-bold flex items-center gap-2 shadow-lg hover-lift hover-glow"
+                className="bg-black text-white rounded-full px-12 py-8 text-2xl font-black flex items-center gap-4 shadow-[8px_8px_0px_0px_#fbbf24] border-4 border-black hover:-translate-y-2 hover:shadow-[12px_12px_0px_0px_#fbbf24] transition-all"
               >
-                Continue
-                <ChevronRight size={24} />
+                CONTINUE
+                <ChevronRight size={32} strokeWidth={4} />
               </Button>
             </div>
           )}

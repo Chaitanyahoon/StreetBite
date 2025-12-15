@@ -104,25 +104,26 @@ export function ZodiacCard() {
     const zodiacInfo = ZODIAC_INFO[data.zodiacSign] || ZODIAC_INFO["Aries"];
 
     return (
-        <Card className="w-full max-w-2xl mx-auto overflow-hidden border-none shadow-floating bg-white/90 backdrop-blur-xl ring-1 ring-white/20">
-            <div className={`absolute inset-0 bg-gradient-to-br ${zodiacInfo.color} opacity-[0.03] -z-10`} />
+        <Card className="w-full max-w-2xl mx-auto overflow-hidden border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white rounded-[2rem]">
+            {/* Background Pattern */}
+            <div className={`absolute inset-0 opacity-[0.05] bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] -z-10`} />
 
             <CardHeader className="pb-2 pt-6 px-6">
                 <div className="flex justify-between items-start">
                     <div className="flex items-center gap-4">
-                        <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${zodiacInfo.color} flex items-center justify-center shadow-lg transform rotate-3 transition-transform hover:rotate-0`}>
-                            <span className="text-4xl text-white drop-shadow-md">{zodiacInfo.emoji}</span>
+                        <div className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${zodiacInfo.color} flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] border-4 border-black transform rotate-3 transition-transform hover:rotate-0`}>
+                            <span className="text-5xl text-white drop-shadow-md">{zodiacInfo.emoji}</span>
                         </div>
                         <div>
-                            <CardTitle className="text-3xl font-black text-foreground tracking-tight">
+                            <CardTitle className="text-4xl font-black text-black tracking-tight uppercase">
                                 {data.zodiacSign}
                             </CardTitle>
-                            <div className="flex items-center gap-2 mt-1">
-                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-gradient-to-r ${zodiacInfo.color} text-white`}>
+                            <div className="flex items-center gap-2 mt-2">
+                                <span className={`px-3 py-1 rounded-lg text-xs font-black uppercase tracking-wider bg-black text-white border-2 border-black`}>
                                     {zodiacInfo.element}
                                 </span>
-                                <span className="text-xs text-muted-foreground font-medium flex items-center gap-1">
-                                    <Moon className="w-3 h-3" /> Daily Horoscope
+                                <span className="text-xs text-gray-500 font-bold flex items-center gap-1 uppercase tracking-wide bg-gray-100 px-2 py-1 rounded-lg border-2 border-gray-200">
+                                    <Moon className="w-3 h-3" /> Horoscope
                                 </span>
                             </div>
                         </div>
@@ -132,64 +133,64 @@ export function ZodiacCard() {
                             variant="ghost"
                             size="sm"
                             onClick={handleChangeDate}
-                            className="text-xs h-8 px-3 hover:bg-orange-50 text-muted-foreground hover:text-orange-600 transition-colors"
+                            className="text-xs h-9 px-3 hover:bg-orange-50 text-gray-500 hover:text-black font-bold border-2 border-gray-200 hover:border-black rounded-xl transition-all"
                         >
                             <RefreshCw className="w-3 h-3 mr-1.5" />
                             Change
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-blue-50 hover:text-blue-600 transition-colors" onClick={handleShare}>
+                        <Button variant="ghost" size="icon" className="h-9 w-9 border-2 border-gray-200 hover:border-black rounded-xl hover:bg-blue-50 text-gray-500 hover:text-blue-600 transition-all" onClick={handleShare}>
                             <Share2 className="w-4 h-4" />
                         </Button>
                     </div>
                 </div>
             </CardHeader>
 
-            <CardContent className="pt-4 pb-6 px-6 space-y-5">
-                <div className="relative bg-gradient-to-br from-orange-50/80 to-amber-50/80 p-6 rounded-3xl border border-orange-100/50 shadow-sm">
-                    <Sparkles className="absolute top-4 right-4 w-5 h-5 text-orange-400 opacity-50" />
-                    <p className="text-lg font-medium text-gray-700 leading-relaxed italic text-center">
+            <CardContent className="pt-6 pb-8 px-6 space-y-6">
+                <div className="relative bg-orange-50 p-6 rounded-3xl border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                    <Sparkles className="absolute -top-3 -right-3 w-8 h-8 text-orange-400 fill-orange-400 stroke-black stroke-2 animate-pulse" />
+                    <p className="text-xl font-bold text-black leading-relaxed text-center font-serif">
                         "{data.prediction}"
                     </p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-white rounded-2xl p-4 border border-orange-100 shadow-sm hover:shadow-md transition-shadow group">
+                    <div className="bg-white rounded-2xl p-4 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-transform group">
                         <div className="flex items-center gap-3 mb-2">
-                            <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center group-hover:scale-110 transition-transform">
-                                <span className="text-lg">🍽️</span>
+                            <div className="w-10 h-10 rounded-xl bg-orange-100 border-2 border-black flex items-center justify-center group-hover:scale-110 transition-transform shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                                <span className="text-xl">🍽️</span>
                             </div>
-                            <p className="text-xs font-bold text-orange-600 uppercase tracking-wide">Lucky Dish</p>
+                            <p className="text-xs font-black text-orange-600 uppercase tracking-wide">Lucky Dish</p>
                         </div>
-                        <p className="text-base font-bold text-gray-800 pl-11">{data.luckyDish}</p>
+                        <p className="text-lg font-black text-black pl-1">{data.luckyDish}</p>
                     </div>
 
-                    <div className="bg-white rounded-2xl p-4 border border-blue-100 shadow-sm hover:shadow-md transition-shadow group">
+                    <div className="bg-white rounded-2xl p-4 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-transform group">
                         <div className="flex items-center gap-3 mb-2">
-                            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center group-hover:scale-110 transition-transform">
-                                <span className="text-lg">⏰</span>
+                            <div className="w-10 h-10 rounded-xl bg-blue-100 border-2 border-black flex items-center justify-center group-hover:scale-110 transition-transform shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                                <span className="text-xl">⏰</span>
                             </div>
-                            <p className="text-xs font-bold text-blue-600 uppercase tracking-wide">Lucky Time</p>
+                            <p className="text-xs font-black text-blue-600 uppercase tracking-wide">Lucky Time</p>
                         </div>
-                        <p className="text-base font-bold text-gray-800 pl-11">{data.luckyTime}</p>
+                        <p className="text-lg font-black text-black pl-1">{data.luckyTime}</p>
                     </div>
                 </div>
 
-                <div className="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-3xl p-1 border border-yellow-100 shadow-sm">
-                    <div className="bg-white/60 backdrop-blur-sm rounded-[20px] p-4">
+                <div className="bg-yellow-300 rounded-3xl p-1 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transform rotate-1 hover:rotate-0 transition-transform duration-300">
+                    <div className="bg-white rounded-[20px] p-5 border-2 border-black">
                         <div className="flex items-center justify-between mb-3">
                             <div className="flex items-center gap-2">
-                                <Star className="w-5 h-5 text-yellow-500 fill-yellow-500 animate-pulse" />
-                                <h4 className="text-sm font-bold text-gray-800">Daily Challenge</h4>
+                                <Star className="w-6 h-6 text-yellow-400 fill-yellow-400 stroke-black stroke-2 animate-pulse" />
+                                <h4 className="text-base font-black text-black uppercase tracking-tight">Daily Challenge</h4>
                             </div>
-                            <span className="text-xs font-bold text-orange-500 bg-orange-100 px-2 py-1 rounded-full">+10 XP</span>
+                            <span className="text-xs font-black text-white bg-orange-500 px-3 py-1 rounded-lg border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">+10 XP</span>
                         </div>
-                        <p className="text-sm text-gray-600 mb-4 pl-7">{data.challenge}</p>
+                        <p className="text-sm text-gray-800 font-bold mb-5 pl-8 border-l-4 border-gray-200">{data.challenge}</p>
                         <Button
                             onClick={handleClaimXP}
                             disabled={xpClaimed}
-                            className={`w-full h-10 rounded-xl font-bold shadow-md transition-all hover:scale-[1.02] ${xpClaimed
+                            className={`w-full h-12 rounded-xl font-black uppercase tracking-wider shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] border-4 border-black transition-all hover:-translate-y-1 active:translate-y-0 active:shadow-none ${xpClaimed
                                 ? "bg-green-500 hover:bg-green-600 text-white"
-                                : "bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white"
+                                : "bg-black text-white hover:bg-gray-800"
                                 }`}
                         >
                             {xpClaimed ? (

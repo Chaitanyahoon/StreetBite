@@ -151,4 +151,14 @@ export const reportApi = {
   updateStatus: (id: string | number, status: string) => api.put(`/reports/${id}/status`, { status }) as Promise<any>,
 };
 
+export const hotTopicApi = {
+  getAllActive: () => api.get('/hottopics') as Promise<any>,
+  getAll: () => api.get('/hottopics/admin/all') as Promise<any>,
+  create: (data: any) => api.post('/hottopics', data) as Promise<any>,
+  update: (id: string | number, data: any) => api.put(`/hottopics/${id}`, data) as Promise<any>,
+  delete: (id: string | number) => api.delete(`/hottopics/${id}`) as Promise<any>,
+  addComment: (id: string | number, text: string) => api.post(`/hottopics/${id}/comment`, { text }) as Promise<any>,
+  toggleLike: (id: string | number) => api.post(`/hottopics/${id}/like`, {}) as Promise<any>,
+};
+
 export default api;

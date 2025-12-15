@@ -52,17 +52,20 @@ export function ZodiacSelector({ onSelect }: ZodiacSelectorProps) {
     };
 
     return (
-        <Card className="w-full max-w-md mx-auto mb-8 border-2 border-primary/20 shadow-lg hover:shadow-xl transition-all">
-            <CardHeader className="text-center pb-4">
-                <CardTitle className="text-xl font-bold text-primary">🌟 Discover Your Foodtaar</CardTitle>
-                <CardDescription className="text-sm">
+        <Card className="w-full max-w-md mx-auto mb-8 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white rounded-[2rem] overflow-hidden transform hover:-translate-y-1 transition-transform">
+            <div className="bg-yellow-300 py-4 text-center border-b-4 border-black">
+                <CardTitle className="text-2xl font-black text-black uppercase tracking-tight">🌟 Discover Your Foodtaar</CardTitle>
+            </div>
+
+            <CardHeader className="text-center pt-6 pb-2 px-6">
+                <CardDescription className="text-base font-bold text-gray-500">
                     Enter your birth date to reveal your food personality!
                 </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+            <CardContent className="space-y-6 pt-2 pb-8 px-8">
+                <div className="grid grid-cols-2 gap-6">
                     <div className="space-y-2">
-                        <Label htmlFor="day">Day</Label>
+                        <Label htmlFor="day" className="font-black text-black uppercase tracking-wider text-xs ml-1">Day</Label>
                         <Input
                             id="day"
                             type="number"
@@ -71,10 +74,11 @@ export function ZodiacSelector({ onSelect }: ZodiacSelectorProps) {
                             max="31"
                             value={day}
                             onChange={(e) => setDay(e.target.value)}
+                            className="h-12 border-2 border-black rounded-xl text-lg font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus-visible:ring-0 focus-visible:ring-offset-0 focus:translate-x-[2px] focus:translate-y-[2px] focus:shadow-none transition-all bg-white"
                         />
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="month">Month</Label>
+                        <Label htmlFor="month" className="font-black text-black uppercase tracking-wider text-xs ml-1">Month</Label>
                         <Input
                             id="month"
                             type="number"
@@ -83,12 +87,13 @@ export function ZodiacSelector({ onSelect }: ZodiacSelectorProps) {
                             max="12"
                             value={month}
                             onChange={(e) => setMonth(e.target.value)}
+                            className="h-12 border-2 border-black rounded-xl text-lg font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus-visible:ring-0 focus-visible:ring-offset-0 focus:translate-x-[2px] focus:translate-y-[2px] focus:shadow-none transition-all bg-white"
                         />
                     </div>
                 </div>
 
                 <Button
-                    className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold"
+                    className="w-full h-14 text-lg bg-black text-white hover:bg-gray-800 font-black uppercase tracking-widest border-2 border-black rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5 transition-all active:translate-y-0 active:shadow-none"
                     onClick={handleSubmit}
                     disabled={!day || !month}
                 >

@@ -1,146 +1,113 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { TrendingUp } from "lucide-react";
+import { BarChart2, CheckCircle2 } from "lucide-react";
+import { toast } from "sonner";
 
-interface PollOption {
-    text: string;
-    votes: number;
-}
-
-interface Poll {
-    question: string;
-    options: PollOption[];
-}
-
-const POLLS: Poll[] = [
-    {
-        question: "What's the best rainy day snack?",
-        options: [
-            { text: "Vada Pav", votes: 120 },
-            { text: "Bhajiya", votes: 85 },
-            { text: "Corn", votes: 65 }
-        ]
-    },
-    {
-        question: "Which late-night food hits different?",
-        options: [
-            { text: "Pav Bhaji", votes: 95 },
-            { text: "Cutting Chai & Bun Maska", votes: 110 },
-            { text: "Misal Pav", votes: 75 }
-        ]
-    },
-    {
-        question: "Best street food for breakfast?",
-        options: [
-            { text: "Poha", votes: 100 },
-            { text: "Upma", votes: 60 },
-            { text: "Samosa", votes: 90 }
-        ]
-    },
-    {
-        question: "Which chaat is the GOAT?",
-        options: [
-            { text: "Pani Puri", votes: 150 },
-            { text: "Sev Puri", votes: 80 },
-            { text: "Dahi Puri", votes: 70 }
-        ]
-    },
-    {
-        question: "Best post-workout street food?",
-        options: [
-            { text: "Fruit Chaat", votes: 65 },
-            { text: "Momos", votes: 105 },
-            { text: "Frankies", votes: 90 }
-        ]
-    }
-];
+const POLL_DATA = {
+    question: "Best Street Food Companion?",
+    options: [
+        { id: 1, text: "Masala Chai ☕", votes: 45 },
+        { id: 2, text: "Thums Up 🥤", votes: 32 },
+        { id: 3, text: "Filter Coffee 🥯", votes: 28 },
+        { id: 4, text: "Sugarcane Juice 🎋", votes: 15 }
+    ]
+};
 
 export function DailyPoll() {
-    const [currentPoll, setCurrentPoll] = useState<Poll | null>(null);
-    const [selectedOption, setSelectedOption] = useState<number | null>(null);
     const [hasVoted, setHasVoted] = useState(false);
+    const [selectedOption, setSelectedOption] = useState<number | null>(null);
+    const [votes, setVotes] = useState<number[]>(POLL_DATA.options.map(o => o.votes));
 
+    // Load voting state
     useEffect(() => {
-        // Select poll based on day of year (rotates daily)
-        const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
-        const pollIndex = dayOfYear % POLLS.length;
-        setCurrentPoll(POLLS[pollIndex]);
-        // No localStorage - resets on every refresh!
+        if (typeof window !== 'undefined') {
+            const savedVote = localStorage.getItem("dailyPollVote");
+            if (savedVote) {
+                setSelectedOption(parseInt(savedVote));
+                setHasVoted(true);
+            }
+        }
     }, []);
 
-    const handleVote = (optionIndex: number) => {
-        if (hasVoted || !currentPoll) return;
+    const handleVote = (index: number) => {
+        if (hasVoted) return;
 
-        setSelectedOption(optionIndex);
+        const newVotes = [...votes];
+        newVotes[index] += 1;
+        setVotes(newVotes);
+        setSelectedOption(index);
         setHasVoted(true);
 
-        // Increment vote count (session-only, resets on refresh)
-        currentPoll.options[optionIndex].votes += 1;
-        setCurrentPoll({ ...currentPoll });
+        localStorage.setItem("dailyPollVote", index.toString());
+        toast.success("Vote recorded! +5 XP");
     };
 
-    if (!currentPoll) return null;
-
-    const totalVotes = currentPoll.options.reduce((sum, opt) => sum + opt.votes, 0);
+    const currentPoll = POLL_DATA;
+    const options = currentPoll.options;
+    const totalVotes = votes.reduce((a, b) => a + b, 0);
 
     return (
-        <Card className="bg-[#1a103c] border-none shadow-xl relative overflow-hidden ring-1 ring-white/10">
-            {/* Background Accents */}
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-500 via-pink-500 to-purple-500" />
-
-            <CardHeader className="pb-2">
-                <CardTitle className="flex items-center gap-2 text-white">
-                    <TrendingUp className="w-5 h-5 text-orange-400" />
-                    <span className="tracking-tight">Daily Poll</span>
+        <Card className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden ring-0 rounded-[2rem]">
+            <CardHeader className="pb-4 pt-6 px-6">
+                <CardTitle className="flex items-center gap-3 text-xl text-black">
+                    <div className="p-2 bg-black rounded-lg transform -rotate-2">
+                        <BarChart2 className="w-6 h-6 text-white" />
+                    </div>
+                    <span className="font-black uppercase tracking-tight">Daily Poll</span>
                 </CardTitle>
             </CardHeader>
-            <CardContent>
-                <p className="mb-5 text-indigo-100 font-medium leading-relaxed">{currentPoll.question}</p>
+            <CardContent className="pt-2 px-6 pb-6 relative z-10">
+                <h3 className="text-xl font-black text-black mb-6 leading-tight uppercase">
+                    {currentPoll.question}
+                </h3>
                 <div className="space-y-3">
-                    {currentPoll.options.map((option, index) => {
-                        const percentage = totalVotes > 0 ? Math.round((option.votes / totalVotes) * 100) : 0;
+                    {options.map((option, index) => {
                         const isSelected = selectedOption === index;
+                        const percentage = totalVotes > 0 ? Math.round((votes[index] / totalVotes) * 100) : 0;
 
                         return (
                             <button
                                 key={index}
                                 onClick={() => handleVote(index)}
                                 disabled={hasVoted}
-                                className={`w-full text-left px-4 py-3 rounded-xl border transition-all relative overflow-hidden group ${hasVoted
+                                className={`w-full text-left p-0 rounded-xl border-2 transition-all relative overflow-hidden group ${hasVoted
                                     ? isSelected
-                                        ? "border-orange-500/50 bg-orange-500/10"
-                                        : "border-white/5 bg-white/5"
-                                    : "border-white/10 hover:border-orange-400/50 hover:bg-white/5 cursor-pointer"
+                                        ? "border-black bg-orange-100 ring-2 ring-black ring-offset-2"
+                                        : "border-black bg-white opacity-60"
+                                    : "border-black bg-white hover:bg-orange-50 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5 cursor-pointer shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
                                     }`}
                             >
+                                {/* Progress Bar Background */}
                                 {hasVoted && (
-                                    <div
-                                        className={`absolute top-0 left-0 h-full transition-all duration-700 ease-out ${isSelected ? "bg-gradient-to-r from-orange-500/20 to-pink-500/20" : "bg-white/5"}`}
-                                        style={{ width: `${percentage}%` }}
+                                    <motion.div
+                                        initial={{ width: 0 }}
+                                        animate={{ width: `${percentage}%` }}
+                                        className={`absolute inset-0 h-full opacity-20 ${isSelected ? "bg-orange-500" : "bg-gray-300"}`}
                                     />
                                 )}
-                                <div className="relative z-10 flex justify-between items-center">
-                                    <span className={`font-medium transition-colors ${isSelected ? "text-orange-200" : "text-gray-300 group-hover:text-white"}`}>
+
+                                <div className="relative z-10 p-4 flex justify-between items-center">
+                                    <span className={`font-bold text-sm ${isSelected ? "text-orange-900" : "text-black"}`}>
                                         {option.text}
                                     </span>
                                     {hasVoted && (
-                                        <span className={`text-sm font-bold ${isSelected ? "text-orange-400" : "text-indigo-300"}`}>
-                                            {percentage}%
-                                        </span>
+                                        <div className="flex items-center gap-2">
+                                            <span className="font-black text-sm text-black">{percentage}%</span>
+                                            {isSelected && <CheckCircle2 className="w-4 h-4 text-orange-600 fill-orange-100" />}
+                                        </div>
                                     )}
                                 </div>
                             </button>
                         );
                     })}
                 </div>
-                {hasVoted && (
-                    <p className="text-[10px] text-indigo-300/60 mt-4 text-center uppercase tracking-widest font-medium">
-                        {totalVotes} votes • New poll tomorrow
-                    </p>
-                )}
+                <div className="mt-6 flex justify-between items-center text-xs font-bold text-gray-500 uppercase tracking-wide">
+                    <span>{totalVotes} votes</span>
+                    <span>Resets in 12h</span>
+                </div>
             </CardContent>
         </Card>
     );
