@@ -9,6 +9,11 @@ interface VendorLocation {
     lastUpdated: number
 }
 
+/**
+ * Custom hook to track a vendor's real-time location.
+ * @param {string|number} vendorId - The ID of the vendor to track.
+ * @returns {Object} Location object containing latitude, longitude, address, and loading state.
+ */
 export function useLiveVendorLocation(vendorId: string | number) {
     const [location, setLocation] = useState<VendorLocation | null>(null)
     const [loading, setLoading] = useState(true)

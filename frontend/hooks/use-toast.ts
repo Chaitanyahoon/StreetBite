@@ -33,21 +33,21 @@ type ActionType = typeof actionTypes
 
 type Action =
   | {
-      type: ActionType['ADD_TOAST']
-      toast: ToasterToast
-    }
+    type: ActionType['ADD_TOAST']
+    toast: ToasterToast
+  }
   | {
-      type: ActionType['UPDATE_TOAST']
-      toast: Partial<ToasterToast>
-    }
+    type: ActionType['UPDATE_TOAST']
+    toast: Partial<ToasterToast>
+  }
   | {
-      type: ActionType['DISMISS_TOAST']
-      toastId?: ToasterToast['id']
-    }
+    type: ActionType['DISMISS_TOAST']
+    toastId?: ToasterToast['id']
+  }
   | {
-      type: ActionType['REMOVE_TOAST']
-      toastId?: ToasterToast['id']
-    }
+    type: ActionType['REMOVE_TOAST']
+    toastId?: ToasterToast['id']
+  }
 
 interface State {
   toasts: ToasterToast[]
@@ -105,9 +105,9 @@ export const reducer = (state: State, action: Action): State => {
         toasts: state.toasts.map((t) =>
           t.id === toastId || toastId === undefined
             ? {
-                ...t,
-                open: false,
-              }
+              ...t,
+              open: false,
+            }
             : t,
         ),
       }
@@ -139,6 +139,12 @@ function dispatch(action: Action) {
 
 type Toast = Omit<ToasterToast, 'id'>
 
+/**
+ * Toast invocation function.
+ * Dispatches a toast notification to the toaster component.
+ * @param {Toast} props - Toast properties including title, description, and action.
+ * @returns {Object} Toast controller methods (id, dismiss, update).
+ */
 function toast({ ...props }: Toast) {
   const id = genId()
 
@@ -168,6 +174,11 @@ function toast({ ...props }: Toast) {
   }
 }
 
+/**
+ * Custom hook to access toast state and dispatch function.
+ * Recommended for use in client components to trigger toasts.
+ * @returns {Object} Toast state and toaster methods.
+ */
 function useToast() {
   const [state, setState] = React.useState<State>(memoryState)
 

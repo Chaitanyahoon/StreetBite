@@ -8,6 +8,11 @@ interface MenuAvailability {
     [itemId: string]: boolean
 }
 
+/**
+ * Custom hook to track real-time availability of multiple menu items.
+ * @param {any[]} menuItems - List of menu items to monitor.
+ * @returns {Object} Availability map and lookup function.
+ */
 export function useLiveMenuAvailability(menuItems: any[]) {
     const [availability, setAvailability] = useState<MenuAvailability>({})
 

@@ -2,6 +2,12 @@ import { useEffect, useState } from 'react'
 import { messaging } from '@/lib/firebase-client'
 import { getToken, onMessage } from 'firebase/messaging'
 
+/**
+ * Custom hook to manage Firebase Cloud Messaging (FCM) notifications.
+ * Handles permission requests and token retrieval.
+ * @param {number} [userId] - Optional User ID to associate with the FCM token.
+ * @returns {Object} Notification permission, token, and utility functions.
+ */
 export function useNotifications(userId?: number) {
     const [permission, setPermission] = useState<NotificationPermission>('default')
     const [token, setToken] = useState<string | null>(null)

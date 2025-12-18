@@ -4,6 +4,11 @@ import { useState, useEffect } from 'react'
 import { useUserLocation } from '@/lib/useUserLocation'
 import { GOOGLE_MAPS_API_KEY } from '@/lib/maps-config'
 
+/**
+ * Custom hook to reverse geocode the user's current location into a city name.
+ * Uses Google Maps Geocoding API.
+ * @returns {Object} Object containing the city name and loading state.
+ */
 export function useCityName() {
     const { location } = useUserLocation()
     const [cityName, setCityName] = useState<string>('Nashik')

@@ -7,6 +7,11 @@ interface VendorStatus {
     lastUpdated: number
 }
 
+/**
+ * Custom hook to track a vendor's real-time availability status.
+ * @param {string|number} vendorId - The ID of the vendor to track.
+ * @returns {Object} Status string ('AVAILABLE' | 'BUSY' | 'UNAVAILABLE') and loading state.
+ */
 export function useLiveVendorStatus(vendorId: string | number) {
     const [status, setStatus] = useState<'AVAILABLE' | 'BUSY' | 'UNAVAILABLE' | null>(null)
     const [loading, setLoading] = useState(true)
