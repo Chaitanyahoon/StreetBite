@@ -48,7 +48,7 @@ export default function OffersPage() {
     const fetchPromotions = async () => {
       try {
         const data = await promotionApi.getAllActive()
-        console.log('Offers Page - Received Promotions:', data)
+
         setPromotions(data || [])
       } catch (error) {
         console.error('Error fetching promotions:', error)

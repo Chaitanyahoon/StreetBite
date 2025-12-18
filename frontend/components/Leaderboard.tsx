@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Trophy, Medal, Crown, Sparkles, RefreshCw } from "lucide-react";
+import Image from "next/image";
 
 interface User {
     id: number;
@@ -138,14 +139,16 @@ export function Leaderboard() {
                             </div>
 
                             <div className="relative">
-                                <div className={`w-12 h-12 rounded-full flex items-center justify-center text-xl border-2 border-black overflow-hidden ${index === 0 ? 'bg-yellow-100 ring-2 ring-yellow-400 ring-offset-2' : 'bg-gray-100'}`}>
+                                <div className={`w-12 h-12 relative rounded-full flex items-center justify-center text-xl border-2 border-black overflow-hidden ${index === 0 ? 'bg-yellow-100 ring-2 ring-yellow-400 ring-offset-2' : 'bg-gray-100'}`}>
                                     {user.profilePicture ? (
-                                        <img
+                                        <Image
                                             src={user.profilePicture.startsWith('http') || user.profilePicture.startsWith('/') ? user.profilePicture : `/avatars/${user.profilePicture}`}
                                             alt={user.name}
-                                            className="w-full h-full object-cover"
+                                            fill
+                                            className="object-cover"
                                             onError={(e) => {
-                                                (e.target as HTMLImageElement).style.display = 'none';
+                                                const target = e.target as HTMLImageElement;
+                                                target.style.display = 'none';
                                             }}
                                         />
                                     ) : (
@@ -183,14 +186,16 @@ export function Leaderboard() {
                     <div className="pt-4 border-t-2 border-dashed border-gray-300 mt-2">
                         <div className="flex items-center justify-between p-4 bg-black rounded-xl shadow-[4px_4px_0px_0px_#9ca3af] text-white">
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-lg border-2 border-gray-500 overflow-hidden">
+                                <div className="w-10 h-10 relative rounded-full bg-white flex items-center justify-center text-lg border-2 border-gray-500 overflow-hidden">
                                     {userProfilePic ? (
-                                        <img
+                                        <Image
                                             src={userProfilePic.startsWith('http') || userProfilePic.startsWith('/') ? userProfilePic : `/avatars/${userProfilePic}`}
                                             alt="You"
-                                            className="w-full h-full object-cover"
+                                            fill
+                                            className="object-cover"
                                             onError={(e) => {
-                                                (e.target as HTMLImageElement).style.display = 'none';
+                                                const target = e.target as HTMLImageElement;
+                                                target.style.display = 'none';
                                             }}
                                         />
                                     ) : (

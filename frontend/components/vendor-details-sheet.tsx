@@ -172,7 +172,11 @@ export function VendorDetailsSheet({ vendor, open, onOpenChange, onFavoriteToggl
                         </div>
                         <div className="w-px h-10 bg-border" />
                         <div className="flex flex-col items-center">
-                            <div className="font-bold text-lg">{vendor.distance || '0.5 km'}</div>
+                            <div className="font-bold text-lg">
+                                {typeof vendor.distance === 'number'
+                                    ? `${vendor.distance.toFixed(1)} km`
+                                    : (vendor.distance || '0.5 km')}
+                            </div>
                             <span className="text-xs text-muted-foreground">Distance</span>
                         </div>
                         <div className="w-px h-10 bg-border" />

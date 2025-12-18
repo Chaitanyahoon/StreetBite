@@ -117,15 +117,15 @@ export default function ExplorePage() {
   )
 
   return (
-    <div className="min-h-screen bg-[#FADFA1] bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px]">
+    <div className="min-h-screen bg-[#FFFBF0] bg-[radial-gradient(#E5E7EB_1px,transparent_1px)] [background-size:24px_24px]">
       <Navbar />
 
       {/* Hero Section */}
       <section className="relative py-32 px-4 overflow-hidden">
         {/* Animated Background Elements */}
-        <div className="absolute top-20 left-10 w-32 h-32 bg-yellow-400 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
-        <div className="absolute top-20 right-10 w-32 h-32 bg-orange-400 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
-        <div className="absolute -bottom-8 left-20 w-32 h-32 bg-pink-400 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-4000"></div>
+        <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-yellow-200/40 rounded-full mix-blend-multiply filter blur-[80px] opacity-70 animate-blob"></div>
+        <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-orange-200/40 rounded-full mix-blend-multiply filter blur-[80px] opacity-70 animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-8 left-20 w-32 h-32 bg-pink-200/40 rounded-full mix-blend-multiply filter blur-[50px] opacity-70 animate-blob animation-delay-4000"></div>
 
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center mb-16 animate-slide-up">
@@ -175,8 +175,8 @@ export default function ExplorePage() {
                   key={filter.id}
                   onClick={() => setSelectedFilter(filter.id)}
                   className={`px-6 py-3 rounded-xl font-black border-4 border-black transition-all transform hover:-translate-y-1 ${selectedFilter === filter.id
-                      ? 'bg-yellow-400 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
-                      : 'bg-white hover:bg-gray-50 shadow-[4px_4px_0px_0px_rgba(200,200,200,1)]'
+                    ? 'bg-yellow-400 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
+                    : 'bg-white hover:bg-gray-50 shadow-[4px_4px_0px_0px_rgba(200,200,200,1)]'
                     }`}
                 >
                   {filter.label}
@@ -223,17 +223,31 @@ export default function ExplorePage() {
           </div>
 
           {viewMode === 'map' ? (
-            <div className="rounded-3xl overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] border-4 border-black h-[600px] bg-white">
+            <div className="rounded-3xl overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] border-4 border-black h-[600px] bg-white animate-scale-in">
               <VendorMap vendors={filteredVendors} onVendorSelect={(v) => setSelectedVendor(v)} />
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {filteredVendors.map((vendor, index) => (
-                <div key={vendor.id} className="hover:z-10 transition-all duration-300">
-                  <VendorCard id={vendor.id} {...vendor} />
+            <>
+              {loadingVendors ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                  {[...Array(8)].map((_, i) => (
+                    <div key={i} className="bg-white/50 h-80 rounded-3xl border-4 border-black/10 animate-pulse delay-[100ms]" style={{ animationDelay: `${i * 0.1}s` }}></div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                  {filteredVendors.map((vendor, index) => (
+                    <div
+                      key={vendor.id}
+                      className="hover:z-10 transition-all duration-300 animate-slide-up"
+                      style={{ animationDelay: `${index * 0.05}s` }}
+                    >
+                      <VendorCard id={vendor.id} {...vendor} />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </div>
       </section>

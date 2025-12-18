@@ -1,7 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { Star, MapPin, TrendingUp, Clock } from 'lucide-react'
+import Image from "next/image";
+import { Star, MapPin, TrendingUp, Clock, Heart, MoveRight } from 'lucide-react'
 
 interface VendorCardProps {
   id: string
@@ -20,10 +21,11 @@ export function VendorCard({ id, name, cuisine, rating, distance, image, display
     <Link href={`/vendors/${id}`} className="block group">
       <div className="overflow-hidden rounded-2xl bg-white border-2 border-border/20 hover:border-primary/40 shadow-md hover:shadow-2xl transition-all duration-300 cursor-pointer h-full flex flex-col hover:-translate-y-2">
         <div className="relative h-56 bg-muted overflow-hidden flex-shrink-0">
-          <img
+          <Image
             src={displayImageUrl || image || "/placeholder.svg?height=224&width=400&query=street+food+vendor"}
             alt={name}
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+            fill
+            className="object-cover group-hover:scale-110 transition-transform duration-500"
           />
           {/* Gradient overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>

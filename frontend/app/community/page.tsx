@@ -211,15 +211,15 @@ export default function CommunityPage() {
     ];
 
     return (
-        <div className="min-h-screen bg-[#FADFA1] bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px]">
+        <div className="min-h-screen bg-[#FFFBF0] bg-[radial-gradient(#E5E7EB_1px,transparent_1px)] [background-size:24px_24px]">
             <Navbar />
 
             {/* Dynamic Hero Section */}
             <section className="relative pt-32 pb-16 overflow-hidden">
                 {/* Floating Elements - keeping animations but making them bolder */}
-                <div className="absolute top-20 left-10 animate-blob mix-blend-multiply filter blur-xl opacity-70 w-32 h-32 bg-purple-400 rounded-full"></div>
-                <div className="absolute top-20 right-10 animate-blob animation-delay-2000 mix-blend-multiply filter blur-xl opacity-70 w-32 h-32 bg-yellow-400 rounded-full"></div>
-                <div className="absolute -bottom-8 left-20 animate-blob animation-delay-4000 mix-blend-multiply filter blur-xl opacity-70 w-32 h-32 bg-pink-400 rounded-full"></div>
+                <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-purple-200/40 rounded-full mix-blend-multiply filter blur-[80px] opacity-70 animate-blob"></div>
+                <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-yellow-200/40 rounded-full mix-blend-multiply filter blur-[80px] opacity-70 animate-blob animation-delay-2000"></div>
+                <div className="absolute -bottom-8 left-20 w-[400px] h-[400px] bg-pink-200/40 rounded-full mix-blend-multiply filter blur-[80px] opacity-70 animate-blob animation-delay-4000"></div>
 
                 <div className="max-w-6xl mx-auto px-6 relative z-10 text-center">
                     <div className="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-black text-white border-2 border-black text-sm font-black uppercase tracking-wider mb-8 shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] transform -rotate-1">
@@ -334,11 +334,12 @@ export default function CommunityPage() {
                                 <div className="grid grid-cols-1 gap-4">
                                     {discussions
                                         .filter(d => d.title.toLowerCase().includes(searchQuery.toLowerCase()))
-                                        .map((discussion) => (
+                                        .map((discussion, index) => (
                                             <button
                                                 key={discussion.id}
                                                 onClick={() => handleDiscussionClick(discussion)}
-                                                className="group p-5 bg-white hover:bg-orange-50 rounded-2xl border-4 border-black transition-all text-left shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 active:translate-y-0 active:shadow-none"
+                                                className="group p-5 bg-white hover:bg-orange-50 rounded-2xl border-4 border-black transition-all text-left shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 active:translate-y-0 active:shadow-none animate-slide-up"
+                                                style={{ animationDelay: `${index * 0.1}s` }}
                                             >
                                                 <div className="flex justify-between items-start mb-3">
                                                     <div className="flex gap-2 flex-wrap">
@@ -408,9 +409,11 @@ export default function CommunityPage() {
                                 </div>
                             </div>
                             <CardContent className="p-6 min-h-[400px]">
-                                {activeTab === 'games' && <FoodBingo />}
-                                {activeTab === 'photos' && <PhotoWall />}
-                                {activeTab === 'events' && <EventsCalendar />}
+                                <div key={activeTab} className="animate-fade-in">
+                                    {activeTab === 'games' && <FoodBingo />}
+                                    {activeTab === 'photos' && <PhotoWall />}
+                                    {activeTab === 'events' && <EventsCalendar />}
+                                </div>
                             </CardContent>
                         </Card>
 

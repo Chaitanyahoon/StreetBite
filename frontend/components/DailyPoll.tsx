@@ -6,15 +6,49 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart2, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 
-const POLL_DATA = {
-    question: "Best Street Food Companion?",
-    options: [
-        { id: 1, text: "Masala Chai ☕", votes: 45 },
-        { id: 2, text: "Thums Up 🥤", votes: 32 },
-        { id: 3, text: "Filter Coffee 🥯", votes: 28 },
-        { id: 4, text: "Sugarcane Juice 🎋", votes: 15 }
-    ]
+const POLL_POOL = [
+    {
+        question: "Best Street Food Companion?",
+        options: [
+            { id: 1, text: "Masala Chai ☕", votes: 45 },
+            { id: 2, text: "Thums Up 🥤", votes: 32 },
+            { id: 3, text: "Filter Coffee 🥯", votes: 28 },
+            { id: 4, text: "Sugarcane Juice 🎋", votes: 15 }
+        ]
+    },
+    {
+        question: "Spiciest Dish Challenge?",
+        options: [
+            { id: 1, text: "Misal Pav 🌶️", votes: 62 },
+            { id: 2, text: "Schezwan Vada Pav 🔥", votes: 41 },
+            { id: 3, text: "Kolhapuri Thali 🥵", votes: 35 },
+            { id: 4, text: "Thecha Bhakri 🌋", votes: 22 }
+        ]
+    },
+    {
+        question: "Late Night Craving?",
+        options: [
+            { id: 1, text: "Maggi 🍜", votes: 89 },
+            { id: 2, text: "Egg Burji 🥚", votes: 54 },
+            { id: 3, text: "Momos 🥟", votes: 47 },
+            { id: 4, text: "Shawarma 🌯", votes: 63 }
+        ]
+    }
+];
+
+// Get a poll based on the day of the year to rotate content daily
+const getDailyPoll = () => {
+    const today = new Date();
+    // Simple hash: Day of year (0-365) % pool length
+    const start = new Date(today.getFullYear(), 0, 0);
+    const diff = today.getTime() - start.getTime();
+    const oneDay = 1000 * 60 * 60 * 24;
+    const dayOfYear = Math.floor(diff / oneDay);
+
+    return POLL_POOL[dayOfYear % POLL_POOL.length];
 };
+
+const POLL_DATA = getDailyPoll();
 
 export function DailyPoll() {
     const [hasVoted, setHasVoted] = useState(false);

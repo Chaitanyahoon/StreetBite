@@ -13,7 +13,7 @@ export default function Home() {
   const { cityName, loading } = useCityName()
 
   return (
-    <div className="min-h-screen flex flex-col bg-background overflow-hidden">
+    <div className="min-h-screen flex flex-col overflow-hidden">
       {/* Enhanced Navbar */}
       <Navbar />
 
@@ -22,11 +22,7 @@ export default function Home() {
 
 
         {/* Enhanced Hero Section - Premium Street Pop */}
-        <section className="relative py-20 md:py-32 overflow-hidden bg-white bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px]">
-          {/* Animated Background Elements */}
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-400 rounded-full blur-[100px] animate-pulse -z-10 mix-blend-multiply opacity-50" />
-          <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-orange-400 rounded-full blur-[100px] animate-pulse -z-10 mix-blend-multiply opacity-50" style={{ animationDuration: '4s' }} />
-
+        <section className="relative py-20 md:py-32 overflow-hidden">
           {/* Floating Food Elements */}
           <div className="absolute top-20 left-[10%] text-7xl animate-float opacity-100 rotate-12 -z-10 hover:scale-110 transition-transform cursor-pointer drop-shadow-[4px_4px_0px_rgba(0,0,0,0.2)]">🍔</div>
           <div className="absolute bottom-40 right-[5%] text-7xl animate-float-delayed opacity-100 -rotate-12 -z-10 hover:scale-110 transition-transform cursor-pointer drop-shadow-[4px_4px_0px_rgba(0,0,0,0.2)]">🍕</div>
@@ -280,8 +276,6 @@ export default function Home() {
               {/* Background Pattern */}
               <div className="absolute inset-0 opacity-20">
                 <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(#ffffff_2px,transparent_2px)] [background-size:24px_24px]"></div>
-                <div className="absolute -top-40 -right-40 w-96 h-96 bg-primary rounded-full blur-[120px] opacity-60 animate-pulse"></div>
-                <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-secondary rounded-full blur-[120px] opacity-60 animate-pulse" style={{ animationDelay: '2s' }}></div>
               </div>
 
               <div className="relative z-10">

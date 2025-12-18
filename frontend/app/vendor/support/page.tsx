@@ -222,7 +222,7 @@ function TicketHistory() {
 
             setTickets(myReports)
         } catch (e) {
-            console.log("Could not fetch history", e)
+
         } finally {
             setLoading(false)
         }
@@ -250,8 +250,8 @@ function TicketHistory() {
                 <div key={i} className="p-3 bg-background rounded-xl border text-sm hover:border-primary/30 transition-colors">
                     <div className="flex justify-between items-start mb-1">
                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${ticket.status === 'RESOLVED' ? 'bg-green-100 text-green-700' :
-                                ticket.status === 'PENDING' ? 'bg-yellow-100 text-yellow-700' :
-                                    'bg-gray-100 text-gray-700'
+                            ticket.status === 'PENDING' ? 'bg-yellow-100 text-yellow-700' :
+                                'bg-gray-100 text-gray-700'
                             }`}>
                             {ticket.status}
                         </span>

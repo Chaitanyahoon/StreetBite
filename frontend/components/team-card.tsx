@@ -2,15 +2,18 @@
 
 import { motion } from 'framer-motion'
 import { Zap, Star, Utensils, Flame } from 'lucide-react'
+import Image from 'next/image'
 import { useState } from 'react'
 
-interface TeamMember {
+export interface TeamMember {
     name: string
     role: string
     favFood: string
     quote: string
+    image?: string
+    imageStyle?: React.CSSProperties
     stats: {
-        spiceLevel: 'Mild' | 'Medium' | 'Hot' | 'Extreme'
+        spiceLevel: 'Low' | 'Mild' | 'Medium' | 'Hot' | 'Extreme'
         reviews: number
         badge: string
     }
@@ -21,27 +24,44 @@ export function TeamCard({ member }: { member: TeamMember }) {
 
     return (
         <div
-            className="relative w-full h-[400px] perspective-1000 cursor-pointer group"
+            className="relative w-full h-[400px] cursor-pointer group"
+            style={{ perspective: '1000px' }}
             onMouseEnter={() => setIsFlipped(true)}
             onMouseLeave={() => setIsFlipped(false)}
         >
             <motion.div
-                className="w-full h-full relative preserve-3d transition-all duration-500"
+                className="w-full h-full relative transition-all duration-500"
+                style={{ transformStyle: 'preserve-3d' }}
                 animate={{ rotateY: isFlipped ? 180 : 0 }}
             >
                 {/* FRONT SIDE */}
-                <div className="absolute inset-0 backface-hidden bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden flex flex-col items-center p-6">
+                <div
+                    className="absolute inset-0 bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden flex flex-col items-center p-6"
+                    style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
+                >
                     {/* Background noise texture */}
                     <div className="absolute inset-0 opacity-40 bg-[url('https://www.transparenttextures.com/patterns/cardboard.png')] mix-blend-multiply pointer-events-none"></div>
 
                     {/* Holographic header */}
                     <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-orange-100 to-transparent -z-10" />
 
-                    {/* Avatar Circle */}
-                    <div className="w-32 h-32 mt-8 mb-6 rounded-full bg-slate-900 border-4 border-white shadow-lg flex items-center justify-center relative">
-                        <span className="text-4xl font-black text-white">{member.name[0]}</span>
+                    {/* Avatar Circle Wrapper */}
+                    <div className="w-32 h-32 mt-8 mb-6 relative group-hover:scale-105 transition-transform duration-300">
+                        <div className="w-full h-full relative rounded-full bg-slate-900 border-4 border-white shadow-lg flex items-center justify-center overflow-hidden">
+                            {member.image ? (
+                                <Image
+                                    src={member.image}
+                                    alt={member.name}
+                                    fill
+                                    className="object-cover object-top"
+                                    style={member.imageStyle}
+                                />
+                            ) : (
+                                <span className="text-4xl font-black text-white">{member.name[0]}</span>
+                            )}
+                        </div>
                         {/* Sticker Badge */}
-                        <div className="absolute -bottom-2 -right-2 bg-yellow-400 text-black text-xs font-black px-2 py-1 rotate-[-10deg] shadow-sm border border-black/10">
+                        <div className="absolute -bottom-2 -right-2 bg-yellow-400 text-black text-xs font-black px-2 py-1 rotate-[-10deg] shadow-sm border border-black/10 z-10">
                             {member.stats.badge}
                         </div>
                     </div>
@@ -63,8 +83,8 @@ export function TeamCard({ member }: { member: TeamMember }) {
 
                 {/* BACK SIDE */}
                 <div
-                    className="absolute inset-0 backface-hidden bg-slate-900 rounded-3xl border border-slate-800 shadow-xl overflow-hidden p-8 flex flex-col text-white"
-                    style={{ transform: "rotateY(180deg)" }}
+                    className="absolute inset-0 bg-slate-900 rounded-3xl border border-slate-800 shadow-xl overflow-hidden p-8 flex flex-col text-white"
+                    style={{ transform: "rotateY(180deg)", backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
                 >
                     <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-primary to-orange-500" />
 

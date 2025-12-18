@@ -31,22 +31,23 @@ export function useNotifications(userId?: number) {
         }
 
         try {
-            console.log('🔔 useNotifications: Requesting permission...')
+
             const permission = await Notification.requestPermission()
-            console.log('🔔 useNotifications: Permission result:', permission)
+
             setPermission(permission)
 
             if (permission === 'granted') {
                 // Get FCM token
-                const vapidKey = "G10L_5paf5oCTUr_DaxXSeKfx46nslgW-3Im9beWsOc";
-                console.log('🔔 useNotifications: VAPID Key available:', !!vapidKey)
+                const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
+
 
                 const currentToken = await getToken(messaging, { vapidKey });
                 if (currentToken) {
                     setToken(currentToken);
-                    console.log('🔔 useNotifications: Token retrieved:', currentToken);
 
-                    const response = await fetch('http://localhost:8080/api/notifications/token', {
+
+                    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8081/api';
+                    const response = await fetch(`${backendUrl}/notifications/token`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -62,7 +63,7 @@ export function useNotifications(userId?: number) {
                         throw new Error('Failed to save token')
                     }
                 } else {
-                    console.log('No registration token available. Request permission to generate one.');
+
                 }
             }
             return permission

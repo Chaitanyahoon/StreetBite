@@ -1,13 +1,13 @@
 // ⚠️ IMPORTANT: Replace these values with your actual Firebase config
 // Copy these from Firebase Console > Project Settings > General > Your apps > Firebase SDK snippet
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT.firebaseapp.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT.firebasestorage.app",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID",
-    measurementId: "YOUR_MEASUREMENT_ID"
+    apiKey: "AIzaSyAKDqyaU7Jvk49urkUuj69dv929sI3ADto",
+    authDomain: "streetbite-go.firebaseapp.com",
+    projectId: "streetbite-go",
+    storageBucket: "streetbite-go.firebasestorage.app",
+    messagingSenderId: "683361671426",
+    appId: "1:683361671426:web:76a5505163d225b0f8ca1b",
+    measurementId: "G-K3KTYWTLB2"
 };
 
 // Import Firebase scripts

@@ -11,18 +11,77 @@ import { Counter } from '@/components/counter'
 import { TeamCard } from '@/components/team-card'
 import { ContactDialog } from '@/components/contact-dialog'
 
+import { motion, Variants } from 'framer-motion'
+import { TeamMember } from '@/components/team-card'
+
 export default function AboutPage() {
+  const fadeInUp: Variants = {
+    hidden: { opacity: 0, y: 40 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
+  }
+
+  const staggerContainer: Variants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2
+      }
+    }
+  }
+
+  const teamMembers: TeamMember[] = [
+    {
+      name: "Chaitanya Patil",
+      role: "Chief Eating Officer",
+      image: "/team/abhijit.jpg",
+      favFood: "Spicy Misal Pav",
+      quote: "I code so I can eat more.",
+      stats: { spiceLevel: 'Hot', reviews: 142, badge: "CEO" }
+    },
+    {
+      name: "Abhilasha Thakur",
+      role: "Head of Hidden Gems",
+      image: "/team/abhilasha.jpg",
+      favFood: "Pani Puri (Extra Tikha)",
+      quote: "If it's not spicy, it's not food.",
+      stats: { spiceLevel: 'Extreme', reviews: 89, badge: "EXPLORER" }
+    },
+    {
+      name: "Abhay Jadhav",
+      role: "Street Food Evangelist",
+      image: "/team/abhay.jpg",
+      imageStyle: { transform: 'scale(1.6) translateY(15px)' },
+      favFood: "Paneer Tikka Roll",
+      quote: "Spreading the gospel of flavor.",
+      stats: { spiceLevel: 'Medium', reviews: 210, badge: "VETERAN" }
+    },
+    {
+      name: "Abhijit Rede",
+      role: "Digital Cartographer",
+      image: "/team/chaitanya.jpg",
+      favFood: "Vada Pav",
+      quote: "Mapping the streets, one bite at a time.",
+      stats: { spiceLevel: 'Low', reviews: 56, badge: "MAPPER" }
+    }
+  ]
+
   return (
-    <div className="min-h-screen bg-[#FADFA1] bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] overflow-x-hidden">
+    <div className="min-h-screen bg-[#FFFBF0] bg-[radial-gradient(#E5E7EB_1px,transparent_1px)] [background-size:24px_24px] overflow-x-hidden">
       <Navbar />
 
       {/* Hero Section */}
       <section className="relative py-24 px-4 overflow-hidden">
         {/* Animated Background Elements */}
-        <div className="absolute top-20 left-10 w-32 h-32 bg-yellow-400 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
-        <div className="absolute top-20 right-10 w-32 h-32 bg-orange-400 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
+        <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-yellow-200/40 rounded-full mix-blend-multiply filter blur-[80px] opacity-70 animate-blob"></div>
+        <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-orange-200/40 rounded-full mix-blend-multiply filter blur-[80px] opacity-70 animate-blob animation-delay-2000"></div>
 
-        <div className="relative max-w-5xl mx-auto text-center z-10">
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={fadeInUp}
+          className="relative max-w-5xl mx-auto text-center z-10"
+        >
           <div className="inline-block px-6 py-2 bg-black text-white font-black text-sm uppercase tracking-widest mb-6 transform -rotate-2 rounded-lg shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
             EST. 2025
           </div>
@@ -32,13 +91,19 @@ export default function AboutPage() {
           <p className="text-2xl text-black font-bold max-w-3xl mx-auto leading-relaxed border-l-8 border-black pl-6 text-left md:text-center md:border-l-0 md:pl-0">
             We're not just an app. We're a movement. Championing the culinary heroes who feed our cities, one plate at a time.
           </p>
-        </div>
+        </motion.div>
       </section>
 
       {/* Mission Section */}
       <section className="py-20 px-4">
         <div className="max-w-6xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.3 }}
+            variants={fadeInUp}
+            className="grid md:grid-cols-2 gap-12 items-center"
+          >
             <div className="bg-white p-8 rounded-[2rem] border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-transform">
               <div>
                 <p className="text-black font-black text-lg uppercase tracking-widest mb-4 bg-yellow-300 inline-block px-2 transform -rotate-1">Our Mission</p>
@@ -73,7 +138,7 @@ export default function AboutPage() {
             <div className="relative h-[500px] w-full rounded-[2rem] overflow-hidden border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white">
               <MissionMap />
             </div>
-          </div>
+          </motion.div>
         </div>
       </section>
 
@@ -87,95 +152,93 @@ export default function AboutPage() {
       {/* Meet the Team Section */}
       <section className="py-24 px-4">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={fadeInUp}
+            className="text-center mb-16"
+          >
             <p className="text-black font-black text-sm uppercase tracking-widest mb-4 inline-block bg-white px-4 py-1 border-2 border-black rounded-full shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">The Creators</p>
             <h2 className="text-5xl font-black text-black mb-4">MEET THE SQUAD</h2>
             <p className="text-xl text-black/70 font-bold max-w-2xl mx-auto">
               Foodies, coders, and dreamers building the future of street food.
             </p>
-          </div>
+          </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {[
-              {
-                name: "Chaitanya Patil",
-                role: "Chief Eating Officer",
-                favFood: "Spicy Misal Pav",
-                quote: "I code so I can eat more.",
-                stats: { spiceLevel: 'Hot', reviews: 142, badge: "CEO" }
-              },
-              {
-                name: "Abhilasha Thakur",
-                role: "Head of Hidden Gems",
-                favFood: "Pani Puri (Extra Tikha)",
-                quote: "If it's not spicy, it's not food.",
-                stats: { spiceLevel: 'Extreme', reviews: 89, badge: "EXPLORER" }
-              },
-              {
-                name: "Abhay Jadhav",
-                role: "Street Food Evangelist",
-                favFood: "Paneer Tikka Roll",
-                quote: "Spreading the gospel of flavor.",
-                stats: { spiceLevel: 'Medium', reviews: 210, badge: "VETERAN" }
-              },
-              {
-                name: "Abhijit Rede",
-                role: "Digital Cartographer",
-                favFood: "Vada Pav",
-                quote: "Mapping the streets, one bite at a time.",
-                stats: { spiceLevel: 'Low', reviews: 56, badge: "MAPPER" }
-              }
-            ].map((member, idx) => (
-              <div key={idx} className="hover:-translate-y-2 transition-transform duration-300">
-                {/* @ts-ignore */}
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+            variants={staggerContainer}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
+          >
+            {teamMembers.map((member, idx) => (
+              <motion.div variants={fadeInUp} key={idx} className="hover:-translate-y-2 transition-transform duration-300">
                 <TeamCard member={member} />
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* Values Section */}
       <section className="py-24 px-4 bg-white border-y-4 border-black">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={fadeInUp}
+            className="text-center mb-16"
+          >
             <p className="text-black font-black text-sm uppercase tracking-widest mb-4 bg-yellow-300 inline-block px-3 py-1 border-2 border-black rounded shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">Core Values</p>
             <h2 className="text-5xl font-black text-black">THE STREETBITE PROMISE</h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="md:col-span-2 p-8 rounded-[2rem] bg-orange-100 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] transition-all flex flex-col justify-center group">
+          </motion.div>
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+            variants={staggerContainer}
+            className="grid grid-cols-1 md:grid-cols-3 gap-8"
+          >
+            <motion.div variants={fadeInUp} className="md:col-span-2 p-8 rounded-[2rem] bg-orange-100 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] transition-all flex flex-col justify-center group">
               <div className="text-black mb-4"><Lightbulb size={48} strokeWidth={2.5} className="group-hover:text-orange-500 transition-colors" /></div>
               <h3 className="text-3xl font-black text-black mb-3">Innovation for All</h3>
               <p className="text-black/80 text-xl font-bold">Advanced tech shouldn't be a luxury. We bring enterprise-grade tools to the street corner.</p>
-            </div>
+            </motion.div>
 
-            <div className="p-8 rounded-[2rem] bg-pink-100 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] transition-all">
+            <motion.div variants={fadeInUp} className="p-8 rounded-[2rem] bg-pink-100 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] transition-all">
               <div className="text-black mb-4"><Users size={40} strokeWidth={2.5} /></div>
               <h3 className="text-2xl font-black text-black mb-2">Community First</h3>
               <p className="text-black/80 font-medium">Strengthening bonds between local vendors and food lovers.</p>
-            </div>
+            </motion.div>
 
-            <div className="p-8 rounded-[2rem] bg-blue-100 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] transition-all">
+            <motion.div variants={fadeInUp} className="p-8 rounded-[2rem] bg-blue-100 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] transition-all">
               <div className="text-black mb-4"><Globe size={40} strokeWidth={2.5} /></div>
               <h3 className="text-2xl font-black text-black mb-2">Authenticity</h3>
               <p className="text-black/80 font-medium">Real street food. No gourmet makeovers. Just pure flavor.</p>
-            </div>
+            </motion.div>
 
-            <div className="md:col-span-2 p-8 rounded-[2rem] bg-black text-white border-4 border-black shadow-[6px_6px_0px_0px_rgba(100,100,100,1)] hover:shadow-[10px_10px_0px_0px_rgba(100,100,100,1)] transition-all flex flex-col justify-center relative overflow-hidden">
+            <motion.div variants={fadeInUp} className="md:col-span-2 p-8 rounded-[2rem] bg-black text-white border-4 border-black shadow-[6px_6px_0px_0px_rgba(100,100,100,1)] hover:shadow-[10px_10px_0px_0px_rgba(100,100,100,1)] transition-all flex flex-col justify-center relative overflow-hidden">
               <div className="absolute top-0 right-0 p-10 opacity-20"><Shield size={120} /></div>
               <div className="relative z-10">
                 <div className="mb-4 text-yellow-400"><Shield size={48} strokeWidth={2.5} /></div>
                 <h3 className="text-3xl font-black mb-3">Trust & Transparency</h3>
                 <p className="text-gray-300 text-xl font-bold">Real prices, real reviews, and verified locations. No hidden fees.</p>
               </div>
-            </div>
+            </motion.div>
 
-            <div className="p-8 rounded-[2rem] bg-green-100 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] transition-all">
-              <div className="text-black mb-4"><Heart size={40} strokeWidth={2.5} /></div>
-              <h3 className="text-2xl font-black text-black mb-2">Empowerment</h3>
-              <p className="text-black/80 font-medium">Giving families the tools to grow their legacy.</p>
-            </div>
-          </div>
+            <motion.div variants={fadeInUp} className="md:col-span-3 p-8 rounded-[2rem] bg-green-100 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] transition-all flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
+              <div className="text-black p-4 bg-white rounded-full border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] shrink-0">
+                <Heart size={40} strokeWidth={2.5} className="fill-current text-green-500" />
+              </div>
+              <div>
+                <h3 className="text-3xl font-black text-black mb-2">Empowerment</h3>
+                <p className="text-black/80 font-bold text-lg">Giving families the tools, data, and platform to grow their legacy and reach new customers.</p>
+              </div>
+            </motion.div>
+          </motion.div>
         </div>
       </section>
 
@@ -183,7 +246,13 @@ export default function AboutPage() {
       <section className="py-24 px-4 bg-black text-white overflow-hidden relative border-t-4 border-black">
         <div className="absolute inset-0 bg-[radial-gradient(#333_1px,transparent_1px)] [background-size:20px_20px] opacity-30"></div>
 
-        <div className="max-w-7xl mx-auto relative z-10">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={fadeInUp}
+          className="max-w-7xl mx-auto relative z-10"
+        >
           <div className="text-center mb-16">
             <div className="inline-block px-6 py-2 rounded-full bg-white/10 text-yellow-400 border-2 border-yellow-400/50 font-bold mb-8 animate-pulse">
               JOIN THE REVOLUTION
@@ -225,12 +294,18 @@ export default function AboutPage() {
               </span>
             </Link>
           </div>
-        </div>
+        </motion.div>
       </section>
 
       {/* MINIMALIST CONTACT SECTION */}
       <section className="py-24 px-4 bg-[#FADFA1]">
-        <div className="max-w-5xl mx-auto bg-white rounded-[2.5rem] p-12 text-center border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={fadeInUp}
+          className="max-w-5xl mx-auto bg-white rounded-[2.5rem] p-12 text-center border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]"
+        >
           <div className="mb-10">
             <h2 className="text-4xl font-black text-black mb-4 uppercase">Still got questions?</h2>
             <p className="text-xl text-black/70 font-bold max-w-xl mx-auto">
@@ -266,7 +341,7 @@ export default function AboutPage() {
           <div className="mt-8 text-sm font-bold text-gray-400 uppercase tracking-widest">
             Always listening • Always hungry
           </div>
-        </div>
+        </motion.div>
       </section>
 
       {/* Footer */}

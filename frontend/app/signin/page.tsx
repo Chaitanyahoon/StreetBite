@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button'
 import { Mail, Lock, ArrowLeft, Sparkles } from 'lucide-react'
 import { authApi } from '@/lib/api'
 
+import { motion } from 'framer-motion'
+
 export default function SignInPage() {
   const router = useRouter()
   const [email, setEmail] = useState('')
@@ -81,11 +83,28 @@ export default function SignInPage() {
     }
   }
 
+  const containerVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+        staggerChildren: 0.1
+      }
+    }
+  }
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 }
+  }
+
   return (
-    <div className="min-h-screen bg-[#FADFA1] bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] flex flex-col relative overflow-hidden">
+    <div className="min-h-screen bg-[#FFFBF0] bg-[radial-gradient(#E5E7EB_1px,transparent_1px)] [background-size:24px_24px] flex flex-col relative overflow-hidden">
       {/* Animated Background */}
-      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-yellow-400 rounded-full blur-[100px] opacity-40 animate-blob -z-10" />
-      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-orange-400 rounded-full blur-[100px] opacity-40 animate-blob animation-delay-2000 -z-10" />
+      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-yellow-200/40 rounded-full mix-blend-multiply filter blur-[80px] opacity-70 animate-blob -z-10" />
+      <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-orange-200/40 rounded-full mix-blend-multiply filter blur-[80px] opacity-70 animate-blob animation-delay-2000 -z-10" />
 
       {/* Back button */}
       <div className="p-6 relative z-10">
@@ -97,25 +116,39 @@ export default function SignInPage() {
 
       {/* Sign In Form */}
       <div className="flex-1 flex items-center justify-center px-4 py-8 relative z-10">
-        <div className="w-full max-w-md animate-slide-up">
+        <motion.div
+          className="w-full max-w-md"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
           {/* Logo and Heading */}
           <div className="text-center mb-8">
-            <div className="flex justify-center mb-6 transform hover:scale-110 transition-transform duration-300">
+            <motion.div
+              className="flex justify-center mb-6 transform hover:scale-110 transition-transform duration-300"
+              whileHover={{ rotate: [0, -10, 10, 0] }}
+            >
               <Logo />
-            </div>
-            <h1 className="text-4xl md:text-5xl font-black mb-4 text-black tracking-tight">
+            </motion.div>
+            <motion.h1 variants={itemVariants} className="text-4xl md:text-5xl font-black mb-4 text-black tracking-tight">
               {showForgotPassword ? 'RESET PASSWORD' : 'WELCOME BACK!'}
-            </h1>
-            <p className="text-xl font-bold text-gray-700">
+            </motion.h1>
+            <motion.p variants={itemVariants} className="text-xl font-bold text-gray-700">
               {showForgotPassword
                 ? 'Don\'t worry, we\'ll get you back in!'
                 : 'Ready to satisfy those cravings?'}
-            </p>
+            </motion.p>
           </div>
 
           {showForgotPassword ? (
             /* Forgot Password Form */
-            <form onSubmit={handleForgotPassword} className="bg-white rounded-[2rem] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-8 border-4 border-black relative overflow-hidden">
+            <motion.form
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              onSubmit={handleForgotPassword}
+              className="bg-white rounded-[2rem] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-8 border-4 border-black relative overflow-hidden"
+            >
               {resetStatus === 'sent' ? (
                 <div className="text-center space-y-6">
                   <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full border-4 border-black flex items-center justify-center mx-auto shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
@@ -181,19 +214,29 @@ export default function SignInPage() {
                   </button>
                 </>
               )}
-            </form>
+            </motion.form>
           ) : (
             /* Login Form */
-            <form onSubmit={handleSignIn} className="bg-white rounded-[2rem] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-8 border-4 border-black relative overflow-hidden">
+            <motion.form
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              onSubmit={handleSignIn}
+              className="bg-white rounded-[2rem] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-8 border-4 border-black relative overflow-hidden"
+            >
               {error && (
-                <div className="bg-red-100 border-4 border-black text-black px-4 py-3 rounded-xl font-bold flex items-center gap-3 mb-6 animate-shake">
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-red-100 border-4 border-black text-black px-4 py-3 rounded-xl font-bold flex items-center gap-3 mb-6 animate-shake"
+                >
                   <div className="w-4 h-4 bg-red-500 rounded-full border border-black flex-shrink-0" />
                   {error}
-                </div>
+                </motion.div>
               )}
 
               {/* Email Input */}
-              <div className="space-y-4 mb-6">
+              <motion.div variants={itemVariants} className="space-y-4 mb-6">
                 <label className="block text-sm font-black text-black uppercase tracking-wider ml-1">Email Address</label>
                 <div className="relative group">
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-black transition-colors size-6" strokeWidth={2.5} />
@@ -206,10 +249,10 @@ export default function SignInPage() {
                     required
                   />
                 </div>
-              </div>
+              </motion.div>
 
               {/* Password Input */}
-              <div className="space-y-4 mb-8">
+              <motion.div variants={itemVariants} className="space-y-4 mb-8">
                 <label className="block text-sm font-black text-black uppercase tracking-wider ml-1">Password</label>
                 <div className="relative group">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-black transition-colors size-6" strokeWidth={2.5} />
@@ -231,41 +274,43 @@ export default function SignInPage() {
                     FORGOT PASSWORD?
                   </button>
                 </div>
-              </div>
+              </motion.div>
 
               {/* Sign In Button */}
-              <Button
-                type="submit"
-                disabled={isLoading}
-                className="w-full h-16 bg-orange-500 hover:bg-orange-600 text-white rounded-xl border-4 border-black font-black text-2xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all disabled:opacity-70 disabled:hover:translate-y-0"
-              >
-                {isLoading ? (
-                  <span className="flex items-center gap-3">
-                    <span className="animate-spin rounded-full h-6 w-6 border-4 border-white border-t-transparent" />
-                    COOKING...
-                  </span>
-                ) : (
-                  'LET\'S EAT!'
-                )}
-              </Button>
+              <motion.div variants={itemVariants}>
+                <Button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full h-16 bg-orange-500 hover:bg-orange-600 text-white rounded-xl border-4 border-black font-black text-2xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all disabled:opacity-70 disabled:hover:translate-y-0"
+                >
+                  {isLoading ? (
+                    <span className="flex items-center gap-3">
+                      <span className="animate-spin rounded-full h-6 w-6 border-4 border-white border-t-transparent" />
+                      COOKING...
+                    </span>
+                  ) : (
+                    'LET\'S EAT!'
+                  )}
+                </Button>
+              </motion.div>
 
               {/* Divider */}
-              <div className="flex items-center gap-3 my-8">
+              <motion.div variants={itemVariants} className="flex items-center gap-3 my-8">
                 <div className="flex-1 h-1 bg-gray-200 rounded-full" />
                 <span className="text-xs text-gray-400 font-black uppercase tracking-widest">OR</span>
                 <div className="flex-1 h-1 bg-gray-200 rounded-full" />
-              </div>
+              </motion.div>
 
               {/* Sign Up Link */}
-              <p className="text-center text-lg font-medium text-gray-600">
+              <motion.p variants={itemVariants} className="text-center text-lg font-medium text-gray-600">
                 New to StreetBite?{' '}
                 <Link href="/signup" className="text-black font-black decoration-4 underline decoration-yellow-400 hover:bg-yellow-400 transition-colors px-1">
                   CREATE ACCOUNT
                 </Link>
-              </p>
-            </form>
+              </motion.p>
+            </motion.form>
           )}
-        </div>
+        </motion.div>
       </div>
     </div>
   )

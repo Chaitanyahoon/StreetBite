@@ -168,13 +168,13 @@ export default function MenuManagement() {
   }
 
   const handleToggleAvailability = async (itemId: number, currentAvailability: boolean) => {
-    console.log('=== TOGGLE AVAILABILITY ===')
-    console.log('Item ID:', itemId)
-    console.log('Current availability:', currentAvailability)
+
+
+
 
     try {
       const newAvailability = !currentAvailability
-      console.log('New availability:', newAvailability)
+
 
       // Update local state immediately for responsive UI
       setMenuItems(prev => prev.map(item =>
@@ -182,7 +182,7 @@ export default function MenuManagement() {
       ))
 
       const response = await menuApi.update(itemId, { isAvailable: newAvailability })
-      console.log('Update response:', response)
+
 
       toast.success(`Item marked as ${newAvailability ? 'Available' : 'Sold Out'}`)
 

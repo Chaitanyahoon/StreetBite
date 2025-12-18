@@ -16,7 +16,7 @@ export default function DebugPage() {
                 NEXT_PUBLIC_BACKEND_URL: {process.env.NEXT_PUBLIC_BACKEND_URL || 'undefined'}
             </pre>
             <pre>
-                API_BASE_URL (calculated): {process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080/api'}
+                API_BASE_URL (calculated): {process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8081/api'}
             </pre>
             <div className="mt-4">
                 <h2>LocalStorage User</h2>

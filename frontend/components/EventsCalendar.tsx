@@ -18,11 +18,20 @@ interface Event {
     emoji: string;
 }
 
-const SAMPLE_EVENTS: Event[] = [
+// Helper to create dates relative to today
+const getRelativeDate = (daysToAdd: number, hour: number = 10) => {
+    const date = new Date();
+    date.setDate(date.getDate() + daysToAdd);
+    date.setHours(hour, 0, 0, 0);
+    return date;
+};
+
+// Generate dynamic events so the calendar always looks fresh
+const generateEvents = (): Event[] => [
     {
         id: 1,
         title: "Mumbai Street Food Festival",
-        date: new Date(2025, 11, 5),
+        date: getRelativeDate(2),
         time: "10:00 AM - 8:00 PM",
         location: "Juhu Beach, Mumbai",
         type: "festival",
@@ -33,7 +42,7 @@ const SAMPLE_EVENTS: Event[] = [
     {
         id: 2,
         title: "Chaat Master Pop-up",
-        date: new Date(2025, 11, 8),
+        date: getRelativeDate(5, 18),
         time: "6:00 PM - 10:00 PM",
         location: "Connaught Place, Delhi",
         type: "popup",
@@ -44,7 +53,7 @@ const SAMPLE_EVENTS: Event[] = [
     {
         id: 3,
         title: "Foodie Community Meetup",
-        date: new Date(2025, 11, 12),
+        date: getRelativeDate(9, 19),
         time: "7:00 PM - 9:00 PM",
         location: "FC Road, Pune",
         type: "meetup",
@@ -55,7 +64,7 @@ const SAMPLE_EVENTS: Event[] = [
     {
         id: 4,
         title: "Heritage Food Walk",
-        date: new Date(2025, 11, 15),
+        date: getRelativeDate(12, 9),
         time: "9:00 AM - 12:00 PM",
         location: "Old City, Hyderabad",
         type: "tour",
@@ -66,7 +75,7 @@ const SAMPLE_EVENTS: Event[] = [
     {
         id: 5,
         title: "Dosa & Filter Coffee Fest",
-        date: new Date(2025, 11, 20),
+        date: getRelativeDate(15, 8),
         time: "8:00 AM - 2:00 PM",
         location: "Brigade Road, Bangalore",
         type: "festival",
@@ -77,7 +86,7 @@ const SAMPLE_EVENTS: Event[] = [
     {
         id: 6,
         title: "Midnight Maggi Party",
-        date: new Date(2025, 11, 22),
+        date: getRelativeDate(18, 23),
         time: "11:00 PM - 2:00 AM",
         location: "Marine Drive, Mumbai",
         type: "meetup",
@@ -88,7 +97,7 @@ const SAMPLE_EVENTS: Event[] = [
     {
         id: 7,
         title: "Kebab & Biryani Night",
-        date: new Date(2025, 11, 25),
+        date: getRelativeDate(22, 19),
         time: "7:00 PM - 11:00 PM",
         location: "Lucknow Chowk",
         type: "festival",
@@ -99,7 +108,7 @@ const SAMPLE_EVENTS: Event[] = [
     {
         id: 8,
         title: "Vegan Street Food Tour",
-        date: new Date(2025, 11, 28),
+        date: getRelativeDate(25, 16),
         time: "4:00 PM - 7:00 PM",
         location: "Bandra, Mumbai",
         type: "tour",
@@ -109,6 +118,8 @@ const SAMPLE_EVENTS: Event[] = [
     }
 ];
 
+const SAMPLE_EVENTS: Event[] = generateEvents();
+
 const EVENT_COLORS = {
     festival: "from-purple-500 to-pink-500",
     popup: "from-orange-500 to-red-500",
@@ -117,7 +128,7 @@ const EVENT_COLORS = {
 };
 
 export function EventsCalendar() {
-    const [currentDate, setCurrentDate] = useState(new Date(2025, 11, 1)); // December 2025
+    const [currentDate, setCurrentDate] = useState(new Date());
     const [events, setEvents] = useState<Event[]>(SAMPLE_EVENTS);
     const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 

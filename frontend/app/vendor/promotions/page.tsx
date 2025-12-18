@@ -89,7 +89,7 @@ export default function Promotions() {
         setVendorId(vid)
 
         const apiPromotions = await promotionApi.getByVendor(vid)
-        console.log('API Promotions Response:', apiPromotions)
+
 
         // Convert API format to UI format
         const uiPromotions: Promotion[] = apiPromotions.map(p => ({
@@ -142,7 +142,7 @@ export default function Promotions() {
         maxUses: formData.maxUsage ? parseInt(formData.maxUsage) : 100,
       }
 
-      console.log('Sending promotion data:', promotionData)
+
 
       if (editingPromo) {
         // Update existing promotion
