@@ -20,7 +20,9 @@ export function useNotifications(userId?: number) {
         }
 
         // Check current permission status
-        setPermission(Notification.permission)
+        if (typeof Notification !== 'undefined') {
+            setPermission(Notification.permission)
+        }
         setLoading(false)
     }, [])
 

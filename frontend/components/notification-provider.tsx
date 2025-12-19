@@ -13,7 +13,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
     useEffect(() => {
         // Show bell if supported and NOT granted (so it shows on 'default' AND 'denied')
-        if (isSupported && Notification.permission !== 'granted') {
+        if (isSupported && typeof Notification !== 'undefined' && Notification.permission !== 'granted') {
             setShowBell(true)
         } else {
             setShowBell(false)

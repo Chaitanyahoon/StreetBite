@@ -1,7 +1,7 @@
-import { initializeApp, getApps } from 'firebase/app'
-import { getFirestore } from 'firebase/firestore'
+import { initializeApp, getApps, FirebaseApp } from 'firebase/app'
+import { getFirestore, Firestore } from 'firebase/firestore'
 import { getMessaging, isSupported } from 'firebase/messaging'
-import { getAnalytics } from "firebase/analytics";
+import { getAnalytics, Analytics } from "firebase/analytics";
 
 /**
  * Firebase configuration object containing keys and identifiers for the app.
@@ -24,11 +24,25 @@ const firebaseConfig = {
 export const VAPID_KEY = process.env.NEXT_PUBLIC_VAPID_KEY || "";
 
 // Initialize Firebase only once
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0]
-const db = getFirestore(app)
-let analytics;
-if (typeof window !== 'undefined') {
-    analytics = getAnalytics(app);
+let app: FirebaseApp | undefined;
+let db: Firestore | undefined;
+let analytics: Analytics | undefined;
+
+if (!firebaseConfig.apiKey) {
+    if (typeof window !== 'undefined') {
+        console.error('❌ Firebase API Key is missing! Check your Vercel/Environment variables.');
+    }
+} else {
+    try {
+        app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0]
+        db = getFirestore(app)
+
+        if (typeof window !== 'undefined') {
+            analytics = getAnalytics(app);
+        }
+    } catch (error) {
+        console.error('❌ Firebase initialization failed:', error);
+    }
 }
 
 // Initialize Firebase Cloud Messaging (only in browser)
