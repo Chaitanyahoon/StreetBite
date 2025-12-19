@@ -13,7 +13,7 @@ public class TopicComment {
     private Long id;
 
     @Column(columnDefinition = "TEXT", nullable = false)
-    private String text;
+    private String content;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = false)
@@ -41,12 +41,12 @@ public class TopicComment {
         this.id = id;
     }
 
-    public String getText() {
-        return text;
+    public String getContent() {
+        return content;
     }
 
-    public void setText(String text) {
-        this.text = text;
+    public void setContent(String content) {
+        this.content = content;
     }
 
     public User getUser() {

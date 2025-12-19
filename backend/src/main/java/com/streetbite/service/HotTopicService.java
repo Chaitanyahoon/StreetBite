@@ -59,7 +59,7 @@ public class HotTopicService {
         TopicComment comment = new TopicComment();
         comment.setTopic(topic);
         comment.setUser(user);
-        comment.setText(text);
+        comment.setContent(text);
 
         return topicCommentRepository.save(comment);
     }
