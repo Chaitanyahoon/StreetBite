@@ -34,24 +34,31 @@ public class DataSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        System.out.println("Checking and seeding default users...");
-        seedUsers();
+        try {
+            System.out.println("Checking and seeding default users...");
+            seedUsers();
 
-        if (vendorRepository.count() == 0) {
-            System.out.println("Seeding database with dummy vendors...");
-            seedVendors();
-            System.out.println("Database seeding completed.");
-        } else {
-            // Ensure reports are seeded even if vendors exist
-            if (reportRepository.count() == 0) {
-                seedReports();
+            if (vendorRepository.count() == 0) {
+                System.out.println("Seeding database with dummy vendors...");
+                seedVendors();
+                System.out.println("Database seeding completed.");
+            } else {
+                // Ensure reports are seeded even if vendors exist
+                if (reportRepository.count() == 0) {
+                    seedReports();
+                }
             }
-        }
 
-        // Seed Orders for Analytics if none exist
-        if (orderRepository.count() == 0) {
-            System.out.println("Seeding past orders for analytics...");
-            seedOrders();
+            // Seed Orders for Analytics if none exist
+            if (orderRepository.count() == 0) {
+                System.out.println("Seeding past orders for analytics...");
+                seedOrders();
+            }
+        } catch (Exception e) {
+            System.err.println("CRITICAL ERROR during data seeding: " + e.getMessage());
+            System.err.println(
+                    "This is likely due to missing database tables. Please run the SQL initialization script.");
+            // Do not rethrow, allow application to start even if seeding fails
         }
     }
 
