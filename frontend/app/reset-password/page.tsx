@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Logo } from '@/components/logo'
@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Lock, ArrowLeft, CheckCircle } from 'lucide-react'
 import { authApi } from '@/lib/api'
 
-export default function ResetPasswordPage() {
+function ResetPasswordForm() {
     const router = useRouter()
     const searchParams = useSearchParams()
     const tokenFromUrl = searchParams.get('token')
@@ -175,5 +175,20 @@ export default function ResetPasswordPage() {
                 </div>
             </div>
         </div>
+    )
+}
+
+export default function ResetPasswordPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-white flex flex-col items-center justify-center bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px]">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
+                    <p className="text-black font-black uppercase tracking-widest text-sm">Verifying Session...</p>
+                </div>
+            </div>
+        }>
+            <ResetPasswordForm />
+        </Suspense>
     )
 }
