@@ -12,13 +12,16 @@ public class EmailService {
     @org.springframework.beans.factory.annotation.Value("${spring.mail.username}")
     private String fromEmail;
 
+    @org.springframework.beans.factory.annotation.Value("${FRONTEND_URL:http://localhost:3000}")
+    private String frontendUrl;
+
     public void sendPasswordResetEmail(String to, String token) {
         try {
             org.springframework.mail.SimpleMailMessage message = new org.springframework.mail.SimpleMailMessage();
             message.setFrom(fromEmail);
             message.setTo(to);
             message.setSubject("StreetBite - Password Reset Request");
-            String resetLink = "http://localhost:3000/reset-password?token=" + token;
+            String resetLink = frontendUrl + "/reset-password?token=" + token;
             message.setText("To reset your password, please click the link below:\n\n" + resetLink
                     + "\n\nThis link expires in 15 minutes.");
 
