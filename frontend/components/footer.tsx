@@ -37,7 +37,8 @@ export function Footer() {
         setSubscribing(true)
 
         try {
-            const response = await axios.post('http://localhost:8081/api/newsletter/subscribe', {
+            const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8081/api';
+            const response = await axios.post(`${backendUrl}/newsletter/subscribe`, {
                 email: trimmedEmail.toLowerCase()
             })
 

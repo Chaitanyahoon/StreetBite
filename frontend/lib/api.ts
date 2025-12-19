@@ -234,6 +234,13 @@ export const hotTopicApi = {
 };
 
 /**
+ * Zodiac (Horoscope) API endpoints.
+ */
+export const zodiacApi = {
+  getHoroscope: (sign: string) => api.get(`/zodiac/sign/${sign}`) as Promise<any>,
+};
+
+/**
  * Default export of the configured Axios instance.
  */
 export default api;

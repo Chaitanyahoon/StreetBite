@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Sparkles, Share2, RefreshCw, Star, Moon, Sun } from "lucide-react";
 import { toast } from "sonner";
-import axios from "axios";
+import { zodiacApi } from "@/lib/api";
 import { ZodiacSelector } from "./ZodiacSelector";
 
 interface ZodiacData {
@@ -40,8 +40,8 @@ export function ZodiacCard() {
     const fetchHoroscopeBySign = async (sign: string) => {
         setLoading(true);
         try {
-            const response = await axios.get(`http://localhost:8081/api/zodiac/sign/${sign}`);
-            setData(response.data);
+            const responseData = await zodiacApi.getHoroscope(sign);
+            setData(responseData);
             setSelectedSign(sign);
             setXpClaimed(false);
         } catch (error) {
