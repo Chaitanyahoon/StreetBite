@@ -501,7 +501,12 @@ export default function Settings() {
                             }))
                             toast.success('Location updated!')
                           },
-                          () => toast.error('Failed to get location')
+                          () => toast.error('Failed to get location'),
+                          {
+                            enableHighAccuracy: true,
+                            timeout: 10000,
+                            maximumAge: 0
+                          }
                         )
                       }}
                       className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white h-10"
