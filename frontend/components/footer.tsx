@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Instagram, Twitter, Linkedin, Mail, Phone, MapPin, Heart, ArrowRight, Sparkles } from 'lucide-react'
+import { Instagram, Twitter, Linkedin, Mail, Phone, MapPin, Heart, ArrowRight, Sparkles, ChevronDown } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 import { toast } from 'sonner'
@@ -176,21 +176,7 @@ export function Footer() {
                             ]
                         }
                     ].map((column, idx) => (
-                        <div key={idx}>
-                            <h4 className="font-black text-black text-xl uppercase tracking-wide mb-6 border-b-4 border-black inline-block pb-1">
-                                {column.title}
-                            </h4>
-                            <ul className="space-y-4">
-                                {column.links.map((link, linkIdx) => (
-                                    <li key={linkIdx}>
-                                        <Link href={link.href} className="text-gray-600 font-bold hover:text-black hover:underline decoration-4 decoration-yellow-400 underline-offset-4 transition-all flex items-center group">
-                                            <ArrowRight className="w-4 h-4 mr-2 opacity-0 group-hover:opacity-100 transition-opacity stroke-[3]" />
-                                            {link.label}
-                                        </Link>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
+                        <FooterSection key={idx} title={column.title} links={column.links} />
                     ))}
                 </div>
 
@@ -208,5 +194,33 @@ export function Footer() {
                 </div>
             </div>
         </footer>
+    )
+}
+
+function FooterSection({ title, links }: { title: string, links: { label: string, href: string }[] }) {
+    const [isOpen, setIsOpen] = useState(false)
+
+    return (
+        <div className="border-b-2 border-black/10 md:border-none pb-4 md:pb-0">
+            <button
+                onClick={() => setIsOpen(!isOpen)}
+                className="w-full flex items-center justify-between md:cursor-default md:pointer-events-none group py-2 md:py-0"
+            >
+                <h4 className="font-black text-black text-xl uppercase tracking-wide md:mb-6 border-b-4 border-transparent md:border-black inline-block pb-1 transition-all">
+                    {title}
+                </h4>
+                <ChevronDown className={`w-6 h-6 md:hidden transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+            </button>
+            <ul className={`space-y-4 overflow-hidden transition-all duration-300 md:h-auto px-1 ${isOpen ? 'max-h-96 mt-4 opacity-100' : 'max-h-0 md:max-h-none opacity-0 md:opacity-100'}`}>
+                {links.map((link, linkIdx) => (
+                    <li key={linkIdx}>
+                        <Link href={link.href} className="text-gray-600 font-bold hover:text-black hover:underline decoration-4 decoration-yellow-400 underline-offset-4 transition-all flex items-center group">
+                            <ArrowRight className="w-4 h-4 mr-2 opacity-0 group-hover:opacity-100 transition-opacity stroke-[3]" />
+                            {link.label}
+                        </Link>
+                    </li>
+                ))}
+            </ul>
+        </div>
     )
 }

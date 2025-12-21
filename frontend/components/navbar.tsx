@@ -129,8 +129,8 @@ export function Navbar() {
         ? 'bg-white border-b-4 border-black shadow-[0px_4px_0px_0px_rgba(0,0,0,0.1)]'
         : 'bg-white border-b-4 border-black'
         } ${announcement ? '' : ''}`}>
-        <div className="max-w-screen-2xl mx-auto px-6">
-          <div className="flex justify-between items-center h-20">
+        <div className="max-w-screen-2xl mx-auto px-4 md:px-6">
+          <div className="flex justify-between items-center h-16 md:h-20">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2 hover:opacity-100 transition-opacity flex-shrink-0 group">
               <div className="transform group-hover:scale-105 transition-transform group-hover:rotate-2">
