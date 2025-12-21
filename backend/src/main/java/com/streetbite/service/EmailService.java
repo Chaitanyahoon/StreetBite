@@ -21,20 +21,17 @@ public class EmailService {
                     "<p><a href=\"" + resetLink + "\">" + resetLink + "</a></p>" +
                     "<p>This link expires in 15 minutes.</p>";
 
-            com.resend.services.emails.model.SendEmailRequest sendEmailRequest = com.resend.services.emails.model.SendEmailRequest.builder()
+            com.resend.services.emails.model.SendEmailRequest sendEmailRequest = com.resend.services.emails.model.SendEmailRequest
+                    .builder()
                     .from("StreetBite <onboarding@resend.dev>") // Default Resend sender
                     .to(to)
                     .subject("StreetBite - Password Reset Request")
                     .html(htmlContent)
                     .build();
 
-            com.resend.core.net.AbstractHttpResponse<com.resend.services.emails.model.SendEmailResponse> response = resend.emails().send(sendEmailRequest);
-            
-            if (response.isSuccess()) {
-                System.out.println("Password reset email sent to " + to + ". ID: " + response.getData().getId());
-            } else {
-                System.err.println("Failed to send email via Resend.");
-            }
+            com.resend.services.emails.model.SendEmailResponse response = resend.emails().send(sendEmailRequest);
+
+            System.out.println("Password reset email sent to " + to + ". ID: " + response.getId());
         } catch (Exception e) {
             System.err.println("Failed to send email: " + e.getMessage());
             e.printStackTrace();
