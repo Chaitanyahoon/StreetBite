@@ -133,7 +133,7 @@ export default function ExplorePage() {
               <Sparkles className="w-4 h-4 text-yellow-400 animate-pulse" />
               EXPLORE THE STREETS
             </div>
-            <h1 className="text-6xl md:text-8xl font-black text-black mb-8 leading-[0.9] tracking-tighter">
+            <h1 className="text-4xl md:text-6xl lg:text-8xl font-black text-black mb-8 leading-[0.9] tracking-tighter">
               Discover Local <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-600 drop-shadow-[4px_4px_0px_rgba(0,0,0,1)]">
                 Street Flavors
@@ -148,15 +148,15 @@ export default function ExplorePage() {
           <div className="max-w-3xl mx-auto mb-16 animate-scale-in">
             <div className="relative group">
               <div className="absolute inset-0 bg-black rounded-full translate-x-2 translate-y-2"></div>
-              <div className="relative flex items-center bg-white rounded-full border-4 border-black p-2 transition-transform group-hover:-translate-y-1">
-                <Search className="ml-4 w-8 h-8 text-black" strokeWidth={3} />
+              <div className="relative flex items-center bg-white rounded-full border-4 border-black p-1 md:p-2 transition-transform group-hover:-translate-y-1">
+                <Search className="ml-3 md:ml-4 w-6 h-6 md:w-8 md:h-8 text-black" strokeWidth={3} />
                 <Input
-                  placeholder="Search for tacos, pani puri, burgers..."
+                  placeholder="Search for tacos, pani puri..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="border-none text-xl font-bold placeholder:text-gray-400 focus-visible:ring-0 h-14 bg-transparent"
+                  className="border-none text-base md:text-xl font-bold placeholder:text-gray-400 focus-visible:ring-0 h-12 md:h-14 bg-transparent"
                 />
-                <Button className="rounded-full px-8 h-14 bg-orange-500 hover:bg-orange-600 text-white font-black text-lg border-l-4 border-black rounded-l-none">
+                <Button className="rounded-full px-5 md:px-8 h-12 md:h-14 bg-orange-500 hover:bg-orange-600 text-white font-black text-base md:text-lg border-l-4 border-black rounded-l-none">
                   SEARCH
                 </Button>
               </div>
@@ -169,12 +169,13 @@ export default function ExplorePage() {
               <MapListToggle onViewChange={setViewMode} />
             </div>
 
-            <div className="flex flex-wrap gap-3 justify-center">
+            <div className="flex md:flex-wrap gap-3 overflow-x-auto pb-4 md:pb-0 px-1 md:px-0 -mx-4 md:mx-0 snap-x md:justify-center no-scrollbar">
+              <div className="w-2 md:hidden shrink-0"></div>
               {cuisineFilters.map((filter) => (
                 <button
                   key={filter.id}
                   onClick={() => setSelectedFilter(filter.id)}
-                  className={`px-6 py-3 rounded-xl font-black border-4 border-black transition-all transform hover:-translate-y-1 ${selectedFilter === filter.id
+                  className={`px-5 md:px-6 py-2.5 md:py-3 rounded-xl font-black border-4 border-black transition-all transform hover:-translate-y-1 whitespace-nowrap snap-center shrink-0 ${selectedFilter === filter.id
                     ? 'bg-yellow-400 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
                     : 'bg-white hover:bg-gray-50 shadow-[4px_4px_0px_0px_rgba(200,200,200,1)]'
                     }`}
@@ -182,6 +183,7 @@ export default function ExplorePage() {
                   {filter.label}
                 </button>
               ))}
+              <div className="w-2 md:hidden shrink-0"></div>
             </div>
           </div>
         </div>
@@ -234,8 +236,36 @@ export default function ExplorePage() {
                     <div key={i} className="bg-white/50 h-80 rounded-3xl border-4 border-black/10 animate-pulse delay-[100ms]" style={{ animationDelay: `${i * 0.1}s` }}></div>
                   ))}
                 </div>
+              ) : filteredVendors.length === 0 ? (
+                <div className="col-span-full py-12 text-center bg-white/50 rounded-3xl border-4 border-black border-dashed">
+                  <div className="max-w-md mx-auto px-6">
+                    <div className="bg-orange-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-black">
+                      <Search className="w-10 h-10 text-orange-500" />
+                    </div>
+                    <h3 className="text-2xl font-black text-black mb-2">No vendors found</h3>
+                    <p className="text-gray-600 font-medium mb-6">
+                      We couldn't find any vendors matching your criteria.
+                    </p>
+                    <div className="bg-white p-4 rounded-xl border-2 border-black inline-block text-left">
+                      <p className="font-bold text-sm mb-2">Try adjusting your search:</p>
+                      <ul className="text-sm space-y-1 text-gray-600 list-disc pl-4">
+                        <li>Enable location access</li>
+                        <li>Clear cuisine filters</li>
+                        <li>Search for "Momos", "Burger"</li>
+                      </ul>
+                    </div>
+                    <div className="mt-8">
+                      <Button
+                        onClick={() => { setSearchTerm(''); setSelectedFilter('all'); }}
+                        className="bg-black text-white hover:bg-gray-800 font-bold rounded-xl px-6"
+                      >
+                        Clear All Filters
+                      </Button>
+                    </div>
+                  </div>
+                </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
                   {filteredVendors.map((vendor, index) => (
                     <div
                       key={vendor.id}

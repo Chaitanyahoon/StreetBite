@@ -20,7 +20,7 @@ export function VendorCard({ id, name, cuisine, rating, distance, image, display
   return (
     <Link href={`/vendors/${id}`} className="block group">
       <div className="overflow-hidden rounded-2xl bg-white border-2 border-border/20 hover:border-primary/40 shadow-md hover:shadow-2xl transition-all duration-300 cursor-pointer h-full flex flex-col hover:-translate-y-2">
-        <div className="relative h-56 bg-muted overflow-hidden flex-shrink-0">
+        <div className="relative h-48 md:h-56 bg-muted overflow-hidden flex-shrink-0">
           <Image
             src={displayImageUrl || image || "/placeholder.svg?height=224&width=400&query=street+food+vendor"}
             alt={name}
@@ -44,10 +44,10 @@ export function VendorCard({ id, name, cuisine, rating, distance, image, display
           </div>
         </div>
 
-        <div className="p-5 space-y-4 flex flex-col flex-grow">
+        <div className="p-4 md:p-5 space-y-3 md:space-y-4 flex flex-col flex-grow">
           <div>
-            <h3 className="font-bold text-lg text-foreground mb-1 group-hover:text-primary transition-colors line-clamp-1">{name}</h3>
-            <p className="text-primary font-semibold text-sm">{cuisine}</p>
+            <h3 className="font-bold text-base md:text-lg text-foreground mb-1 group-hover:text-primary transition-colors line-clamp-1">{name}</h3>
+            <p className="text-primary font-semibold text-xs md:text-sm">{cuisine}</p>
           </div>
 
           <div className="flex items-center gap-2 text-muted-foreground text-sm">
