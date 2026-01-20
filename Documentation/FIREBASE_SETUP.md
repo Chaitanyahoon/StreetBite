@@ -1,13 +1,27 @@
-# Firebase Setup Guide
+# Firebase Setup Guide (Auxiliary Services)
+
+> [!NOTE]
+> **Primary Database is MySQL.** Firebase is used ONLY for:
+> 1. Possible Authentication flows (if enabled)
+> 2. Push Notifications (FCM)
+> 3. Auxiliary Storage (if configured)
+>
+> If you are just running the app locally for basic testing, you might not need this unless you hit specific features.
 
 ## ✅ Frontend Configuration
 Your frontend Firebase config is already set up in `final_project/frontend/lib/firebase.ts` with:
 - Project ID: `street-bite-v1`
 - All necessary configuration values
 
+## 🔐 Enabling Authentication (If Needed)
+If you encounter `auth/configuration-not-found` on the frontend:
+1. Go to Firebase Console -> Authentication -> Sign-in method.
+2. Enable **Email/Password**.
+3. This is only required if you are using the client-side Firebase Auth SDK.
+
 ## 🔑 Backend Service Account Key Setup
 
-The backend needs a **Service Account Key** (different from the frontend config). Here's how to get it:
+The backend needs a **Service Account Key** for admin operations. Here's how to get it:
 
 ### Step 1: Get Service Account Key
 

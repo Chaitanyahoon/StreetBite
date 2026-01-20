@@ -2,13 +2,26 @@
 # 🍽️ StreetBite - Street Food Discovery Platform
 
 ![Version](https://img.shields.io/badge/version-1.0.0-orange)
+![Frontend](https://img.shields.io/badge/frontend-Vercel-black?logo=vercel)
+![Backend](https://img.shields.io/badge/backend-Render-black?logo=render)
+![Database](https://img.shields.io/badge/database-Aiven-orange?logo=mysql)
 
-A full-stack application connecting food lovers with local street food vendors, built with **Next.js (Frontend)** and **Spring Boot (Backend)**.
+A full-stack application connecting food lovers with local street food vendors, built with **Next.js (Frontend)** and **Spring Boot (Backend)**, using **MySQL** for data persistence.
+
+## 🚀 Live Demo
+
+| Component | URL | Status |
+|-----------|-----|--------|
+| **Frontend** | [StreetBite App](https://streetbitego.vercel.app/) | 🟢 Live |
+| **Backend API** | [StreetBite API](https://streetbite.onrender.com) | 🟢 Live |
+| **API Docs** | [Swagger UI](https://streetbite.onrender.com/swagger-ui/index.html) | 🟢 Live |
+
+> **Note**: The backend is hosted on Render's free tier and may spin down after inactivity. Please allow up to 50 seconds for the first request to wake it up.
 
 ## ✨ Features
 
 - 🔍 **Location-based vendor search** - Find vendors near you using geolocation
-- 👤 **User authentication** - Sign up as customer or vendor
+- 👤 **User authentication** - Sign up as customer or vendor (JWT Auth)
 - 🏪 **Vendor management** - Complete vendor dashboard
 - 📋 **Menu management** - Add, edit, delete menu items
 - 📊 **Analytics** - Track revenue, orders, and performance
@@ -17,13 +30,13 @@ A full-stack application connecting food lovers with local street food vendors, 
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Quick Start (Local Development)
 
 ### Prerequisites
 - **Java 21+** (for backend)
 - **Node.js 18+** (for frontend)
+- **MySQL 8.0+** (or use Aiven/Remote DB)
 - **Maven** (or use included wrapper)
-- **JAVA_HOME** environment variable must be set to your Java installation directory
 
 ### One-Command Startup
 ```powershell
@@ -31,12 +44,9 @@ A full-stack application connecting food lovers with local street food vendors, 
 ```
 
 This script will:
-- ✅ Detect and configure Firebase credentials
-- ✅ Detect and configure Google Maps API key
 - ✅ Start backend (Spring Boot on port 8080)
 - ✅ Start frontend (Next.js on port 3000)
 - ✅ Wait for both servers to be ready
-- ✅ Display ready status with links
 
 ### Manual Startup
 
@@ -62,8 +72,9 @@ final_project/
 │   │   └── com/streetbite/
 │   │       ├── controller/     # REST endpoints
 │   │       ├── service/        # Business logic
-│   │       ├── model/          # Data models
-│   │       ├── config/         # Firebase, CORS setup
+│   │       ├── model/          # JPA Entities (MySQL)
+│   │       ├── repository/     # Spring Data JPA Repositories
+│   │       ├── config/         # Security, CORS, Swagger setup
 │   │       └── exception/      # Error handling
 │   ├── pom.xml                # Maven dependencies
 │   └── ...
@@ -76,47 +87,36 @@ final_project/
 │   └── ...
 │
 ├── Documentation/
-│   ├── README.md              # This file (project overview)
-│   ├── SETUP.md               # Setup & installation guide
-│   ├── FIREBASE_SETUP.md      # Firebase configuration
-│   ├── FIREBASE_AUTH_SETUP.md # Authentication setup
-│   ├── DATABASE_STATUS.md     # Database documentation
+│   ├── README.md              # This file
+│   ├── DEPLOYMENT.md          # Deployment guide (Vercel/Render)
+│   ├── SETUP.md               # Local setup guide
+│   ├── DATABASE_STATUS.md     # MySQL Schema documentation
 │   └── .env.example           # Environment variables template
 │
-├── Startup Scripts/
-│   ├── start-all.ps1          # Start frontend + backend
-│   ├── start-backend.ps1      # Start backend only
-│   └── start-project.ps1      # Start with separate windows
-│
-└── Configuration Files
-    ├── .gitignore             # Git ignore rules
-    ├── firebase-key.json      # Firebase credentials (placeholder)
-    ├── package.json           # Root npm config
-    └── .env                   # Environment variables (local only)
+└── ...
 ```
 
 ---
 
 ## 🔧 Configuration
 
-### Required Setup (First Time)
+### Environment Variables
 
-1. **Get Firebase Service Account Key**
-   - Go to: https://console.firebase.google.com/
-   - Select project: `street-bite-v1`
-   - Settings → Service Accounts → Generate New Private Key
-   - Replace placeholder in `firebase-key.json`
+Create a `.env` file in the `backend` directory (or set via IDE/Cloud):
 
-2. **Get Google Maps API Key**
-   - Go to: https://console.cloud.google.com/
-   - Create API Key
-   - Enable Geocoding API
-   - When running scripts, you'll be prompted to enter this key
+```properties
+# Database (MySQL/Aiven)
+SPRING_DATASOURCE_URL=jdbc:mysql://<HOST>:<PORT>/<DB_NAME>?ssl-mode=REQUIRED
+SPRING_DATASOURCE_USERNAME=<USER>
+SPRING_DATASOURCE_PASSWORD=<PASSWORD>
 
-3. **Enable Firebase Authentication**
-   - Go to Firebase Console
-   - Authentication → Sign-in methods
-   - Enable Email/Password
+# Security
+JWT_SECRET=<YOUR_SECRET_KEY>
+JWT_EXPIRATION_MS=86400000
+
+# Firebase (Auxiliary)
+GOOGLE_APPLICATION_CREDENTIALS=classpath:firebase-key.json
+```
 
 See **[SETUP.md](Documentation/SETUP.md)** for detailed instructions.
 
@@ -125,43 +125,32 @@ See **[SETUP.md](Documentation/SETUP.md)** for detailed instructions.
 ## 📚 API Endpoints
 
 ### Authentication
-- `POST /api/auth/register` - Register user (customer/vendor)
-- `POST /api/auth/login` - Login and get token
+- `POST /api/auth/register` - Register user
+- `POST /api/auth/login` - Login and get JWT
 
 ### Vendors
-- `GET /api/vendors/all` - List all vendors
-- `GET /api/vendors/search?lat=X&lng=Y&radius=Z` - Search by location
-- `POST /api/vendors/register` - Register new vendor
-- `GET /api/vendors/{vendorId}` - Get vendor details
-- `PUT /api/vendors/{vendorId}` - Update vendor
+- `GET /api/vendors` - List all vendors
+- `GET /api/vendors/search` - Search by location
+- `POST /api/vendors` - Create vendor
+- `GET /api/vendors/{id}` - Get vendor details
 
 ### Menu
-- `GET /api/menu/vendor/{vendorId}` - Get vendor menu
-- `POST /api/menu/{vendorId}` - Add menu item
-- `PUT /api/menu/{itemId}` - Update menu item
-- `DELETE /api/menu/{itemId}` - Delete menu item
+- `GET /api/vendors/{vendorId}/menu` - Get menu
+- `POST /api/menu` - Add menu item
 
-### Reviews
-- `POST /api/reviews` - Post review
-- `GET /api/vendors/{vendorId}/reviews` - Get vendor reviews
-- `PUT /api/reviews/{reviewId}` - Update review
-- `DELETE /api/reviews/{reviewId}` - Delete review
-
-### Analytics
-- `GET /api/analytics/vendor/{vendorId}` - Get vendor analytics
-
-Full API documentation available at: http://localhost:8080 (when running)
+Full API documentation available at `/swagger-ui/index.html` on the backend.
 
 ---
 
 ## 🛠️ Tech Stack
 
 ### Backend
-- **Framework**: Spring Boot 3.2.0
-- **Language**: Java 17
-- **Database**: Firebase Firestore (NoSQL)
-- **Authentication**: Firebase Admin SDK
-- **API**: Google Maps Geocoding
+- **Framework**: Spring Boot 3.3.5
+- **Language**: Java 21
+- **Database**: MySQL (Aiven Cloud)
+- **ORM**: Spring Data JPA / Hibernate
+- **Auth**: Spring Security + JWT
+- **Auxiliary**: Firebase Admin SDK (for specific features)
 - **Build**: Maven
 
 ### Frontend
@@ -169,12 +158,7 @@ Full API documentation available at: http://localhost:8080 (when running)
 - **UI Library**: React 19
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS
-- **Auth**: Firebase Client SDK
-- **HTTP**: Fetch API
-
-### Database
-- **Firestore**: Real-time NoSQL document database
-- **Collections**: users, vendors, menuItems, reviews, promotions, geocoding_cache
+- **Deployment**: Vercel
 
 ---
 
@@ -182,70 +166,11 @@ Full API documentation available at: http://localhost:8080 (when running)
 
 | Document | Purpose |
 |----------|---------|
-| **[SETUP.md](Documentation/SETUP.md)** | Complete setup & installation guide |
-| **[FIREBASE_SETUP.md](Documentation/FIREBASE_SETUP.md)** | Firebase configuration for backend |
-| **[FIREBASE_AUTH_SETUP.md](Documentation/FIREBASE_AUTH_SETUP.md)** | Enable authentication in Firebase |
-| **[DATABASE_STATUS.md](Documentation/DATABASE_STATUS.md)** | Database schema & Firestore collections |
-
----
-
-## 🎯 Common Tasks
-
-### Run Everything
-```powershell
-.\start-all.ps1
-```
-
-### Run Backend Only
-```powershell
-.\start-backend.ps1
-```
-
-### Run Frontend Only
-```powershell
-cd frontend
-npm install  # first time only
-npm run dev
-```
-
-### Install Frontend Dependencies
-```powershell
-npm run frontend:install
-```
-
-### Access Application
-- **Frontend**: http://localhost:3000
-- **Backend**: http://localhost:8080
-- **Backend Health**: http://localhost:8080/actuator/health
-
----
-
-## 🔐 Security
-
-- ✅ `firebase-key.json` is in `.gitignore` (never committed)
-- ✅ API keys stored in environment variables
-- ✅ No hardcoded secrets in source code
-- ✅ Firebase Admin SDK for secure backend operations
-- ✅ CORS configured for frontend origin only
-
-**Never commit real credentials to Git!**
-
----
-
-## 🐛 Troubleshooting
-
-### Common Issues
-
-| Issue | Solution |
-|-------|----------|
-| Script blocked | Run: `powershell -ExecutionPolicy Bypass -File .\start-all.ps1` |
-| Port 8080 in use | Change `server.port` in `backend/src/main/resources/application.properties` |
-| Port 3000 in use | Stop the process or change port in `frontend/package.json` |
-| Firebase connection error | Verify `GOOGLE_APPLICATION_CREDENTIALS` env var points to valid JSON |
-| Geocoding fails | Ensure `GOOGLE_GEOCODING_API_KEY` is set and API is enabled |
-| Cannot sign up | Enable Email/Password auth in Firebase Console |
-
-For more troubleshooting, see [SETUP.md](Documentation/SETUP.md#troubleshooting).
+| **[ARCHITECTURE.md](Documentation/ARCHITECTURE.md)** | **System Design & Explaination** |
+| **[DEPLOYMENT.md](Documentation/DEPLOYMENT.md)** | Guide for Vercel & Render deployment |
+| **[DATABASE_SCHEMA.md](Documentation/DATABASE_SCHEMA.md)** | MySQL Database Schema & ERD |
+| **[DEVELOPMENT_SETUP.md](Documentation/DEVELOPMENT_SETUP.md)** | Local development setup guide |
+| **[FIREBASE_SETUP.md](Documentation/FIREBASE_SETUP.md)** | Auxiliary Firebase configuration |
 
 ---
 
@@ -255,16 +180,6 @@ This project is for educational purposes.
 
 ---
 
-## 🙏 Acknowledgments
-
-Built with modern web technologies and best practices for street food discovery.
-
----
-
 **Made with ❤️ for street food lovers** 🍽️
-<!-- Made some changes -->
-Last Updated: 2025
-Version: 1.0.0
-
-=======
+Last Updated: 2026
 
