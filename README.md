@@ -150,6 +150,7 @@ Full API documentation available at `/swagger-ui/index.html` on the backend.
 - **Database**: MySQL (Aiven Cloud)
 - **ORM**: Spring Data JPA / Hibernate
 - **Auth**: Spring Security + JWT
+- **Email**: Resend SDK
 - **Auxiliary**: Firebase Admin SDK (for specific features)
 - **Build**: Maven
 
@@ -182,4 +183,3 @@ This project is for educational purposes.
 
 **Made with ❤️ for street food lovers** 🍽️
 Last Updated: 2026
-

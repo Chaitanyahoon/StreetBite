@@ -9,12 +9,12 @@ Backend service for StreetBite - a geolocation-driven street food discovery plat
 
 ### Technology Stack
 - **Framework**: Spring Boot 3.x
-- **Language**: Java 17+
+- **Language**: Java 21
 - **Build Tool**: Maven
 - **Database**: Firestore (NoSQL)
 - **Geocoding**: Google Maps API
 - **Authentication**: Firebase Admin SDK
-- **Cloud Hosting**: Google Cloud Run
+- **Cloud Hosting**: Render
 - **Package Manager**: Maven Central
 
 ### Architectural Pattern
@@ -187,7 +187,7 @@ search_index/{vendorId}
 
 ### Base URL
 \`\`\`
-https://streetbite-backend.run.app/api/v1
+https://streetbite-backend.onrender.com/api/v1
 \`\`\`
 
 ### Authentication
@@ -540,7 +540,7 @@ FIREBASE_PROJECT_ID=
 FIREBASE_PRIVATE_KEY=
 FIREBASE_CLIENT_EMAIL=
 GOOGLE_MAPS_API_KEY=
-NEXT_PUBLIC_BACKEND_URL=https://streetbite-backend.run.app
+NEXT_PUBLIC_BACKEND_URL=https://streetbite-backend.onrender.com
 SERVER_PORT=8080
 \`\`\`
 
