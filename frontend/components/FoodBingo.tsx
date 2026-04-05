@@ -129,7 +129,7 @@ export function FoodBingo() {
             {/* Header */}
             <div className="flex justify-between items-center bg-white p-2 rounded-xl shadow-sm border border-gray-100">
                 <div className="flex items-center gap-2">
-                    <div className="p-1.5 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-lg shadow-lg shadow-purple-200">
+                    <div className="p-1.5 bg-gradient-to-br from-emerald-500 to-cyan-600 rounded-lg shadow-lg shadow-emerald-200">
                         <Grid3x3 className="w-4 h-4 text-white" />
                     </div>
                     <div>
@@ -153,10 +153,10 @@ export function FoodBingo() {
                     <div className="text-lg font-black text-blue-600 leading-none mb-0.5">{completedCount}</div>
                     <div className="text-[8px] font-bold text-blue-400 uppercase tracking-widest">Found</div>
                 </div>
-                <div className="bg-gradient-to-br from-purple-50 to-fuchsia-50 p-2 rounded-xl border border-purple-100 text-center shadow-sm relative overflow-hidden">
-                    <div className="text-lg font-black text-purple-600 leading-none mb-0.5">{completedLines}</div>
-                    <div className="text-[8px] font-bold text-purple-400 uppercase tracking-widest">Lines</div>
-                    {completedLines > 0 && <div className="absolute top-0 right-0 w-1.5 h-1.5 bg-purple-500 rounded-full m-1.5 animate-ping" />}
+                <div className="bg-gradient-to-br from-emerald-50 to-teal-50 p-2 rounded-xl border border-emerald-100 text-center shadow-sm relative overflow-hidden">
+                    <div className="text-lg font-black text-emerald-600 leading-none mb-0.5">{completedLines}</div>
+                    <div className="text-[8px] font-bold text-emerald-400 uppercase tracking-widest">Lines</div>
+                    {completedLines > 0 && <div className="absolute top-0 right-0 w-1.5 h-1.5 bg-emerald-500 rounded-full m-1.5 animate-ping" />}
                 </div>
                 <div className="bg-gradient-to-br from-orange-50 to-amber-50 p-2 rounded-xl border border-orange-100 text-center shadow-sm">
                     <div className="text-lg font-black text-orange-600 leading-none mb-0.5">{totalXP}</div>

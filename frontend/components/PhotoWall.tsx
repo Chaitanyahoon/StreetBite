@@ -157,7 +157,7 @@ export function PhotoWall() {
     return (
         <>
             <Card className="hover:shadow-lg transition-shadow border-primary/10">
-                <CardHeader className="bg-gradient-to-r from-pink-50 to-purple-50">
+                <CardHeader className="bg-gradient-to-r from-pink-50 to-emerald-50">
                     <div className="flex justify-between items-start">
                         <div>
                             <CardTitle className="flex items-center gap-2 text-lg">
@@ -171,7 +171,7 @@ export function PhotoWall() {
 
                         <Dialog open={isUploadOpen} onOpenChange={setIsUploadOpen}>
                             <DialogTrigger asChild>
-                                <Button size="sm" className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600">
+                                <Button size="sm" className="bg-gradient-to-r from-pink-500 to-emerald-500 hover:from-pink-600 hover:to-emerald-600">
                                     <Camera className="w-4 h-4 mr-2" />
                                     Upload
                                 </Button>

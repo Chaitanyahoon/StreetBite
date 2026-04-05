@@ -54,15 +54,10 @@ public class HotTopicController {
 
     @PostMapping("/{id}/comment")
     public ResponseEntity<?> addComment(@PathVariable Long id, @RequestBody Map<String, String> payload,
-            @RequestHeader(value = "Authorization", required = false) String token) {
+            @CookieValue(value = "jwt", required = false) String jwtToken) {
         try {
             // Validate token
-            if (token == null || !token.startsWith("Bearer ") || token.length() < 10) {
-                return ResponseEntity.status(401).body(Map.of("error", "Please log in to comment"));
-            }
-
-            String jwtToken = token.substring(7);
-            if (!jwtToken.contains(".") || jwtToken.split("\\.").length != 3) {
+            if (jwtToken == null || !jwtToken.contains(".") || jwtToken.split("\\.").length != 3) {
                 return ResponseEntity.status(401).body(Map.of("error", "Invalid session. Please log in again"));
             }
 
@@ -87,15 +82,10 @@ public class HotTopicController {
 
     @PostMapping("/{id}/like")
     public ResponseEntity<?> toggleLike(@PathVariable Long id,
-            @RequestHeader(value = "Authorization", required = false) String token) {
+            @CookieValue(value = "jwt", required = false) String jwtToken) {
         try {
             // Validate token
-            if (token == null || !token.startsWith("Bearer ") || token.length() < 10) {
-                return ResponseEntity.status(401).body(Map.of("error", "Please log in to like"));
-            }
-
-            String jwtToken = token.substring(7);
-            if (!jwtToken.contains(".") || jwtToken.split("\\.").length != 3) {
+            if (jwtToken == null || !jwtToken.contains(".") || jwtToken.split("\\.").length != 3) {
                 return ResponseEntity.status(401).body(Map.of("error", "Invalid session. Please log in again"));
             }
 

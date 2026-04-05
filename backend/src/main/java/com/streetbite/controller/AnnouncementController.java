@@ -21,6 +21,14 @@ public class AnnouncementController {
         return ResponseEntity.ok(announcementRepository.findByIsActiveTrueOrderByCreatedAtDesc());
     }
 
+    @GetMapping("/hot")
+    public ResponseEntity<List<Announcement>> getHotAnnouncements() {
+        return ResponseEntity.ok(announcementRepository.findByIsActiveTrueOrderByCreatedAtDesc()
+            .stream()
+            .limit(3)
+            .toList());
+    }
+
     @GetMapping
     public ResponseEntity<List<Announcement>> getAllAnnouncements() {
         return ResponseEntity.ok(announcementRepository.findAll());

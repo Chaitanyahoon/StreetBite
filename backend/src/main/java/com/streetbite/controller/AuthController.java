@@ -5,6 +5,9 @@ import com.streetbite.model.Vendor;
 import com.streetbite.service.UserService;
 import com.streetbite.service.VendorService;
 import com.streetbite.util.JwtUtil;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -16,6 +19,9 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
+
+    private static final String COOKIE_NAME = "sb_token";
+    private static final int COOKIE_MAX_AGE = 24 * 60 * 60; // 24 hours
 
     @Autowired
     private UserService userService;
@@ -29,8 +35,59 @@ public class AuthController {
     @Autowired
     private JwtUtil jwtUtil;
 
+    /**
+     * Helper: build the user data map (without password hash).
+     */
+    private Map<String, Object> buildUserData(User user) {
+        java.util.Map<String, Object> userData = new java.util.HashMap<>();
+        userData.put("id", user.getId());
+        userData.put("email", user.getEmail());
+        userData.put("displayName", user.getDisplayName());
+        userData.put("phoneNumber", user.getPhoneNumber());
+        userData.put("profilePicture", user.getProfilePicture());
+        userData.put("role", user.getRole().name());
+
+        if (user.getRole() == User.Role.VENDOR) {
+            java.util.List<Vendor> vendors = vendorService.getVendorsByOwner(user.getId());
+            if (!vendors.isEmpty()) {
+                userData.put("vendorId", vendors.get(0).getId());
+            }
+        }
+        return userData;
+    }
+
+    /**
+     * Helper: set the HttpOnly JWT cookie on the response.
+     */
+    private void setTokenCookie(HttpServletResponse response, String token) {
+        Cookie cookie = new Cookie(COOKIE_NAME, token);
+        cookie.setHttpOnly(true);
+        cookie.setSecure("true".equalsIgnoreCase(System.getenv("COOKIE_SECURE"))); // true in prod
+        cookie.setPath("/");
+        cookie.setMaxAge(COOKIE_MAX_AGE);
+        // SameSite via Set-Cookie header (Cookie class doesn't support SameSite directly)
+        response.addCookie(cookie);
+        // Override with SameSite attribute
+        String setCookieHeader = String.format(
+                "%s=%s; Max-Age=%d; Path=/; HttpOnly; SameSite=Lax%s",
+                COOKIE_NAME, token, COOKIE_MAX_AGE,
+                "true".equalsIgnoreCase(System.getenv("COOKIE_SECURE")) ? "; Secure" : "");
+        response.setHeader("Set-Cookie", setCookieHeader);
+    }
+
+    /**
+     * Helper: clear the JWT cookie.
+     */
+    private void clearTokenCookie(HttpServletResponse response) {
+        Cookie cookie = new Cookie(COOKIE_NAME, "");
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(0);
+        response.addCookie(cookie);
+    }
+
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody Map<String, Object> payload) {
+    public ResponseEntity<?> register(@RequestBody Map<String, Object> payload, HttpServletResponse response) {
         try {
 
             String email = (String) payload.get("email");
@@ -93,28 +150,13 @@ public class AuthController {
 
             }
 
-            // Generate JWT token
+            // Generate JWT token and set as HttpOnly cookie
             String token = jwtUtil.generateToken(savedUser.getEmail(), savedUser.getId(), savedUser.getRole().name());
+            setTokenCookie(response, token);
 
-            Map<String, Object> userData = new java.util.HashMap<>();
-            userData.put("id", savedUser.getId());
-            userData.put("email", savedUser.getEmail());
-            userData.put("displayName", savedUser.getDisplayName());
-            userData.put("phoneNumber", savedUser.getPhoneNumber());
-            userData.put("profilePicture", savedUser.getProfilePicture());
-            userData.put("role", savedUser.getRole().name());
+            Map<String, Object> userData = buildUserData(savedUser);
 
-            // If user is a vendor, include the vendorId (we just created it)
-            if (savedUser.getRole() == User.Role.VENDOR) {
-                // We need to fetch it because we didn't keep the reference to the saved vendor
-                // object with ID
-                java.util.List<Vendor> vendors = vendorService.getVendorsByOwner(savedUser.getId());
-                if (!vendors.isEmpty()) {
-                    userData.put("vendorId", vendors.get(0).getId());
-                }
-            }
-
-            // Return user data without password hash
+            // Return user data (token is in cookie, also in body for backward compat)
             return ResponseEntity.ok(Map.of(
                     "success", true,
                     "token", token,
@@ -126,7 +168,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Map<String, Object> payload) {
+    public ResponseEntity<?> login(@RequestBody Map<String, Object> payload, HttpServletResponse response) {
         try {
 
             String email = (String) payload.get("email");
@@ -154,26 +196,13 @@ public class AuthController {
                 return ResponseEntity.status(403).body(Map.of("error", "Account is banned or inactive"));
             }
 
-            // Generate JWT token
+            // Generate JWT token and set as HttpOnly cookie
             String token = jwtUtil.generateToken(user.getEmail(), user.getId(), user.getRole().name());
+            setTokenCookie(response, token);
 
-            Map<String, Object> userData = new java.util.HashMap<>();
-            userData.put("id", user.getId());
-            userData.put("email", user.getEmail());
-            userData.put("displayName", user.getDisplayName());
-            userData.put("phoneNumber", user.getPhoneNumber());
-            userData.put("profilePicture", user.getProfilePicture());
-            userData.put("role", user.getRole().name());
+            Map<String, Object> userData = buildUserData(user);
 
-            // If user is a vendor, fetch and include vendorId
-            if (user.getRole() == User.Role.VENDOR) {
-                java.util.List<Vendor> vendors = vendorService.getVendorsByOwner(user.getId());
-                if (!vendors.isEmpty()) {
-                    userData.put("vendorId", vendors.get(0).getId());
-                }
-            }
-
-            // Return user data without password hash
+            // Return user data (token still in body for backward compat during migration)
             return ResponseEntity.ok(Map.of(
                     "success", true,
                     "token", token,
@@ -182,6 +211,65 @@ public class AuthController {
             e.printStackTrace();
             return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
         }
+    }
+
+    /**
+     * GET /auth/me — Returns current user data from the JWT cookie.
+     */
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentUser(HttpServletRequest request) {
+        // Extract JWT from cookie
+        String token = null;
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if (COOKIE_NAME.equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        // Fallback to Authorization header
+        if (token == null) {
+            String authHeader = request.getHeader("Authorization");
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                token = authHeader.substring(7);
+            }
+        }
+
+        if (token == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
+        }
+
+        try {
+            String email = jwtUtil.extractEmail(token);
+            if (email == null) {
+                return ResponseEntity.status(401).body(Map.of("error", "Invalid token"));
+            }
+
+            Optional<User> userOpt = userService.getUserByEmail(email);
+            if (userOpt.isEmpty() || !userOpt.get().getActive()) {
+                return ResponseEntity.status(401).body(Map.of("error", "User not found or inactive"));
+            }
+
+            if (!jwtUtil.validateToken(token, email)) {
+                return ResponseEntity.status(401).body(Map.of("error", "Token expired"));
+            }
+
+            Map<String, Object> userData = buildUserData(userOpt.get());
+            return ResponseEntity.ok(userData);
+        } catch (Exception e) {
+            return ResponseEntity.status(401).body(Map.of("error", "Invalid token"));
+        }
+    }
+
+    /**
+     * POST /auth/logout — Clears the JWT cookie.
+     */
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletResponse response) {
+        clearTokenCookie(response);
+        return ResponseEntity.ok(Map.of("message", "Logged out successfully"));
     }
 
     @PostMapping("/forgot-password")
@@ -219,6 +307,35 @@ public class AuthController {
                 "message", "If an account exists, a reset link has been sent.",
                 "resetLink", resetLink,
                 "email", email));
+    }
+
+    /**
+     * GET /auth/validate-reset-token — Check if a reset token is still valid.
+     * Returns remaining seconds if valid, or error if expired/invalid.
+     */
+    @GetMapping("/validate-reset-token")
+    public ResponseEntity<?> validateResetToken(@RequestParam String token) {
+        if (token == null || token.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("valid", false, "error", "Token is required"));
+        }
+
+        Optional<User> userOpt = userService.getUserByResetPasswordToken(token);
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.ok(Map.of("valid", false, "error", "Invalid or already used token"));
+        }
+
+        User user = userOpt.get();
+        java.time.LocalDateTime expiry = user.getResetPasswordTokenExpiry();
+        if (expiry == null || expiry.isBefore(java.time.LocalDateTime.now())) {
+            // Token expired — clear it
+            user.setResetPasswordToken(null);
+            user.setResetPasswordTokenExpiry(null);
+            userService.saveUser(user);
+            return ResponseEntity.ok(Map.of("valid", false, "error", "Token has expired"));
+        }
+
+        long remainingSeconds = java.time.Duration.between(java.time.LocalDateTime.now(), expiry).getSeconds();
+        return ResponseEntity.ok(Map.of("valid", true, "remainingSeconds", remainingSeconds));
     }
 
     @PostMapping("/reset-password")

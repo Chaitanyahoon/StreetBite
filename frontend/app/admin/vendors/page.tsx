@@ -32,7 +32,7 @@ export default function VendorManagement() {
   const fetchVendors = async () => {
     try {
       setLoading(true)
-      const data = await vendorApi.getAll()
+      const data = await vendorApi.getAllAdmin()
       // Map API response to UI model
       const mappedVendors = data.map((v: any) => ({
         id: v.id,

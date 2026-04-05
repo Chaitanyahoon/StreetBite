@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Plus, Edit2, Trash2, Copy } from 'lucide-react'
 import { promotionApi } from '@/lib/api'
+import { useAuth } from '@/context/AuthContext'
 
 interface Promotion {
   id: string
@@ -34,6 +35,7 @@ interface FormData {
 }
 
 export default function Promotions() {
+  const { user } = useAuth()
   const [promotions, setPromotions] = useState<Promotion[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -53,35 +55,27 @@ export default function Promotions() {
   const [editingPromo, setEditingPromo] = useState<Promotion | null>(null)
   const [mounted, setMounted] = useState(false)
 
-  // Fix hydration error
   useEffect(() => {
     setMounted(true)
   }, [])
 
-  // Load promotions from backend
   useEffect(() => {
     const loadPromotions = async () => {
       try {
-        if (typeof window === 'undefined') return
-
-        const userStr = localStorage.getItem('user')
-        if (!userStr) {
+        if (!user) {
           setError('Please sign in to view promotions')
           setLoading(false)
           return
         }
 
-        const user = JSON.parse(userStr)
-
-        // Check if user has vendorId - required for vendors
         if (!user.vendorId && user.role === 'VENDOR') {
           setError('Vendor ID not found. Please sign out and sign in again.')
           setLoading(false)
           return
         }
 
-        const vid = user.vendorId
-        if (!vid) {
+        const vid = String(user.vendorId)
+        if (!vid || vid === 'undefined') {
           setError('You need to be a vendor to view promotions')
           setLoading(false)
           return
@@ -90,8 +84,6 @@ export default function Promotions() {
 
         const apiPromotions = await promotionApi.getByVendor(vid)
 
-
-        // Convert API format to UI format
         const uiPromotions: Promotion[] = apiPromotions.map(p => ({
           id: p.id || p.promotionId || '',
           code: p.promoCode,
@@ -115,7 +107,7 @@ export default function Promotions() {
     if (mounted) {
       loadPromotions()
     }
-  }, [mounted])
+  }, [mounted, user])
 
   const handleAddPromotion = async () => {
     if (!formData.code || !formData.description || !formData.discount || !vendorId) {

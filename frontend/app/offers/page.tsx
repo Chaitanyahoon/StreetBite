@@ -10,6 +10,7 @@ import Link from 'next/link'
 
 interface Vendor {
   id: number
+  slug?: string
   name: string
   rating: number
   displayImageUrl?: string
@@ -201,7 +202,7 @@ export default function OffersPage() {
                     </div>
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-8">
-                    <Link href={`/vendors/${featuredDeal.vendor?.id}`}>
+                    <Link href={`/vendors/${featuredDeal.vendor?.slug || featuredDeal.vendor?.id}`}>
                       <Button className="w-full h-16 bg-yellow-400 hover:bg-yellow-300 text-black border-4 border-black font-black text-xl rounded-xl shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] hover:shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] hover:-translate-y-1 transition-all">
                         CLAIM NOW
                       </Button>
@@ -360,7 +361,7 @@ export default function OffersPage() {
                         </div>
 
                         {promo.vendor?.id ? (
-                          <Link href={`/vendors/${promo.vendor.id}`} className="block">
+                          <Link href={`/vendors/${promo.vendor.slug || promo.vendor.id}`} className="block">
                             <Button className="w-full h-12 bg-black text-white hover:bg-orange-500 border-4 border-black font-black uppercase tracking-wide rounded-xl shadow-[2px_2px_0px_0px_#9ca3af] hover:shadow-[4px_4px_0px_0px_#000000] transition-all">
                               Redeem Now
                             </Button>

@@ -63,9 +63,17 @@ export default function UserManagementPage() {
                     <h1 className="text-3xl font-bold">Customer Management</h1>
                     <p className="text-muted-foreground">Manage customer accounts and permissions</p>
                 </div>
-                <Link href="/admin">
-                    <Button variant="outline">Back to Dashboard</Button>
-                </Link>
+                <div className="flex items-center gap-4">
+                    <Button 
+                        onClick={() => window.open(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8081/api'}/newsletter/export`, '_blank')}
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                    >
+                        Export Newsletter (CSV)
+                    </Button>
+                    <Link href="/admin">
+                        <Button variant="outline">Back to Dashboard</Button>
+                    </Link>
+                </div>
             </div>
 
             <Card>
@@ -99,7 +107,7 @@ export default function UserManagementPage() {
                                         <p className="font-medium">{user.displayName}</p>
                                         <p className="text-sm text-muted-foreground">{user.email}</p>
                                         <div className="flex items-center gap-2 mt-1">
-                                            <span className={`text-xs px-2 py-0.5 rounded-full ${user.role === 'ADMIN' ? 'bg-purple-100 text-purple-700' :
+                                            <span className={`text-xs px-2 py-0.5 rounded-full ${user.role === 'ADMIN' ? 'bg-emerald-100 text-emerald-700' :
                                                 user.role === 'VENDOR' ? 'bg-orange-100 text-orange-700' :
                                                     'bg-blue-100 text-blue-700'
                                                 }`}>

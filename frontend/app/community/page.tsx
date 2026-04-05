@@ -1,24 +1,36 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import dynamic from 'next/dynamic'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
-import { ZodiacCard } from '@/components/ZodiacCard'
-import { DailyPoll } from '@/components/DailyPoll'
-import { VendorBattle } from '@/components/VendorBattle'
-import { StreakTracker } from '@/components/StreakTracker'
-import { FoodBingo } from '@/components/FoodBingo'
-import { PhotoWall } from '@/components/PhotoWall'
-import { EventsCalendar } from '@/components/EventsCalendar'
-import { Leaderboard } from '@/components/Leaderboard'
-import { FoodPersonalityQuiz } from '@/components/FoodPersonalityQuiz'
-import { UserStats } from '@/components/UserStats'
-import { CommunityMap } from '@/components/CommunityMap'
-import { MessageSquare, Award, Gamepad2, Camera, CalendarDays, TrendingUp, Heart, Send, X, ThumbsUp, Search, Sparkles, Flame, MapPin } from 'lucide-react'
+import { MessageSquare, Award, Gamepad2, Camera, CalendarDays, TrendingUp, Heart, Send, X, ThumbsUp, Search, Sparkles, Flame, MapPin, ShieldCheck, Star } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
+import { useAuth } from '@/context/AuthContext'
+
+// Lazy-load heavy community widgets — only loaded when scrolled into view
+const ZodiacCard = dynamic(() => import('@/components/ZodiacCard').then(m => m.ZodiacCard), { ssr: false, loading: () => <WidgetSkeleton /> })
+const DailyPoll = dynamic(() => import('@/components/DailyPoll').then(m => m.DailyPoll), { ssr: false, loading: () => <WidgetSkeleton /> })
+const VendorBattle = dynamic(() => import('@/components/VendorBattle').then(m => m.VendorBattle), { ssr: false, loading: () => <WidgetSkeleton /> })
+const StreakTracker = dynamic(() => import('@/components/StreakTracker').then(m => m.StreakTracker), { ssr: false, loading: () => <WidgetSkeleton /> })
+const FoodBingo = dynamic(() => import('@/components/FoodBingo').then(m => m.FoodBingo), { ssr: false, loading: () => <WidgetSkeleton /> })
+const PhotoWall = dynamic(() => import('@/components/PhotoWall').then(m => m.PhotoWall), { ssr: false, loading: () => <WidgetSkeleton /> })
+const EventsCalendar = dynamic(() => import('@/components/EventsCalendar').then(m => m.EventsCalendar), { ssr: false, loading: () => <WidgetSkeleton /> })
+const Leaderboard = dynamic(() => import('@/components/Leaderboard').then(m => m.Leaderboard), { ssr: false, loading: () => <WidgetSkeleton /> })
+const FoodPersonalityQuiz = dynamic(() => import('@/components/FoodPersonalityQuiz').then(m => m.FoodPersonalityQuiz), { ssr: false, loading: () => <WidgetSkeleton /> })
+const UserStats = dynamic(() => import('@/components/UserStats').then(m => m.UserStats), { ssr: false, loading: () => <WidgetSkeleton /> })
+const CommunityMap = dynamic(() => import('@/components/CommunityMap').then(m => m.CommunityMap), { ssr: false, loading: () => <WidgetSkeleton h="h-64" /> })
+
+function WidgetSkeleton({ h = 'h-48' }: { h?: string }) {
+    return (
+        <div className={`${h} w-full rounded-2xl bg-gray-100 border-4 border-gray-200 animate-pulse flex items-center justify-center`}>
+            <div className="w-8 h-8 border-4 border-gray-300 border-t-orange-400 rounded-full animate-spin" />
+        </div>
+    )
+}
 
 const VENDORS = [
     { name: "Raghu's Vada Pav", location: "Mumbai", rating: "4.8★" },
@@ -29,12 +41,13 @@ const VENDORS = [
 ];
 
 import { useGamification } from '@/context/GamificationContext'
-import { hotTopicApi, vendorApi } from '@/lib/api';
+import { hotTopicApi, vendorApi, announcementApi } from '@/lib/api';
 
 // ... existing imports ...
 
 export default function CommunityPage() {
     const { performAction } = useGamification()
+    const { user: authUser, isLoggedIn: authIsLoggedIn, logout } = useAuth()
     const [vendor, setVendor] = useState<any>(null);
     const [discussions, setDiscussions] = useState<any[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
@@ -42,27 +55,12 @@ export default function CommunityPage() {
     const [selectedDiscussion, setSelectedDiscussion] = useState<any | null>(null);
     const [newComment, setNewComment] = useState('');
     const [hasLiked, setHasLiked] = useState(false);
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [userRole, setUserRole] = useState<string | null>(null);
-    const [currentUser, setCurrentUser] = useState<any>(null);
+    const [hotAnnouncements, setHotAnnouncements] = useState<any[]>([]);
 
     useEffect(() => {
-        // Check authentication - need both user AND token
-        const userStr = localStorage.getItem('user');
-        const token = localStorage.getItem('token');
-        if (userStr && token) {
-            try {
-                const user = JSON.parse(userStr);
-                setIsLoggedIn(true);
-                setUserRole(user.role);
-                setCurrentUser(user);
-            } catch (error) {
-                console.error('Failed to parse user data', error);
-            }
-        }
-
         fetchRandomVendor();
         fetchHotTopics();
+        fetchAnnouncements();
     }, []);
 
     const fetchHotTopics = async () => {
@@ -72,6 +70,15 @@ export default function CommunityPage() {
         } catch (error) {
             console.error('Failed to fetch hot topics:', error);
             // toast.error('Failed to load hot topics');
+        }
+    };
+
+    const fetchAnnouncements = async () => {
+        try {
+            const data = await announcementApi.getHot();
+            setHotAnnouncements(data || []);
+        } catch (error) {
+            console.error('Failed to fetch announcements:', error);
         }
     };
 
@@ -89,9 +96,8 @@ export default function CommunityPage() {
 
     const handleDiscussionClick = (discussion: any) => {
         setSelectedDiscussion(discussion);
-        // Check if current user has liked
-        if (currentUser && discussion.likes) {
-            const liked = discussion.likes.some((l: any) => l.user?.id === currentUser.id);
+        if (authUser && discussion.likes) {
+            const liked = discussion.likes.some((l: any) => l.user?.id === authUser.id);
             setHasLiked(liked);
         } else {
             setHasLiked(false);
@@ -102,7 +108,7 @@ export default function CommunityPage() {
     const handleLikeDiscussion = async () => {
         if (!selectedDiscussion) return;
 
-        if (!isLoggedIn) {
+        if (!authIsLoggedIn) {
             toast('Please sign in to like', {
                 description: 'You need to be logged in to interact',
             });
@@ -120,7 +126,7 @@ export default function CommunityPage() {
             const updatedSelected = updatedTopics.find((d: any) => d.id === selectedDiscussion.id);
             if (updatedSelected) {
                 setSelectedDiscussion(updatedSelected);
-                const liked = updatedSelected.likes.some((l: any) => l.user?.id === currentUser.id);
+                const liked = updatedSelected.likes.some((l: any) => l.user?.id === authUser?.id);
                 setHasLiked(liked);
 
                 toast.success(liked ? "Discussion liked! ❤️" : "Like removed", {
@@ -142,7 +148,7 @@ export default function CommunityPage() {
     const handlePostComment = async () => {
         if (!newComment.trim()) return;
 
-        if (!isLoggedIn) {
+        if (!authIsLoggedIn) {
             toast('Please sign in to comment', {
                 description: 'You need to be logged in to participate in discussions',
             });
@@ -166,7 +172,7 @@ export default function CommunityPage() {
             setNewComment('');
 
             // Award XP for commenting (only for customers)
-            if (userRole !== 'VENDOR') {
+            if (authUser?.role !== 'VENDOR') {
                 performAction('community_post');
                 toast.success("Comment posted! +10 XP 💬", {
                     description: "Great contribution! Keep it up!",
@@ -190,9 +196,7 @@ export default function CommunityPage() {
                     toast.error('Session expired. Please log in again.', {
                         description: 'Redirecting to sign in...'
                     });
-                    // Clear invalid auth data
-                    localStorage.removeItem('token');
-                    localStorage.removeItem('user');
+                    await logout();
                     setTimeout(() => window.location.href = '/signin', 1500);
                     return;
                 }
@@ -232,7 +236,7 @@ export default function CommunityPage() {
             {/* Dynamic Hero Section */}
             <section className="relative pt-32 pb-16 overflow-hidden">
                 {/* Floating Elements - keeping animations but making them bolder */}
-                <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-purple-200/40 rounded-full mix-blend-multiply filter blur-[80px] opacity-70 animate-blob"></div>
+                <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-emerald-200/40 rounded-full mix-blend-multiply filter blur-[80px] opacity-70 animate-blob"></div>
                 <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-yellow-200/40 rounded-full mix-blend-multiply filter blur-[80px] opacity-70 animate-blob animation-delay-2000"></div>
                 <div className="absolute -bottom-8 left-20 w-[400px] h-[400px] bg-pink-200/40 rounded-full mix-blend-multiply filter blur-[80px] opacity-70 animate-blob animation-delay-4000"></div>
 
@@ -279,13 +283,30 @@ export default function CommunityPage() {
                     {/* Left Column - Main Feed (8 cols) */}
                     <div className="lg:col-span-8 space-y-10">
 
+                        {hotAnnouncements.length > 0 && (
+                            <div className="bg-red-500 text-white rounded-2xl p-6 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden animate-slide-up">
+                                <div className="absolute top-0 right-0 p-4 opacity-20"><ShieldCheck className="w-24 h-24" /></div>
+                                <h2 className="text-2xl font-black uppercase mb-4 flex items-center gap-2 relative z-10">
+                                    <ShieldCheck className="w-6 h-6" /> Official Announcements
+                                </h2>
+                                <div className="space-y-4 relative z-10">
+                                    {hotAnnouncements.map((ann, idx) => (
+                                        <div key={idx} className="bg-white text-black p-4 rounded-xl border-2 border-black flex gap-3 font-bold hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all">
+                                            {ann.type === 'ALERT' ? <Flame className="w-5 h-5 text-red-500 shrink-0" /> : <Star className="w-5 h-5 text-orange-500 shrink-0" />}
+                                            <p>{ann.message}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
                         {/* Featured Challenges Grid */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div className="transform hover:-translate-y-2 transition-transform duration-300">
                                 <VendorBattle />
                             </div>
                             <div className="transform hover:-translate-y-2 transition-transform duration-300">
-                                {isLoggedIn ? (
+                                {authIsLoggedIn ? (
                                     <StreakTracker />
                                 ) : (
                                     <Card className="h-full border-4 border-black rounded-[2rem] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-orange-500 text-white flex flex-col items-center justify-center p-8 text-center relative overflow-hidden group">
@@ -437,7 +458,7 @@ export default function CommunityPage() {
                     {/* Right Sidebar - Sticky (4 cols) */}
                     <div className="lg:col-span-4 space-y-8">
                         <div className="sticky top-24 space-y-8">
-                            {isLoggedIn ? (
+                            {authIsLoggedIn ? (
                                 <>
                                     <div className="border-4 border-black rounded-3xl overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white">
                                         <UserStats />
@@ -557,7 +578,7 @@ export default function CommunityPage() {
                                 <div key={comment.id} className="p-4 bg-white rounded-2xl border-2 border-black shadow-[4px_4px_0px_0px_#e5e7eb]">
                                     <div className="flex items-start justify-between mb-2">
                                         <div className="flex items-center gap-3">
-                                            <div className={`w-10 h-10 rounded-xl border-2 border-black flex items-center justify-center text-sm font-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] ${comment.user?.id === currentUser?.id ? 'bg-orange-400 text-white' : 'bg-gray-200 text-gray-600'}`}>
+                                            <div className={`w-10 h-10 rounded-xl border-2 border-black flex items-center justify-center text-sm font-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] ${comment.user?.id === authUser?.id ? 'bg-orange-400 text-white' : 'bg-gray-200 text-gray-600'}`}>
                                                 {(comment.user?.displayName || 'U').charAt(0).toUpperCase()}
                                             </div>
                                             <div>

@@ -24,9 +24,11 @@ import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
 import { useState, useEffect } from "react"
 import { favoriteApi } from "@/lib/api"
+import { useAuth } from '@/context/AuthContext'
 
 export function VendorDetailsSheet({ vendor, open, onOpenChange, onFavoriteToggle }: VendorDetailsSheetProps) {
     const { toast } = useToast()
+    const { isLoggedIn } = useAuth()
     const [isFavorite, setIsFavorite] = useState(false)
     const [loading, setLoading] = useState(false)
 
@@ -38,11 +40,7 @@ export function VendorDetailsSheet({ vendor, open, onOpenChange, onFavoriteToggl
 
     useEffect(() => {
         const checkFavoriteStatus = async () => {
-            if (!vendor?.id) return
-
-            // Check if user is logged in
-            const userStr = localStorage.getItem('user')
-            if (!userStr) return
+            if (!vendor?.id || !isLoggedIn) return
 
             try {
                 const response = await favoriteApi.checkFavorite(vendor.id)
@@ -58,7 +56,7 @@ export function VendorDetailsSheet({ vendor, open, onOpenChange, onFavoriteToggl
         const shareData = {
             title: `Check out ${vendor.name} on StreetBite!`,
             text: `Delicious street food at ${vendor.name}. ${vendor.description || ''}`,
-            url: window.location.origin + `/vendors/${vendor.id}`
+            url: window.location.origin + `/vendors/${vendor.slug || vendor.id}`
         }
 
         try {
@@ -79,9 +77,7 @@ export function VendorDetailsSheet({ vendor, open, onOpenChange, onFavoriteToggl
     const handleFavorite = async () => {
         if (!vendor?.id) return
 
-        // Check if user is logged in
-        const userStr = localStorage.getItem('user')
-        if (!userStr) {
+        if (!isLoggedIn) {
             toast({
                 title: "Login Required",
                 description: "Please log in to add favorites.",
@@ -236,7 +232,7 @@ export function VendorDetailsSheet({ vendor, open, onOpenChange, onFavoriteToggl
                     </div>
 
                     <SheetFooter className="pt-4">
-                        <Link href={`/vendors/${vendor.id}`} className="w-full" onClick={() => onOpenChange(false)}>
+                        <Link href={`/vendors/${vendor.slug || vendor.id}`} className="w-full" onClick={() => onOpenChange(false)}>
                             <Button className="w-full h-12 text-lg font-bold shadow-primary hover-lift" size="lg">
                                 View Full Menu
                             </Button>

@@ -60,12 +60,24 @@ public class VendorController {
 
     @GetMapping
     public ResponseEntity<List<Vendor>> getAllVendors() {
+        return ResponseEntity.ok(vendorService.getActiveVendors());
+    }
+
+    @GetMapping("/admin/all")
+    public ResponseEntity<List<Vendor>> getAllVendorsForAdmin() {
         return ResponseEntity.ok(vendorService.getAllVendors());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getVendor(@PathVariable Long id) {
         return vendorService.getVendorById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/slug/{slug}")
+    public ResponseEntity<?> getVendorBySlug(@PathVariable String slug) {
+        return vendorService.getVendorBySlug(slug)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -95,8 +107,11 @@ public class VendorController {
     public ResponseEntity<?> updateVendor(@PathVariable Long id, @RequestBody Map<String, Object> updates) {
         return vendorService.getVendorById(id)
                 .map(existingVendor -> {
-                    if (updates.containsKey("name"))
+                    if (updates.containsKey("name")) {
                         existingVendor.setName((String) updates.get("name"));
+                        // Regenerate slug when name changes
+                        existingVendor.setSlug(null);
+                    }
                     if (updates.containsKey("description"))
                         existingVendor.setDescription((String) updates.get("description"));
                     if (updates.containsKey("cuisine"))
@@ -114,6 +129,12 @@ public class VendorController {
                             com.streetbite.model.VendorStatus status = com.streetbite.model.VendorStatus
                                     .valueOf(statusStr);
                             existingVendor.setStatus(status);
+                            
+                            // Keep isActive perfectly in sync with status
+                            boolean isSuspendedOrRejected = status == com.streetbite.model.VendorStatus.SUSPENDED || 
+                                                            status == com.streetbite.model.VendorStatus.REJECTED;
+                            existingVendor.setActive(!isSuspendedOrRejected);
+
                             // Sync to Firebase
                             realTimeSyncService.updateVendorStatus(existingVendor.getId(), status);
                         } catch (IllegalArgumentException e) {

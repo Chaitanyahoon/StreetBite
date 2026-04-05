@@ -90,4 +90,21 @@ public class NewsletterController {
         long count = subscriberRepository.count();
         return ResponseEntity.ok(Map.of("count", count));
     }
+    @GetMapping("/export")
+    public ResponseEntity<String> exportSubscribers() {
+        StringBuilder csv = new StringBuilder();
+        csv.append("ID,Email,SubscribedAt,IsActive\\n");
+        
+        subscriberRepository.findAll().forEach(subscriber -> {
+            csv.append(subscriber.getId()).append(",")
+               .append(subscriber.getEmail()).append(",")
+               .append(subscriber.getSubscribedAt()).append(",")
+               .append(subscriber.getIsActive()).append("\\n");
+        });
+        
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=\"subscribers.csv\"")
+                .header("Content-Type", "text/csv")
+                .body(csv.toString());
+    }
 }

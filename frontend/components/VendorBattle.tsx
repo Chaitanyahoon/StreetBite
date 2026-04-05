@@ -81,10 +81,10 @@ export function VendorBattle() {
 
     if (loading) {
         return (
-            <Card className="overflow-hidden border-none shadow-xl bg-gradient-to-br from-indigo-900 to-purple-900 text-white min-h-[300px] flex items-center justify-center">
+            <Card className="overflow-hidden border-none shadow-xl bg-gradient-to-br from-cyan-900 to-emerald-900 text-white min-h-[300px] flex items-center justify-center">
                 <div className="text-center">
                     <Swords className="w-10 h-10 mx-auto mb-4 animate-pulse text-yellow-400" />
-                    <p className="text-indigo-200">Setting up the arena...</p>
+                    <p className="text-cyan-200">Setting up the arena...</p>
                 </div>
             </Card>
         );

@@ -2,46 +2,26 @@ import axios from 'axios';
 
 /**
  * Base URL for the API, defaulting to localhost if not set in environment variables.
- * @constant {string}
  */
-
 const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8081/api';
 
 /**
- * Axios instance configured with base URL and default headers.
- * @constant {import('axios').AxiosInstance}
+ * Axios instance configured with base URL, default headers, and cookie credentials.
  */
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
-});
-
-/**
- * Request interceptor to inject the JWT Authorization header.
- * Retrieves token from localStorage.
- */
-// Add a request interceptor to include the JWT token if available
-api.interceptors.request.use(async (config) => {
-  // Get JWT token from localStorage
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-}, (error: any) => {
-  return Promise.reject(error);
+  withCredentials: true, // Send HttpOnly cookies on every request
 });
 
 /**
  * Response interceptor for global error handling and data extraction.
- * Automatically unwraps response data and handles 401/403 errors.
+ * Automatically unwraps response data.
  */
-// Add a response interceptor to handle errors
 api.interceptors.response.use((res) => res.data, (error: any) => {
   if (error.response) {
-    // Don't log 403 errors to console to avoid development overlay for banned users
     if (error.response.status !== 403) {
       console.warn('API Error Details:', {
         status: error.response.status,
@@ -53,20 +33,10 @@ api.interceptors.response.use((res) => res.data, (error: any) => {
   } else {
     console.error('API Error (Network/Unknown):', error.message || 'Network Error')
   }
-  // If 401 Unauthorized, clear token and redirect to login
-  if (error.response?.status === 401) {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    // Optionally redirect to login
-    window.location.href = '/signin';
-  }
 
   return Promise.reject(error)
 })
 
-/**
- * Interface definition for user registration payload.
- */
 export interface RegisterRequest {
   email: string
   displayName: string
@@ -78,23 +48,18 @@ export interface RegisterRequest {
   }
 }
 
-/**
- * Authentication related API endpoints.
- * Includes register, login, password reset, and user retrieval methods.
- */
 export const authApi = {
   register: (data: any) => api.post('/auth/register', data) as Promise<any>,
   login: (data: any) => api.post('/auth/login', data) as Promise<any>,
+  me: () => api.get('/auth/me') as Promise<any>,
+  logout: () => api.post('/auth/logout') as Promise<any>,
   getUser: (id: string) => api.get(`/auth/user/${id}`) as Promise<any>,
   getUserByUid: (uid: string) => api.get(`/auth/user/uid/${uid}`) as Promise<any>,
   forgotPassword: (email: string) => api.post('/auth/forgot-password', { email }) as Promise<any>,
+  validateResetToken: (token: string) => api.get(`/auth/validate-reset-token?token=${token}`) as Promise<any>,
   resetPassword: (data: any) => api.post('/auth/reset-password', data) as Promise<any>,
 };
 
-/**
- * User management API endpoints.
- * Operations for fetching, updating, and managing user status.
- */
 export const userApi = {
   getAll: () => api.get('/users') as Promise<any>,
   getById: (id: string) => api.get(`/users/${id}`) as Promise<any>,
@@ -103,13 +68,11 @@ export const userApi = {
   getByFirebaseUid: (uid: string) => api.get(`/users/firebase/${uid}`) as Promise<any>,
 };
 
-/**
- * Vendor management API endpoints.
- * CRUD operations for vendors and location-based search.
- */
 export const vendorApi = {
   getAll: () => api.get('/vendors') as Promise<any>,
+  getAllAdmin: () => api.get('/vendors/admin/all') as Promise<any>,
   getById: (id: string) => api.get(`/vendors/${id}`) as Promise<any>,
+  getBySlug: (slug: string) => api.get(`/vendors/slug/${slug}`) as Promise<any>,
   create: (data: any) => api.post('/vendors', data) as Promise<any>,
   update: (id: string, data: any) => api.put(`/vendors/${id}`, data) as Promise<any>,
   updateStatus: (id: string | number, status: string) => api.put(`/vendors/${id}/status`, { status }) as Promise<any>,
@@ -118,10 +81,6 @@ export const vendorApi = {
     api.get(`/vendors/search`, { params: { lat, lng, radius } }) as Promise<any>,
 };
 
-/**
- * Menu management API endpoints.
- * CRUD operations for menu items associated with vendors.
- */
 export const menuApi = {
   getByVendor: (vendorId: string | number) => api.get(`/menu/vendor/${vendorId}`) as Promise<any>,
   getById: (id: string | number) => api.get(`/menu/${id}`) as Promise<any>,
@@ -130,10 +89,6 @@ export const menuApi = {
   delete: (id: string | number) => api.delete(`/menu/${id}`) as Promise<any>,
 };
 
-/**
- * Review system API endpoints.
- * Methods to fetch, submit, update, and delete vendor reviews.
- */
 export const reviewApi = {
   getByVendor: (vendorId: string) => api.get(`/reviews/vendor/${vendorId}`) as Promise<any>,
   create: (data: any) => api.post('/reviews', data) as Promise<any>,
@@ -143,10 +98,6 @@ export const reviewApi = {
     api.delete(`/reviews/${reviewId}?userId=${userId}`) as Promise<any>,
 };
 
-/**
- * Order processing API endpoints.
- * Creation and status management of orders for users and vendors.
- */
 export const orderApi = {
   create: (data: any) => api.post('/orders', data) as Promise<any>,
   getByUser: (userId: string) => api.get(`/orders/user/${userId}`) as Promise<any>,
@@ -154,10 +105,6 @@ export const orderApi = {
   updateStatus: (id: string, status: string) => api.put(`/orders/${id}/status`, { status }) as Promise<any>,
 };
 
-/**
- * Promotion management API endpoints.
- * Methods for managing vendor promotions and retrieving active offers.
- */
 export const promotionApi = {
   getAll: () => api.get('/promotions/all') as Promise<any>,
   getAllActive: () => api.get('/promotions/active') as Promise<any>,
@@ -168,10 +115,6 @@ export const promotionApi = {
   delete: (id: string) => api.delete(`/promotions/${id}`) as Promise<any>,
 };
 
-/**
- * Analytics and tracking API endpoints.
- * Provides data for vendor dashboards and platform statistics.
- */
 export const analyticsApi = {
   getVendorAnalytics: (vendorId: string) => api.get(`/analytics/vendor/${vendorId}`) as Promise<any>,
   getPlatformAnalytics: () => api.get('/analytics/platform') as Promise<any>,
@@ -179,10 +122,6 @@ export const analyticsApi = {
     api.post('/analytics/event', { vendorId, eventType, ...additionalData }) as Promise<any>,
 };
 
-/**
- * User favorites API endpoints.
- * Management of favorite vendors for users.
- */
 export const favoriteApi = {
   getUserFavorites: () => api.get('/favorites') as Promise<any>,
   checkFavorite: (vendorId: string) => api.get(`/favorites/check/${vendorId}`) as Promise<{ isFavorite: boolean }>,
@@ -190,32 +129,21 @@ export const favoriteApi = {
   removeFavorite: (vendorId: string) => api.delete(`/favorites/${vendorId}`) as Promise<any>,
 };
 
-/**
- * Gamification system API endpoints.
- * Includes listener boards, user stats, and action tracking.
- */
 export const gamificationApi = {
   getLeaderboard: () => api.get('/gamification/leaderboard') as Promise<any>,
   getUserStats: () => api.get('/gamification/stats') as Promise<any>,
   performAction: (actionType: string) => api.post(`/gamification/action/${actionType}`) as Promise<any>,
 };
 
-/**
- * System announcement API endpoints.
- * CRUD operations for platform-wide announcements.
- */
 export const announcementApi = {
   getActive: () => api.get('/announcements/active') as Promise<any>,
+  getHot: () => api.get('/announcements/hot') as Promise<any>,
   getAll: () => api.get('/announcements') as Promise<any>,
   create: (data: any) => api.post('/announcements', data) as Promise<any>,
   updateStatus: (id: string | number, isActive: boolean) => api.put(`/announcements/${id}/status`, { isActive }) as Promise<any>,
   delete: (id: string | number) => api.delete(`/announcements/${id}`) as Promise<any>,
 };
 
-/**
- * Reporting system API endpoints.
- * Submission and management of user/vendor reports.
- */
 export const reportApi = {
   getAll: () => api.get('/reports') as Promise<any>,
   getByStatus: (status: string) => api.get(`/reports/status/${status}`) as Promise<any>,
@@ -223,10 +151,6 @@ export const reportApi = {
   updateStatus: (id: string | number, status: string) => api.put(`/reports/${id}/status`, { status }) as Promise<any>,
 };
 
-/**
- * Hot Topics (Community) API endpoints.
- * Forum-like features for community engagement.
- */
 export const hotTopicApi = {
   getAllActive: () => api.get('/hottopics') as Promise<any>,
   getAll: () => api.get('/hottopics/admin/all') as Promise<any>,
@@ -237,14 +161,8 @@ export const hotTopicApi = {
   toggleLike: (id: string | number) => api.post(`/hottopics/${id}/like`, {}) as Promise<any>,
 };
 
-/**
- * Zodiac (Horoscope) API endpoints.
- */
 export const zodiacApi = {
   getHoroscope: (sign: string) => api.get(`/zodiac/sign/${sign}`) as Promise<any>,
 };
 
-/**
- * Default export of the configured Axios instance.
- */
 export default api;

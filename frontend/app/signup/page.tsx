@@ -8,11 +8,12 @@ import { Button } from '@/components/ui/button'
 import { ArrowLeft, ChevronRight, Sparkles, Eye, EyeOff } from 'lucide-react'
 import { authApi } from '@/lib/api'
 import { useUserLocation } from '@/lib/useUserLocation'
-
+import { useAuth } from '@/context/AuthContext'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export default function SignUpPage() {
   const router = useRouter()
+  const { refreshUser } = useAuth()
   const [step, setStep] = useState(1)
   const [userType, setUserType] = useState<'customer' | 'vendor' | null>(null)
   const [formData, setFormData] = useState({
@@ -57,12 +58,9 @@ export default function SignUpPage() {
 
       const response = await authApi.register(registerData)
 
-      // Store JWT token and user info
-      localStorage.setItem('token', response.token)
-      localStorage.setItem('user', JSON.stringify(response.user))
-
-      // Notify other components (Navbar) of the update
-      window.dispatchEvent(new Event('user-updated'))
+      // Backend sets HttpOnly cookie automatically
+      // Refresh user context from the cookie
+      await refreshUser()
 
       // Redirect based on user type
       if (userType === 'vendor') {

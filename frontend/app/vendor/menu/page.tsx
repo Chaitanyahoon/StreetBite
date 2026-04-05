@@ -12,6 +12,7 @@ import { menuApi } from '@/lib/api'
 import { useLiveMenuItem } from '@/hooks/use-live-menu'
 import { toast } from 'sonner'
 import { Navbar } from '@/components/navbar'
+import { useAuth } from '@/context/AuthContext'
 
 interface MenuItem {
   id?: number
@@ -25,6 +26,7 @@ interface MenuItem {
 }
 
 export default function MenuManagement() {
+  const { user } = useAuth()
   const [menuItems, setMenuItems] = useState<MenuItem[]>([])
   const [loading, setLoading] = useState(true)
   const [vendorId, setVendorId] = useState<string | null>(null)
@@ -45,39 +47,28 @@ export default function MenuManagement() {
   })
 
   useEffect(() => {
-    const userStr = localStorage.getItem('user')
-    if (userStr) {
-      try {
-        const user = JSON.parse(userStr)
-
-        // Check if user has vendorId - required for vendors
-        if (!user.vendorId && user.role === 'VENDOR') {
-          // If vendorId is missing but user is a vendor, try to re-fetch user data
-          console.warn('VendorId missing from stored user data. User may need to re-login.')
-          toast.error('Vendor ID not found. Please sign out and sign in again.')
-          setLoading(false)
-          return
-        }
-
-        const vid = user.vendorId
-        if (!vid) {
-          toast.error('You need to be a vendor to access this page')
-          setLoading(false)
-          return
-        }
-
-        setVendorId(vid)
-        loadMenu(vid)
-      } catch (e) {
-        console.error('Error parsing user:', e)
-        toast.error('Failed to load user data')
-        setLoading(false)
-      }
-    } else {
+    if (!user) {
       toast.error('Please sign in to manage your menu')
       setLoading(false)
+      return
     }
-  }, [])
+
+    if (!user.vendorId && user.role === 'VENDOR') {
+      toast.error('Vendor ID not found. Please sign out and sign in again.')
+      setLoading(false)
+      return
+    }
+
+    const vid = String(user.vendorId)
+    if (!vid || vid === 'undefined' || vid === 'null') {
+      toast.error('You need to be a vendor to access this page')
+      setLoading(false)
+      return
+    }
+
+    setVendorId(vid)
+    loadMenu(vid)
+  }, [user])
 
   const loadMenu = async (vid: string) => {
     try {

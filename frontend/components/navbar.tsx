@@ -6,17 +6,20 @@ import { useRouter, usePathname } from 'next/navigation'
 import { Menu, X, User, LogOut } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Logo } from '@/components/logo'
+import { useAuth } from '@/context/AuthContext'
 
 export function Navbar() {
   const router = useRouter()
   const pathname = usePathname()
+  const { user, isLoggedIn, logout } = useAuth()
   const [isOpen, setIsOpen] = useState(false)
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [userName, setUserName] = useState<string>('')
-  const [userProfilePic, setUserProfilePic] = useState<string>('')
   const [scrolled, setScrolled] = useState(false)
   const [announcement, setAnnouncement] = useState<any>(null)
   const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8081/api';
+
+  const userName = user?.displayName || user?.email || 'User'
+  const userProfilePic = user?.profilePicture || ''
+  const userRole = user?.role || ''
 
   useEffect(() => {
     const fetchAnnouncement = async () => {
@@ -41,50 +44,8 @@ export function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  const [userRole, setUserRole] = useState<string>('')
-
-  useEffect(() => {
-    // Check if user is logged in
-    const checkAuthState = () => {
-      const userStr = localStorage.getItem('user')
-      if (userStr) {
-        try {
-          const user = JSON.parse(userStr)
-          setIsLoggedIn(true)
-          setUserName(user.displayName || user.email || 'User')
-          setUserProfilePic(user.profilePicture || '')
-          setUserRole(user.role || 'USER')
-        } catch (e) {
-          setIsLoggedIn(false)
-          setUserRole('')
-        }
-      } else {
-        setIsLoggedIn(false)
-        setUserRole('')
-      }
-    }
-
-    checkAuthState()
-
-    // Listen for storage changes (e.g., login/logout in another tab)
-    window.addEventListener('storage', checkAuthState)
-    // Custom event for profile updates
-    window.addEventListener('user-updated', checkAuthState)
-
-    return () => {
-      window.removeEventListener('storage', checkAuthState)
-      window.removeEventListener('user-updated', checkAuthState)
-    }
-  }, [])
-
-  // ... (scroll effect remains same)
-
-  const handleLogout = () => {
-    localStorage.removeItem('user')
-    localStorage.removeItem('firebaseUser')
-    setIsLoggedIn(false)
-    setUserName('')
-    setUserRole('')
+  const handleLogout = async () => {
+    await logout()
     router.push('/')
   }
 
@@ -127,7 +88,7 @@ export function Navbar() {
       )}
       <nav className={`sticky top-0 z-50 transition-all duration-300 ${scrolled
         ? 'bg-white border-b-4 border-black shadow-[0px_4px_0px_0px_rgba(0,0,0,0.1)]'
-        : 'bg-white border-b-4 border-black'
+        : (pathname === '/' ? 'bg-transparent border-b-transparent' : 'bg-white border-b-4 border-black')
         } ${announcement ? '' : ''}`}>
         <div className="max-w-screen-2xl mx-auto px-4 md:px-6">
           <div className="flex justify-between items-center h-16 md:h-20">

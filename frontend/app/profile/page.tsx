@@ -20,11 +20,13 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import axios from 'axios'
+import { useAuth } from '@/context/AuthContext'
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8081/api';
 
 export default function ProfilePage() {
   const router = useRouter()
+  const { user: authUser, refreshUser, isLoggedIn } = useAuth()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -49,31 +51,22 @@ export default function ProfilePage() {
   })
 
   useEffect(() => {
-    // Load user data from localStorage
-    const userStr = localStorage.getItem('user')
-    if (!userStr) {
+    if (!isLoggedIn || !authUser) {
       router.push('/signin')
       return
     }
 
-    try {
-      const user = JSON.parse(userStr)
-      setUserData({
-        userId: user.id || user.userId || '',
-        email: user.email || '',
-        displayName: user.displayName || '',
-        phoneNumber: user.phoneNumber || '',
-        role: user.role || 'CUSTOMER',
-        profilePicture: user.profilePicture || '',
-      })
-      setResetEmail(user.email || '')
-      setLoading(false)
-    } catch (e) {
-      console.error('Error parsing user data:', e)
-      setError('Failed to load user data')
-      setLoading(false)
-    }
-  }, [router])
+    setUserData({
+      userId: String(authUser.id) || '',
+      email: authUser.email || '',
+      displayName: authUser.displayName || '',
+      phoneNumber: authUser.phoneNumber || '',
+      role: authUser.role || 'CUSTOMER',
+      profilePicture: authUser.profilePicture || '',
+    })
+    setResetEmail(authUser.email || '')
+    setLoading(false)
+  }, [authUser, isLoggedIn, router])
 
   const handleSave = async () => {
     if (!userData.userId) {
@@ -94,17 +87,7 @@ export default function ProfilePage() {
 
       const response = await userApi.update(userData.userId, updateData)
 
-      // Update localStorage with new data
-      const updatedUser = {
-        ...JSON.parse(localStorage.getItem('user') || '{}'),
-        displayName: userData.displayName,
-        phoneNumber: userData.phoneNumber,
-        profilePicture: userData.profilePicture,
-      }
-      localStorage.setItem('user', JSON.stringify(updatedUser))
-
-      // Dispatch custom event to update Navbar
-      window.dispatchEvent(new Event('user-updated'))
+      await refreshUser()
 
       setSuccess(true)
       setTimeout(() => setSuccess(false), 3000)

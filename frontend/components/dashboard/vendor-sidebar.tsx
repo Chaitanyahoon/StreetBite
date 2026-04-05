@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Home, Menu, BarChart3, Tag, Settings, LogOut, HelpCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useAuth } from '@/context/AuthContext'
 
 const navItems = [
   {
@@ -45,6 +46,12 @@ interface SidebarProps {
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname()
+  const { logout } = useAuth()
+
+  const handleLogout = async () => {
+    await logout()
+    window.location.href = '/signin'
+  }
 
   return (
     <>
@@ -99,13 +106,10 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
         {/* Logout */}
         <div className="p-6 border-t border-orange-200/30">
-          <button
-            onClick={() => {
-              localStorage.clear()
-              window.location.href = '/signin'
-            }}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 transition-all duration-200 group border border-red-200/50 hover:border-red-300"
-          >
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 transition-all duration-200 group border border-red-200/50 hover:border-red-300"
+            >
             <LogOut className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             <span className="font-medium">Logout</span>
           </button>

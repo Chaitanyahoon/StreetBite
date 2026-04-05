@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { MessageSquare, AlertCircle, History, CheckCircle, Clock, Loader2, Send } from 'lucide-react'
 import { reportApi } from '@/lib/api'
 import { useToast } from '@/components/ui/use-toast'
+import { useAuth } from '@/context/AuthContext'
 
 export default function VendorSupportPage() {
     return (
@@ -68,6 +69,7 @@ export default function VendorSupportPage() {
 function SupportTicketForm() {
     const [loading, setLoading] = useState(false)
     const { toast } = useToast()
+    const { user } = useAuth()
 
     const [formData, setFormData] = useState({
         subject: '',
@@ -76,25 +78,19 @@ function SupportTicketForm() {
         priority: 'NORMAL'
     })
 
-    // We need vendor ID, but the backend handles it via JWT token usually.
-    // The reportApi.create should handle attaching the user context.
-
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setLoading(true)
 
         try {
-            // Get user from local storage to ensure we have context
-            const userStr = localStorage.getItem('user')
-            if (!userStr) {
+            if (!user) {
                 throw new Error('Not authenticated')
             }
-            const user = JSON.parse(userStr)
 
             await reportApi.create({
                 ...formData,
                 role: 'VENDOR',
-                reporterId: user.id, // Providing ID explicitly if needed by backend, though token often suffices
+                reporterId: user.id,
                 status: 'PENDING'
             })
 
@@ -192,30 +188,14 @@ function SupportTicketForm() {
 function TicketHistory() {
     const [tickets, setTickets] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
-
-    // In a real app, this would fetch from an API endpoint like /reports/my-reports
-    // Since we might not have that exact endpoint specific to logged-in user in basic implementation,
-    // we might need to rely on what reportApi exposes. 
-    // Assuming reportApi.getAll() returns all reports, we filter client side for MVP, 
-    // OR we use a hypothetical reportApi.getMyReports().
-    // Given current context, let's fetch all and filter by current user email/ID for MVP simulation logic
-    // or show a placeholder if API is restricted to ADMIN only.
-
-    // Checking api.ts... it has getAll(). Let's try to filter if possible, otherwise show empty state or mock.
+    const { user } = useAuth()
 
     const fetchTickets = async () => {
         try {
-            const userStr = localStorage.getItem('user')
-            if (!userStr) return
-            const user = JSON.parse(userStr)
+            if (!user) return
 
-            // NOTE: Ideally backend should have /reports/me. 
-            // Using generic getAll might be restricted to Admin. 
-            // If forbidden, we'll handle gracefully.
             const allReports = await reportApi.getAll().catch(() => [])
 
-            // Filter reports created by this user
-            // Assuming report object has reporterId or matching email
             const myReports = Array.isArray(allReports)
                 ? allReports.filter((r: any) => r.reporterId === user.id || r.email === user.email)
                 : []

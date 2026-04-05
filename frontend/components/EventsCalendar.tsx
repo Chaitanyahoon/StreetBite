@@ -121,7 +121,7 @@ const generateEvents = (): Event[] => [
 const SAMPLE_EVENTS: Event[] = generateEvents();
 
 const EVENT_COLORS = {
-    festival: "from-purple-500 to-pink-500",
+    festival: "from-emerald-500 to-pink-500",
     popup: "from-orange-500 to-red-500",
     meetup: "from-blue-500 to-cyan-500",
     tour: "from-green-500 to-emerald-500"
@@ -160,11 +160,11 @@ export function EventsCalendar() {
     return (
         <>
             <Card className="hover:shadow-lg transition-shadow border-primary/10">
-                <CardHeader className="bg-gradient-to-r from-indigo-50 to-purple-50">
+                <CardHeader className="bg-gradient-to-r from-cyan-50 to-emerald-50">
                     <div className="flex justify-between items-start">
                         <div>
                             <CardTitle className="flex items-center gap-2 text-lg">
-                                <Calendar className="w-5 h-5 text-indigo-500" />
+                                <Calendar className="w-5 h-5 text-cyan-500" />
                                 Events Calendar
                             </CardTitle>
                             <p className="text-xs text-muted-foreground mt-1">
@@ -212,7 +212,7 @@ export function EventsCalendar() {
                                         key={day}
                                         onClick={() => hasEvents && setSelectedEvent(dayEvents[0])}
                                         className={`aspect-square rounded-lg border p-1 text-sm transition-all ${hasEvents
-                                            ? "border-indigo-300 bg-indigo-50 hover:bg-indigo-100 cursor-pointer"
+                                            ? "border-cyan-300 bg-cyan-50 hover:bg-cyan-100 cursor-pointer"
                                             : "border-gray-200 bg-white"
                                             }`}
                                     >
@@ -220,7 +220,7 @@ export function EventsCalendar() {
                                         {hasEvents && (
                                             <div className="flex justify-center mt-1">
                                                 {dayEvents.slice(0, 2).map(event => (
-                                                    <div key={event.id} className="w-1.5 h-1.5 rounded-full bg-indigo-500 mx-0.5" />
+                                                    <div key={event.id} className="w-1.5 h-1.5 rounded-full bg-cyan-500 mx-0.5" />
                                                 ))}
                                             </div>
                                         )}
@@ -238,7 +238,7 @@ export function EventsCalendar() {
                                 <button
                                     key={event.id}
                                     onClick={() => setSelectedEvent(event)}
-                                    className="w-full text-left p-3 rounded-lg border border-gray-200 hover:border-indigo-300 hover:bg-indigo-50 transition-all"
+                                    className="w-full text-left p-3 rounded-lg border border-gray-200 hover:border-cyan-300 hover:bg-cyan-50 transition-all"
                                 >
                                     <div className="flex items-start gap-3">
                                         <div className="text-2xl">{event.emoji}</div>
@@ -288,7 +288,7 @@ export function EventsCalendar() {
 
                         <div className="p-6 space-y-4">
                             <div>
-                                <div className="inline-block px-2 py-1 rounded-full bg-indigo-100 text-indigo-700 text-xs font-bold mb-2">
+                                <div className="inline-block px-2 py-1 rounded-full bg-cyan-100 text-cyan-700 text-xs font-bold mb-2">
                                     {selectedEvent.type.toUpperCase()}
                                 </div>
                                 <h3 className="text-2xl font-bold">{selectedEvent.title}</h3>
@@ -315,7 +315,7 @@ export function EventsCalendar() {
                             </div>
 
                             <Button
-                                className="w-full bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600"
+                                className="w-full bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-600 hover:to-emerald-600"
                                 onClick={() => handleRSVP(selectedEvent)}
                             >
                                 RSVP to Event

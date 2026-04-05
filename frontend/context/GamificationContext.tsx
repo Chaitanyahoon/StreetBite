@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import { gamificationApi } from '@/lib/api'
 import { toast } from 'sonner'
+import { useAuth } from '@/context/AuthContext'
 
 interface GamificationContextType {
     xp: number
@@ -49,6 +50,7 @@ export const getXPProgressInCurrentLevel = (xp: number, level: number): number =
 }
 
 export function GamificationProvider({ children }: { children: React.ReactNode }) {
+    const { isLoggedIn } = useAuth()
     const [xp, setXp] = useState(0)
     const [level, setLevel] = useState(1)
     const [streak, setStreak] = useState(0)
@@ -57,13 +59,11 @@ export function GamificationProvider({ children }: { children: React.ReactNode }
     const [lastCheckIn, setLastCheckIn] = useState<string | null>(null)
     const [hasCheckedInToday, setHasCheckedInToday] = useState(false)
 
-    // Load initial state
     useEffect(() => {
-        const token = localStorage.getItem('token')
-        if (token) {
+        if (isLoggedIn) {
             fetchStats()
         }
-    }, [])
+    }, [isLoggedIn])
 
     // Recalculate level whenever XP changes - REMOVED to prevent refresh bug
     // Level is now managed explicitly in addXP, performAction, and fetchStats
@@ -118,8 +118,7 @@ export function GamificationProvider({ children }: { children: React.ReactNode }
     }
 
     const performAction = async (actionType: string) => {
-        const token = localStorage.getItem('token')
-        if (!token) return
+        if (!isLoggedIn) return
 
         try {
             const response = await gamificationApi.performAction(actionType)

@@ -12,4 +12,6 @@ public interface VendorRepository extends JpaRepository<Vendor, Long> {
     List<Vendor> findByCuisineContainingIgnoreCase(String cuisine);
 
     long countByCreatedAtAfter(java.time.LocalDateTime date);
+
+    java.util.Optional<Vendor> findBySlug(String slug);
 }

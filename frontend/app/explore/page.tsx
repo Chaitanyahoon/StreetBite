@@ -5,15 +5,23 @@ import { VendorCard } from '@/components/vendor-card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { MapListToggle } from '@/components/map-list-toggle'
-import { VendorMap } from '@/components/vendor-map'
-import { VendorDetailsSheet } from '@/components/vendor-details-sheet'
+import dynamic from 'next/dynamic'
 import { MapPin, Search, ChefHat, Flame, Star, Sparkles, Heart } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useUserLocation } from '@/lib/useUserLocation'
 import { vendorApi, favoriteApi } from '@/lib/api'
 import { Footer } from '@/components/footer'
+import { useAuth } from '@/context/AuthContext'
+
+// Lazy-load map + sheet — heavy components only needed on interaction
+const VendorMap = dynamic(() => import('@/components/vendor-map').then(m => m.VendorMap), {
+    ssr: false,
+    loading: () => <div className="w-full h-[70vh] bg-gray-100 border-4 border-gray-200 rounded-2xl animate-pulse flex items-center justify-center"><div className="w-10 h-10 border-4 border-gray-300 border-t-orange-400 rounded-full animate-spin" /></div>
+})
+const VendorDetailsSheet = dynamic(() => import('@/components/vendor-details-sheet').then(m => m.VendorDetailsSheet), { ssr: false })
 
 export default function ExplorePage() {
+  const { isLoggedIn } = useAuth()
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedFilter, setSelectedFilter] = useState('all')
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list')
@@ -23,11 +31,9 @@ export default function ExplorePage() {
   const [loadingVendors, setLoadingVendors] = useState<boolean>(true)
   const [favorites, setFavorites] = useState<any[]>([])
 
-  // Fetch favorites
   useEffect(() => {
     const fetchFavorites = async () => {
-      const token = localStorage.getItem('token')
-      if (!token) return
+      if (!isLoggedIn) return
 
       try {
         const data = await favoriteApi.getUserFavorites()
@@ -35,14 +41,13 @@ export default function ExplorePage() {
           setFavorites(data)
         }
       } catch (error: any) {
-        // Suppress 401 errors (expected if token expired)
         if (error.response?.status !== 401) {
           console.error('Error fetching favorites:', error)
         }
       }
     }
     fetchFavorites()
-  }, [])
+  }, [isLoggedIn])
 
   // use location hook
   const { location, loading: loadingLocation, error: locationError } = useUserLocation()

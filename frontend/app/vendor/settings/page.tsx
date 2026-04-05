@@ -12,8 +12,10 @@ import { Upload, Save, MapPin, Clock, Phone, Store, Shield, Bell, CheckCircle2, 
 import { vendorApi } from '@/lib/api'
 import { toast } from 'sonner'
 import { Navbar } from '@/components/navbar'
+import { useAuth } from '@/context/AuthContext'
 
 export default function Settings() {
+  const { user } = useAuth()
   const [vendorId, setVendorId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -32,7 +34,6 @@ export default function Settings() {
     status: 'AVAILABLE',
   })
 
-  // Image previews
   const [bannerPreview, setBannerPreview] = useState<string | null>(null)
   const [displayPreview, setDisplayPreview] = useState<string | null>(null)
 
@@ -46,24 +47,20 @@ export default function Settings() {
   useEffect(() => {
     const loadVendorData = async () => {
       try {
-        const userStr = localStorage.getItem('user')
-        if (!userStr) {
+        if (!user) {
           toast.error('Please sign in to view settings')
           setLoading(false)
           return
         }
 
-        const user = JSON.parse(userStr)
-
-        // Check if user has vendorId - required for vendors
         if (!user.vendorId && user.role === 'VENDOR') {
           toast.error('Vendor ID not found. Please sign out and sign in again.')
           setLoading(false)
           return
         }
 
-        const vid = user.vendorId
-        if (!vid) {
+        const vid = String(user.vendorId)
+        if (!vid || vid === 'undefined') {
           toast.error('You need to be a vendor to access this page')
           setLoading(false)
           return
@@ -96,7 +93,7 @@ export default function Settings() {
     }
 
     loadVendorData()
-  }, [])
+  }, [user])
 
   const handleImageUpload = (file: File, type: 'banner' | 'display') => {
     if (!file) return
@@ -542,10 +539,10 @@ export default function Settings() {
           <div className="space-y-6">
             {/* Preferences Card */}
             <Card className="border-none shadow-sm overflow-hidden">
-              <CardHeader className="bg-gradient-to-r from-purple-50 to-white border-b border-purple-100/50 py-4 px-6">
+              <CardHeader className="bg-gradient-to-r from-emerald-50 to-white border-b border-emerald-100/50 py-4 px-6">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-purple-100 rounded-lg">
-                    <Bell className="w-5 h-5 text-purple-600" />
+                  <div className="p-2 bg-emerald-100 rounded-lg">
+                    <Bell className="w-5 h-5 text-emerald-600" />
                   </div>
                   <div>
                     <CardTitle className="text-lg">Preferences</CardTitle>

@@ -24,10 +24,10 @@ const ZODIAC_INFO: Record<string, { emoji: string; element: string; color: strin
     "Leo": { emoji: "♌", element: "Fire", color: "from-orange-500 to-yellow-500", bg: "bg-orange-50" },
     "Virgo": { emoji: "♍", element: "Earth", color: "from-green-500 to-teal-500", bg: "bg-green-50" },
     "Libra": { emoji: "♎", element: "Air", color: "from-pink-500 to-rose-500", bg: "bg-pink-50" },
-    "Scorpio": { emoji: "♏", element: "Water", color: "from-purple-600 to-indigo-600", bg: "bg-purple-50" },
-    "Sagittarius": { emoji: "♐", element: "Fire", color: "from-purple-500 to-pink-500", bg: "bg-purple-50" },
+    "Scorpio": { emoji: "♏", element: "Water", color: "from-emerald-600 to-cyan-600", bg: "bg-emerald-50" },
+    "Sagittarius": { emoji: "♐", element: "Fire", color: "from-emerald-500 to-pink-500", bg: "bg-emerald-50" },
     "Capricorn": { emoji: "♑", element: "Earth", color: "from-gray-700 to-slate-600", bg: "bg-gray-50" },
-    "Aquarius": { emoji: "♒", element: "Air", color: "from-blue-500 to-purple-500", bg: "bg-blue-50" },
+    "Aquarius": { emoji: "♒", element: "Air", color: "from-blue-500 to-emerald-500", bg: "bg-blue-50" },
     "Pisces": { emoji: "♓", element: "Water", color: "from-teal-500 to-cyan-500", bg: "bg-teal-50" }
 };
 

@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { Home, Store, Users, BarChart3, Settings, LogOut, Flag } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useAuth } from '@/context/AuthContext'
 
 const navItems = [
   {
@@ -45,13 +46,12 @@ const navItems = [
 
 export function AdminSidebar() {
   const pathname = usePathname()
-  const router = useRouter() // Ensure this hook is used
+  const router = useRouter()
+  const { logout } = useAuth()
 
-  const handleLogout = () => {
-    localStorage.removeItem('token')
-    localStorage.removeItem('user') // Clear user data
-    window.dispatchEvent(new Event('user-updated')) // Notify app
-    router.push('/signin') // Redirect to login
+  const handleLogout = async () => {
+    await logout()
+    router.push('/signin')
   }
 
   return (

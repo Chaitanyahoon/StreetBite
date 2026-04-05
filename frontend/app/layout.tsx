@@ -18,17 +18,20 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: 'StreetBite - Discover Amazing Street Food',
+  title: {
+    default: 'StreetBite — Discover Amazing Street Food Near You',
+    template: '%s | StreetBite',
+  },
   description: 'Discover the best street food near you. Geolocation-based discovery of authentic street food vendors in your city.',
   generator: 'streetbite-app',
   openGraph: {
-    title: 'StreetBite - Discover Amazing Street Food',
+    title: 'StreetBite — Discover Amazing Street Food',
     description: 'Find top-rated street food vendors, join the community, and track your foodie journey.',
     url: 'https://streetbite.app',
     siteName: 'StreetBite',
     images: [
       {
-        url: '/og-image.jpg', // Ensure this image exists or use a placeholder
+        url: '/og-image.jpg',
         width: 1200,
         height: 630,
         alt: 'StreetBite App Preview',
@@ -53,6 +56,7 @@ import { NotificationProvider } from '@/components/notification-provider'
 import { Toaster } from 'sonner'
 
 import { GamificationProvider } from '@/context/GamificationContext'
+import { AuthProvider } from '@/context/AuthContext'
 
 export default function RootLayout({
   children,
@@ -62,12 +66,14 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body suppressHydrationWarning className={`${inter.variable} ${outfit.variable} font-sans antialiased text-foreground selection:bg-primary/20 selection:text-primary`}>
-        <GamificationProvider>
-          <NotificationProvider>
-            {children}
-            <Toaster position="top-center" />
-          </NotificationProvider>
-        </GamificationProvider>
+        <AuthProvider>
+          <GamificationProvider>
+            <NotificationProvider>
+              {children}
+              <Toaster position="top-center" />
+            </NotificationProvider>
+          </GamificationProvider>
+        </AuthProvider>
         <Analytics />
         <Script
           src={`https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places&loading=async`}

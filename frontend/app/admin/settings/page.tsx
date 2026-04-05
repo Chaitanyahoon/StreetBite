@@ -7,19 +7,19 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { User, Lock, Bell, Shield } from 'lucide-react'
+import { useAuth } from '@/context/AuthContext'
 
 export default function AdminSettingsPage() {
+    const { user, refreshUser } = useAuth()
     const [adminProfile, setAdminProfile] = useState<any>(null)
     const [maintenanceMode, setMaintenanceMode] = useState(false)
     const [emailNotifications, setEmailNotifications] = useState(true)
 
     useEffect(() => {
-        // Load admin profile from local storage
-        const userStr = localStorage.getItem('user')
-        if (userStr) {
-            setAdminProfile(JSON.parse(userStr))
+        if (user) {
+            setAdminProfile({ ...user })
         }
-    }, [])
+    }, [user])
 
     if (!adminProfile) {
         return <div className="p-8">Loading settings...</div>
@@ -72,7 +72,7 @@ export default function AdminSettingsPage() {
                                     try {
                                         const { userApi } = await import('@/lib/api')
                                         await userApi.update(adminProfile.id, { displayName: adminProfile.displayName })
-                                        localStorage.setItem('user', JSON.stringify(adminProfile))
+                                        await refreshUser()
                                         alert('Profile updated successfully!')
                                     } catch (err) {
                                         console.error(err)

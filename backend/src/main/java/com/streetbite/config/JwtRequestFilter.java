@@ -3,6 +3,7 @@ package com.streetbite.config;
 import com.streetbite.util.JwtUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,8 @@ import java.util.ArrayList;
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter {
 
+    private static final String COOKIE_NAME = "sb_token";
+
     @Autowired
     private JwtUtil jwtUtil;
 
@@ -28,17 +31,33 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
 
-        final String authorizationHeader = request.getHeader("Authorization");
-
-        String email = null;
         String jwt = null;
+        String email = null;
 
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            jwt = authorizationHeader.substring(7);
+        // 1. Try to read JWT from the HttpOnly cookie first
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if (COOKIE_NAME.equals(cookie.getName())) {
+                    jwt = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        // 2. Fallback to Authorization header (backward compatible)
+        if (jwt == null) {
+            final String authorizationHeader = request.getHeader("Authorization");
+            if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+                jwt = authorizationHeader.substring(7);
+            }
+        }
+
+        // 3. Extract email from JWT
+        if (jwt != null) {
             try {
                 email = jwtUtil.extractEmail(jwt);
             } catch (Exception e) {
-                // Token invalid or expired
+                // Token invalid or expired — ignore
             }
         }
 

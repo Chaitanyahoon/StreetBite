@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Trophy, Flame, Star, TrendingUp, UtensilsCrossed } from "lucide-react";
 import { RESULTS } from "./FoodPersonalityQuiz";
 import { useGamification, getXPForLevel, getXPForNextLevel, getXPProgressInCurrentLevel } from "@/context/GamificationContext";
+import { useAuth } from '@/context/AuthContext';
 
 interface UserStats {
     xp: number;
@@ -15,8 +16,10 @@ interface UserStats {
 
 export function UserStats() {
     const { xp, level, rank, displayName, streak } = useGamification();
+    const { user: authUser } = useAuth();
     const [archetype, setArchetype] = useState<keyof typeof RESULTS | null>(null);
-    const [profilePicture, setProfilePicture] = useState<string>('');
+
+    const profilePicture = authUser?.profilePicture || '';
 
     useEffect(() => {
         const loadArchetype = () => {
@@ -30,27 +33,10 @@ export function UserStats() {
             }
         };
 
-        const loadProfilePicture = () => {
-            if (typeof window !== 'undefined') {
-                const userStr = localStorage.getItem('user');
-                if (userStr) {
-                    try {
-                        const user = JSON.parse(userStr);
-                        setProfilePicture(user.profilePicture || '');
-                    } catch (e) {
-                        console.error('Error parsing user data:', e);
-                    }
-                }
-            }
-        };
-
         loadArchetype();
-        loadProfilePicture();
         window.addEventListener("storage", loadArchetype);
-        window.addEventListener("user-updated", loadProfilePicture);
         return () => {
             window.removeEventListener("storage", loadArchetype);
-            window.removeEventListener("user-updated", loadProfilePicture);
         };
     }, []);
 
@@ -61,7 +47,7 @@ export function UserStats() {
     const statItems = [
         { label: "Total XP", value: xp.toLocaleString(), icon: Trophy, color: "text-yellow-500" },
         { label: "Streak", value: `${streak} days`, icon: Flame, color: "text-orange-500" },
-        { label: "Badges", value: "0", icon: Star, color: "text-purple-500" },
+        { label: "Badges", value: "0", icon: Star, color: "text-emerald-500" },
         { label: "Rank", value: `#${rank || '-'}`, icon: TrendingUp, color: "text-blue-500" },
     ];
 

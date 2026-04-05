@@ -1,5 +1,11 @@
+import type { Metadata } from 'next'
 import { AdminSidebar } from "@/components/dashboard/admin-sidebar"
 import { AdminNavbar } from "@/components/dashboard/admin-navbar"
+
+export const metadata: Metadata = {
+  title: 'Admin Panel',
+  description: 'StreetBite administration dashboard for managing vendors, users, and platform settings.',
+}
 
 export default function AdminLayout({
   children,

@@ -16,30 +16,16 @@ interface User {
 import { gamificationApi } from "@/lib/api";
 import { useEffect, useState } from "react";
 import { useGamification, getLevelFromXP } from "@/context/GamificationContext";
+import { useAuth } from '@/context/AuthContext';
 
 export function Leaderboard() {
     const { xp, level, rank, displayName } = useGamification();
+    const { user: authUser, isLoggedIn } = useAuth();
     const [leaderboard, setLeaderboard] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [userProfilePic, setUserProfilePic] = useState<string>('');
     const [refreshing, setRefreshing] = useState(false);
 
-    useEffect(() => {
-        const token = localStorage.getItem('token');
-        setIsAuthenticated(!!token);
-
-        // Load user profile picture
-        const userStr = localStorage.getItem('user');
-        if (userStr) {
-            try {
-                const user = JSON.parse(userStr);
-                setUserProfilePic(user.profilePicture || '');
-            } catch (e) {
-                console.error('Error parsing user data:', e);
-            }
-        }
-    }, []);
+    const userProfilePic = authUser?.profilePicture || '';
 
     useEffect(() => {
         fetchLeaderboard();
@@ -182,7 +168,7 @@ export function Leaderboard() {
                     ))
                 )}
 
-                {isAuthenticated && (
+                {isLoggedIn && (
                     <div className="pt-4 border-t-2 border-dashed border-gray-300 mt-2">
                         <div className="flex items-center justify-between p-4 bg-black rounded-xl shadow-[4px_4px_0px_0px_#9ca3af] text-white">
                             <div className="flex items-center gap-3">

@@ -6,6 +6,7 @@ import { Star, MapPin, TrendingUp, Clock, Heart, MoveRight } from 'lucide-react'
 
 interface VendorCardProps {
   id: string
+  slug?: string
   name: string
   cuisine: string
   rating: number
@@ -16,15 +17,17 @@ interface VendorCardProps {
   tags: string[]
 }
 
-export function VendorCard({ id, name, cuisine, rating, distance, image, displayImageUrl, reviews, tags }: VendorCardProps) {
+export function VendorCard({ id, slug, name, cuisine, rating, distance, image, displayImageUrl, reviews, tags }: VendorCardProps) {
+  const vendorUrl = slug ? `/vendors/${slug}` : `/vendors/${id}`
   return (
-    <Link href={`/vendors/${id}`} className="block group">
+    <Link href={vendorUrl} className="block group">
       <div className="overflow-hidden rounded-2xl bg-white border-2 border-border/20 hover:border-primary/40 shadow-md hover:shadow-2xl transition-all duration-300 cursor-pointer h-full flex flex-col hover:-translate-y-2">
         <div className="relative h-48 md:h-56 bg-muted overflow-hidden flex-shrink-0">
           <Image
             src={displayImageUrl || image || "/placeholder.svg?height=224&width=400&query=street+food+vendor"}
             alt={name}
             fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             className="object-cover group-hover:scale-110 transition-transform duration-500"
           />
           {/* Gradient overlay */}

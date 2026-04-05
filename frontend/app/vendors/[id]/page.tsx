@@ -7,7 +7,8 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { DirectionsMap } from '@/components/directions-map'
+import dynamic from 'next/dynamic'
+const DirectionsMap = dynamic(() => import('@/components/directions-map').then(m => m.DirectionsMap), { ssr: false, loading: () => <div className="w-full h-96 bg-gray-100 rounded-xl animate-pulse" /> })
 import { vendorApi, menuApi, reviewApi, promotionApi, favoriteApi, analyticsApi } from '@/lib/api'
 import { Footer } from '@/components/footer'
 import { Textarea } from '@/components/ui/textarea'
@@ -15,6 +16,7 @@ import { useLiveVendorStatus } from '@/hooks/use-live-vendor-status'
 import { useLiveMenuAvailability } from '@/hooks/use-live-menu-availability'
 import { useToast } from '@/hooks/use-toast'
 import { toast } from 'sonner'
+import { useAuth } from '@/context/AuthContext'
 
 interface Vendor {
     id: string
@@ -31,7 +33,7 @@ interface Vendor {
     phone?: string
     hours?: string
     galleryImages?: string[]
-    status?: 'AVAILABLE' | 'BUSY' | 'UNAVAILABLE'
+    status?: 'AVAILABLE' | 'BUSY' | 'UNAVAILABLE' | 'SUSPENDED' | 'APPROVED' | 'PENDING' | 'REJECTED'
     location?: string
     openingHours?: string
     isOpen?: boolean
@@ -62,8 +64,9 @@ interface Review {
 export default function VendorDetailsPage() {
     const params = useParams()
     const router = useRouter()
-    const vendorId = params?.id as string
+    const paramId = params?.id as string
     const { toast } = useToast()
+    const { user: authUser, isLoggedIn } = useAuth()
 
     const [vendor, setVendor] = useState<Vendor | null>(null)
     const [menuItems, setMenuItems] = useState<MenuItem[]>([])
@@ -72,13 +75,14 @@ export default function VendorDetailsPage() {
     const [activeTab, setActiveTab] = useState('menu')
     const [isFavorite, setIsFavorite] = useState(false)
     const [promotions, setPromotions] = useState<any[]>([])
+    const [resolvedVendorId, setResolvedVendorId] = useState<string>('')
 
     // Offers filter and sort state
     const [offerFilter, setOfferFilter] = useState<'all' | 'percentage' | 'fixed'>('all')
     const [offerSort, setOfferSort] = useState<'discount' | 'ending' | 'popular'>('discount')
 
     // Real-time vendor status from Firebase
-    const { status: liveStatus } = useLiveVendorStatus(vendorId)
+    const { status: liveStatus } = useLiveVendorStatus(resolvedVendorId)
 
     // Real-time menu availability from Firebase
     const { getAvailability } = useLiveMenuAvailability(menuItems)
@@ -104,31 +108,55 @@ export default function VendorDetailsPage() {
         status: liveStatus || vendor.status
     } : null
 
+    // Dynamic page title based on vendor name
     useEffect(() => {
-        if (!vendorId) return
+        if (vendor?.name) {
+            document.title = `${vendor.name}${vendor.cuisine ? ` — ${vendor.cuisine}` : ''} | StreetBite`
+        }
+        return () => { document.title = 'Vendor Details | StreetBite' }
+    }, [vendor?.name, vendor?.cuisine])
+
+    useEffect(() => {
+        if (!paramId) return
 
         const fetchData = async () => {
             try {
-                if (!vendorId || vendorId === 'undefined' || isNaN(Number(vendorId))) {
-                    console.error('Invalid vendor ID:', vendorId)
+                let vendorData: any = null
+                let vendorIdStr = paramId
+
+                // Determine if param is a numeric ID or a slug
+                const isNumericId = /^\d+$/.test(paramId)
+
+                if (isNumericId) {
+                    vendorData = await vendorApi.getById(paramId)
+                } else {
+                    // Slug-based lookup
+                    vendorData = await vendorApi.getBySlug(paramId)
+                }
+
+                if (!vendorData || !vendorData.id) {
+                    console.error('Vendor not found for:', paramId)
                     setLoading(false)
                     return
                 }
 
-                // Log Profile View
-                analyticsApi.logEvent(vendorId, 'VIEW_PROFILE').catch(console.error)
+                vendorIdStr = String(vendorData.id)
+                setResolvedVendorId(vendorIdStr)
 
-                // Fetch vendor details
-                const vendorData = await vendorApi.getById(vendorId)
+                // If vendor is suspended and the user is NOT an Admin, handle the display.
+                // We'll set a local state or just handle it in the render block.
                 setVendor(vendorData)
 
+                // Log Profile View
+                analyticsApi.logEvent(vendorIdStr, 'VIEW_PROFILE').catch(console.error)
+
                 // Fetch menu items
-                const menuData = await menuApi.getByVendor(vendorId)
+                const menuData = await menuApi.getByVendor(vendorIdStr)
                 setMenuItems(menuData || [])
 
-                // Fetch reviews (public, no auth required)
+                // Fetch reviews
                 try {
-                    const reviewData = await reviewApi.getByVendor(vendorId)
+                    const reviewData = await reviewApi.getByVendor(vendorIdStr)
                     setReviews(reviewData || [])
                 } catch (err) {
                     console.error('Failed to fetch reviews:', err)
@@ -136,7 +164,7 @@ export default function VendorDetailsPage() {
 
                 // Fetch active promotions
                 try {
-                    const promos = await promotionApi.getActiveByVendor(vendorId)
+                    const promos = await promotionApi.getActiveByVendor(vendorIdStr)
                     setPromotions(promos)
                 } catch (err) {
                     console.error('Failed to fetch promotions:', err)
@@ -150,25 +178,27 @@ export default function VendorDetailsPage() {
         }
 
         fetchData()
+    }, [paramId])
 
-        // Check favorite status
+    // Check favorite status once we have the resolved vendor ID
+    useEffect(() => {
+        if (!resolvedVendorId) return
         const checkFavoriteStatus = async () => {
-            if (!vendorId) return
             try {
-                const response = await favoriteApi.checkFavorite(vendorId)
+                const response = await favoriteApi.checkFavorite(resolvedVendorId)
                 setIsFavorite(response.isFavorite)
             } catch (error) {
                 console.error('Error checking favorite status:', error)
             }
         }
         checkFavoriteStatus()
-    }, [vendorId])
+    }, [resolvedVendorId])
 
     const handleGetDirections = () => {
         if (!displayVendor) return
 
         // Log Direction Click
-        analyticsApi.logEvent(vendorId, 'CLICK_DIRECTION').catch(console.error)
+        analyticsApi.logEvent(resolvedVendorId, 'CLICK_DIRECTION').catch(console.error)
 
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
@@ -212,18 +242,18 @@ export default function VendorDetailsPage() {
     }
 
     const toggleFavorite = async () => {
-        if (!vendorId) return
+        if (!resolvedVendorId) return
 
         try {
             if (isFavorite) {
-                await favoriteApi.removeFavorite(vendorId)
+                await favoriteApi.removeFavorite(resolvedVendorId)
                 setIsFavorite(false)
                 toast({
                     title: "Removed from Favorites",
                     description: `${vendor?.name || 'Vendor'} has been removed from your favorites.`,
                 })
             } else {
-                await favoriteApi.addFavorite(vendorId)
+                await favoriteApi.addFavorite(resolvedVendorId)
                 setIsFavorite(true)
                 toast({
                     title: "Added to Favorites",
@@ -241,14 +271,12 @@ export default function VendorDetailsPage() {
     }
 
     const handleSubmitReview = async () => {
-        if (!vendorId || !reviewComment.trim()) {
+        if (!resolvedVendorId || !reviewComment.trim()) {
             alert('Please write a comment for your review')
             return
         }
 
-        // Check if user is logged in
-        const userStr = localStorage.getItem('user')
-        if (!userStr) {
+        if (!isLoggedIn || !authUser) {
             toast({
                 title: 'Please sign in to leave a review',
                 description: 'You need to be logged in to submit reviews',
@@ -257,13 +285,11 @@ export default function VendorDetailsPage() {
             return
         }
 
-        const user = JSON.parse(userStr)
-
         setSubmittingReview(true)
         try {
             const reviewData = {
-                vendor: { id: parseInt(vendorId) },
-                user: { id: user.id },
+                vendor: { id: parseInt(resolvedVendorId) },
+                user: { id: authUser.id },
                 rating: reviewRating,
                 comment: reviewComment
             }
@@ -271,7 +297,7 @@ export default function VendorDetailsPage() {
             await reviewApi.create(reviewData)
 
             // Refresh reviews
-            const updatedReviews = await reviewApi.getByVendor(vendorId)
+            const updatedReviews = await reviewApi.getByVendor(resolvedVendorId)
             setReviews(updatedReviews || [])
 
             // Reset form
@@ -288,8 +314,7 @@ export default function VendorDetailsPage() {
     }
 
     const handleEditReview = async (reviewId: number) => {
-        const userStr = localStorage.getItem('user')
-        if (!userStr) {
+        if (!isLoggedIn || !authUser) {
             toast({
                 title: 'Please sign in',
                 description: 'You need to be logged in to edit reviews',
@@ -297,17 +322,15 @@ export default function VendorDetailsPage() {
             return
         }
 
-        const user = JSON.parse(userStr)
-
         try {
             await reviewApi.update(reviewId, {
-                userId: user.id,
+                userId: authUser.id,
                 rating: editRating,
                 comment: editComment
             })
 
             // Refresh reviews
-            const updatedReviews = await reviewApi.getByVendor(vendorId)
+            const updatedReviews = await reviewApi.getByVendor(resolvedVendorId)
             setReviews(updatedReviews || [])
 
             setEditingReviewId(null)
@@ -328,8 +351,7 @@ export default function VendorDetailsPage() {
     const handleDeleteReview = async (reviewId: number) => {
         if (!confirm('Are you sure you want to delete this review?')) return
 
-        const userStr = localStorage.getItem('user')
-        if (!userStr) {
+        if (!isLoggedIn || !authUser) {
             toast({
                 title: 'Please sign in',
                 description: 'You need to be logged in to delete reviews',
@@ -337,13 +359,11 @@ export default function VendorDetailsPage() {
             return
         }
 
-        const user = JSON.parse(userStr)
-
         try {
-            await reviewApi.delete(reviewId, user.id)
+            await reviewApi.delete(reviewId, authUser.id)
 
             // Refresh reviews
-            const updatedReviews = await reviewApi.getByVendor(vendorId)
+            const updatedReviews = await reviewApi.getByVendor(resolvedVendorId)
             setReviews(updatedReviews || [])
 
             toast({
@@ -381,6 +401,26 @@ export default function VendorDetailsPage() {
                     <Link href="/explore">
                         <Button className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600">
                             Back to Explore
+                        </Button>
+                    </Link>
+                </div>
+            </div>
+        )
+    }
+
+    if (vendor.status === 'SUSPENDED' && authUser?.role !== 'ADMIN') {
+        return (
+            <div className="min-h-screen bg-white">
+                <Navbar />
+                <div className="max-w-7xl mx-auto px-6 py-32 text-center">
+                    <div className="w-20 h-20 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <ShieldCheck className="w-10 h-10" />
+                    </div>
+                    <h1 className="text-4xl font-black text-black mb-4 uppercase">Vendor Temporarily Unavailable</h1>
+                    <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto font-bold">This vendor is currently inactive or under review by the StreetBite moderation team. Please check back later or explore other amazing vendors nearby.</p>
+                    <Link href="/explore">
+                        <Button className="h-14 px-8 text-lg font-black bg-black hover:bg-orange-600 text-white shadow-[6px_6px_0px_0px_#fbbf24] hover:shadow-[4px_4px_0px_0px_#fbbf24] hover:translate-y-[2px] hover:translate-x-[2px] transition-all">
+                            Explore Active Vendors
                         </Button>
                     </Link>
                 </div>
@@ -1149,9 +1189,7 @@ export default function VendorDetailsPage() {
                             ) : (
                                 <div className="space-y-4">
                                     {reviews.map((review) => {
-                                        const userStr = typeof window !== 'undefined' ? localStorage.getItem('user') : null
-                                        const currentUser = userStr ? JSON.parse(userStr) : null
-                                        const isOwner = currentUser && review.user?.id === currentUser.id
+                                        const isOwner = authUser && review.user?.id === authUser.id
 
                                         return (
                                             <div key={review.id} className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">

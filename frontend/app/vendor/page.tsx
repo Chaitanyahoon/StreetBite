@@ -4,25 +4,23 @@ import { useState, useEffect } from 'react'
 import { Eye, MapPin, Utensils, Star } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { analyticsApi } from '@/lib/api'
+import { useAuth } from '@/context/AuthContext'
 
 export default function VendorDashboard() {
+  const { user } = useAuth()
   const [analytics, setAnalytics] = useState<any>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const loadAnalytics = async () => {
       try {
-        const userStr = localStorage.getItem('user')
-        if (!userStr) {
+        if (!user) {
           setLoading(false)
           return
         }
 
-        const user = JSON.parse(userStr)
-
-        // Check if user has vendorId - required for vendors
         if (!user.vendorId && user.role === 'VENDOR') {
-          console.warn('VendorId missing from stored user data')
+          console.warn('VendorId missing from user data')
           setLoading(false)
           return
         }
@@ -33,7 +31,7 @@ export default function VendorDashboard() {
           return
         }
 
-        const data = await analyticsApi.getVendorAnalytics(vendorId)
+        const data = await analyticsApi.getVendorAnalytics(String(vendorId))
         setAnalytics(data)
       } catch (err) {
         console.error('Failed to load analytics:', err)

@@ -19,6 +19,9 @@ public class Vendor {
 
     private String name;
 
+    @Column(unique = true)
+    private String slug;
+
     @Column(columnDefinition = "TEXT")
     private String description;
 
@@ -65,11 +68,28 @@ public class Vendor {
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
+        if (slug == null || slug.isBlank()) {
+            slug = generateSlug(name);
+        }
     }
 
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
+        if (slug == null || slug.isBlank()) {
+            slug = generateSlug(name);
+        }
+    }
+
+    private String generateSlug(String input) {
+        if (input == null || input.isBlank()) return "vendor-" + System.currentTimeMillis();
+        String base = input.toLowerCase()
+                .replaceAll("[^a-z0-9\\s-]", "")
+                .replaceAll("\\s+", "-")
+                .replaceAll("-+", "-")
+                .replaceAll("^-|-$", "");
+        if (base.isBlank()) base = "vendor";
+        return base + "-" + id;
     }
 
     // Getters and Setters
@@ -95,6 +115,14 @@ public class Vendor {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getSlug() {
+        return slug;
+    }
+
+    public void setSlug(String slug) {
+        this.slug = slug;
     }
 
     public String getDescription() {

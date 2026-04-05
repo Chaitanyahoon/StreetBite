@@ -107,19 +107,19 @@ export default function AdminAnalytics() {
 						</div>
 					</CardContent>
 				</Card>
-				<Card className="border-none shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-gradient-to-br from-white to-purple-50/50">
+				<Card className="border-none shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-gradient-to-br from-white to-emerald-50/50">
 					<CardContent className="pt-6">
 						<div className="flex justify-between items-start">
 							<div>
 								<p className="text-sm font-medium text-muted-foreground">Total Reviews</p>
 								<p className="text-3xl font-black mt-2 text-foreground">{stats.totalReviews}</p>
-								<div className="flex items-center gap-1 mt-1 text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full w-fit">
+								<div className="flex items-center gap-1 mt-1 text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full w-fit">
 									<ArrowUpRight className="w-3 h-3" />
 									<span className="text-xs font-semibold">+{stats.reviewsGrowth || 0} this week</span>
 								</div>
 							</div>
-							<div className="p-3 bg-gradient-to-br from-purple-100 to-purple-200 rounded-xl shadow-inner">
-								<MessageSquare className="w-6 h-6 text-purple-700" />
+							<div className="p-3 bg-gradient-to-br from-emerald-100 to-emerald-200 rounded-xl shadow-inner">
+								<MessageSquare className="w-6 h-6 text-emerald-700" />
 							</div>
 						</div>
 					</CardContent>

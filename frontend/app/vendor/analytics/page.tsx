@@ -6,8 +6,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Download, Calendar } from 'lucide-react'
 import { analyticsApi, menuApi } from '@/lib/api'
+import { useAuth } from '@/context/AuthContext'
 
 export default function Analytics() {
+  const { user } = useAuth()
   const [analytics, setAnalytics] = useState<any>(null)
   const [menuItems, setMenuItems] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -16,18 +18,12 @@ export default function Analytics() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        if (typeof window === 'undefined') return
-
-        const userStr = localStorage.getItem('user')
-        if (!userStr) {
+        if (!user) {
           setError('Please sign in to view analytics')
           setLoading(false)
           return
         }
 
-        const user = JSON.parse(userStr)
-
-        // Check if user has vendorId - required for vendors
         if (!user.vendorId && user.role === 'VENDOR') {
           setError('Vendor ID not found. Please sign out and sign in again.')
           setLoading(false)
@@ -41,10 +37,9 @@ export default function Analytics() {
           return
         }
 
-        // Fetch analytics and menu items
         const [analyticsData, menuData] = await Promise.all([
-          analyticsApi.getVendorAnalytics(vendorId),
-          menuApi.getByVendor(vendorId)
+          analyticsApi.getVendorAnalytics(String(vendorId)),
+          menuApi.getByVendor(String(vendorId))
         ])
 
         setAnalytics(analyticsData)
@@ -57,7 +52,7 @@ export default function Analytics() {
     }
 
     loadData()
-  }, [])
+  }, [user])
 
   const handleExport = () => {
     if (!analytics) return

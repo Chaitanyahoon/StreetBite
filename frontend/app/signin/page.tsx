@@ -8,11 +8,12 @@ import { Button } from '@/components/ui/button'
 import { Mail, Lock, ArrowLeft, Sparkles, Eye, EyeOff } from 'lucide-react'
 import { authApi } from '@/lib/api'
 import emailjs from '@emailjs/browser'
-
+import { useAuth } from '@/context/AuthContext'
 import { motion } from 'framer-motion'
 
 export default function SignInPage() {
   const router = useRouter()
+  const { login } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -28,27 +29,11 @@ export default function SignInPage() {
     setIsLoading(true)
     setError(null)
 
-    try {
-      // Direct backend login (no Firebase)
-      const response = await authApi.login({
-        email: emailInput,
-        password: passwordInput
-      })
+    const result = await login(emailInput, passwordInput)
 
-      console.log('Login response:', response);
-      console.log('Token received:', response.token);
-
-      // Store JWT token and user info
-      localStorage.setItem('token', response.token)
-      localStorage.setItem('user', JSON.stringify(response.user))
-
-      console.log('Token stored:', localStorage.getItem('token'));
-
-      // Notify other components (Navbar) of the update
-      window.dispatchEvent(new Event('user-updated'))
-
+    if (result.success && result.user) {
       // Redirect based on user role
-      const role = response.user.role?.toUpperCase()
+      const role = result.user.role?.toUpperCase()
       if (role === 'VENDOR') {
         router.push('/vendor')
       } else if (role === 'ADMIN') {
@@ -56,20 +41,8 @@ export default function SignInPage() {
       } else {
         router.push('/community')
       }
-    } catch (err: any) {
-      // Use warn instead of error to avoid popping up the Next.js error overlay
-      console.warn('Login failed:', err.message)
-      let errorMessage = 'Login failed. Please check your credentials.'
-
-      if (err.response?.status === 401) {
-        errorMessage = 'Invalid email or password.'
-      } else if (err.response?.data?.error) {
-        errorMessage = err.response.data.error
-      } else if (err.message) {
-        errorMessage = err.message
-      }
-
-      setError(errorMessage)
+    } else {
+      setError(result.error || 'Login failed.')
       setIsLoading(false)
     }
   }

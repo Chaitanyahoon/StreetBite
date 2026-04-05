@@ -49,6 +49,10 @@ public class VendorService {
         return vendorRepository.findByOwnerId(ownerId);
     }
 
+    public Optional<Vendor> getVendorBySlug(String slug) {
+        return vendorRepository.findBySlug(slug);
+    }
+
     @Transactional
     public void deleteVendor(Long id) {
         // Get vendor first to access owner
