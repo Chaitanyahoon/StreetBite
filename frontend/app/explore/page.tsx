@@ -339,7 +339,7 @@ function ExplorePageContent() {
     viewMode === 'list'
 
   return (
-    <div className="min-h-screen bg-[#FFFBF0] bg-[radial-gradient(#E5E7EB_1px,transparent_1px)] [background-size:24px_24px]">
+    <div className="min-h-screen bg-[#FFFBF0]">
       <BreadcrumbListSchema
         items={[
           { name: 'Home', item: 'https://streetbitego.vercel.app' },
@@ -354,22 +354,29 @@ function ExplorePageContent() {
       <Navbar />
 
       <section className="relative overflow-hidden px-4 py-24 md:px-6 md:py-28">
-        <div className="absolute top-[-10%] left-[-10%] h-[26rem] w-[26rem] rounded-full bg-yellow-200/40 blur-[90px]" />
-        <div className="absolute top-[-6%] right-[-10%] h-[26rem] w-[26rem] rounded-full bg-orange-200/40 blur-[90px]" />
-        <div className="absolute bottom-0 left-24 h-40 w-40 rounded-full bg-teal-200/30 blur-[60px]" />
+        <div className="absolute inset-0 -z-10">
+          <div className="absolute left-[-8%] top-8 h-56 w-56 rounded-[4rem] border-4 border-black/12 bg-orange-300/20 blur-2xl md:h-72 md:w-72" />
+          <div className="absolute right-[6%] top-14 h-28 w-28 rotate-12 rounded-[2rem] border-4 border-black/12 bg-yellow-300/35 shadow-[var(--shadow-soft)] md:h-40 md:w-40" />
+          <div className="absolute bottom-20 left-[8%] h-20 w-20 -rotate-12 rounded-full border-4 border-black/10 bg-teal-200/45 shadow-[var(--shadow-soft)] md:h-28 md:w-28" />
+          <div className="absolute bottom-6 right-[-4%] h-60 w-60 rounded-full bg-orange-200/25 blur-3xl md:h-80 md:w-80" />
+          <div className="absolute inset-x-0 top-0 h-px bg-black/10" />
+        </div>
 
         <div className="relative z-10 mx-auto max-w-7xl">
           <div className="text-center animate-slide-up">
-            <div className="inline-flex items-center gap-2 rounded-full bg-black px-6 py-3 text-sm font-black tracking-wider text-white shadow-[4px_4px_0px_0px_rgba(234,179,8,1)]">
+            <div className="inline-flex items-center gap-2 rounded-full border-2 border-black bg-white px-4 py-2 text-[0.72rem] font-black uppercase tracking-[0.24em] text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
               <Sparkles className="h-4 w-4 text-yellow-400" />
-              EXPLORE THE STREETS
+              Explore the streets
             </div>
-            <h1 className="headline-display mt-8 text-4xl text-black sm:text-5xl md:text-6xl lg:text-7xl">
-              Find your next
-              <span className="block text-primary">street-food lock.</span>
+            <h1 className="mt-8 text-5xl leading-[0.9] font-black tracking-[-0.06em] text-black sm:text-6xl md:text-8xl lg:text-9xl">
+              FIND YOUR
+              <br />
+              <span className="relative inline-block mt-2 text-primary drop-shadow-[4px_4px_0px_rgba(0,0,0,1)]">
+                NEXT BITE
+              </span>
             </h1>
-            <p className="mx-auto mt-6 max-w-2xl text-lg font-semibold leading-8 text-black/70 md:text-xl">
-              Search with intent, sort by what matters, and keep the best nearby vendors in view on any screen.
+            <p className="mx-auto mt-8 max-w-2xl text-lg font-bold leading-8 text-black/72 md:text-2xl">
+              Search with intent, sort by what matters, and keep the best nearby vendors in view without losing the street-food energy.
             </p>
           </div>
         </div>
@@ -377,7 +384,7 @@ function ExplorePageContent() {
 
       <section className="sticky top-16 z-30 -mt-10 px-4 pb-8 md:top-20 md:px-6">
         <div className="mx-auto max-w-7xl">
-          <div className="surface-panel-strong rounded-[2rem] p-4 md:p-5">
+          <div className="rounded-[2rem] border-4 border-black bg-[#fff8ef] p-4 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] md:p-5">
             <Form
               action={pathname}
               onSubmit={() => {
@@ -400,7 +407,7 @@ function ExplorePageContent() {
                       replaceExploreQuery({ q: undefined })
                     }
                   }}
-                  className="h-13 rounded-2xl border-black/10 bg-white pl-12 pr-11 text-base font-semibold shadow-none"
+                  className="h-13 rounded-2xl border-4 border-black bg-white pl-12 pr-11 text-base font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
                 />
                 <input type="hidden" name="cuisine" value={selectedCuisine === 'all' ? '' : selectedCuisine} />
                 <input type="hidden" name="filter" value={selectedQuickFilter === 'all' ? '' : selectedQuickFilter} />
@@ -423,7 +430,7 @@ function ExplorePageContent() {
               </div>
 
               <div className="flex flex-col gap-3 sm:flex-row">
-                <Button type="submit" size="lg" className="h-13 rounded-2xl px-6 font-black uppercase tracking-[0.14em]">
+                <Button type="submit" size="lg" className="h-13 rounded-2xl border-4 border-black bg-black px-6 font-black uppercase tracking-[0.14em] text-white shadow-[4px_4px_0px_0px_rgba(249,115,22,1)] hover:bg-primary">
                   Search
                 </Button>
                 <MapListToggle
@@ -436,21 +443,21 @@ function ExplorePageContent() {
               </div>
             </Form>
 
-            <div className="mt-4 flex flex-col gap-4 border-t border-black/8 pt-4">
+            <div className="mt-4 flex flex-col gap-4 border-t-2 border-black/15 pt-4">
               <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
                 <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
-                  <div className="inline-flex items-center gap-2 rounded-full bg-black px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-white">
+                  <div className="inline-flex items-center gap-2 rounded-full border-2 border-black bg-black px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-white shadow-[3px_3px_0px_0px_rgba(251,191,36,1)]">
                     <Flame className="h-4 w-4 text-primary" />
                     {sortedVendors.length} results
                   </div>
-                  <div className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/70 px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-black/60">
+                  <div className="inline-flex items-center gap-2 rounded-full border-2 border-black bg-white px-4 py-2 text-xs font-black uppercase tracking-[0.14em] text-black/60">
                     <MapPin className="h-4 w-4 text-primary" />
                     {locationSummary}
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2 overflow-x-auto pb-1">
-                  <div className="inline-flex items-center gap-2 rounded-full bg-white/70 px-3 py-2 text-xs font-black uppercase tracking-[0.16em] text-black/55">
+                  <div className="inline-flex items-center gap-2 rounded-full border-2 border-black bg-white px-3 py-2 text-xs font-black uppercase tracking-[0.16em] text-black/55">
                     <ArrowUpDown className="h-4 w-4" />
                     Sort
                   </div>
@@ -464,8 +471,8 @@ function ExplorePageContent() {
                       }}
                       className={`rounded-full border px-4 py-2 text-xs font-black uppercase tracking-[0.16em] transition-all ${
                         selectedSort === option.id
-                          ? 'border-black bg-black text-white shadow-[var(--shadow-soft)]'
-                          : 'border-black/10 bg-white/75 text-black/60 hover:bg-accent hover:text-black'
+                          ? 'border-2 border-black bg-black text-white shadow-[3px_3px_0px_0px_rgba(249,115,22,1)]'
+                          : 'border-2 border-black bg-white text-black/60 hover:bg-yellow-100 hover:text-black'
                       }`}
                     >
                       {option.label}
@@ -486,8 +493,8 @@ function ExplorePageContent() {
                       }}
                       className={`rounded-full border px-4 py-2 text-xs font-black uppercase tracking-[0.16em] transition-all ${
                         selectedQuickFilter === filter.id
-                          ? 'border-black bg-yellow-400 text-black shadow-[var(--shadow-soft)]'
-                          : 'border-black/10 bg-white/75 text-black/60 hover:border-black/20 hover:bg-white'
+                          ? 'border-2 border-black bg-yellow-300 text-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]'
+                          : 'border-2 border-black bg-white text-black/60 hover:bg-yellow-100'
                       }`}
                     >
                       {filter.label}
@@ -506,8 +513,8 @@ function ExplorePageContent() {
                       }}
                       className={`rounded-full border px-4 py-2 text-xs font-black uppercase tracking-[0.16em] transition-all ${
                         selectedCuisine === filter
-                          ? 'border-black bg-white text-black shadow-[var(--shadow-soft)]'
-                          : 'border-black/10 bg-transparent text-black/55 hover:border-black/20 hover:bg-white/70 hover:text-black'
+                          ? 'border-2 border-black bg-black text-yellow-300 shadow-[3px_3px_0px_0px_rgba(251,191,36,1)]'
+                          : 'border-2 border-black bg-white text-black/55 hover:bg-white hover:text-black'
                       }`}
                     >
                       {filter === 'all' ? 'All cuisines' : filter}
@@ -584,7 +591,7 @@ function ExplorePageContent() {
           </div>
 
           {viewMode === 'map' ? (
-            <div className="overflow-hidden rounded-[1.75rem] border border-black/10 shadow-[var(--shadow-panel)]">
+            <div className="overflow-hidden rounded-[1.75rem] border-4 border-black bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
               <VendorMap vendors={sortedVendors} onVendorSelect={(vendor) => setSelectedVendor(vendor as ExploreVendor)} />
             </div>
           ) : loadingVendors ? (
@@ -598,8 +605,8 @@ function ExplorePageContent() {
               ))}
             </div>
           ) : sortedVendors.length === 0 ? (
-            <div className="surface-panel rounded-[2rem] px-6 py-12 text-center">
-              <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-accent text-accent-foreground">
+            <div className="rounded-[2rem] border-4 border-black bg-white px-6 py-12 text-center shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+              <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border-4 border-black bg-yellow-300 text-black">
                 <Search className="h-9 w-9" />
               </div>
               <h3 className="mt-6 text-2xl font-black text-black">No vendors match this setup</h3>
