@@ -1,45 +1,159 @@
 'use client'
 
+import { type FormEvent, useDeferredValue, useEffect, useRef, useState } from 'react'
+import dynamic from 'next/dynamic'
 import { Navbar } from '@/components/navbar'
+import { Footer } from '@/components/footer'
 import { VendorCard } from '@/components/vendor-card'
+import { MapListToggle } from '@/components/map-list-toggle'
+import { BreadcrumbListSchema } from '@/components/seo/breadcrumb-schema'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { MapListToggle } from '@/components/map-list-toggle'
-import dynamic from 'next/dynamic'
-import { MapPin, Search, ChefHat, Flame, Star, Sparkles, Heart } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { favoriteApi, vendorApi } from '@/lib/api'
 import { useUserLocation } from '@/lib/useUserLocation'
-import { vendorApi, favoriteApi } from '@/lib/api'
-import { Footer } from '@/components/footer'
 import { useAuth } from '@/context/AuthContext'
-import { BreadcrumbListSchema } from '@/components/seo/breadcrumb-schema'
+import {
+  ArrowUpDown,
+  Flame,
+  Heart,
+  LoaderCircle,
+  MapPin,
+  Search,
+  Sparkles,
+  Star,
+  X,
+} from 'lucide-react'
 
-// Lazy-load map + sheet — heavy components only needed on interaction
-const VendorMap = dynamic(() => import('@/components/vendor-map').then(m => m.VendorMap), {
+const VendorMap = dynamic(
+  () => import('@/components/vendor-map').then((m) => m.VendorMap),
+  {
     ssr: false,
-    loading: () => <div className="w-full h-[70vh] bg-gray-100 border-4 border-gray-200 rounded-2xl animate-pulse flex items-center justify-center"><div className="w-10 h-10 border-4 border-gray-300 border-t-orange-400 rounded-full animate-spin" /></div>
-})
-const VendorDetailsSheet = dynamic(() => import('@/components/vendor-details-sheet').then(m => m.VendorDetailsSheet), { ssr: false })
+    loading: () => (
+      <div className="flex h-[70vh] w-full items-center justify-center rounded-[1.75rem] border border-black/10 bg-white/70">
+        <div className="flex items-center gap-3 text-sm font-semibold uppercase tracking-[0.16em] text-black/55">
+          <LoaderCircle className="h-5 w-5 animate-spin text-primary" />
+          Loading map
+        </div>
+      </div>
+    ),
+  },
+)
+
+const VendorDetailsSheet = dynamic(
+  () => import('@/components/vendor-details-sheet').then((m) => m.VendorDetailsSheet),
+  { ssr: false },
+)
+
+type ViewMode = 'list' | 'map'
+type QuickFilter = 'all' | 'open-now' | 'nearby' | 'favorites'
+type SortMode = 'recommended' | 'nearest' | 'top-rated' | 'most-reviewed'
+
+interface ExploreVendor {
+  id: string | number
+  slug?: string
+  name: string
+  cuisine?: string
+  rating?: number
+  distance?: number
+  image?: string
+  displayImageUrl?: string
+  reviews?: number
+  tags?: string[]
+  latitude?: number
+  longitude?: number
+  description?: string
+  status?: string
+  isOnline?: boolean
+  isAcceptingOrders?: boolean
+}
+
+const QUICK_FILTERS: Array<{ id: QuickFilter; label: string }> = [
+  { id: 'all', label: 'All spots' },
+  { id: 'open-now', label: 'Open now' },
+  { id: 'nearby', label: 'Nearby' },
+  { id: 'favorites', label: 'Favorites' },
+]
+
+const SORT_OPTIONS: Array<{ id: SortMode; label: string }> = [
+  { id: 'recommended', label: 'Recommended' },
+  { id: 'nearest', label: 'Nearest' },
+  { id: 'top-rated', label: 'Top rated' },
+  { id: 'most-reviewed', label: 'Most reviewed' },
+]
+
+const PUBLIC_VENDOR_STATUSES = new Set(['APPROVED', 'AVAILABLE', 'BUSY'])
+const OPEN_VENDOR_STATUSES = new Set(['AVAILABLE', 'BUSY'])
+
+function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
+  const R = 6371
+  const dLat = (lat2 - lat1) * (Math.PI / 180)
+  const dLon = (lon2 - lon1) * (Math.PI / 180)
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * (Math.PI / 180)) *
+      Math.cos(lat2 * (Math.PI / 180)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2)
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+  return R * c
+}
+
+function normalizeVendor(vendor: any, location?: { lat: number; lng: number } | null): ExploreVendor {
+  const latitude = typeof vendor.latitude === 'number' ? vendor.latitude : Number(vendor.latitude)
+  const longitude = typeof vendor.longitude === 'number' ? vendor.longitude : Number(vendor.longitude)
+  const hasCoordinates = Number.isFinite(latitude) && Number.isFinite(longitude)
+  const distance = location && hasCoordinates
+    ? calculateDistance(location.lat, location.lng, latitude, longitude)
+    : undefined
+
+  return {
+    id: vendor.id,
+    slug: vendor.slug,
+    name: vendor.name ?? 'Street food vendor',
+    cuisine: vendor.cuisine ?? 'Street Food',
+    rating: typeof vendor.rating === 'number' ? vendor.rating : Number(vendor.rating) || 0,
+    distance,
+    image: vendor.image,
+    displayImageUrl: vendor.displayImageUrl,
+    reviews: typeof vendor.reviews === 'number' ? vendor.reviews : Number(vendor.reviews) || 0,
+    tags: Array.isArray(vendor.tags) ? vendor.tags : [],
+    latitude: hasCoordinates ? latitude : undefined,
+    longitude: hasCoordinates ? longitude : undefined,
+    description: vendor.description,
+    status: vendor.status,
+    isOnline: OPEN_VENDOR_STATUSES.has(vendor.status),
+    isAcceptingOrders: vendor.status === 'AVAILABLE',
+  }
+}
 
 export default function ExplorePage() {
   const { isLoggedIn } = useAuth()
-  const [searchTerm, setSearchTerm] = useState('')
-  const [selectedFilter, setSelectedFilter] = useState('all')
-  const [viewMode, setViewMode] = useState<'list' | 'map'>('list')
-  const [selectedVendor, setSelectedVendor] = useState<any | null>(null)
+  const { location, loading: loadingLocation, error: locationError } = useUserLocation()
+  const resultsRef = useRef<HTMLElement | null>(null)
 
-  const [vendors, setVendors] = useState<any[]>([])
-  const [loadingVendors, setLoadingVendors] = useState<boolean>(true)
-  const [favorites, setFavorites] = useState<any[]>([])
+  const [searchInput, setSearchInput] = useState('')
+  const [searchTerm, setSearchTerm] = useState('')
+  const deferredSearchTerm = useDeferredValue(searchTerm)
+  const [selectedCuisine, setSelectedCuisine] = useState('all')
+  const [selectedQuickFilter, setSelectedQuickFilter] = useState<QuickFilter>('all')
+  const [selectedSort, setSelectedSort] = useState<SortMode>('recommended')
+  const [viewMode, setViewMode] = useState<ViewMode>('list')
+  const [selectedVendor, setSelectedVendor] = useState<ExploreVendor | null>(null)
+  const [vendors, setVendors] = useState<ExploreVendor[]>([])
+  const [favorites, setFavorites] = useState<ExploreVendor[]>([])
+  const [loadingVendors, setLoadingVendors] = useState(true)
 
   useEffect(() => {
     const fetchFavorites = async () => {
-      if (!isLoggedIn) return
+      if (!isLoggedIn) {
+        setFavorites([])
+        return
+      }
 
       try {
         const data = await favoriteApi.getUserFavorites()
         if (Array.isArray(data)) {
-          setFavorites(data)
+          setFavorites(data.map((vendor) => normalizeVendor(vendor, location)))
         }
       } catch (error: any) {
         if (error.response?.status !== 401) {
@@ -47,24 +161,9 @@ export default function ExplorePage() {
         }
       }
     }
+
     fetchFavorites()
-  }, [isLoggedIn])
-
-  // use location hook
-  const { location, loading: loadingLocation, error: locationError } = useUserLocation()
-
-  // Helper for distance calculation
-  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-    const R = 6371 // Radius of the earth in km
-    const dLat = (lat2 - lat1) * (Math.PI / 180)
-    const dLon = (lon2 - lon1) * (Math.PI / 180)
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
-      Math.sin(dLon / 2) * Math.sin(dLon / 2)
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-    return R * c
-  }
+  }, [isLoggedIn, location])
 
   useEffect(() => {
     let mounted = true
@@ -72,253 +171,427 @@ export default function ExplorePage() {
     const fetchVendors = async () => {
       setLoadingVendors(true)
       try {
-        // Always fetch all vendors to ensure visibility regardless of location
         const data = await vendorApi.getAll()
-        let vendorsList = Array.isArray(data) ? data : (data.vendors || data || [])
+        const vendorList = Array.isArray(data) ? data : (data?.vendors || data || [])
 
-        // Filter out non-public vendors (PENDING, REJECTED, SUSPENDED, UNAVAILABLE)
-        vendorsList = vendorsList.filter((v: any) =>
-          v.status === 'APPROVED' ||
-          v.status === 'AVAILABLE' ||
-          v.status === 'BUSY'
-        )
+        const publicVendors = vendorList
+          .filter((vendor: any) => PUBLIC_VENDOR_STATUSES.has(vendor.status))
+          .map((vendor: any) => normalizeVendor(vendor, location))
 
-        // If we have user location, sort by distance
-        if (location && vendorsList.length > 0) {
-          vendorsList = vendorsList.map((v: any) => {
-            if (v.latitude && v.longitude) {
-              const dist = calculateDistance(location.lat, location.lng, v.latitude, v.longitude)
-              return { ...v, distance: dist }
-            }
-            return { ...v, distance: Infinity }
-          }).sort((a: any, b: any) => a.distance - b.distance)
+        if (mounted) {
+          setVendors(publicVendors)
         }
-
-        if (mounted) setVendors(vendorsList)
-      } catch (err) {
-        console.error('Error fetching vendors:', err)
-        if (mounted) setVendors([])
+      } catch (error) {
+        console.error('Error fetching vendors:', error)
+        if (mounted) {
+          setVendors([])
+        }
       } finally {
-        if (mounted) setLoadingVendors(false)
+        if (mounted) {
+          setLoadingVendors(false)
+        }
       }
     }
 
     fetchVendors()
 
-    return () => { mounted = false }
+    return () => {
+      mounted = false
+    }
   }, [location])
 
-  const cuisineFilters = [
-    { id: 'all', label: 'All Cuisines' },
-    { id: 'mexican', label: 'Mexican' },
-    { id: 'indian', label: 'Indian' },
-    { id: 'asian', label: 'Asian' },
-    { id: 'middle-east', label: 'Middle Eastern' },
-  ]
+  const favoriteIds = new Set(favorites.map((vendor) => String(vendor.id)))
 
-  // filter from Firestore-backed vendors
-  const filteredVendors = vendors.filter(vendor => {
-    // Search filter - matches name or cuisine text
+  const cuisineFilters = ['all', ...Array.from(new Set(
+    vendors
+      .map((vendor) => vendor.cuisine?.trim())
+      .filter((cuisine): cuisine is string => Boolean(cuisine)),
+  )).slice(0, 8)]
+
+  const filteredVendors = vendors.filter((vendor) => {
+    const query = deferredSearchTerm.toLowerCase().trim()
     const matchesSearch =
-      vendor.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (vendor.cuisine || '').toLowerCase().includes(searchTerm.toLowerCase())
+      query.length === 0 ||
+      vendor.name.toLowerCase().includes(query) ||
+      (vendor.cuisine || '').toLowerCase().includes(query) ||
+      (vendor.tags || []).some((tag) => tag.toLowerCase().includes(query))
 
-    // Cuisine filter - matches selected cuisine category
-    const matchesCuisine = selectedFilter === 'all' ||
-      (vendor.cuisine || '').toLowerCase().includes(selectedFilter.toLowerCase()) ||
-      // Handle special case for "middle-east" filter matching "middle eastern"
-      (selectedFilter === 'middle-east' && (vendor.cuisine || '').toLowerCase().includes('middle'))
+    const matchesCuisine =
+      selectedCuisine === 'all' ||
+      (vendor.cuisine || '').toLowerCase() === selectedCuisine.toLowerCase()
 
-    return matchesSearch && matchesCuisine
+    const matchesQuickFilter =
+      selectedQuickFilter === 'all' ||
+      (selectedQuickFilter === 'open-now' && OPEN_VENDOR_STATUSES.has(vendor.status || '')) ||
+      (selectedQuickFilter === 'nearby' &&
+        typeof vendor.distance === 'number' &&
+        Number.isFinite(vendor.distance) &&
+        vendor.distance <= 3.5) ||
+      (selectedQuickFilter === 'favorites' && favoriteIds.has(String(vendor.id)))
+
+    return matchesSearch && matchesCuisine && matchesQuickFilter
   })
+
+  const sortedVendors = [...filteredVendors].sort((a, b) => {
+    if (selectedSort === 'nearest') {
+      return (a.distance ?? Number.POSITIVE_INFINITY) - (b.distance ?? Number.POSITIVE_INFINITY)
+    }
+
+    if (selectedSort === 'top-rated') {
+      return (b.rating ?? 0) - (a.rating ?? 0)
+    }
+
+    if (selectedSort === 'most-reviewed') {
+      return (b.reviews ?? 0) - (a.reviews ?? 0)
+    }
+
+    const favoriteScoreA = favoriteIds.has(String(a.id)) ? 1 : 0
+    const favoriteScoreB = favoriteIds.has(String(b.id)) ? 1 : 0
+    const openScoreA = OPEN_VENDOR_STATUSES.has(a.status || '') ? 1 : 0
+    const openScoreB = OPEN_VENDOR_STATUSES.has(b.status || '') ? 1 : 0
+
+    return (
+      favoriteScoreB - favoriteScoreA ||
+      openScoreB - openScoreA ||
+      (b.rating ?? 0) - (a.rating ?? 0) ||
+      (b.reviews ?? 0) - (a.reviews ?? 0) ||
+      (a.distance ?? Number.POSITIVE_INFINITY) - (b.distance ?? Number.POSITIVE_INFINITY)
+    )
+  })
+
+  const favoritesPreview = favorites
+    .filter((vendor) => PUBLIC_VENDOR_STATUSES.has(vendor.status || 'APPROVED'))
+    .slice(0, 4)
+
+  const hasActiveFilters =
+    searchTerm.length > 0 || selectedCuisine !== 'all' || selectedQuickFilter !== 'all' || selectedSort !== 'recommended'
+
+  const locationSummary = loadingLocation
+    ? 'Checking your location'
+    : location
+      ? 'Using your location for nearby sorting'
+      : locationError
+        ? 'Location unavailable, showing all public vendors'
+        : 'Location not shared, showing all public vendors'
+
+  const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setSearchTerm(searchInput.trim())
+    setViewMode('list')
+    resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
+  const handleResetFilters = () => {
+    setSearchInput('')
+    setSearchTerm('')
+    setSelectedCuisine('all')
+    setSelectedQuickFilter('all')
+    setSelectedSort('recommended')
+    setViewMode('list')
+  }
+
+  const showFavoritesPreview =
+    favoritesPreview.length > 0 &&
+    !hasActiveFilters &&
+    viewMode === 'list'
 
   return (
     <div className="min-h-screen bg-[#FFFBF0] bg-[radial-gradient(#E5E7EB_1px,transparent_1px)] [background-size:24px_24px]">
-      <BreadcrumbListSchema items={[
-        { name: 'Home', item: 'https://streetbitego.vercel.app' },
-        { name: 'Explore', item: 'https://streetbitego.vercel.app/explore' }
-      ]} />
+      <BreadcrumbListSchema
+        items={[
+          { name: 'Home', item: 'https://streetbitego.vercel.app' },
+          { name: 'Explore', item: 'https://streetbitego.vercel.app/explore' },
+        ]}
+      />
       <Navbar />
 
-      {/* Hero Section */}
-      <section className="relative py-32 px-4 overflow-hidden">
-        {/* Animated Background Elements */}
-        <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-yellow-200/40 rounded-full mix-blend-multiply filter blur-[80px] opacity-70 animate-blob"></div>
-        <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-orange-200/40 rounded-full mix-blend-multiply filter blur-[80px] opacity-70 animate-blob animation-delay-2000"></div>
-        <div className="absolute -bottom-8 left-20 w-32 h-32 bg-pink-200/40 rounded-full mix-blend-multiply filter blur-[50px] opacity-70 animate-blob animation-delay-4000"></div>
+      <section className="relative overflow-hidden px-4 py-24 md:px-6 md:py-28">
+        <div className="absolute top-[-10%] left-[-10%] h-[26rem] w-[26rem] rounded-full bg-yellow-200/40 blur-[90px]" />
+        <div className="absolute top-[-6%] right-[-10%] h-[26rem] w-[26rem] rounded-full bg-orange-200/40 blur-[90px]" />
+        <div className="absolute bottom-0 left-24 h-40 w-40 rounded-full bg-teal-200/30 blur-[60px]" />
 
-        <div className="max-w-7xl mx-auto relative z-10">
-          <div className="text-center mb-16 animate-slide-up">
-            <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-black text-white text-sm font-black tracking-wider mb-8 shadow-[4px_4px_0px_0px_rgba(234,179,8,1)] border-2 border-black transform hover:-translate-y-1 transition-transform">
-              <Sparkles className="w-4 h-4 text-yellow-400 animate-pulse" />
+        <div className="relative z-10 mx-auto max-w-7xl">
+          <div className="text-center animate-slide-up">
+            <div className="inline-flex items-center gap-2 rounded-full bg-black px-6 py-3 text-sm font-black tracking-wider text-white shadow-[4px_4px_0px_0px_rgba(234,179,8,1)]">
+              <Sparkles className="h-4 w-4 text-yellow-400" />
               EXPLORE THE STREETS
             </div>
-            <h1 className="text-4xl md:text-6xl lg:text-8xl font-black text-black mb-8 leading-[0.9] tracking-tighter">
-              Discover Local <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-600 drop-shadow-[4px_4px_0px_rgba(0,0,0,1)]">
-                Street Flavors
-              </span>
+            <h1 className="headline-display mt-8 text-4xl text-black sm:text-5xl md:text-6xl lg:text-7xl">
+              Find your next
+              <span className="block text-primary">street-food lock.</span>
             </h1>
-            <p className="text-2xl text-black font-bold max-w-2xl mx-auto leading-relaxed">
-              Find <span className="inline-block px-2 bg-yellow-300 border-2 border-black rounded transform -rotate-2">{vendors.length}+</span> authentic vendors serving happiness near you!
+            <p className="mx-auto mt-6 max-w-2xl text-lg font-semibold leading-8 text-black/70 md:text-xl">
+              Search with intent, sort by what matters, and keep the best nearby vendors in view on any screen.
             </p>
           </div>
+        </div>
+      </section>
 
-          {/* Search Bar */}
-          <div className="max-w-3xl mx-auto mb-16 animate-scale-in">
-            <div className="relative group">
-              <div className="absolute inset-0 bg-black rounded-full translate-x-2 translate-y-2"></div>
-              <div className="relative flex items-center bg-white rounded-full border-4 border-black p-1 md:p-2 transition-transform group-hover:-translate-y-1">
-                <Search className="ml-3 md:ml-4 w-6 h-6 md:w-8 md:h-8 text-black" strokeWidth={3} />
+      <section className="sticky top-16 z-30 -mt-10 px-4 pb-8 md:top-20 md:px-6">
+        <div className="mx-auto max-w-7xl">
+          <div className="surface-panel-strong rounded-[2rem] p-4 md:p-5">
+            <form onSubmit={handleSearchSubmit} className="flex flex-col gap-3 lg:flex-row lg:items-center">
+              <div className="relative flex-1">
+                <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-black/45" />
                 <Input
-                  placeholder="Search for tacos, pani puri..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="border-none text-base md:text-xl font-bold placeholder:text-gray-400 focus-visible:ring-0 h-12 md:h-14 bg-transparent"
+                  placeholder="Search vendors, cuisines, or tags"
+                  value={searchInput}
+                  onChange={(event) => {
+                    const nextValue = event.target.value
+                    setSearchInput(nextValue)
+                    if (nextValue.trim().length === 0) {
+                      setSearchTerm('')
+                    }
+                  }}
+                  className="h-13 rounded-2xl border-black/10 bg-white pl-12 pr-11 text-base font-semibold shadow-none"
                 />
-                <Button className="rounded-full px-5 md:px-8 h-12 md:h-14 bg-orange-500 hover:bg-orange-600 text-white font-black text-base md:text-lg border-l-4 border-black rounded-l-none">
-                  SEARCH
-                </Button>
+                {searchInput ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearchInput('')
+                      setSearchTerm('')
+                    }}
+                    className="absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-black/45 hover:bg-black/5 hover:text-black"
+                    aria-label="Clear search"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                ) : null}
               </div>
-            </div>
-          </div>
 
-          {/* View Toggle and Filters */}
-          <div className="flex flex-col md:flex-row items-center justify-between gap-8 mb-12">
-            <div className="bg-white p-2 rounded-2xl border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-              <MapListToggle onViewChange={setViewMode} />
-            </div>
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <Button type="submit" size="lg" className="h-13 rounded-2xl px-6 font-black uppercase tracking-[0.14em]">
+                  Search
+                </Button>
+                <MapListToggle value={viewMode} onViewChange={setViewMode} />
+              </div>
+            </form>
 
-            <div className="flex md:flex-wrap gap-3 overflow-x-auto pb-4 md:pb-0 px-1 md:px-0 -mx-4 md:mx-0 snap-x md:justify-center no-scrollbar">
-              <div className="w-2 md:hidden shrink-0"></div>
-              {cuisineFilters.map((filter) => (
-                <button
-                  key={filter.id}
-                  onClick={() => setSelectedFilter(filter.id)}
-                  className={`px-5 md:px-6 py-2.5 md:py-3 rounded-xl font-black border-4 border-black transition-all transform hover:-translate-y-1 whitespace-nowrap snap-center shrink-0 ${selectedFilter === filter.id
-                    ? 'bg-yellow-400 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
-                    : 'bg-white hover:bg-gray-50 shadow-[4px_4px_0px_0px_rgba(200,200,200,1)]'
-                    }`}
-                >
-                  {filter.label}
-                </button>
-              ))}
-              <div className="w-2 md:hidden shrink-0"></div>
+            <div className="mt-4 flex flex-col gap-4 border-t border-black/8 pt-4">
+              <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+                <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+                  <div className="inline-flex items-center gap-2 rounded-full bg-black px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-white">
+                    <Flame className="h-4 w-4 text-primary" />
+                    {sortedVendors.length} results
+                  </div>
+                  <div className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/70 px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-black/60">
+                    <MapPin className="h-4 w-4 text-primary" />
+                    {locationSummary}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                  <div className="inline-flex items-center gap-2 rounded-full bg-white/70 px-3 py-2 text-xs font-black uppercase tracking-[0.16em] text-black/55">
+                    <ArrowUpDown className="h-4 w-4" />
+                    Sort
+                  </div>
+                  {SORT_OPTIONS.map((option) => (
+                    <button
+                      key={option.id}
+                      type="button"
+                      onClick={() => setSelectedSort(option.id)}
+                      className={`rounded-full border px-4 py-2 text-xs font-black uppercase tracking-[0.16em] transition-all ${
+                        selectedSort === option.id
+                          ? 'border-black bg-black text-white shadow-[var(--shadow-soft)]'
+                          : 'border-black/10 bg-white/75 text-black/60 hover:bg-accent hover:text-black'
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-3">
+                <div className="flex gap-2 overflow-x-auto pb-1">
+                  {QUICK_FILTERS.map((filter) => (
+                    <button
+                      key={filter.id}
+                      type="button"
+                      onClick={() => setSelectedQuickFilter(filter.id)}
+                      className={`rounded-full border px-4 py-2 text-xs font-black uppercase tracking-[0.16em] transition-all ${
+                        selectedQuickFilter === filter.id
+                          ? 'border-black bg-yellow-400 text-black shadow-[var(--shadow-soft)]'
+                          : 'border-black/10 bg-white/75 text-black/60 hover:border-black/20 hover:bg-white'
+                      }`}
+                    >
+                      {filter.label}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="flex gap-2 overflow-x-auto pb-1">
+                  {cuisineFilters.map((filter) => (
+                    <button
+                      key={filter}
+                      type="button"
+                      onClick={() => setSelectedCuisine(filter)}
+                      className={`rounded-full border px-4 py-2 text-xs font-black uppercase tracking-[0.16em] transition-all ${
+                        selectedCuisine === filter
+                          ? 'border-black bg-white text-black shadow-[var(--shadow-soft)]'
+                          : 'border-black/10 bg-transparent text-black/55 hover:border-black/20 hover:bg-white/70 hover:text-black'
+                      }`}
+                    >
+                      {filter === 'all' ? 'All cuisines' : filter}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Vendors Grid */}
-      <section className="py-12 px-4 pb-32">
-        <div className="max-w-7xl mx-auto">
-
-          {/* Favorites Section */}
-          {favorites.length > 0 && !searchTerm && selectedFilter === 'all' && (
-            <div className="mb-20">
-              <h2 className="text-4xl font-black text-black flex items-center gap-4 mb-10 transform -rotate-1">
-                <div className="bg-red-500 p-3 rounded-xl border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                  <Heart className="text-white fill-white w-8 h-8" />
+      <section ref={resultsRef} className="px-4 pb-32 md:px-6">
+        <div className="mx-auto max-w-7xl">
+          {showFavoritesPreview ? (
+            <div className="mb-14">
+              <div className="mb-8 flex items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="rounded-2xl bg-red-500 p-3 text-white shadow-[var(--shadow-soft)]">
+                    <Heart className="h-6 w-6 fill-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-3xl font-black text-black">Your favorites</h2>
+                    <p className="mt-1 text-sm font-semibold uppercase tracking-[0.14em] text-black/55">
+                      Quick access to the stalls you keep coming back to
+                    </p>
+                  </div>
                 </div>
-                Your Favorites
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                {favorites.map((vendor, index) => (
-                  <div key={vendor.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
-                    <VendorCard id={vendor.id} {...vendor} />
+              </div>
+
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+                {favoritesPreview.map((vendor, index) => (
+                  <div key={vendor.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.06}s` }}>
+                    <VendorCard
+                      id={String(vendor.id)}
+                      slug={vendor.slug}
+                      name={vendor.name}
+                      cuisine={vendor.cuisine || 'Street Food'}
+                      rating={vendor.rating || 0}
+                      distance={typeof vendor.distance === 'number' ? vendor.distance.toFixed(1) : 'Nearby'}
+                      image={vendor.image}
+                      displayImageUrl={vendor.displayImageUrl}
+                      reviews={vendor.reviews || 0}
+                      tags={vendor.tags || []}
+                      priority={index < 2}
+                    />
                   </div>
                 ))}
               </div>
             </div>
-          )}
+          ) : null}
 
-          <div className="mb-12 flex items-center justify-between">
-            <h2 className="text-4xl font-black text-black flex items-center gap-4">
-              <div className="bg-orange-500 p-3 rounded-xl border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                <Flame className="text-white w-8 h-8 animate-bounce-slow" />
-              </div>
-              Top Spots
-            </h2>
-            <div className="hidden md:block px-4 py-2 bg-black text-white font-bold rounded-lg transform rotate-2">
-              {filteredVendors.length} results found
+          <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+            <div>
+              <h2 className="text-3xl font-black text-black md:text-4xl">Top spots</h2>
+              <p className="mt-2 text-sm font-semibold uppercase tracking-[0.14em] text-black/55">
+                {selectedSort === 'recommended'
+                  ? 'Balanced by favorites, open status, rating, and proof'
+                  : `Sorted by ${selectedSort.replace('-', ' ')}`}
+              </p>
             </div>
+
+            {hasActiveFilters ? (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleResetFilters}
+                className="h-11 rounded-full px-5 text-xs font-black uppercase tracking-[0.16em]"
+              >
+                Reset filters
+              </Button>
+            ) : null}
           </div>
 
           {viewMode === 'map' ? (
-            <div className="rounded-3xl overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] border-4 border-black h-[600px] bg-white animate-scale-in">
-              <VendorMap vendors={filteredVendors} onVendorSelect={(v) => setSelectedVendor(v)} />
+            <div className="overflow-hidden rounded-[1.75rem] border border-black/10 shadow-[var(--shadow-panel)]">
+              <VendorMap vendors={sortedVendors} onVendorSelect={(vendor) => setSelectedVendor(vendor as ExploreVendor)} />
+            </div>
+          ) : loadingVendors ? (
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+              {Array.from({ length: 8 }).map((_, index) => (
+                <div
+                  key={index}
+                  className="h-80 rounded-[1.75rem] border border-black/8 bg-white/60 animate-pulse"
+                  style={{ animationDelay: `${index * 0.08}s` }}
+                />
+              ))}
+            </div>
+          ) : sortedVendors.length === 0 ? (
+            <div className="surface-panel rounded-[2rem] px-6 py-12 text-center">
+              <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-accent text-accent-foreground">
+                <Search className="h-9 w-9" />
+              </div>
+              <h3 className="mt-6 text-2xl font-black text-black">No vendors match this setup</h3>
+              <p className="mx-auto mt-3 max-w-md text-base font-medium leading-7 text-black/60">
+                Broaden the search, switch the sort, or clear the filters to see more live street-food options.
+              </p>
+              <div className="mt-8 flex flex-wrap justify-center gap-3">
+                <Button type="button" onClick={handleResetFilters} className="rounded-full px-6 text-xs font-black uppercase tracking-[0.16em]">
+                  Clear all filters
+                </Button>
+                {!location && selectedQuickFilter === 'nearby' ? (
+                  <Button type="button" variant="outline" onClick={() => setSelectedQuickFilter('all')} className="rounded-full px-6 text-xs font-black uppercase tracking-[0.16em]">
+                    Remove nearby filter
+                  </Button>
+                ) : null}
+              </div>
             </div>
           ) : (
-            <>
-              {loadingVendors ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                  {[...Array(8)].map((_, i) => (
-                    <div key={i} className="bg-white/50 h-80 rounded-3xl border-4 border-black/10 animate-pulse delay-[100ms]" style={{ animationDelay: `${i * 0.1}s` }}></div>
-                  ))}
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+              {sortedVendors.map((vendor, index) => (
+                <div
+                  key={vendor.id}
+                  className="animate-slide-up"
+                  style={{ animationDelay: `${index * 0.04}s` }}
+                >
+                  <VendorCard
+                    id={String(vendor.id)}
+                    slug={vendor.slug}
+                    name={vendor.name}
+                    cuisine={vendor.cuisine || 'Street Food'}
+                    rating={vendor.rating || 0}
+                    distance={typeof vendor.distance === 'number' ? vendor.distance.toFixed(1) : 'Nearby'}
+                    image={vendor.image}
+                    displayImageUrl={vendor.displayImageUrl}
+                    reviews={vendor.reviews || 0}
+                    tags={vendor.tags || []}
+                    priority={index < 4}
+                  />
                 </div>
-              ) : filteredVendors.length === 0 ? (
-                <div className="col-span-full py-12 text-center bg-white/50 rounded-3xl border-4 border-black border-dashed">
-                  <div className="max-w-md mx-auto px-6">
-                    <div className="bg-orange-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-black">
-                      <Search className="w-10 h-10 text-orange-500" />
-                    </div>
-                    <h3 className="text-2xl font-black text-black mb-2">No vendors found</h3>
-                    <p className="text-gray-600 font-medium mb-6">
-                      We couldn't find any vendors matching your criteria.
-                    </p>
-                    <div className="bg-white p-4 rounded-xl border-2 border-black inline-block text-left">
-                      <p className="font-bold text-sm mb-2">Try adjusting your search:</p>
-                      <ul className="text-sm space-y-1 text-gray-600 list-disc pl-4">
-                        <li>Enable location access</li>
-                        <li>Clear cuisine filters</li>
-                        <li>Search for "Momos", "Burger"</li>
-                      </ul>
-                    </div>
-                    <div className="mt-8">
-                      <Button
-                        onClick={() => { setSearchTerm(''); setSelectedFilter('all'); }}
-                        className="bg-black text-white hover:bg-gray-800 font-bold rounded-xl px-6"
-                      >
-                        Clear All Filters
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-                  {filteredVendors.map((vendor, index) => (
-                    <div
-                      key={vendor.id}
-                      className="hover:z-10 transition-all duration-300 animate-slide-up"
-                      style={{ animationDelay: `${index * 0.05}s` }}
-                    >
-                      <VendorCard id={vendor.id} slug={vendor.slug} {...vendor} priority={index < 4} />
-                    </div>
-                  ))}
-                </div>
-              )}
-            </>
+              ))}
+            </div>
           )}
         </div>
       </section>
 
       <Footer />
 
-      {/* Vendor Details Sheet */}
-      {selectedVendor && (
+      {selectedVendor ? (
         <VendorDetailsSheet
           vendor={selectedVendor}
-          open={!!selectedVendor}
-          onOpenChange={(open) => !open && setSelectedVendor(null)}
+          open={Boolean(selectedVendor)}
+          onOpenChange={(open) => {
+            if (!open) {
+              setSelectedVendor(null)
+            }
+          }}
           onFavoriteToggle={(vendorId, isFavorite) => {
             if (isFavorite) {
-              favoriteApi.getUserFavorites().then(data => setFavorites(data || []))
+              favoriteApi.getUserFavorites().then((data) => {
+                const nextFavorites = Array.isArray(data)
+                  ? data.map((vendor) => normalizeVendor(vendor, location))
+                  : []
+                setFavorites(nextFavorites)
+              })
             } else {
-              setFavorites(prev => prev.filter(v => String(v.id) !== String(vendorId)))
+              setFavorites((prev) => prev.filter((vendor) => String(vendor.id) !== String(vendorId)))
             }
           }}
         />
-      )}
+      ) : null}
     </div>
   )
 }
