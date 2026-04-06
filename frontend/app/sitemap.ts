@@ -1,66 +1,49 @@
 import { MetadataRoute } from 'next'
 
+/**
+ * Dynamic Sitemap Generator for StreetBite.
+ * Automatically discovers all vendors and social pages for SEO indexing.
+ */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXT_PUBLIC_FRONTEND_URL || 'http://localhost:3000'
+  const baseUrl = process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://streetbite.app'
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8081/api'
 
-  // Define static core routes
-  const staticRoutes: MetadataRoute.Sitemap = [
-    {
-      url: `${baseUrl}`,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 1,
-    },
-    {
-      url: `${baseUrl}/explore`,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/community`,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/offers`,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/about`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.5,
-    },
-  ]
-
-  let vendorRoutes: MetadataRoute.Sitemap = []
+  // Static routes
+  const staticRoutes = [
+    '',
+    '/explore',
+    '/community',
+    '/about',
+    '/offers',
+    '/signin',
+    '/signup',
+    '/privacy',
+    '/terms',
+  ].map((route) => ({
+    url: `${baseUrl}${route}`,
+    lastModified: new Date(),
+    changeFrequency: 'daily' as const,
+    priority: route === '' ? 1 : 0.8,
+  }))
 
   try {
-    // Fetch active vendors directly to prevent sitemap generation failures
-    // Note: To prevent a build-time crash if the backend is down, we catch errors.
-    const res = await fetch(`${backendUrl}/vendors?page=0&size=1000`, { 
-      next: { revalidate: 3600 } // Revalidate every hour
-    })
+    // Dynamic Vendor routes
+    const response = await fetch(`${backendUrl}/vendors`)
+    const vendors = await response.json()
     
-    if (res.ok) {
-      const data = await res.json()
-      const vendors = data.content || data || []
-      
-      vendorRoutes = vendors.map((vendor: any) => ({
+    if (Array.isArray(vendors)) {
+      const vendorRoutes = vendors.map((vendor: any) => ({
         url: `${baseUrl}/vendors/${vendor.slug || vendor.id}`,
-        lastModified: new Date(),
-        changeFrequency: 'daily',
-        priority: 0.8,
+        lastModified: new Date(vendor.updatedAt || new Date()),
+        changeFrequency: 'weekly' as const,
+        priority: 0.6,
       }))
+      
+      return [...staticRoutes, ...vendorRoutes]
     }
   } catch (error) {
-    console.error('Failed to generate vendor sitemap:', error)
+    console.error('Sitemap generation error:', error)
   }
 
-  return [...staticRoutes, ...vendorRoutes]
+  return staticRoutes
 }

@@ -90,12 +90,7 @@ public class Vendor {
                 .replaceAll("^-|-$", "");
         if (base.isBlank()) base = "vendor";
         
-        if (id != null) {
-            return base + "-" + id;
-        } else {
-            // Use timestamp to ensure uniqueness before ID is assigned
-            return base + "-" + Long.toString(System.currentTimeMillis(), 36);
-        }
+        return base;
     }
 
     // Getters and Setters

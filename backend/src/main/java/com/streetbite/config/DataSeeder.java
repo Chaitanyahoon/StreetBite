@@ -126,23 +126,42 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     private void backfillSlugs() {
-        System.out.println("Checking for vendors with missing slugs...");
+        System.out.println("Updating all vendors to SEO-friendly clean slugs...");
         List<Vendor> vendors = vendorRepository.findAll();
         long count = 0;
+        
         for (Vendor v : vendors) {
-            String currentSlug = v.getSlug();
-            if (currentSlug == null || currentSlug.isBlank()) {
-                // Explicitly generate slug using the model's logic
-                String newSlug = v.generateSlug(v.getName());
-                v.setSlug(newSlug); 
+            String baseSlug = v.generateSlug(v.getName());
+            String finalSlug = baseSlug;
+            int suffix = 1;
+            
+            // Check for uniqueness across existing Vendors (excluding current one)
+            while (isSlugTaken(finalSlug, v.getId())) {
+                finalSlug = baseSlug + "-" + suffix;
+                suffix++;
+            }
+            
+            // Update if changed
+            if (!finalSlug.equals(v.getSlug())) {
+                v.setSlug(finalSlug);
                 vendorRepository.save(v);
                 count++;
             }
         }
+        
         if (count > 0) {
-            System.out.println("Backfilled slugs for " + count + " vendors. Evicting caches...");
+            System.out.println("Updated " + count + " vendors to the new slug format. Evicting caches...");
             evictVendorCaches();
         }
+    }
+
+    private boolean isSlugTaken(String slug, Long currentId) {
+        Optional<Vendor> existing = vendorRepository.findBySlug(slug);
+        if (existing.isPresent()) {
+            // If the slug belongs to a DIFFERENT vendor, it is taken
+            return !existing.get().getId().equals(currentId);
+        }
+        return false;
     }
 
     private void evictVendorCaches() {

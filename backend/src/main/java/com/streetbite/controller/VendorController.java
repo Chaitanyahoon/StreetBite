@@ -68,9 +68,18 @@ public class VendorController {
         return ResponseEntity.ok(vendorService.getAllVendors());
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getVendor(@PathVariable Long id) {
-        return vendorService.getVendorById(id)
+    @GetMapping("/{idOrSlug}")
+    public ResponseEntity<?> getVendor(@PathVariable String idOrSlug) {
+        // Try as ID first if it's numeric
+        if (idOrSlug.matches("\\d+")) {
+            Long id = Long.parseLong(idOrSlug);
+            return vendorService.getVendorById(id)
+                    .map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.notFound().build());
+        }
+        
+        // Otherwise try as Slug
+        return vendorService.getVendorBySlug(idOrSlug)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
