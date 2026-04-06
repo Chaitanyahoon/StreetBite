@@ -81,7 +81,7 @@ public class Vendor {
         }
     }
 
-    private String generateSlug(String input) {
+    public String generateSlug(String input) {
         if (input == null || input.isBlank()) return "vendor-" + System.currentTimeMillis();
         String base = input.toLowerCase()
                 .replaceAll("[^a-z0-9\\s-]", "")

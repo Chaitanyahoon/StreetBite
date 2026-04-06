@@ -10,6 +10,7 @@ import com.streetbite.repository.HotTopicRepository;
 import com.streetbite.model.HotTopic;
 import com.streetbite.model.HotTopic;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.cache.CacheManager;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -26,16 +27,18 @@ public class DataSeeder implements CommandLineRunner {
     private final HotTopicRepository hotTopicRepository;
     private final PasswordEncoder passwordEncoder;
     private final JdbcTemplate jdbcTemplate;
+    private final CacheManager cacheManager;
 
     public DataSeeder(VendorRepository vendorRepository, UserRepository userRepository,
             ReportRepository reportRepository, HotTopicRepository hotTopicRepository, 
-            PasswordEncoder passwordEncoder, JdbcTemplate jdbcTemplate) {
+            PasswordEncoder passwordEncoder, JdbcTemplate jdbcTemplate, CacheManager cacheManager) {
         this.vendorRepository = vendorRepository;
         this.userRepository = userRepository;
         this.reportRepository = reportRepository;
         this.hotTopicRepository = hotTopicRepository;
         this.passwordEncoder = passwordEncoder;
         this.jdbcTemplate = jdbcTemplate;
+        this.cacheManager = cacheManager;
     }
 
     @Override
@@ -127,15 +130,32 @@ public class DataSeeder implements CommandLineRunner {
         List<Vendor> vendors = vendorRepository.findAll();
         long count = 0;
         for (Vendor v : vendors) {
-            if (v.getSlug() == null || v.getSlug().isBlank()) {
-                // Setting it to null and saving triggers @PreUpdate/generateSlug
-                v.setSlug(null); 
+            String currentSlug = v.getSlug();
+            if (currentSlug == null || currentSlug.isBlank()) {
+                // Explicitly generate slug using the model's logic
+                String newSlug = v.generateSlug(v.getName());
+                v.setSlug(newSlug); 
                 vendorRepository.save(v);
                 count++;
             }
         }
         if (count > 0) {
-            System.out.println("Backfilled slugs for " + count + " vendors.");
+            System.out.println("Backfilled slugs for " + count + " vendors. Evicting caches...");
+            evictVendorCaches();
+        }
+    }
+
+    private void evictVendorCaches() {
+        try {
+            if (cacheManager.getCache("vendorSearch") != null) {
+                cacheManager.getCache("vendorSearch").clear();
+            }
+            if (cacheManager.getCache("vendors") != null) {
+                cacheManager.getCache("vendors").clear();
+            }
+            System.out.println("Vendor caches cleared successfully.");
+        } catch (Exception e) {
+            System.out.println("Failed to clear vendor caches: " + e.getMessage());
         }
     }
 

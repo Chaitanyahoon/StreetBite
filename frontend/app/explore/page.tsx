@@ -287,7 +287,7 @@ export default function ExplorePage() {
                       className="hover:z-10 transition-all duration-300 animate-slide-up"
                       style={{ animationDelay: `${index * 0.05}s` }}
                     >
-                      <VendorCard id={vendor.id} {...vendor} />
+                      <VendorCard id={vendor.id} slug={vendor.slug} {...vendor} />
                     </div>
                   ))}
                 </div>
