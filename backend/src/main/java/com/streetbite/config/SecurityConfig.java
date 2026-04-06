@@ -51,6 +51,12 @@ public class SecurityConfig {
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/announcements/**").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/zodiac/**").permitAll()
 
+                        // Admin Only — administrative controls
+                        .requestMatchers("/api/hottopics/admin/**").hasRole("ADMIN")
+                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/hottopics").hasRole("ADMIN")
+                        .requestMatchers(org.springframework.http.HttpMethod.PUT, "/api/hottopics/**").hasRole("ADMIN")
+                        .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/hottopics/**").hasRole("ADMIN")
+
                         // Public — newsletter & health
                         .requestMatchers("/api/newsletter/**").permitAll()
                         .requestMatchers("/api/health").permitAll()

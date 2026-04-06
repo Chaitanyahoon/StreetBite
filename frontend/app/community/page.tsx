@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
+import { useRouter } from 'next/navigation'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import { MessageSquare, Award, Gamepad2, Camera, CalendarDays, TrendingUp, Heart, Send, X, ThumbsUp, Search, Sparkles, Flame, MapPin, ShieldCheck, Star } from 'lucide-react'
@@ -46,6 +47,7 @@ import { hotTopicApi, vendorApi, announcementApi } from '@/lib/api';
 // ... existing imports ...
 
 export default function CommunityPage() {
+    const router = useRouter()
     const { performAction } = useGamification()
     const { user: authUser, isLoggedIn: authIsLoggedIn, logout } = useAuth()
     const [vendor, setVendor] = useState<any>(null);
@@ -206,9 +208,9 @@ export default function CommunityPage() {
     };
 
     const handleVendorClick = () => {
-        toast.info(`Viewing ${vendor.name}`, {
-            description: "Vendor profiles coming soon! 🏪"
-        });
+        if (!vendor) return;
+        const target = vendor.slug || vendor.id;
+        router.push(`/vendors/${target}`);
     };
 
     const scrollToSection = (id: string) => {
@@ -507,18 +509,28 @@ export default function CommunityPage() {
                                 <CardContent className="relative z-10 p-6">
                                     <div className="space-y-6">
                                         <div className="w-full aspect-video bg-white rounded-xl flex items-center justify-center border-4 border-white overflow-hidden relative group">
-                                            <div className="absolute inset-0 bg-yellow-400 opacity-20 group-hover:opacity-0 transition-opacity"></div>
-                                            <span className="text-7xl animate-bounce drop-shadow-lg">🍛</span>
+                                            {vendor?.displayImageUrl ? (
+                                                <img 
+                                                    src={vendor.displayImageUrl} 
+                                                    alt={vendor.name} 
+                                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                                />
+                                            ) : (
+                                                <>
+                                                    <div className="absolute inset-0 bg-yellow-400 opacity-20 group-hover:opacity-0 transition-opacity"></div>
+                                                    <span className="text-7xl animate-bounce drop-shadow-lg">🍛</span>
+                                                </>
+                                            )}
                                         </div>
                                         <div>
                                             <h4 className="font-black text-2xl mb-2">{vendor?.name || "Loading..."}</h4>
                                             <div className="flex items-center gap-3 text-gray-300 text-sm font-bold">
-                                                <div className="flex items-center gap-1">
+                                                <div className="flex items-center gap-1 shrink-0">
                                                     <MapPin className="w-4 h-4 text-orange-500" />
-                                                    {vendor?.location || "Unknown Location"}
+                                                    <span className="line-clamp-1">{vendor?.address || "Unknown Location"}</span>
                                                 </div>
-                                                <span className="w-1.5 h-1.5 bg-gray-600 rounded-full"></span>
-                                                <span className="text-yellow-400">{vendor?.rating || "New"}★</span>
+                                                <span className="w-1.5 h-1.5 bg-gray-600 rounded-full shrink-0"></span>
+                                                <span className="text-yellow-400 shrink-0">{vendor?.rating ? vendor.rating.toFixed(1) : "New"}★</span>
                                             </div>
                                         </div>
                                         <Button

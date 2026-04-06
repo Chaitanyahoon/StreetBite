@@ -6,7 +6,11 @@ import com.streetbite.model.VendorStatus;
 import com.streetbite.repository.ReportRepository;
 import com.streetbite.repository.UserRepository;
 import com.streetbite.repository.VendorRepository;
+import com.streetbite.repository.HotTopicRepository;
+import com.streetbite.model.HotTopic;
+import com.streetbite.model.HotTopic;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -19,19 +23,27 @@ public class DataSeeder implements CommandLineRunner {
     private final VendorRepository vendorRepository;
     private final UserRepository userRepository;
     private final ReportRepository reportRepository;
+    private final HotTopicRepository hotTopicRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JdbcTemplate jdbcTemplate;
 
     public DataSeeder(VendorRepository vendorRepository, UserRepository userRepository,
-            ReportRepository reportRepository, PasswordEncoder passwordEncoder) {
+            ReportRepository reportRepository, HotTopicRepository hotTopicRepository, 
+            PasswordEncoder passwordEncoder, JdbcTemplate jdbcTemplate) {
         this.vendorRepository = vendorRepository;
         this.userRepository = userRepository;
         this.reportRepository = reportRepository;
+        this.hotTopicRepository = hotTopicRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     @Override
     public void run(String... args) throws Exception {
         try {
+            // One-time legacy cleanup for Orphaned tables
+            cleanupLegacyTables();
+
             System.out.println("Checking and seeding default users...");
             seedUsers();
 
@@ -41,15 +53,35 @@ public class DataSeeder implements CommandLineRunner {
                 System.out.println("Database seeding completed.");
             } else {
                 // Ensure reports are seeded even if vendors exist
-                if (reportRepository.count() == 0) {
-                    seedReports();
-                }
             }
+            if (reportRepository.count() == 0) {
+                seedReports();
+            }
+
+            // Seed Hot Topics for Community Page
+            if (hotTopicRepository.count() == 0) {
+                seedHotTopics();
+            }
+
+            // Backfill slugs for existing vendors that might have null slugs
+            backfillSlugs();
+
         } catch (Exception e) {
             System.err.println("CRITICAL ERROR during data seeding: " + e.getMessage());
             System.err.println(
                     "This is likely due to missing database tables. Please run the SQL initialization script.");
             // Do not rethrow, allow application to start even if seeding fails
+        }
+    }
+
+    private void cleanupLegacyTables() {
+        try {
+            System.out.println("Cleaning up legacy delivery system tables (if any)...");
+            jdbcTemplate.execute("DROP TABLE IF EXISTS order_items");
+            jdbcTemplate.execute("DROP TABLE IF EXISTS orders");
+            System.out.println("Legacy cleanup successful.");
+        } catch (Exception e) {
+            System.out.println("Legacy cleanup skipped or not needed: " + e.getMessage());
         }
     }
 
@@ -88,6 +120,23 @@ public class DataSeeder implements CommandLineRunner {
                     user.setUpdatedAt(java.time.LocalDateTime.now());
                     return userRepository.save(user);
                 });
+    }
+
+    private void backfillSlugs() {
+        System.out.println("Checking for vendors with missing slugs...");
+        List<Vendor> vendors = vendorRepository.findAll();
+        long count = 0;
+        for (Vendor v : vendors) {
+            if (v.getSlug() == null || v.getSlug().isBlank()) {
+                // Setting it to null and saving triggers @PreUpdate/generateSlug
+                v.setSlug(null); 
+                vendorRepository.save(v);
+                count++;
+            }
+        }
+        if (count > 0) {
+            System.out.println("Backfilled slugs for " + count + " vendors.");
+        }
     }
 
     private void seedVendors() {
@@ -158,6 +207,34 @@ public class DataSeeder implements CommandLineRunner {
                         vendor5));
 
         vendorRepository.saveAll(vendors);
+    }
+
+    private void seedHotTopics() {
+        System.out.println("Seeding initial community hot topics...");
+        
+        HotTopic t1 = new HotTopic();
+        t1.setTitle("Best Vada Pav in Mumbai? 🌶️");
+        t1.setContent("Everyone has a favorite! Is it the one at Juhu, or the small stall near CST? Let's settle this once and for all. What's your go-to spot for the perfect spice level?");
+        t1.setActive(true);
+        hotTopicRepository.save(t1);
+
+        HotTopic t2 = new HotTopic();
+        t2.setTitle("Late Night Street Food Safest Spots 🌙");
+        t2.setContent("Looking for recommendations for late-night cravings after midnight. Which areas are well-lit and have the best crowd even at 2 AM? Safety first, food second!");
+        t2.setActive(true);
+        hotTopicRepository.save(t2);
+
+        HotTopic t3 = new HotTopic();
+        t3.setTitle("Hygiene Check: Your Top 3 'Clean' Vendors 🧼");
+        t3.setContent("Street food doesn't have to be 'dirty'! Who are the vendors you've seen following the best hygiene practices? Let's highlight the ones who care about our health.");
+        t3.setActive(true);
+        hotTopicRepository.save(t3);
+
+        HotTopic t4 = new HotTopic();
+        t4.setTitle("Hidden Gem Alert: The Momo King of North 🥟");
+        t4.setContent("I found a tiny stall in the corner of Sarojini Nagar that serves the thinnest crust momos I've ever had. No name, just a blue cart. Has anyone else tried it?");
+        t4.setActive(true);
+        hotTopicRepository.save(t4);
     }
 
     private void seedReports() {
