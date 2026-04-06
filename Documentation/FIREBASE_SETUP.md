@@ -1,129 +1,146 @@
-# Firebase Setup Guide (Auxiliary Services)
+# Firebase Setup Guide
 
 > [!NOTE]
-> **Primary Database is MySQL.** Firebase is used ONLY for:
-> 1. Possible Authentication flows (if enabled)
-> 2. Push Notifications (FCM)
-> 3. Auxiliary Storage (if configured)
->
-> If you are just running the app locally for basic testing, you might not need this unless you hit specific features.
+> MySQL is the primary database.
+> Firebase is optional and used only for:
+> 1. Firestore realtime mirrors for vendor/menu UI updates
+> 2. FCM push notifications
 
-## ✅ Frontend Configuration
-Your frontend Firebase config is already set up in `final_project/frontend/lib/firebase.ts` with:
-- Project ID: `street-bite-v1`
-- All necessary configuration values
+## What Firebase Does In StreetBite
 
-## 🔐 Enabling Authentication (If Needed)
-If you encounter `auth/configuration-not-found` on the frontend:
-1. Go to Firebase Console -> Authentication -> Sign-in method.
-2. Enable **Email/Password**.
-3. This is only required if you are using the client-side Firebase Auth SDK.
+- Backend writes normal application data to MySQL first.
+- The backend may then mirror selected live state into Firestore:
+  - `live_vendors`
+  - `live_menu_items`
+- The frontend listens to those Firestore collections for realtime updates.
+- Firebase is not used as the source of truth for vendors, menu items, auth, or users.
 
-## 🔑 Backend Service Account Key Setup
+Relevant app files:
+- `backend/src/main/java/com/streetbite/service/RealTimeSyncService.java`
+- `frontend/lib/firebase-client.ts`
+- `frontend/lib/realtime.ts`
+- `Documentation/DATA_STORAGE_AND_REALTIME.md`
 
-The backend needs a **Service Account Key** for admin operations. Here's how to get it:
+## Frontend Firebase Configuration
 
-### Step 1: Get Service Account Key
+The frontend uses Firebase web config from environment variables. These values are public client config, not service account secrets.
 
-1. Go to [Firebase Console](https://console.firebase.google.com/)
-2. Select your project: **street-bite-v1**
-3. Click the **Settings gear icon** (⚙️) → **Project settings**
-4. Go to the **Service accounts** tab
-5. Click **Generate new private key**
-6. A JSON file will download (e.g., `street-bite-v1-firebase-adminsdk-xxxxx.json`)
-7. **Save this file** in a secure location (e.g., `C:\Users\patil\Downloads\final_project\firebase-key.json`)
+Typical frontend variables:
 
-### Step 2: Set Environment Variable
-
-**Windows PowerShell:**
-```powershell
-$env:GOOGLE_APPLICATION_CREDENTIALS="C:\Users\patil\Downloads\final_project\firebase-key.json"
+```env
+NEXT_PUBLIC_FIREBASE_API_KEY=
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
+NEXT_PUBLIC_FIREBASE_APP_ID=
+NEXT_PUBLIC_FIREBASE_VAPID_KEY=
 ```
 
-**Windows CMD:**
-```cmd
-set GOOGLE_APPLICATION_CREDENTIALS=C:\Users\patil\Downloads\final_project\firebase-key.json
-```
+The frontend Firebase entry points are:
+- `frontend/lib/firebase-client.ts`
+- `frontend/lib/realtime.ts`
 
-**Permanent (PowerShell - User level):**
-```powershell
-[System.Environment]::SetEnvironmentVariable('GOOGLE_APPLICATION_CREDENTIALS', 'C:\Users\patil\Downloads\final_project\firebase-key.json', 'User')
-```
+If these values are missing, the app should still work for normal API-backed flows, but realtime listeners and push notifications will be unavailable.
 
-### Step 3: Get Google Maps API Key (Optional but Recommended)
+## Backend Service Account Setup
 
-For geocoding features:
+The backend uses Firebase Admin SDK only when you want Firestore mirror writes or FCM notifications.
 
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Select project: **street-bite-v1**
-3. Go to **APIs & Services** → **Credentials**
-4. Click **Create Credentials** → **API Key**
-5. Copy the API key
-6. Enable **Geocoding API**:
-   - Go to **APIs & Services** → **Library**
-   - Search for "Geocoding API"
-   - Click **Enable**
+### Step 1: Create a Service Account Key
 
-**Set the API key:**
-```powershell
-$env:GOOGLE_GEOCODING_API_KEY="your-api-key-here"
-```
+1. Open [Firebase Console](https://console.firebase.google.com/).
+2. Select your project.
+3. Go to Project Settings.
+4. Open the Service Accounts tab.
+5. Generate a new private key.
+6. Store the downloaded JSON file outside the repo.
 
-Or add to `backend/src/main/resources/application.properties`:
-```properties
-google.geocoding.api.key=your-api-key-here
-```
-
-## 🚀 Quick Start Script
-
-I've created a PowerShell script to help you set these up. See `setup-backend.ps1`
-
-## 📝 Important Notes
-
-1. **Never commit the service account key to Git!**
-   - Add `firebase-key.json` to `.gitignore`
-   - The key gives full access to your Firebase project
-
-2. **Service Account Key vs Frontend Config:**
-   - **Frontend**: Uses the config you provided (for client-side operations)
-   - **Backend**: Needs service account key (for admin/server-side operations)
-
-3. **Security:**
-   - Keep the service account key file secure
-   - Don't share it publicly
-   - Rotate keys if compromised
-
-## ✅ Verify Setup
-
-After setting up, test the backend:
+Example safe local path:
 
 ```powershell
-cd backend
-.\mvnw.cmd spring-boot:run
+C:\Users\patil\secrets\streetbite-firebase-admin.json
 ```
 
-If you see the Spring Boot banner and no Firebase errors, you're good to go!
+### Step 2: Expose the Credentials Path
 
-## 🔍 Troubleshooting
+Set `GOOGLE_APPLICATION_CREDENTIALS` to the absolute path of the JSON file.
 
-### "FileNotFoundException" or "Cannot find credentials"
-- Check the path in `GOOGLE_APPLICATION_CREDENTIALS`
-- Ensure the file exists at that location
-- Use absolute path (not relative)
+PowerShell:
 
-### "Permission denied" errors
-- Ensure Firestore is enabled in Firebase Console
-- Check service account has proper permissions
-- Verify the key is for the correct project
+```powershell
+$env:GOOGLE_APPLICATION_CREDENTIALS="C:\Users\patil\secrets\streetbite-firebase-admin.json"
+```
 
-### Geocoding errors
-- Verify Google Maps API key is set
-- Check Geocoding API is enabled
-- Ensure billing is enabled (if required)
+Permanent user-level PowerShell:
 
-## 📚 Resources
+```powershell
+[System.Environment]::SetEnvironmentVariable('GOOGLE_APPLICATION_CREDENTIALS', 'C:\Users\patil\secrets\streetbite-firebase-admin.json', 'User')
+```
+
+The backend reads:
+
+```env
+GOOGLE_APPLICATION_CREDENTIALS=./firebase-key.json
+```
+
+from `application.properties`, but in production you should provide the real path through the environment instead of committing or copying secrets into the repo.
+
+## Optional Google Geocoding Setup
+
+Geocoding is separate from Firebase, but often configured at the same time for vendor address/location flows.
+
+Required variable:
+
+```env
+GOOGLE_GEOCODING_API_KEY=
+```
+
+The backend reads `GOOGLE_GEOCODING_API_KEY` directly from the environment.
+
+## Local Verification
+
+1. Start the backend.
+2. Create or update a vendor or menu item.
+3. Confirm MySQL remains the authoritative store.
+4. Confirm Firestore documents appear in:
+   - `live_vendors`
+   - `live_menu_items`
+5. Open the frontend and verify realtime updates are reflected without a full refresh.
+
+## Security Notes
+
+- Never commit the Firebase service account JSON.
+- Never treat Firestore documents as authoritative business data.
+- Rotate keys if a service account key is exposed.
+- Keep Firebase optional in production if you only need core CRUD flows.
+
+## Troubleshooting
+
+### Backend starts without Firebase features
+
+Check:
+- `GOOGLE_APPLICATION_CREDENTIALS` points to a real file
+- the service account belongs to the correct Firebase project
+- Firestore is enabled for that project
+
+### Frontend does not receive realtime updates
+
+Check:
+- `NEXT_PUBLIC_FIREBASE_*` variables are set in Vercel
+- the frontend is building with the expected Firebase project
+- Firestore has `live_vendors` / `live_menu_items` documents
+- backend writes are reaching `RealTimeSyncService`
+
+### Push notifications do not work
+
+Check:
+- FCM web config is present
+- `NEXT_PUBLIC_FIREBASE_VAPID_KEY` is set
+- browser notification permission is granted
+
+## References
 
 - [Firebase Admin SDK Setup](https://firebase.google.com/docs/admin/setup)
-- [Service Account Keys](https://cloud.google.com/iam/docs/service-accounts)
-- [Google Maps Geocoding API](https://developers.google.com/maps/documentation/geocoding)
-
+- [Firestore Documentation](https://firebase.google.com/docs/firestore)
+- [Firebase Cloud Messaging](https://firebase.google.com/docs/cloud-messaging)

@@ -2,7 +2,7 @@
 
 import { Navbar } from '@/components/navbar'
 import { Button } from '@/components/ui/button'
-import { MapPin, Clock, Star, Phone, Share2, Navigation, ChevronLeft, Utensils, Heart, Send, CheckCircle2, Wifi, CreditCard, ShieldCheck, Edit2, Trash2 } from 'lucide-react'
+import { MapPin, Clock, Star, Phone, Share2, Navigation, ChevronLeft, Utensils, Heart, Send, CreditCard, ShieldCheck, Edit2, Trash2 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -15,7 +15,6 @@ import { Textarea } from '@/components/ui/textarea'
 import { useLiveVendorStatus } from '@/hooks/use-live-vendor-status'
 import { useLiveMenuAvailability } from '@/hooks/use-live-menu-availability'
 import { useToast } from '@/hooks/use-toast'
-import { toast } from 'sonner'
 import { useAuth } from '@/context/AuthContext'
 
 interface Vendor {
@@ -382,10 +381,38 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-white flex items-center justify-center">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-16 w-16 border-4 border-primary border-t-transparent mx-auto mb-4"></div>
-                    <p className="text-muted-foreground">Loading vendor details...</p>
+            <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(251,146,60,0.18),_transparent_45%),linear-gradient(180deg,#fffdf8_0%,#fff6ed_100%)]">
+                <Navbar />
+                <div className="mx-auto flex min-h-[calc(100vh-72px)] max-w-6xl items-center px-6 py-16">
+                    <div className="grid w-full gap-8 lg:grid-cols-[1.2fr_0.8fr]">
+                        <div className="space-y-5">
+                            <div className="inline-flex items-center gap-2 rounded-full border border-orange-200 bg-white/80 px-4 py-2 text-xs font-bold uppercase tracking-[0.24em] text-orange-700 backdrop-blur">
+                                Vendor profile
+                            </div>
+                            <div className="space-y-3">
+                                <div className="h-5 w-40 animate-pulse rounded-full bg-orange-200/70" />
+                                <div className="h-14 max-w-xl animate-pulse rounded-3xl bg-gray-200/80" />
+                                <div className="h-5 max-w-2xl animate-pulse rounded-full bg-gray-200/80" />
+                                <div className="h-5 max-w-lg animate-pulse rounded-full bg-gray-200/80" />
+                            </div>
+                            <div className="grid max-w-2xl gap-4 sm:grid-cols-3">
+                                {[1, 2, 3].map((item) => (
+                                    <div key={item} className="rounded-3xl border border-white/80 bg-white/80 p-5 shadow-sm backdrop-blur">
+                                        <div className="mb-3 h-4 w-20 animate-pulse rounded-full bg-gray-200" />
+                                        <div className="h-8 w-16 animate-pulse rounded-full bg-orange-200/80" />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                        <div className="rounded-[2rem] border border-white/80 bg-white/80 p-6 shadow-[0_24px_80px_-32px_rgba(15,23,42,0.35)] backdrop-blur">
+                            <div className="mb-4 aspect-[4/5] animate-pulse rounded-[1.5rem] bg-gradient-to-br from-orange-100 via-amber-50 to-white" />
+                            <div className="space-y-3">
+                                <div className="h-4 w-24 animate-pulse rounded-full bg-gray-200" />
+                                <div className="h-4 w-full animate-pulse rounded-full bg-gray-200" />
+                                <div className="h-4 w-4/5 animate-pulse rounded-full bg-gray-200" />
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         )
@@ -393,16 +420,51 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
 
     if (!vendor) {
         return (
-            <div className="min-h-screen bg-white">
+            <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(251,146,60,0.2),_transparent_40%),linear-gradient(180deg,#fffdf8_0%,#fff7ed_100%)]">
                 <Navbar />
-                <div className="max-w-7xl mx-auto px-6 py-24 text-center">
-                    <h1 className="text-3xl font-bold mb-4">Vendor Not Found</h1>
-                    <p className="text-muted-foreground mb-6">The vendor you're looking for doesn't exist or has been removed.</p>
-                    <Link href="/explore">
-                        <Button className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600">
-                            Back to Explore
-                        </Button>
-                    </Link>
+                <div className="mx-auto flex min-h-[calc(100vh-72px)] max-w-5xl items-center px-6 py-16">
+                    <div className="grid w-full gap-8 rounded-[2rem] border border-white/80 bg-white/85 p-8 shadow-[0_24px_80px_-32px_rgba(15,23,42,0.3)] backdrop-blur md:grid-cols-[1.1fr_0.9fr] md:p-12">
+                        <div className="space-y-6">
+                            <div className="inline-flex items-center gap-2 rounded-full border border-orange-200 bg-orange-50 px-4 py-2 text-xs font-bold uppercase tracking-[0.24em] text-orange-700">
+                                Vendor unavailable
+                            </div>
+                            <div className="space-y-3">
+                                <h1 className="text-4xl font-black tracking-tight text-gray-950 md:text-5xl">This stall is not available right now.</h1>
+                                <p className="max-w-xl text-base leading-7 text-gray-600 md:text-lg">
+                                    The link may be old, the vendor may have been removed, or the profile is still being reviewed.
+                                    Explore other active street food spots nearby.
+                                </p>
+                            </div>
+                            <div className="flex flex-wrap gap-3">
+                                <Link href="/explore">
+                                    <Button className="h-12 rounded-full bg-gray-950 px-6 text-sm font-bold text-white hover:bg-orange-600">
+                                        Browse vendors
+                                    </Button>
+                                </Link>
+                                <Button
+                                    variant="outline"
+                                    className="h-12 rounded-full border-gray-300 px-6 text-sm font-bold"
+                                    onClick={() => router.back()}
+                                >
+                                    Go back
+                                </Button>
+                            </div>
+                        </div>
+                        <div className="rounded-[1.75rem] bg-gradient-to-br from-orange-500 via-amber-400 to-orange-300 p-[1px] shadow-lg">
+                            <div className="flex h-full flex-col justify-between rounded-[calc(1.75rem-1px)] bg-[#1f1a17] p-8 text-white">
+                                <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10">
+                                    <Utensils className="h-7 w-7 text-amber-300" />
+                                </div>
+                                <div className="space-y-3">
+                                    <p className="text-sm font-bold uppercase tracking-[0.3em] text-white/60">StreetBite</p>
+                                    <p className="text-2xl font-black leading-tight">Fresh finds are still a tap away.</p>
+                                    <p className="text-sm leading-6 text-white/70">
+                                        Jump back into explore for nearby favorites, live offers, and vendors that are open now.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         )
@@ -410,19 +472,35 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
 
     if (vendor.status === 'SUSPENDED' && authUser?.role !== 'ADMIN') {
         return (
-            <div className="min-h-screen bg-white">
+            <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(249,115,22,0.15),_transparent_35%),linear-gradient(180deg,#fffdf8_0%,#fff7ed_100%)]">
                 <Navbar />
-                <div className="max-w-7xl mx-auto px-6 py-32 text-center">
-                    <div className="w-20 h-20 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <ShieldCheck className="w-10 h-10" />
+                <div className="mx-auto flex min-h-[calc(100vh-72px)] max-w-5xl items-center px-6 py-16">
+                    <div className="w-full rounded-[2rem] border border-orange-100 bg-white/90 p-8 text-center shadow-[0_24px_80px_-32px_rgba(15,23,42,0.3)] backdrop-blur md:p-12">
+                        <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-[1.75rem] bg-orange-100 text-orange-600">
+                            <ShieldCheck className="h-10 w-10" />
+                        </div>
+                        <div className="space-y-4">
+                            <p className="text-xs font-bold uppercase tracking-[0.32em] text-orange-600">Moderation status</p>
+                            <h1 className="text-4xl font-black tracking-tight text-gray-950 md:text-5xl">Vendor temporarily unavailable</h1>
+                            <p className="mx-auto max-w-2xl text-base leading-7 text-gray-600 md:text-lg">
+                                This profile is inactive or under review by the StreetBite moderation team. Explore other active vendors for now.
+                            </p>
+                        </div>
+                        <div className="mt-8 flex flex-wrap justify-center gap-3">
+                            <Link href="/explore">
+                                <Button className="h-12 rounded-full bg-gray-950 px-6 text-sm font-bold text-white hover:bg-orange-600">
+                                    Explore active vendors
+                                </Button>
+                            </Link>
+                            <Button
+                                variant="outline"
+                                className="h-12 rounded-full border-gray-300 px-6 text-sm font-bold"
+                                onClick={() => router.push('/')}
+                            >
+                                Back to home
+                            </Button>
+                        </div>
                     </div>
-                    <h1 className="text-4xl font-black text-black mb-4 uppercase">Vendor Temporarily Unavailable</h1>
-                    <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto font-bold">This vendor is currently inactive or under review by the StreetBite moderation team. Please check back later or explore other amazing vendors nearby.</p>
-                    <Link href="/explore">
-                        <Button className="h-14 px-8 text-lg font-black bg-black hover:bg-orange-600 text-white shadow-[6px_6px_0px_0px_#fbbf24] hover:shadow-[4px_4px_0px_0px_#fbbf24] hover:translate-y-[2px] hover:translate-x-[2px] transition-all">
-                            Explore Active Vendors
-                        </Button>
-                    </Link>
                 </div>
             </div>
         )
@@ -436,8 +514,66 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
         return acc
     }, {} as Record<string, MenuItem[]>)
 
+    const statusMeta: Record<string, { label: string; badgeClassName: string; dotClassName: string }> = {
+        AVAILABLE: {
+            label: 'Open now',
+            badgeClassName: 'bg-emerald-500/90 text-white',
+            dotClassName: 'bg-white animate-pulse'
+        },
+        BUSY: {
+            label: 'Busy right now',
+            badgeClassName: 'bg-amber-500/90 text-white',
+            dotClassName: 'bg-white'
+        },
+        APPROVED: {
+            label: 'Verified vendor',
+            badgeClassName: 'bg-sky-500/90 text-white',
+            dotClassName: 'bg-white'
+        },
+        PENDING: {
+            label: 'Pending review',
+            badgeClassName: 'bg-slate-500/90 text-white',
+            dotClassName: 'bg-white/80'
+        },
+        REJECTED: {
+            label: 'Unavailable',
+            badgeClassName: 'bg-rose-500/90 text-white',
+            dotClassName: 'bg-white/80'
+        },
+        UNAVAILABLE: {
+            label: 'Closed for now',
+            badgeClassName: 'bg-gray-700/90 text-white',
+            dotClassName: 'bg-white/70'
+        },
+        SUSPENDED: {
+            label: 'Temporarily unavailable',
+            badgeClassName: 'bg-gray-700/90 text-white',
+            dotClassName: 'bg-white/70'
+        }
+    }
+
+    const activeStatusMeta = statusMeta[displayVendor?.status || 'UNAVAILABLE'] || statusMeta.UNAVAILABLE
+    const vendorRating = displayVendor?.rating ?? 0
+    const vendorReviewCount = reviews.length
+    const vendorPhone = displayVendor?.phone
+
+    const quickStats = [
+        {
+            label: 'Menu items',
+            value: menuItems.length > 0 ? `${menuItems.length}+` : 'Soon',
+        },
+        {
+            label: 'Offers live',
+            value: promotions.length > 0 ? String(promotions.length) : 'None',
+        },
+        {
+            label: 'Reviews',
+            value: reviews.length > 0 ? String(reviews.length) : 'New',
+        },
+    ]
+
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-[linear-gradient(180deg,#fffaf4_0%,#fff7ef_18%,#f8fafc_50%,#ffffff_100%)]">
             <Navbar />
 
             {/* Structured Schema Data for SEO */}
@@ -491,146 +627,165 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
             </Dialog>
 
             {/* Enhanced Hero Section */}
-            <div className="relative h-[400px] md:h-[500px] w-full bg-gray-900 overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent z-10" />
+            <div className="relative overflow-hidden bg-[#120f0d]">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(251,146,60,0.45),_transparent_25%),radial-gradient(circle_at_left,_rgba(249,115,22,0.22),_transparent_30%)]" />
+                <div className="absolute inset-0 z-10 bg-gradient-to-t from-[#120f0d] via-black/60 to-black/20" />
                 <img
-                    src={vendor.bannerImageUrl || vendor.imageUrl || "/placeholder-vendor.jpg"}
-                    alt={vendor.name}
-                    className="w-full h-full object-cover"
+                    src={displayVendor?.bannerImageUrl || displayVendor?.imageUrl || "/placeholder-vendor.jpg"}
+                    alt={displayVendor?.name}
+                    className="h-[480px] w-full object-cover opacity-65 md:h-[560px]"
                     onError={(e) => {
                         (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=2070&auto=format&fit=crop'
                     }}
                 />
 
-                {/* Back Button - FIXED */}
-                <div className="absolute top-6 left-6 z-20">
-                    <Link href="/explore">
+                <div className="absolute inset-x-0 top-0 z-20">
+                    <div className="mx-auto flex max-w-7xl items-start justify-between px-4 pt-5 md:px-6 md:pt-6">
+                        <Link href="/explore">
+                            <Button
+                                variant="secondary"
+                                size="icon"
+                                className="h-11 w-11 rounded-full border border-white/20 bg-white/12 text-white backdrop-blur-md hover:bg-white/20"
+                            >
+                                <ChevronLeft size={22} />
+                            </Button>
+                        </Link>
                         <Button
                             variant="secondary"
                             size="icon"
-                            className="rounded-full bg-white/90 hover:bg-white text-gray-900 backdrop-blur-md shadow-lg hover:scale-110 transition-all"
+                            className={`h-11 w-11 rounded-full border border-white/20 backdrop-blur-md transition-all hover:scale-105 ${isFavorite ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-white/12 text-white hover:bg-white/20'
+                                }`}
+                            onClick={toggleFavorite}
                         >
-                            <ChevronLeft size={24} />
+                            <Heart size={18} className={isFavorite ? 'fill-current' : ''} />
                         </Button>
-                    </Link>
+                    </div>
                 </div>
 
-                {/* Favorite Button - FIXED */}
-                <div className="absolute top-6 right-6 z-20">
-                    <Button
-                        variant="secondary"
-                        size="icon"
-                        className={`rounded-full backdrop-blur-md shadow-lg hover:scale-110 transition-all ${isFavorite ? 'bg-red-500 hover:bg-red-600 text-white' : 'bg-white/90 hover:bg-white text-gray-900'
-                            }`}
-                        onClick={toggleFavorite}
-                    >
-                        <Heart size={20} className={isFavorite ? 'fill-current' : ''} />
-                    </Button>
-                </div>
-
-                {/* Vendor Info */}
-                <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10 z-20 text-white">
-                    <div className="max-w-7xl mx-auto">
-                        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                            <div className="flex-1">
-                                <div className="flex items-center gap-3 mb-3 flex-wrap">
-                                    <span className="bg-gradient-to-r from-orange-500 to-red-500 text-white text-sm font-bold px-4 py-1.5 rounded-full uppercase tracking-wider shadow-lg">
-                                        {vendor.cuisine || 'Street Food'}
+                <div className="absolute inset-x-0 bottom-0 z-20">
+                    <div className="mx-auto max-w-7xl px-4 pb-8 md:px-6 md:pb-12">
+                        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-end">
+                            <div className="max-w-3xl">
+                                <div className="mb-4 flex flex-wrap items-center gap-2.5">
+                                    <span className="rounded-full border border-white/15 bg-white/10 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.28em] text-white backdrop-blur-sm">
+                                        {displayVendor?.cuisine || 'Street food'}
                                     </span>
-                                    {vendor.rating > 0 && (
-                                        <div className="flex items-center gap-1.5 bg-white/20 backdrop-blur-md px-3 py-1.5 rounded-full shadow-lg">
-                                            <Star size={16} className="text-yellow-400 fill-yellow-400" />
-                                            <span className="text-sm font-bold">{vendor.rating.toFixed(1)}</span>
-                                            <span className="text-xs text-white/80">/ 5.0</span>
+                                    {vendorRating > 0 && (
+                                        <div className="flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold text-white backdrop-blur-sm">
+                                            <Star size={15} className="fill-amber-300 text-amber-300" />
+                                            <span>{vendorRating.toFixed(1)}</span>
+                                            <span className="text-white/70">from {Math.max(vendorReviewCount, 1)} review{vendorReviewCount === 1 ? '' : 's'}</span>
                                         </div>
                                     )}
-                                    {vendor.status && (
-                                        <div className={`flex items-center gap-2 px-4 py-1.5 rounded-full shadow-lg font-bold text-sm uppercase tracking-wider ${vendor.status === 'AVAILABLE' ? 'bg-green-500 text-white' :
-                                            vendor.status === 'BUSY' ? 'bg-orange-500 text-white' :
-                                                'bg-gray-500 text-white'
-                                            }`}>
-                                            <span className={`w-2 h-2 rounded-full ${vendor.status === 'AVAILABLE' ? 'bg-white animate-pulse' :
-                                                vendor.status === 'BUSY' ? 'bg-white' :
-                                                    'bg-white/60'
-                                                }`}></span>
-                                            {vendor.status === 'AVAILABLE' ? 'Open Now' :
-                                                vendor.status === 'BUSY' ? 'Busy' :
-                                                    'Closed'}
-                                        </div>
-                                    )}
+                                    <div className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold uppercase tracking-[0.18em] shadow-lg backdrop-blur-sm ${activeStatusMeta.badgeClassName}`}>
+                                        <span className={`h-2.5 w-2.5 rounded-full ${activeStatusMeta.dotClassName}`}></span>
+                                        {activeStatusMeta.label}
+                                    </div>
                                     {promotions.length > 0 && (
-                                        <div className="flex items-center gap-2 px-4 py-1.5 rounded-full shadow-lg font-bold text-sm uppercase tracking-wider bg-red-600 text-white animate-pulse">
-                                            🔥 SALE!
+                                        <div className="rounded-full bg-[#fb7185] px-4 py-2 text-sm font-bold uppercase tracking-[0.18em] text-white shadow-lg">
+                                            {promotions.length} live offer{promotions.length > 1 ? 's' : ''}
                                         </div>
                                     )}
                                 </div>
-                                <h1 className="text-4xl md:text-6xl font-black mb-4 leading-tight">{vendor.name}</h1>
-                                <div className="flex flex-col sm:flex-row sm:items-center gap-3 text-sm md:text-base text-white/90">
-                                    <div className="flex items-center gap-2">
-                                        <MapPin size={18} className="flex-shrink-0" />
-                                        <span className="line-clamp-1">{vendor.address || 'Location available on map'}</span>
+                                <h1 className="max-w-4xl text-4xl font-black leading-[0.95] tracking-tight text-white md:text-6xl lg:text-7xl">
+                                    {displayVendor?.name}
+                                </h1>
+                                <p className="mt-4 max-w-2xl text-sm leading-7 text-white/78 md:text-base">
+                                    {displayVendor?.description || 'A local street-food favorite serving fresh plates, fast comfort food, and neighborhood flavor.'}
+                                </p>
+                                <div className="mt-5 flex flex-col gap-3 text-sm text-white/82 md:text-base">
+                                    <div className="flex items-start gap-2.5">
+                                        <MapPin size={18} className="mt-0.5 flex-shrink-0 text-orange-300" />
+                                        <span className="line-clamp-2">{displayVendor?.address || 'Location available on map'}</span>
                                     </div>
-                                    {vendor.hours && (
-                                        <>
-                                            <span className="hidden sm:block text-white/40">•</span>
-                                            <div className="flex items-center gap-2">
-                                                <Clock size={18} className="flex-shrink-0" />
-                                                <span>{vendor.hours}</span>
-                                            </div>
-                                        </>
+                                    {displayVendor?.hours && (
+                                        <div className="flex items-center gap-2.5">
+                                            <Clock size={18} className="flex-shrink-0 text-orange-300" />
+                                            <span>{displayVendor.hours}</span>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="mt-6 flex flex-wrap gap-3">
+                                    <Button
+                                        onClick={handleGetDirections}
+                                        className="h-12 rounded-full bg-white px-6 text-sm font-bold text-gray-950 shadow-lg shadow-black/20 hover:bg-orange-50"
+                                    >
+                                        <Navigation size={18} />
+                                        Get directions
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        onClick={handleShare}
+                                        className="h-12 rounded-full border-white/25 bg-white/10 px-6 text-sm font-bold text-white backdrop-blur-md hover:bg-white/20"
+                                    >
+                                        <Share2 size={18} />
+                                        Share stall
+                                    </Button>
+                                    {vendorPhone && (
+                                        <Button
+                                            asChild
+                                            variant="outline"
+                                            className="h-12 rounded-full border-white/25 bg-transparent px-6 text-sm font-bold text-white hover:bg-white/10"
+                                        >
+                                            <a href={`tel:${vendorPhone}`}>
+                                                <Phone size={18} />
+                                                Call vendor
+                                            </a>
+                                        </Button>
                                     )}
                                 </div>
                             </div>
 
-                            {/* Action Buttons */}
-                            <div className="flex gap-3 flex-wrap">
-                                <Button
-                                    onClick={handleGetDirections}
-                                    className="bg-white text-gray-900 hover:bg-gray-100 font-semibold gap-2 shadow-lg hover:scale-105 transition-all"
-                                >
-                                    <Navigation size={18} />
-                                    Get Directions
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    onClick={handleShare}
-                                    className="bg-white/10 text-white border-white/30 hover:bg-white/20 backdrop-blur-md gap-2 shadow-lg hover:scale-105 transition-all"
-                                >
-                                    <Share2 size={18} />
-                                    Share
-                                </Button>
+                            <div className="hidden rounded-[2rem] border border-white/15 bg-white/10 p-5 text-white shadow-[0_20px_60px_-30px_rgba(0,0,0,0.75)] backdrop-blur-md lg:block">
+                                <p className="text-xs font-bold uppercase tracking-[0.26em] text-white/60">Quick look</p>
+                                <div className="mt-5 space-y-4">
+                                    {quickStats.map((stat) => (
+                                        <div key={stat.label} className="rounded-2xl border border-white/10 bg-black/15 px-4 py-4">
+                                            <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/55">{stat.label}</p>
+                                            <p className="mt-2 text-3xl font-black text-white">{stat.value}</p>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
+            <div className="relative z-20 mx-auto -mt-10 max-w-7xl px-4 md:px-6 lg:hidden">
+                <div className="grid gap-3 rounded-[2rem] border border-white/80 bg-white/92 p-4 shadow-[0_18px_50px_-28px_rgba(15,23,42,0.35)] backdrop-blur sm:grid-cols-3">
+                    {quickStats.map((stat) => (
+                        <div key={stat.label} className="rounded-2xl bg-[#fff8f1] px-4 py-4">
+                            <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-orange-700/80">{stat.label}</p>
+                            <p className="mt-1 text-2xl font-black text-gray-950">{stat.value}</p>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
             {/* Enhanced Tabs */}
-            <div className="sticky top-16 z-30 bg-white border-b border-gray-200 shadow-sm">
-                <div className="max-w-7xl mx-auto px-6">
-                    <div className="flex gap-8 overflow-x-auto no-scrollbar">
+            <div className="sticky top-16 z-30 mt-8 border-y border-orange-100/80 bg-white/90 shadow-sm backdrop-blur">
+                <div className="max-w-7xl mx-auto px-4 md:px-6">
+                    <div className="flex gap-3 overflow-x-auto py-3 no-scrollbar">
                         {['Menu', 'Offers', 'About', 'Reviews'].map((tab) => (
                             <button
                                 key={tab}
                                 onClick={() => setActiveTab(tab.toLowerCase())}
-                                className={`relative py-4 px-2 text-sm font-bold transition-all whitespace-nowrap ${activeTab === tab.toLowerCase()
-                                    ? 'text-primary'
-                                    : 'text-gray-500 hover:text-gray-900'
+                                className={`relative rounded-full px-4 py-2.5 text-sm font-bold transition-all whitespace-nowrap ${activeTab === tab.toLowerCase()
+                                    ? 'bg-gray-950 text-white shadow-lg'
+                                    : 'bg-[#fff7ef] text-gray-600 hover:bg-orange-100 hover:text-gray-950'
                                     }`}
                             >
                                 {tab}
                                 {tab === 'Reviews' && reviews.length > 0 && (
-                                    <span className="ml-2 bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-full">
+                                    <span className="ml-2 rounded-full bg-white/85 px-2 py-0.5 text-xs text-gray-700">
                                         {reviews.length}
                                     </span>
                                 )}
                                 {tab === 'Offers' && promotions.length > 0 && (
-                                    <span className="ml-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full animate-pulse shadow-sm">
+                                    <span className="ml-2 rounded-full bg-red-500 px-2 py-0.5 text-xs text-white shadow-sm">
                                         {promotions.length}
                                     </span>
-                                )}
-                                {activeTab === tab.toLowerCase() && (
-                                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-orange-500 to-red-500" />
                                 )}
                             </button>
                         ))}
@@ -639,7 +794,7 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
             </div>
 
             {/* Tab Content */}
-            <div className="max-w-7xl mx-auto px-6 py-12">
+            <div className="max-w-7xl mx-auto px-4 py-10 pb-28 md:px-6 md:py-12 md:pb-12">
                 {activeTab === 'menu' && (
                     <div className="space-y-10">
                         {menuItems.length === 0 ? (
@@ -1329,6 +1484,47 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
                     )
                 }
             </div >
+
+            <div className="sticky bottom-4 z-30 mx-auto mt-4 w-full max-w-7xl px-4 pb-[max(env(safe-area-inset-bottom),0.5rem)] md:hidden">
+                <div className="grid grid-cols-3 gap-2 rounded-[1.75rem] border border-white/80 bg-white/92 p-2 shadow-[0_18px_50px_-26px_rgba(15,23,42,0.4)] backdrop-blur">
+                    <Button
+                        onClick={handleGetDirections}
+                        className="h-12 rounded-2xl bg-gray-950 text-xs font-bold text-white hover:bg-orange-600"
+                    >
+                        <Navigation size={16} />
+                        Route
+                    </Button>
+                    <Button
+                        variant="outline"
+                        onClick={toggleFavorite}
+                        className={`h-12 rounded-2xl text-xs font-bold ${isFavorite ? 'border-red-200 bg-red-50 text-red-600 hover:bg-red-100' : 'border-gray-200 bg-white text-gray-700 hover:bg-orange-50'}`}
+                    >
+                        <Heart size={16} className={isFavorite ? 'fill-current' : ''} />
+                        Save
+                    </Button>
+                    {displayVendor?.phone ? (
+                        <Button
+                            asChild
+                            variant="outline"
+                            className="h-12 rounded-2xl border-gray-200 bg-white text-xs font-bold text-gray-700 hover:bg-orange-50"
+                        >
+                            <a href={`tel:${displayVendor.phone}`}>
+                                <Phone size={16} />
+                                Call
+                            </a>
+                        </Button>
+                    ) : (
+                        <Button
+                            variant="outline"
+                            onClick={handleShare}
+                            className="h-12 rounded-2xl border-gray-200 bg-white text-xs font-bold text-gray-700 hover:bg-orange-50"
+                        >
+                            <Share2 size={16} />
+                            Share
+                        </Button>
+                    )}
+                </div>
+            </div>
 
             <Footer />
         </div >

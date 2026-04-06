@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { doc, onSnapshot } from 'firebase/firestore';
-import { db } from '@/lib/firebase-client';
+import { realtimeDb, REALTIME_COLLECTIONS } from '@/lib/realtime';
 
 /**
  * Custom hook to subscribe to real-time availability updates for a menu item.
@@ -18,11 +18,11 @@ export function useLiveMenuItem(itemId: number | undefined, initialAvailability:
     }, [initialAvailability]);
 
     useEffect(() => {
-        if (!itemId) return;
+        if (!itemId || !realtimeDb) return;
 
         // Listen to "live_menu_items" collection for real-time updates
         // The document ID is the menu item ID (stringified)
-        const unsub = onSnapshot(doc(db, "live_menu_items", String(itemId)), (doc) => {
+        const unsub = onSnapshot(doc(realtimeDb, REALTIME_COLLECTIONS.menuAvailability, String(itemId)), (doc) => {
             if (doc.exists()) {
                 const data = doc.data();
                 if (data && typeof data.isAvailable === 'boolean') {

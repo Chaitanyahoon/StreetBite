@@ -39,7 +39,7 @@ graph TD
     Service -->|Auxiliary| FirebaseSDK
     
     Repository -->|JDBC| MySQL
-    FirebaseSDK -->|Push/Auth| FirebaseServices
+    FirebaseSDK -->|Realtime Mirrors/Push| FirebaseServices
 ```
 
 ---
@@ -63,7 +63,7 @@ graph TD
 
 ### External Services
 - **Google Maps API**: Geocoding (Address <-> Coordinates).
-- **Firebase**: (Auxiliary) Used for specific auth flows or notifications.
+- **Firebase**: (Auxiliary) Used only for Firestore realtime mirrors and push notifications.
 
 ---
 
@@ -100,13 +100,13 @@ The frontend is structured using the **Next.js App Router**:
 
 ## 🔄 Key Data Flows
 
-### 1. User Authentication (JWT)
+### 1. User Authentication (Cookie-Based JWT Session)
 1. **Frontend**: User submits credentials (email/password).
 2. **Backend**: `AuthController` verifies credentials against MySQL.
-3. **Backend**: Generates a **JWT** (JSON Web Token) containing `userId` and `role`.
-4. **Frontend**: Stores JWT (e.g., in localStorage or Cookies).
-5. **Subsequent Requests**: Frontend attaches `Authorization: Bearer <token>` header.
-6. **Backend**: `JwtRequestFilter` validates the token before processing requests.
+3. **Backend**: Generates a **JWT** containing `userId` and `role`.
+4. **Backend**: Sends the token in the `sb_token` HttpOnly cookie.
+5. **Frontend**: Uses credentialed requests to the backend instead of storing the token in local storage.
+6. **Backend**: `JwtRequestFilter` reads the cookie and validates the token before processing requests.
 
 ### 2. Vendor Search (Geolocation)
 1. **Frontend**: Gets user's browser location (Lat/Lng).
@@ -123,6 +123,12 @@ The frontend is structured using the **Next.js App Router**:
    - Validates menu items exist and prices match.
    - Creates `Order` record in MySQL.
    - (Optional) Sends notification to Vendor via Firebase Cloud Messaging.
+
+### 4. Realtime Vendor/Menu Updates
+1. **Backend**: Writes vendors and menu items to MySQL first.
+2. **Backend**: Mirrors selected live state into Firestore using `RealTimeSyncService`.
+3. **Frontend**: Reads normal application data from the backend API.
+4. **Frontend**: Subscribes to Firestore only for live UI updates such as menu availability and vendor status/location.
 
 ---
 

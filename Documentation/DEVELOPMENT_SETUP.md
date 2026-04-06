@@ -11,7 +11,7 @@
 
 ### 1. Backend Configuration (`backend`)
 
-Create a `.env` file in the `backend/` directory or set these environment variables in your IDE/Terminal.
+Set these environment variables in your shell, IDE run config, or `.env` tooling of your choice. The backend reads them directly from the environment.
 
 #### Required Variables (Database)
 ```properties
@@ -20,16 +20,25 @@ SPRING_DATASOURCE_USERNAME=root
 SPRING_DATASOURCE_PASSWORD=your_password
 ```
 
-#### Required Variables (Security)
+#### Required Variables (Auth)
 ```properties
-JWT_SECRET=your_secure_random_secre_key_min_32_chars
+JWT_SECRET=your_secure_random_secret_key_min_32_chars
 JWT_EXPIRATION_MS=86400000
 ```
 
-#### Optional Variables (Firebase & Google Maps)
-Required only if you want to use Firebase Auth features or Geocoding.
+#### Required For Frontend Cookie Auth
 ```properties
-GOOGLE_APPLICATION_CREDENTIALS=classpath:firebase-key.json
+FRONTEND_URL=http://localhost:3000
+ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3001,http://localhost:4000
+APP_ENV=development
+COOKIE_SECURE=false
+COOKIE_SAMESITE=Lax
+```
+
+#### Optional Variables (Firebase & Google Maps)
+Required only if you want realtime mirrors, push notifications, or geocoding.
+```properties
+GOOGLE_APPLICATION_CREDENTIALS=./firebase-key.json
 GOOGLE_GEOCODING_API_KEY=your_google_maps_api_key
 ```
 
@@ -38,7 +47,7 @@ GOOGLE_GEOCODING_API_KEY=your_google_maps_api_key
 Create a `.env.local` file in the `frontend/` directory.
 
 ```properties
-NEXT_PUBLIC_API_URL=http://localhost:8080/api
+NEXT_PUBLIC_API_URL=http://localhost:8081/api
 ```
 
 ---
@@ -91,17 +100,17 @@ The backend uses `spring.jpa.hibernate.ddl-auto=update` by default for developme
 
 ### API Documentation
 Once the backend is running, access Swagger UI at:
-[http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
+[http://localhost:8081/swagger-ui/index.html](http://localhost:8081/swagger-ui/index.html)
 
 ### Troubleshooting
 
 **Backend fails to start?**
 1. **Check Java Version**: Run `java -version`. Must be 21+.
 2. **Check Database**: Verify MySQL is running and credentials are correct.
-3. **Port In Use**: If port 8080 is taken, add `server.port=8081` to `application.properties`.
+3. **Port In Use**: Override `SERVER_PORT`, for example `SERVER_PORT=8082`.
 
 **Frontend can't connect?**
 1. Check `NEXT_PUBLIC_API_URL`.
 2. Ensure Backend is running.
-3. Check Browser Console for CORS errors (configure allowed origins in Backend).
+3. Check Browser Console for CORS errors and verify `ALLOWED_ORIGINS`, `FRONTEND_URL`, and cookie settings.
 

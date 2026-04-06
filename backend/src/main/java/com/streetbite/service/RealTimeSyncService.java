@@ -37,6 +37,20 @@ public class RealTimeSyncService {
         }
     }
 
+    public void deleteMenuAvailability(Long itemId) {
+        if (itemId == null) {
+            return;
+        }
+        try {
+            getFirestore()
+                    .collection("live_menu_items")
+                    .document(String.valueOf(itemId))
+                    .delete();
+        } catch (Exception e) {
+            System.err.println("Failed to delete menu item realtime state: " + e.getMessage());
+        }
+    }
+
     /**
      * Updates vendor online status in Firestore
      */
@@ -83,6 +97,20 @@ public class RealTimeSyncService {
                     "✅ Synced vendor " + vendorId + " location to Firebase: (" + latitude + ", " + longitude + ")");
         } catch (Exception e) {
             System.err.println("❌ Failed to sync vendor location to Firebase: " + e.getMessage());
+        }
+    }
+
+    public void deleteVendorRealtimeState(Long vendorId) {
+        if (vendorId == null) {
+            return;
+        }
+        try {
+            getFirestore()
+                    .collection("live_vendors")
+                    .document(String.valueOf(vendorId))
+                    .delete();
+        } catch (Exception e) {
+            System.err.println("Failed to delete vendor realtime state: " + e.getMessage());
         }
     }
 }

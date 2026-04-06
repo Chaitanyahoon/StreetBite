@@ -115,9 +115,6 @@ public class VendorController {
         }
     }
 
-    @Autowired
-    private com.streetbite.service.RealTimeSyncService realTimeSyncService;
-
     @PutMapping("/{id}")
     public ResponseEntity<?> updateVendor(@PathVariable Long id, @RequestBody Map<String, Object> updates,
             Authentication authentication) {
@@ -157,9 +154,6 @@ public class VendorController {
                             com.streetbite.model.VendorStatus status = com.streetbite.model.VendorStatus
                                     .valueOf(statusStr);
                             vendorService.applyStatusChange(existingVendor, status);
-
-                            // Sync to Firebase
-                            realTimeSyncService.updateVendorStatus(existingVendor.getId(), status);
                         } catch (IllegalArgumentException e) {
                             return ResponseEntity.badRequest().body(Map.of("error", "Invalid status value"));
                         }
@@ -203,16 +197,6 @@ public class VendorController {
                     }
 
                     Vendor updated = vendorService.saveVendor(existingVendor);
-
-                    // Sync location to Firebase if lat/lng changed
-                    if (updates.containsKey("latitude") || updates.containsKey("longitude")) {
-                        realTimeSyncService.updateVendorLocation(
-                                updated.getId(),
-                                updated.getLatitude(),
-                                updated.getLongitude(),
-                                updated.getAddress());
-                    }
-
                     return ResponseEntity.ok(updated);
                 })
                 .orElse(ResponseEntity.notFound().build());
@@ -241,8 +225,7 @@ public class VendorController {
             return vendorService.getVendorById(id)
                     .map(vendor -> {
                         vendorService.applyStatusChange(vendor, status);
-                        realTimeSyncService.updateVendorStatus(vendor.getId(), status);
-                        return ResponseEntity.ok(vendor);
+                        return ResponseEntity.ok(vendorService.saveVendor(vendor));
                     })
                     .orElse(ResponseEntity.notFound().build());
         } catch (IllegalArgumentException e) {

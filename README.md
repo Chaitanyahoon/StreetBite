@@ -6,7 +6,7 @@
 ![Backend](https://img.shields.io/badge/backend-Render-black?logo=render)
 ![Database](https://img.shields.io/badge/database-Aiven-orange?logo=mysql)
 
-A full-stack application connecting food lovers with local street food vendors, built with **Next.js (Frontend)** and **Spring Boot (Backend)**, using **MySQL** for data persistence.
+A full-stack application connecting food lovers with local street food vendors, built with **Next.js (Frontend)** and **Spring Boot (Backend)**, using **MySQL** as the primary database.
 
 ## 🚀 Live Demo
 
@@ -21,7 +21,7 @@ A full-stack application connecting food lovers with local street food vendors, 
 ## ✨ Features
 
 - 🔍 **Location-based vendor search** - Find vendors near you using geolocation
-- 👤 **User authentication** - Sign up as customer or vendor (JWT Auth)
+- 👤 **User authentication** - Cookie-based session auth for customers and vendors
 - 🏪 **Vendor management** - Complete vendor dashboard
 - 📋 **Menu management** - Add, edit, delete menu items
 - 📊 **Analytics** - Track revenue, orders, and performance
@@ -102,7 +102,7 @@ final_project/
 
 ### Environment Variables
 
-Create a `.env` file in the `backend` directory (or set via IDE/Cloud):
+Use environment variables for the backend (local shell, Render dashboard, or IDE run config):
 
 ```properties
 # Database (MySQL/Aiven)
@@ -110,15 +110,22 @@ SPRING_DATASOURCE_URL=jdbc:mysql://<HOST>:<PORT>/<DB_NAME>?ssl-mode=REQUIRED
 SPRING_DATASOURCE_USERNAME=<USER>
 SPRING_DATASOURCE_PASSWORD=<PASSWORD>
 
-# Security
+# Auth
 JWT_SECRET=<YOUR_SECRET_KEY>
 JWT_EXPIRATION_MS=86400000
 
-# Firebase (Auxiliary)
-GOOGLE_APPLICATION_CREDENTIALS=classpath:firebase-key.json
+# Frontend / cookies / CORS
+FRONTEND_URL=https://<your-vercel-domain>
+ALLOWED_ORIGINS=https://<your-vercel-domain>
+APP_ENV=production
+COOKIE_SECURE=true
+COOKIE_SAMESITE=None
+
+# Firebase (optional realtime + push only)
+GOOGLE_APPLICATION_CREDENTIALS=/etc/secrets/firebase-key.json
 ```
 
-See **[SETUP.md](Documentation/SETUP.md)** for detailed instructions.
+See [DEVELOPMENT_SETUP.md](Documentation/DEVELOPMENT_SETUP.md), [DEPLOYMENT.md](Documentation/DEPLOYMENT.md), and [DATA_STORAGE_AND_REALTIME.md](Documentation/DATA_STORAGE_AND_REALTIME.md).
 
 ---
 
@@ -126,7 +133,7 @@ See **[SETUP.md](Documentation/SETUP.md)** for detailed instructions.
 
 ### Authentication
 - `POST /api/auth/register` - Register user
-- `POST /api/auth/login` - Login and get JWT
+- `POST /api/auth/login` - Login and issue `sb_token` cookie
 
 ### Vendors
 - `GET /api/vendors` - List all vendors
@@ -149,9 +156,9 @@ Full API documentation available at `/swagger-ui/index.html` on the backend.
 - **Language**: Java 21
 - **Database**: MySQL (Aiven Cloud)
 - **ORM**: Spring Data JPA / Hibernate
-- **Auth**: Spring Security + JWT
-- **Email**: Resend SDK
-- **Auxiliary**: Firebase Admin SDK (for specific features)
+- **Auth**: Spring Security + JWT cookie session
+- **Email**: SMTP via `JavaMailSender`
+- **Auxiliary**: Firebase Admin SDK and Firebase Web SDK for realtime mirrors and push
 - **Build**: Maven
 
 ### Frontend
@@ -170,6 +177,7 @@ Full API documentation available at `/swagger-ui/index.html` on the backend.
 | **[ARCHITECTURE.md](Documentation/ARCHITECTURE.md)** | **System Design & Explaination** |
 | **[DEPLOYMENT.md](Documentation/DEPLOYMENT.md)** | Guide for Vercel & Render deployment |
 | **[DATABASE_SCHEMA.md](Documentation/DATABASE_SCHEMA.md)** | MySQL Database Schema & ERD |
+| **[DATA_STORAGE_AND_REALTIME.md](Documentation/DATA_STORAGE_AND_REALTIME.md)** | MySQL vs Firebase ownership model |
 | **[DEVELOPMENT_SETUP.md](Documentation/DEVELOPMENT_SETUP.md)** | Local development setup guide |
 | **[FIREBASE_SETUP.md](Documentation/FIREBASE_SETUP.md)** | Auxiliary Firebase configuration |
 

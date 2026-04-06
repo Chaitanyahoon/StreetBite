@@ -26,9 +26,14 @@ public class VendorService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private RealTimeSyncService realTimeSyncService;
+
     @Transactional
     public Vendor saveVendor(Vendor vendor) {
-        return vendorRepository.save(vendor);
+        Vendor savedVendor = vendorRepository.save(vendor);
+        syncRealtimeState(savedVendor);
+        return savedVendor;
     }
 
     public List<Vendor> getAllVendors() {
@@ -71,7 +76,7 @@ public class VendorService {
             userRepository.save(vendor.getOwner());
         }
 
-        return vendorRepository.save(vendor);
+        return vendor;
     }
 
     @Transactional
@@ -92,10 +97,29 @@ public class VendorService {
 
         // Delete the vendor
         vendorRepository.deleteById(id);
+        realTimeSyncService.deleteVendorRealtimeState(id);
 
         // Also delete the owner User so they can re-register
         if (ownerId != null) {
             userRepository.deleteById(ownerId);
+        }
+    }
+
+    private void syncRealtimeState(Vendor vendor) {
+        if (vendor.getId() == null) {
+            return;
+        }
+
+        if (vendor.getStatus() != null) {
+            realTimeSyncService.updateVendorStatus(vendor.getId(), vendor.getStatus());
+        }
+
+        if (vendor.getLatitude() != null && vendor.getLongitude() != null) {
+            realTimeSyncService.updateVendorLocation(
+                    vendor.getId(),
+                    vendor.getLatitude(),
+                    vendor.getLongitude(),
+                    vendor.getAddress());
         }
     }
 }

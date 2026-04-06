@@ -24,14 +24,18 @@ StreetBite follows a **client-server architecture** with clear separation of con
 ┌─────────────────────────────────────────────────────────────┐
 │                   Backend (Spring Boot)                      │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
-│  │ Controllers  │→ │   Services   │→ │  Firestore   │      │
-│  │  (REST API)  │  │ (Business)   │  │   Service    │      │
+│  │ Controllers  │→ │   Services   │→ │ MySQL + Sync │      │
+│  │  (REST API)  │  │ (Business)   │  │   Services   │      │
 │  └──────────────┘  └──────────────┘  └──────────────┘      │
 └─────────────────────────────────────────────────────────────┘
-                            ↕
+                     ↕                  ↘ optional
 ┌─────────────────────────────────────────────────────────────┐
-│                  Firebase Firestore (NoSQL)                  │
-│  users | vendors | menuItems | reviews | promotions         │
+│                     MySQL (Source of Truth)                  │
+│  users | vendors | menu_items | reviews | promotions        │
+└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│          Firebase Firestore / FCM (Auxiliary Only)          │
+│  live_vendors | live_menu_items | push notifications        │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -44,7 +48,7 @@ StreetBite follows a **client-server architecture** with clear separation of con
 - **Styling**: Tailwind CSS v4
 - **UI Components**: Radix UI primitives
 - **State Management**: React Hooks
-- **Authentication**: Firebase Client SDK
+- **Authentication**: Backend-issued cookie session via `sb_token`
 - **HTTP Client**: Fetch API
 - **Form Handling**: React Hook Form + Zod validation
 - **Charts**: Recharts
@@ -54,19 +58,19 @@ StreetBite follows a **client-server architecture** with clear separation of con
 - **Framework**: Spring Boot 3.2.0
 - **Language**: Java 21
 - **Build Tool**: Maven
-- **Database**: Firebase Firestore (NoSQL)
-- **Authentication**: Firebase Admin SDK 9.2.0
+- **Database**: MySQL
+- **Authentication**: Spring Security + JWT cookie session
 - **Caching**: Caffeine Cache 3.1.8
 - **API Integration**: Google Maps Geocoding API
 - **JSON Processing**: Jackson
 
 #### **Infrastructure**
-- **Database**: Firebase Firestore
-- **Authentication**: Firebase Authentication
+- **Database**: Aiven MySQL
+- **Authentication**: Cookie-based cross-origin auth between Vercel and Render
 - **Hosting**: 
   - **Frontend**: Vercel
   - **Backend**: Render
-- **Email Service**: Resend (via SDK)
+- **Email Service**: SMTP / JavaMailSender
 - **Development**: Local development with hot reload
 
 ---
@@ -143,7 +147,7 @@ backend/
 │   │   └── AnalyticsController.java  # Analytics data
 │   │
 │   ├── service/                       # Business logic layer
-│   │   ├── FirestoreService.java     # Firestore operations
+│   │   ├── RealTimeSyncService.java  # Firestore mirror operations
 │   │   ├── GeocodingService.java     # Google Maps integration
 │   │   └── VendorSearchService.java  # Search functionality
 │   │
@@ -161,113 +165,42 @@ backend/
 
 ## 🔥 Firebase Integration
 
-### Firestore Collections
+Firebase is auxiliary in the current architecture. MySQL remains the database of record.
 
-#### 1. **users** Collection
-Stores user profiles for customers, vendors, and admins.
+### Firestore Realtime Collections
+
+#### 1. **live_vendors** Collection
+Mirrors live vendor state used for realtime UI updates.
 
 ```javascript
 {
-  email: string,
-  displayName: string,
-  role: "CUSTOMER" | "VENDOR" | "ADMIN",
-  phoneNumber?: string,
-  photoUrl?: string,
-  location?: { latitude: number, longitude: number },
-  favorites?: string[],        // Array of vendor IDs
+  vendorId: number,
+  isOpen: boolean,
   isActive: boolean,
-  createdAt: string,
+  status: string,
+  latitude?: number,
+  longitude?: number,
   updatedAt: string
 }
 ```
 
-#### 2. **vendors** Collection
-Contains vendor information and profiles.
+#### 2. **live_menu_items** Collection
+Mirrors live menu availability used for realtime UI updates.
 
 ```javascript
 {
-  name: string,
-  address: string,
-  latitude: number,
-  longitude: number,
-  cuisine: string,
-  phone?: string,
-  hours?: string,
-  description?: string,
-  averageRating?: number,
-  totalReviews?: number,
-  createdAt: string,
-  updatedAt: string
-}
-```
-
-#### 3. **menuItems** Collection
-Menu items associated with vendors.
-
-```javascript
-{
-  vendorId: string,
-  name: string,
-  description?: string,
-  price: number,
-  category: string,
-  imageUrl?: string,
+  itemId: number,
+  vendorId: number,
   isAvailable: boolean,
-  createdAt: string,
   updatedAt: string
 }
 ```
 
-#### 4. **reviews** Collection
-User reviews and ratings for vendors.
+### Firebase Responsibilities
 
-```javascript
-{
-  vendorId: string,
-  userId: string,
-  userName: string,
-  rating: number,              // 1-5
-  comment?: string,
-  imageUrls?: string[],
-  isVerifiedPurchase: boolean,
-  createdAt: string,
-  updatedAt: string
-}
-```
-
-#### 5. **promotions** Collection
-Vendor promotions and special offers.
-
-```javascript
-{
-  vendorId: string,
-  title: string,
-  description: string,
-  discountType: "PERCENTAGE" | "FIXED_AMOUNT" | "BUY_ONE_GET_ONE",
-  discountValue: number,
-  promoCode?: string,
-  startDate: string,
-  endDate: string,
-  isActive: boolean,
-  maxUses?: number,
-  currentUses: number,
-  imageUrl?: string,
-  createdAt: string,
-  updatedAt: string
-}
-```
-
-#### 6. **geocoding_cache** Collection
-Cached geocoding results to reduce API calls.
-
-```javascript
-{
-  address: string,
-  latitude: number,
-  longitude: number,
-  cachedAt: string
-}
-```
+- Firestore mirrors selected live state after MySQL writes
+- FCM handles browser push notifications
+- Firebase is not the source of truth for users, vendors, menu items, or auth
 
 ---
 
@@ -371,12 +304,12 @@ GET /analytics/vendor/{vendorId}  - Get vendor analytics
 
 ## 🔐 Security & Authentication
 
-### Firebase Authentication
-- Email/password authentication
-- JWT token-based authorization
+### Cookie-Based Authentication
+- Email/password authentication handled by the Spring Boot backend
+- JWT is issued in the HttpOnly `sb_token` cookie
 - Role-based access control (CUSTOMER, VENDOR, ADMIN)
-- Protected routes on frontend
-- Token verification on backend using Firebase Admin SDK
+- Protected frontend flows use credentialed API requests
+- Token validation happens on the backend through `JwtRequestFilter`
 
 ### Security Best Practices
 - Environment variables for sensitive data
@@ -441,16 +374,16 @@ NEXT_PUBLIC_BACKEND_URL=http://localhost:8080
 1. User fills registration form (frontend)
 2. Frontend validates input
 3. POST /api/auth/register → Backend
-4. Backend creates user in Firestore
-5. Backend returns user ID and token
-6. Frontend stores token and redirects to dashboard
+4. Backend creates user in MySQL
+5. Backend issues the `sb_token` cookie
+6. Frontend redirects using cookie-based session auth
 ```
 
 ### Vendor Search Flow
 ```
 1. User enters location or uses current location
 2. Frontend sends coordinates to backend
-3. Backend queries Firestore for nearby vendors
+3. Backend queries MySQL for nearby vendors
 4. Backend calculates distances
 5. Backend returns sorted vendor list
 6. Frontend displays vendors on map and list
@@ -461,9 +394,10 @@ NEXT_PUBLIC_BACKEND_URL=http://localhost:8080
 1. Vendor adds menu item via dashboard
 2. Frontend validates input
 3. POST /api/menu/{vendorId} → Backend
-4. Backend saves to Firestore menuItems collection
-5. Backend returns success
-6. Frontend updates UI with new item
+4. Backend saves menu item to MySQL
+5. Backend mirrors live availability to Firestore if realtime is enabled
+6. Backend returns success
+7. Frontend updates UI with new item
 ```
 
 ---
@@ -473,7 +407,7 @@ NEXT_PUBLIC_BACKEND_URL=http://localhost:8080
 ### Backend Testing
 - Unit tests for services
 - Integration tests for controllers
-- Firestore mock testing
+- Service and controller testing around MySQL-backed workflows
 - API endpoint testing
 
 ### Frontend Testing
@@ -494,19 +428,20 @@ Based on conversation history:
     - Deployed Frontend to **Vercel**.
     - Configured CORS and Environment Variables for production.
 
-2.  **Email Service Upgrade** (Dec 2025)
-    - Integrated **Resend SDK** for reliable email delivery.
-    - Replaced unstable SMTP configuration.
-    - Fixed "Forgot Password" flow.
+2.  **Auth And Deployment Hardening** (Apr 2026)
+    - Moved to cookie-only auth for sensitive operations.
+    - Added Render/Vercel cross-origin cookie configuration.
+    - Tightened origin validation and backend route protection.
 
 3.  **Mobile Responsiveness** (Dec 2025)
     - **Collapsible Footer**: Implemented accordion-style footer for mobile.
     - **Navbar**: Optimized spacing and layout for smaller screens.
     - **Vendor Cards**: Improved card responsiveness and layout.
 
-4.  **Firebase Migration** (Nov 19, 2025)
-    - Migrated from Supabase to Firebase.
-    - Updated authentication system.
+4.  **Realtime Boundary Cleanup** (Apr 2026)
+    - Clarified MySQL as the source of truth.
+    - Moved Firestore mirror writes into backend services.
+    - Separated realtime/push concerns from core CRUD and auth.
 
 ---
 
@@ -514,8 +449,8 @@ Based on conversation history:
 
 ### ✅ Completed
 - Full-stack architecture setup
-- Firebase Firestore integration
-- Authentication system (Firebase Auth)
+- MySQL-backed application data layer
+- Authentication system (cookie-based JWT session)
 - Vendor CRUD operations
 - Menu management
 - Review system
@@ -554,8 +489,8 @@ Based on conversation history:
 ### Technologies to Understand
 1. **Next.js 16** - App Router, Server Components, Client Components
 2. **Spring Boot 3** - REST APIs, Dependency Injection, MVC pattern
-3. **Firebase Firestore** - NoSQL database, Collections, Queries
-4. **Firebase Authentication** - JWT tokens, User management
+3. **MySQL + Spring Data JPA** - Relational persistence and queries
+4. **Spring Security + JWT Cookies** - Session validation and authorization
 5. **Google Maps API** - Geocoding, Location services
 6. **Tailwind CSS** - Utility-first CSS framework
 7. **TypeScript** - Type-safe JavaScript

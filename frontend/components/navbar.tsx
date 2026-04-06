@@ -3,10 +3,15 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
-import { Menu, X, User, LogOut } from 'lucide-react'
+import { Menu, X, LogOut } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Logo } from '@/components/logo'
 import { useAuth } from '@/context/AuthContext'
+
+interface Announcement {
+  message: string
+  type?: 'WARNING' | 'ALERT' | 'INFO'
+}
 
 export function Navbar() {
   const router = useRouter()
@@ -14,8 +19,8 @@ export function Navbar() {
   const { user, isLoggedIn, logout } = useAuth()
   const [isOpen, setIsOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
-  const [announcement, setAnnouncement] = useState<any>(null)
-  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8081/api';
+  const [announcement, setAnnouncement] = useState<Announcement | null>(null)
+  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8081/api'
 
   const userName = user?.displayName || user?.email || 'User'
   const userProfilePic = user?.profilePicture || ''
@@ -44,6 +49,23 @@ export function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  useEffect(() => {
+    setIsOpen(false)
+  }, [pathname])
+
+  useEffect(() => {
+    if (!isOpen) {
+      document.body.style.overflow = ''
+      return
+    }
+
+    document.body.style.overflow = 'hidden'
+
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [isOpen])
+
   const handleLogout = async () => {
     await logout()
     router.push('/')
@@ -67,14 +89,12 @@ export function Navbar() {
 
   // Helper to resolve image URL
   const getImageUrl = (path: string) => {
-    if (!path) return '';
-    if (path.startsWith('http')) return path;
-    if (path.startsWith('/avatars/')) return path;
-    const baseUrl = BACKEND_URL.replace(/\/api\/?$/, '');
-    return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
-  };
-
-
+    if (!path) return ''
+    if (path.startsWith('http')) return path
+    if (path.startsWith('/avatars/')) return path
+    const baseUrl = BACKEND_URL.replace(/\/api\/?$/, '')
+    return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`
+  }
 
   return (
     <>
@@ -167,9 +187,11 @@ export function Navbar() {
 
             {/* Mobile Menu Button */}
             <button
-              className="lg:hidden p-2 border-2 border-black bg-white hover:bg-yellow-400 rounded-lg transition-all duration-200 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-y-[2px] active:shadow-none"
+              className="flex h-11 w-11 items-center justify-center rounded-xl border-2 border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all duration-200 hover:bg-yellow-400 active:translate-y-[2px] active:shadow-none lg:hidden"
               onClick={() => setIsOpen(!isOpen)}
               aria-label="Toggle menu"
+              aria-expanded={isOpen}
+              aria-controls="mobile-navigation"
             >
               {isOpen ? <X size={24} className="text-black stroke-[3px]" /> : <Menu size={24} className="text-black stroke-[3px]" />}
             </button>
@@ -177,71 +199,77 @@ export function Navbar() {
 
           {/* Mobile Menu */}
           {isOpen && (
-            <div className="lg:hidden border-t-4 border-black pb-8 pt-4 space-y-3 animate-in slide-in-from-top duration-300 bg-white absolute left-0 right-0 px-6 shadow-xl border-b-4">
-              {navItems.map((item) => {
-                const isActive = pathname === item.href
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={`block px-6 py-4 font-black text-lg uppercase tracking-wider rounded-xl border-2 transition-all duration-200 ${isActive
-                      ? 'bg-yellow-400 text-black border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
-                      : 'bg-white text-black border-black/10 hover:border-black hover:bg-orange-50'
-                      }`}
-                    onClick={() => setIsOpen(false)}
-                  >
-                    {item.label}
-                  </Link>
-                )
-              })}
-              <div className="flex flex-col gap-4 pt-6 border-t-4 border-black">
-                {isLoggedIn ? (
-                  <>
-                    <Link href="/profile" onClick={() => setIsOpen(false)}>
-                      <button className="w-full flex items-center justify-center gap-3 py-4 rounded-xl bg-black text-white font-black border-2 border-black shadow-[4px_4px_0px_0px_#9ca3af] hover:shadow-[4px_4px_0px_0px_#000000] active:translate-y-[2px] transition-all">
-                        <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-black font-black text-sm overflow-hidden">
-                          {userProfilePic ? (
-                            <img
-                              src={getImageUrl(userProfilePic)}
-                              alt={userName}
-                              className="w-full h-full object-cover"
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).style.display = 'none';
-                                (e.target as HTMLImageElement).parentElement!.innerText = userName.charAt(0).toUpperCase();
-                              }}
-                            />
-                          ) : (
-                            userName.charAt(0).toUpperCase()
-                          )}
-                        </div>
-                        {userName}
+            <div className="absolute inset-x-0 top-full z-40 border-y-4 border-black bg-white/95 shadow-2xl backdrop-blur lg:hidden">
+              <div
+                id="mobile-navigation"
+                className="max-h-[calc(100vh-5rem)] space-y-4 overflow-y-auto px-4 py-4 pb-[max(env(safe-area-inset-bottom),1rem)]"
+              >
+                <div className="grid gap-3">
+                  {navItems.map((item) => {
+                    const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href))
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className={`block rounded-2xl border-2 px-5 py-4 text-base font-black uppercase tracking-[0.14em] transition-all duration-200 ${isActive
+                          ? 'border-black bg-yellow-400 text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
+                          : 'border-black/15 bg-[#fff8ef] text-black hover:border-black hover:bg-orange-50'
+                          }`}
+                      >
+                        {item.label}
+                      </Link>
+                    )
+                  })}
+                </div>
+                <div className="space-y-4 border-t-4 border-black pt-4">
+                  {isLoggedIn ? (
+                    <>
+                      <Link href="/profile">
+                        <button className="flex min-h-14 w-full items-center justify-center gap-3 rounded-2xl border-2 border-black bg-black px-4 py-4 font-black text-white shadow-[4px_4px_0px_0px_#9ca3af] transition-all active:translate-y-[2px]">
+                          <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-white text-sm font-black text-black">
+                            {userProfilePic ? (
+                              <img
+                                src={getImageUrl(userProfilePic)}
+                                alt={userName}
+                                className="h-full w-full object-cover"
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).style.display = 'none'
+                                  const parent = (e.target as HTMLImageElement).parentElement
+                                  if (parent) {
+                                    parent.innerText = userName.charAt(0).toUpperCase()
+                                  }
+                                }}
+                              />
+                            ) : (
+                              userName.charAt(0).toUpperCase()
+                            )}
+                          </div>
+                          <span className="line-clamp-1">{userName}</span>
+                        </button>
+                      </Link>
+                      <button
+                        onClick={handleLogout}
+                        className="flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl border-2 border-black bg-white px-4 py-4 font-black uppercase text-red-600 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all active:translate-y-[2px]"
+                      >
+                        <LogOut size={20} className="stroke-[3px]" />
+                        Logout
                       </button>
-                    </Link>
-                    <button
-                      onClick={() => {
-                        setIsOpen(false)
-                        handleLogout()
-                      }}
-                      className="w-full flex items-center justify-center gap-2 py-4 rounded-xl bg-white text-red-600 border-2 border-black font-black uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-y-[2px] transition-all"
-                    >
-                      <LogOut size={20} className="stroke-[3px]" />
-                      Logout
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <Link href="/signin" onClick={() => setIsOpen(false)}>
-                      <Button variant="outline" className="w-full h-12 font-black uppercase border-2 border-black bg-white text-black hover:bg-gray-100 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-y-[2px] transition-all">
-                        Sign In
-                      </Button>
-                    </Link>
-                    <Link href="/signup" onClick={() => setIsOpen(false)}>
-                      <Button className="w-full h-12 font-black uppercase border-2 border-black bg-orange-500 text-white hover:bg-orange-600 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-y-[2px] transition-all">
-                        Register
-                      </Button>
-                    </Link>
-                  </>
-                )}
+                    </>
+                  ) : (
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <Link href="/signin">
+                        <Button variant="outline" className="h-12 w-full font-black uppercase border-2 border-black bg-white text-black hover:bg-gray-100 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-y-[2px] transition-all">
+                          Sign In
+                        </Button>
+                      </Link>
+                      <Link href="/signup">
+                        <Button className="h-12 w-full font-black uppercase border-2 border-black bg-orange-500 text-white hover:bg-orange-600 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-y-[2px] transition-all">
+                          Register
+                        </Button>
+                      </Link>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}

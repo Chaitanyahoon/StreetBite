@@ -18,13 +18,24 @@ public class JwtUtil {
     // Use JWT_SECRET from env, fallback to default (must match Render env var
     // exactly!)
     private static final String SECRET_KEY;
-    private static final long JWT_TOKEN_VALIDITY = 24 * 60 * 60 * 1000; // 24 hours
+    private static final long JWT_TOKEN_VALIDITY;
 
     static {
         String envSecret = System.getenv("JWT_SECRET");
+        String expirationMs = System.getenv("JWT_EXPIRATION_MS");
         SECRET_KEY = (envSecret != null && !envSecret.isEmpty())
                 ? envSecret
                 : "StreetBiteSecretKeyForJWTTokenGeneration2024MustBe256BitsLong!!";
+        long defaultValidity = 24 * 60 * 60 * 1000;
+        long resolvedValidity = defaultValidity;
+        if (expirationMs != null && !expirationMs.isBlank()) {
+            try {
+                resolvedValidity = Long.parseLong(expirationMs);
+            } catch (NumberFormatException ignored) {
+                resolvedValidity = defaultValidity;
+            }
+        }
+        JWT_TOKEN_VALIDITY = resolvedValidity;
     }
 
     private Key getSigningKey() {

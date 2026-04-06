@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { messaging } from '@/lib/firebase-client'
 import { getToken, onMessage } from 'firebase/messaging'
+import { isPushMessagingEnabled, pushMessaging } from '@/lib/realtime'
 
 /**
  * Custom hook to manage Firebase Cloud Messaging (FCM) notifications.
@@ -14,7 +14,7 @@ export function useNotifications(userId?: number) {
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
-        if (typeof window === 'undefined' || !messaging) {
+        if (typeof window === 'undefined' || !isPushMessagingEnabled()) {
             setLoading(false)
             return
         }
@@ -27,7 +27,7 @@ export function useNotifications(userId?: number) {
     }, [])
 
     const requestPermission = async (): Promise<NotificationPermission | null> => {
-        if (!messaging) {
+        if (!pushMessaging) {
             console.error('Firebase messaging not supported')
             return null
         }
@@ -43,7 +43,7 @@ export function useNotifications(userId?: number) {
                 const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
 
 
-                const currentToken = await getToken(messaging, { vapidKey });
+                const currentToken = await getToken(pushMessaging, { vapidKey });
                 if (currentToken) {
                     setToken(currentToken);
 
@@ -80,6 +80,6 @@ export function useNotifications(userId?: number) {
         token,
         loading,
         requestPermission,
-        isSupported: !!messaging
+        isSupported: isPushMessagingEnabled()
     }
 }

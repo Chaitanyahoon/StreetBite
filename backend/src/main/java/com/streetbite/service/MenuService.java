@@ -20,25 +20,26 @@ public class MenuService {
     @Autowired
     private VendorRepository vendorRepository;
 
+    @Autowired
+    private RealTimeSyncService realTimeSyncService;
+
     @Transactional
     public MenuItem saveMenuItem(MenuItem menuItem) {
-        System.out.println("Saving menu item: " + menuItem.getName() + ", isAvailable: " + menuItem.isAvailable());
         MenuItem saved = menuItemRepository.saveAndFlush(menuItem);
-        System.out.println("After save, isAvailable: " + saved.isAvailable());
+        syncRealtimeAvailability(saved);
         return saved;
     }
 
     @Transactional
     public MenuItem saveMenuItem(MenuItem menuItem, Long vendorId) {
-        // Fetch the vendor entity
         Vendor vendor = vendorRepository.findById(vendorId)
                 .orElseThrow(() -> new RuntimeException("Vendor not found with id: " + vendorId));
 
-        // Set the vendor on the menu item
         menuItem.setVendor(vendor);
 
-        // Save and return
-        return menuItemRepository.save(menuItem);
+        MenuItem saved = menuItemRepository.saveAndFlush(menuItem);
+        syncRealtimeAvailability(saved);
+        return saved;
     }
 
     public List<MenuItem> getMenuByVendor(Long vendorId) {
@@ -56,5 +57,13 @@ public class MenuService {
     @Transactional
     public void deleteMenuItem(Long id) {
         menuItemRepository.deleteById(id);
+        realTimeSyncService.deleteMenuAvailability(id);
+    }
+
+    private void syncRealtimeAvailability(MenuItem menuItem) {
+        if (menuItem.getId() == null) {
+            return;
+        }
+        realTimeSyncService.updateMenuAvailability(menuItem.getId(), menuItem.isAvailable());
     }
 }

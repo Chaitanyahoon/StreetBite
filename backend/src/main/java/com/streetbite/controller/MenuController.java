@@ -2,7 +2,6 @@ package com.streetbite.controller;
 
 import com.streetbite.model.MenuItem;
 import com.streetbite.service.MenuService;
-import com.streetbite.service.RealTimeSyncService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -124,15 +123,8 @@ public class MenuController {
         }
     }
 
-    @Autowired
-    private RealTimeSyncService realTimeSyncService;
-
     @PutMapping("/{id}")
     public ResponseEntity<?> updateMenuItem(@PathVariable Long id, @RequestBody Map<String, Object> updates) {
-        System.out.println("=== UPDATE MENU ITEM ===");
-        System.out.println("Item ID: " + id);
-        System.out.println("Updates received: " + updates);
-
         return menuService.getMenuItemById(id)
                 .map(existingItem -> {
                     if (updates.containsKey("name"))
@@ -149,15 +141,10 @@ public class MenuController {
                         existingItem.setImageUrl((String) updates.get("imageUrl"));
                     if (updates.containsKey("isAvailable")) {
                         Boolean isAvailable = (Boolean) updates.get("isAvailable");
-                        System.out.println("Setting isAvailable to: " + isAvailable);
                         existingItem.setAvailable(isAvailable);
-                        // Sync to Firebase for real-time updates
-                        realTimeSyncService.updateMenuAvailability(existingItem.getId(), isAvailable);
                     }
 
-                    MenuItem saved = menuService.saveMenuItem(existingItem);
-                    System.out.println("Saved item isAvailable: " + saved.isAvailable());
-                    return ResponseEntity.ok(saved);
+                    return ResponseEntity.ok(menuService.saveMenuItem(existingItem));
                 })
                 .orElse(ResponseEntity.notFound().build());
     }

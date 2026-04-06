@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { db } from '@/lib/firebase-client'
 import { doc, onSnapshot } from 'firebase/firestore'
+import { realtimeDb, REALTIME_COLLECTIONS } from '@/lib/realtime'
 
 interface VendorLocation {
     latitude: number
@@ -24,7 +24,12 @@ export function useLiveVendorLocation(vendorId: string | number) {
             return
         }
 
-        const vendorDocRef = doc(db, 'live_vendors', String(vendorId))
+        if (!realtimeDb) {
+            setLoading(false)
+            return
+        }
+
+        const vendorDocRef = doc(realtimeDb, REALTIME_COLLECTIONS.vendorStatusAndLocation, String(vendorId))
 
         const unsubscribe = onSnapshot(
             vendorDocRef,

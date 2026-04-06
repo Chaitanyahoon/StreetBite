@@ -1,43 +1,40 @@
-# Server Configuration
-server.port=8081
-spring.application.name=streetbite-backend
+# Server
+SERVER_PORT=8081
 
-# Google Geocoding API Key
-google.geocoding.api.key=${GOOGLE_MAPS_API_KEY:}
+# Database: MySQL is the source of truth
+SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/streetbite?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+SPRING_DATASOURCE_USERNAME=root
+SPRING_DATASOURCE_PASSWORD=change_me
+SPRING_JPA_HIBERNATE_DDL_AUTO=update
+SPRING_JPA_SHOW_SQL=true
 
-# Firebase Configuration
-firebase.credentials.path=${GOOGLE_APPLICATION_CREDENTIALS:./firebase-key.json}
+# Auth
+JWT_SECRET=replace_with_a_random_32_plus_char_secret
+JWT_EXPIRATION_MS=86400000
 
+# Frontend / CORS / Cookies
+FRONTEND_URL=http://localhost:3000
+ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3001,http://localhost:4000
+APP_ENV=development
+COOKIE_SECURE=false
+COOKIE_SAMESITE=Lax
 
-# CORS Configuration
-# Handled by CorsConfig.java which listens to 'ALLOWED_ORIGINS' environment variable
-# cors.allowed-origins is not directly used by the custom config but kept for reference
-cors.allowed-origins=${ALLOWED_ORIGINS:http://localhost:3000,http://localhost:3001,http://localhost:4000}
+# Optional: Google Geocoding
+GOOGLE_GEOCODING_API_KEY=
 
-# Logging
-logging.level.com.streetbite=INFO
-logging.level.org.springframework.web=INFO
-logging.level.org.springframework.transaction=DEBUG
-logging.level.org.springframework.orm.jpa=DEBUG
-logging.level.org.hibernate.resource.transaction=DEBUG
+# Optional: Firebase Admin
+# Used only for realtime mirrors and push notifications.
+GOOGLE_APPLICATION_CREDENTIALS=./firebase-key.json
 
-# Database Configuration (MySQL)
-# Uses environment variables for Render/Aiven, falls back to localhost for dev
-spring.datasource.url=${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/streetbite?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
-spring.datasource.username=${SPRING_DATASOURCE_USERNAME:YOUR_DB_USERNAME}
-spring.datasource.password=${SPRING_DATASOURCE_PASSWORD:YOUR_DB_PASSWORD}
-spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
-
-# JPA / Hibernate
-spring.jpa.show-sql=true
-spring.jpa.hibernate.ddl-auto=update
-spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQLDialect
-
-# File Upload Limits
-spring.servlet.multipart.max-file-size=10MB
-spring.servlet.multipart.max-request-size=10MB
-
-# Email Configuration (SendGrid SMTP - Recommended)
-# Email Configuration (Resend SDK)
-# API Key provided by user
-resend.api.key=${RESEND_API_KEY:re_eGin4kSr_7GPExmray965WWUQdRb2cnPx}
+# Optional: SMTP mail
+SPRING_MAIL_HOST=
+SPRING_MAIL_PORT=587
+SPRING_MAIL_USERNAME=
+SPRING_MAIL_PASSWORD=
+SPRING_MAIL_SMTP_AUTH=true
+SPRING_MAIL_SMTP_STARTTLS_ENABLE=true
+SPRING_MAIL_SMTP_STARTTLS_REQUIRED=true
+SPRING_MAIL_SMTP_CONNECTION_TIMEOUT=10000
+SPRING_MAIL_SMTP_TIMEOUT=10000
+SPRING_MAIL_SMTP_WRITE_TIMEOUT=10000
+SPRING_MAIL_SMTP_SSL_TRUST=
