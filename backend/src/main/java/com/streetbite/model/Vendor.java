@@ -89,7 +89,13 @@ public class Vendor {
                 .replaceAll("-+", "-")
                 .replaceAll("^-|-$", "");
         if (base.isBlank()) base = "vendor";
-        return base + "-" + id;
+        
+        if (id != null) {
+            return base + "-" + id;
+        } else {
+            // Use timestamp to ensure uniqueness before ID is assigned
+            return base + "-" + Long.toString(System.currentTimeMillis(), 36);
+        }
     }
 
     // Getters and Setters
