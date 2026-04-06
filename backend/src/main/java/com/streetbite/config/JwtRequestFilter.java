@@ -34,7 +34,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         String jwt = null;
         String email = null;
 
-        // 1. Try to read JWT from the HttpOnly cookie first
+        // Sensitive operations are cookie-only. Do not accept bearer headers.
         if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
                 if (COOKIE_NAME.equals(cookie.getName())) {
@@ -44,15 +44,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             }
         }
 
-        // 2. Fallback to Authorization header (backward compatible)
-        if (jwt == null) {
-            final String authorizationHeader = request.getHeader("Authorization");
-            if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-                jwt = authorizationHeader.substring(7);
-            }
-        }
-
-        // 3. Extract email from JWT
+        // Extract email from JWT
         if (jwt != null) {
             try {
                 email = jwtUtil.extractEmail(jwt);

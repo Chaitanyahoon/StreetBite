@@ -2,6 +2,7 @@ package com.streetbite.controller;
 
 import com.streetbite.model.Vendor;
 import com.streetbite.service.VendorService;
+import com.streetbite.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +13,9 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/vendors")
 public class VendorController {
+
+    @Autowired
+    private JwtUtil jwtUtil;
 
     @Autowired
     private VendorService vendorService;
@@ -113,9 +117,26 @@ public class VendorController {
     private com.streetbite.service.RealTimeSyncService realTimeSyncService;
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateVendor(@PathVariable Long id, @RequestBody Map<String, Object> updates) {
+    public ResponseEntity<?> updateVendor(@PathVariable Long id, @RequestBody Map<String, Object> updates,
+            @CookieValue(value = "sb_token", required = false) String jwtToken) {
+        
+        // 1. Validate session
+        if (jwtToken == null || !jwtToken.contains(".") || jwtToken.split("\\.").length != 3) {
+            return ResponseEntity.status(401).body(Map.of("error", "Invalid session. Please log in again"));
+        }
+
+        String email = jwtUtil.extractEmail(jwtToken);
+        String role = jwtUtil.extractRole(jwtToken);
+
         return vendorService.getVendorById(id)
                 .map(existingVendor -> {
+                    // 2. Ownership check: Only the owner or an ADMIN can update
+                    boolean isOwner = existingVendor.getOwner() != null && existingVendor.getOwner().getEmail().equals(email);
+                    boolean isAdmin = "ADMIN".equalsIgnoreCase(role);
+
+                    if (!isOwner && !isAdmin) {
+                        return ResponseEntity.status(403).body(Map.of("error", "You do not have permission to update this vendor"));
+                    }
                     if (updates.containsKey("name")) {
                         existingVendor.setName((String) updates.get("name"));
                         // Regenerate slug when name changes
@@ -137,12 +158,7 @@ public class VendorController {
                             String statusStr = (String) updates.get("status");
                             com.streetbite.model.VendorStatus status = com.streetbite.model.VendorStatus
                                     .valueOf(statusStr);
-                            existingVendor.setStatus(status);
-                            
-                            // Keep isActive perfectly in sync with status
-                            boolean isSuspendedOrRejected = status == com.streetbite.model.VendorStatus.SUSPENDED || 
-                                                            status == com.streetbite.model.VendorStatus.REJECTED;
-                            existingVendor.setActive(!isSuspendedOrRejected);
+                            vendorService.applyStatusChange(existingVendor, status);
 
                             // Sync to Firebase
                             realTimeSyncService.updateVendorStatus(existingVendor.getId(), status);
@@ -204,11 +220,19 @@ public class VendorController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @Autowired
-    private com.streetbite.service.UserService userService;
-
     @PutMapping("/{id}/status")
-    public ResponseEntity<?> updateVendorStatus(@PathVariable Long id, @RequestBody Map<String, String> payload) {
+    public ResponseEntity<?> updateVendorStatus(@PathVariable Long id, @RequestBody Map<String, String> payload,
+            @CookieValue(value = "sb_token", required = false) String jwtToken) {
+        // 1. Admin Check
+        if (jwtToken == null || !jwtToken.contains(".") || jwtToken.split("\\.").length != 3) {
+            return ResponseEntity.status(401).body(Map.of("error", "Invalid session"));
+        }
+        
+        String role = jwtUtil.extractRole(jwtToken);
+        if (!"ADMIN".equalsIgnoreCase(role)) {
+            return ResponseEntity.status(403).body(Map.of("error", "Only admins can perform this action"));
+        }
+
         try {
             String statusStr = payload.get("status");
             if (statusStr == null) {
@@ -219,30 +243,8 @@ public class VendorController {
 
             return vendorService.getVendorById(id)
                     .map(vendor -> {
-                        vendor.setStatus(status);
-
-                        // Approve / Reactivate → make vendor and owner active
-                        if (status == com.streetbite.model.VendorStatus.APPROVED
-                                || status == com.streetbite.model.VendorStatus.AVAILABLE) {
-                            vendor.setActive(true);
-                            if (vendor.getOwner() != null) {
-                                vendor.getOwner().setActive(true);
-                                userService.saveUser(vendor.getOwner());
-                            }
-                        }
-
-                        // Suspend or Ban → deactivate vendor AND lock the owner account
-                        if (status == com.streetbite.model.VendorStatus.SUSPENDED
-                                || status == com.streetbite.model.VendorStatus.BANNED
-                                || status == com.streetbite.model.VendorStatus.REJECTED) {
-                            vendor.setActive(false);
-                            if (vendor.getOwner() != null) {
-                                vendor.getOwner().setActive(false);
-                                userService.saveUser(vendor.getOwner());
-                            }
-                        }
-
-                        vendorService.saveVendor(vendor);
+                        vendorService.applyStatusChange(vendor, status);
+                        realTimeSyncService.updateVendorStatus(vendor.getId(), status);
                         return ResponseEntity.ok(vendor);
                     })
                     .orElse(ResponseEntity.notFound().build());

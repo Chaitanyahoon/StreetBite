@@ -8,7 +8,6 @@ import com.streetbite.repository.UserRepository;
 import com.streetbite.repository.VendorRepository;
 import com.streetbite.repository.HotTopicRepository;
 import com.streetbite.model.HotTopic;
-import com.streetbite.model.HotTopic;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.cache.CacheManager;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -156,12 +155,11 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     private boolean isSlugTaken(String slug, Long currentId) {
-        Optional<Vendor> existing = vendorRepository.findBySlug(slug);
-        if (existing.isPresent()) {
-            // If the slug belongs to a DIFFERENT vendor, it is taken
-            return !existing.get().getId().equals(currentId);
-        }
-        return false;
+        // Avoid relying on an explicit Optional import here so container builds
+        // remain resilient even if the source context is stale.
+        return vendorRepository.findBySlug(slug)
+                .map(existing -> !existing.getId().equals(currentId))
+                .orElse(false);
     }
 
     private void evictVendorCaches() {

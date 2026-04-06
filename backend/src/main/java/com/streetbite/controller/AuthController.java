@@ -62,17 +62,11 @@ public class AuthController {
     private void setTokenCookie(HttpServletResponse response, String token) {
         Cookie cookie = new Cookie(COOKIE_NAME, token);
         cookie.setHttpOnly(true);
-        cookie.setSecure("true".equalsIgnoreCase(System.getenv("COOKIE_SECURE"))); // true in prod
+        cookie.setSecure(isCookieSecure());
         cookie.setPath("/");
         cookie.setMaxAge(COOKIE_MAX_AGE);
-        // SameSite via Set-Cookie header (Cookie class doesn't support SameSite directly)
         response.addCookie(cookie);
-        // Override with SameSite attribute
-        String setCookieHeader = String.format(
-                "%s=%s; Max-Age=%d; Path=/; HttpOnly; SameSite=Lax%s",
-                COOKIE_NAME, token, COOKIE_MAX_AGE,
-                "true".equalsIgnoreCase(System.getenv("COOKIE_SECURE")) ? "; Secure" : "");
-        response.setHeader("Set-Cookie", setCookieHeader);
+        response.setHeader("Set-Cookie", buildCookieHeader(token, COOKIE_MAX_AGE));
     }
 
     /**
@@ -81,9 +75,61 @@ public class AuthController {
     private void clearTokenCookie(HttpServletResponse response) {
         Cookie cookie = new Cookie(COOKIE_NAME, "");
         cookie.setHttpOnly(true);
+        cookie.setSecure(isCookieSecure());
         cookie.setPath("/");
         cookie.setMaxAge(0);
         response.addCookie(cookie);
+        response.setHeader("Set-Cookie", buildCookieHeader("", 0));
+    }
+
+    private boolean isCookieSecure() {
+        String cookieSecure = System.getenv("COOKIE_SECURE");
+        if (cookieSecure != null && !cookieSecure.isBlank()) {
+            return "true".equalsIgnoreCase(cookieSecure);
+        }
+
+        String appEnv = System.getenv("APP_ENV");
+        return appEnv != null && appEnv.equalsIgnoreCase("production");
+    }
+
+    private String resolveSameSite() {
+        String sameSite = System.getenv("COOKIE_SAMESITE");
+        if (sameSite != null && !sameSite.isBlank()) {
+            return sameSite.trim();
+        }
+
+        return isCookieSecure() ? "None" : "Lax";
+    }
+
+    private String buildCookieHeader(String token, int maxAge) {
+        StringBuilder header = new StringBuilder()
+                .append(COOKIE_NAME)
+                .append("=")
+                .append(token)
+                .append("; Max-Age=")
+                .append(maxAge)
+                .append("; Path=/; HttpOnly; SameSite=")
+                .append(resolveSameSite());
+
+        if (isCookieSecure()) {
+            header.append("; Secure");
+        }
+
+        return header.toString();
+    }
+
+    private String extractTokenFromCookie(HttpServletRequest request) {
+        if (request.getCookies() == null) {
+            return null;
+        }
+
+        for (Cookie cookie : request.getCookies()) {
+            if (COOKIE_NAME.equals(cookie.getName())) {
+                return cookie.getValue();
+            }
+        }
+
+        return null;
     }
 
     @PostMapping("/register")
@@ -156,10 +202,9 @@ public class AuthController {
 
             Map<String, Object> userData = buildUserData(savedUser);
 
-            // Return user data (token is in cookie, also in body for backward compat)
+            // Token is issued via HttpOnly cookie.
             return ResponseEntity.ok(Map.of(
                     "success", true,
-                    "token", token,
                     "user", userData));
         } catch (Exception e) {
             e.printStackTrace();
@@ -202,10 +247,9 @@ public class AuthController {
 
             Map<String, Object> userData = buildUserData(user);
 
-            // Return user data (token still in body for backward compat during migration)
+            // Token is issued via HttpOnly cookie.
             return ResponseEntity.ok(Map.of(
                     "success", true,
-                    "token", token,
                     "user", userData));
         } catch (Exception e) {
             e.printStackTrace();
@@ -218,27 +262,10 @@ public class AuthController {
      */
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(HttpServletRequest request) {
-        // Extract JWT from cookie
-        String token = null;
-        if (request.getCookies() != null) {
-            for (Cookie cookie : request.getCookies()) {
-                if (COOKIE_NAME.equals(cookie.getName())) {
-                    token = cookie.getValue();
-                    break;
-                }
-            }
-        }
-
-        // Fallback to Authorization header
-        if (token == null) {
-            String authHeader = request.getHeader("Authorization");
-            if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                token = authHeader.substring(7);
-            }
-        }
+        String token = extractTokenFromCookie(request);
 
         if (token == null) {
-            return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
+            return ResponseEntity.status(401).body(Map.of("error", "Authentication cookie is missing"));
         }
 
         try {

@@ -1,6 +1,7 @@
 package com.streetbite.service;
 
 import com.streetbite.model.Vendor;
+import com.streetbite.model.VendorStatus;
 import com.streetbite.repository.VendorRepository;
 import com.streetbite.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,6 +55,23 @@ public class VendorService {
 
     public Optional<Vendor> getVendorBySlug(String slug) {
         return vendorRepository.findBySlug(slug);
+    }
+
+    @Transactional
+    public Vendor applyStatusChange(Vendor vendor, VendorStatus status) {
+        vendor.setStatus(status);
+
+        boolean isBlockedStatus = status == VendorStatus.BANNED
+                || status == VendorStatus.SUSPENDED
+                || status == VendorStatus.REJECTED;
+        vendor.setActive(!isBlockedStatus);
+
+        if (vendor.getOwner() != null && status == VendorStatus.BANNED) {
+            vendor.getOwner().setActive(false);
+            userRepository.save(vendor.getOwner());
+        }
+
+        return vendorRepository.save(vendor);
     }
 
     @Transactional
