@@ -1,5 +1,6 @@
 package com.streetbite.controller;
 
+import com.streetbite.config.CookieSettings;
 import com.streetbite.model.User;
 import com.streetbite.model.Vendor;
 import com.streetbite.service.UserService;
@@ -35,6 +36,9 @@ public class AuthController {
     @Autowired
     private JwtUtil jwtUtil;
 
+    @Autowired
+    private CookieSettings cookieSettings;
+
     /**
      * Helper: build the user data map (without password hash).
      */
@@ -62,7 +66,7 @@ public class AuthController {
     private void setTokenCookie(HttpServletResponse response, String token) {
         Cookie cookie = new Cookie(COOKIE_NAME, token);
         cookie.setHttpOnly(true);
-        cookie.setSecure(isCookieSecure());
+        cookie.setSecure(cookieSettings.isSecure());
         cookie.setPath("/");
         cookie.setMaxAge(COOKIE_MAX_AGE);
         response.addCookie(cookie);
@@ -75,30 +79,11 @@ public class AuthController {
     private void clearTokenCookie(HttpServletResponse response) {
         Cookie cookie = new Cookie(COOKIE_NAME, "");
         cookie.setHttpOnly(true);
-        cookie.setSecure(isCookieSecure());
+        cookie.setSecure(cookieSettings.isSecure());
         cookie.setPath("/");
         cookie.setMaxAge(0);
         response.addCookie(cookie);
         response.setHeader("Set-Cookie", buildCookieHeader("", 0));
-    }
-
-    private boolean isCookieSecure() {
-        String cookieSecure = System.getenv("COOKIE_SECURE");
-        if (cookieSecure != null && !cookieSecure.isBlank()) {
-            return "true".equalsIgnoreCase(cookieSecure);
-        }
-
-        String appEnv = System.getenv("APP_ENV");
-        return appEnv != null && appEnv.equalsIgnoreCase("production");
-    }
-
-    private String resolveSameSite() {
-        String sameSite = System.getenv("COOKIE_SAMESITE");
-        if (sameSite != null && !sameSite.isBlank()) {
-            return sameSite.trim();
-        }
-
-        return isCookieSecure() ? "None" : "Lax";
     }
 
     private String buildCookieHeader(String token, int maxAge) {
@@ -109,9 +94,9 @@ public class AuthController {
                 .append("; Max-Age=")
                 .append(maxAge)
                 .append("; Path=/; HttpOnly; SameSite=")
-                .append(resolveSameSite());
+                .append(cookieSettings.getSameSite());
 
-        if (isCookieSecure()) {
+        if (cookieSettings.isSecure()) {
             header.append("; Secure");
         }
 

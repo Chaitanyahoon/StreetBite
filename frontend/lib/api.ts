@@ -22,7 +22,10 @@ const api = axios.create({
  */
 api.interceptors.response.use((res) => res.data, (error: any) => {
   if (error.response) {
-    if (error.response.status !== 403) {
+    const requestUrl = error.config?.url || ''
+    const isExpectedAnonymousAuthCheck = error.response.status === 401 && requestUrl.includes('/auth/me')
+
+    if (error.response.status !== 403 && !isExpectedAnonymousAuthCheck) {
       console.warn('API Error Details:', {
         status: error.response.status,
         data: error.response.data,

@@ -3,11 +3,11 @@ package com.streetbite.controller;
 import com.streetbite.model.HotTopic;
 import com.streetbite.model.TopicComment;
 import com.streetbite.model.User;
+import com.streetbite.security.AuthenticatedUserService;
 import com.streetbite.service.HotTopicService;
-import com.streetbite.repository.UserRepository;
-import com.streetbite.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,10 +21,7 @@ public class HotTopicController {
     private HotTopicService hotTopicService;
 
     @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private JwtUtil jwtUtil;
+    private AuthenticatedUserService authenticatedUserService;
 
     @GetMapping
     public List<HotTopic> getAllActive() {
@@ -54,15 +51,12 @@ public class HotTopicController {
 
     @PostMapping("/{id}/comment")
     public ResponseEntity<?> addComment(@PathVariable Long id, @RequestBody Map<String, String> payload,
-            @CookieValue(value = "sb_token", required = false) String jwtToken) {
+            Authentication authentication) {
         try {
-            // Validate token
-            if (jwtToken == null || !jwtToken.contains(".") || jwtToken.split("\\.").length != 3) {
+            User user = authenticatedUserService.findAuthenticatedUser(authentication).orElse(null);
+            if (user == null) {
                 return ResponseEntity.status(401).body(Map.of("error", "Invalid session. Please log in again"));
             }
-
-            String email = jwtUtil.extractEmail(jwtToken);
-            User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
 
             TopicComment comment = hotTopicService.addComment(id, user.getId(), payload.get("text"));
 
@@ -81,16 +75,12 @@ public class HotTopicController {
     }
 
     @PostMapping("/{id}/like")
-    public ResponseEntity<?> toggleLike(@PathVariable Long id,
-            @CookieValue(value = "sb_token", required = false) String jwtToken) {
+    public ResponseEntity<?> toggleLike(@PathVariable Long id, Authentication authentication) {
         try {
-            // Validate token
-            if (jwtToken == null || !jwtToken.contains(".") || jwtToken.split("\\.").length != 3) {
+            User user = authenticatedUserService.findAuthenticatedUser(authentication).orElse(null);
+            if (user == null) {
                 return ResponseEntity.status(401).body(Map.of("error", "Invalid session. Please log in again"));
             }
-
-            String email = jwtUtil.extractEmail(jwtToken);
-            User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
 
             hotTopicService.toggleLike(id, user.getId());
             return ResponseEntity.ok().build();

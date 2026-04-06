@@ -1,9 +1,13 @@
 package com.streetbite.controller;
 
 import com.streetbite.model.AnalyticsEvent;
+import com.streetbite.model.User;
+import com.streetbite.model.Vendor;
+import com.streetbite.security.AuthenticatedUserService;
 import com.streetbite.service.AnalyticsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -17,6 +21,7 @@ import java.time.format.DateTimeFormatter;
 @RequestMapping("/api/analytics")
 public class AnalyticsController {
 
+    private final AuthenticatedUserService authenticatedUserService;
     private final com.streetbite.repository.UserRepository userRepository;
     private final com.streetbite.repository.VendorRepository vendorRepository;
     private final com.streetbite.repository.ReviewRepository reviewRepository;
@@ -27,11 +32,13 @@ public class AnalyticsController {
 
     @Autowired
     public AnalyticsController(AnalyticsService analyticsService,
+            AuthenticatedUserService authenticatedUserService,
             com.streetbite.repository.UserRepository userRepository,
             com.streetbite.repository.VendorRepository vendorRepository,
             com.streetbite.repository.ReviewRepository reviewRepository,
             com.streetbite.repository.FavoriteRepository favoriteRepository) {
         this.analyticsService = analyticsService;
+        this.authenticatedUserService = authenticatedUserService;
         this.userRepository = userRepository;
         this.vendorRepository = vendorRepository;
         this.reviewRepository = reviewRepository;
@@ -39,9 +46,14 @@ public class AnalyticsController {
     }
 
     @PostMapping("/event")
-    public ResponseEntity<?> logEvent(@RequestBody AnalyticsEvent event) {
+    public ResponseEntity<?> logEvent(@RequestBody AnalyticsEvent event, Authentication authentication) {
         try {
-            analyticsService.logEvent(event.getVendorId(), event.getEventType(), event.getUserId(), event.getItemId());
+            User currentUser = authenticatedUserService.findAuthenticatedUser(authentication).orElse(null);
+            if (currentUser == null) {
+                return ResponseEntity.status(401).body(Map.of("error", "Login required"));
+            }
+
+            analyticsService.logEvent(event.getVendorId(), event.getEventType(), currentUser.getId(), event.getItemId());
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
@@ -49,8 +61,26 @@ public class AnalyticsController {
     }
 
     @GetMapping("/vendor/{vendorId}")
-    public ResponseEntity<?> getVendorAnalytics(@PathVariable Long vendorId) {
+    public ResponseEntity<?> getVendorAnalytics(@PathVariable Long vendorId, Authentication authentication) {
         try {
+            User currentUser = authenticatedUserService.findAuthenticatedUser(authentication).orElse(null);
+            if (currentUser == null) {
+                return ResponseEntity.status(401).body(Map.of("error", "Login required"));
+            }
+
+            Vendor vendor = vendorRepository.findById(vendorId).orElse(null);
+            if (vendor == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            boolean isAdmin = authenticatedUserService.isAdmin(currentUser);
+            boolean isOwner = vendor.getOwner() != null
+                    && vendor.getOwner().getEmail().equals(currentUser.getEmail());
+
+            if (!isAdmin && !isOwner) {
+                return ResponseEntity.status(403).body(Map.of("error", "Access denied"));
+            }
+
             Map<String, Object> analytics = analyticsService.getVendorAnalytics(vendorId);
             return ResponseEntity.ok(analytics);
         } catch (Exception e) {

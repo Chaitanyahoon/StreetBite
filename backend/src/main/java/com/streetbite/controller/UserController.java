@@ -1,10 +1,11 @@
 package com.streetbite.controller;
 
 import com.streetbite.model.User;
+import com.streetbite.security.AuthenticatedUserService;
 import com.streetbite.service.UserService;
-import com.streetbite.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -17,23 +18,19 @@ public class UserController {
     private UserService userService;
 
     @Autowired
-    private JwtUtil jwtUtil;
+    private AuthenticatedUserService authenticatedUserService;
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getUser(@PathVariable Long id,
-            @CookieValue(value = "sb_token", required = false) String jwtToken) {
-        // 1. Validate session
-        if (jwtToken == null || !jwtToken.contains(".") || jwtToken.split("\\.").length != 3) {
+    public ResponseEntity<?> getUser(@PathVariable Long id, Authentication authentication) {
+        User currentUser = authenticatedUserService.findAuthenticatedUser(authentication).orElse(null);
+        if (currentUser == null) {
             return ResponseEntity.status(401).body(Map.of("error", "Invalid session"));
         }
 
-        String email = jwtUtil.extractEmail(jwtToken);
-        String role = jwtUtil.extractRole(jwtToken);
-
         return userService.getUserById(id)
                 .map(user -> {
-                    // 2. Ownership or Admin check
-                    if (!user.getEmail().equals(email) && !"ADMIN".equalsIgnoreCase(role)) {
+                    if (!user.getEmail().equals(currentUser.getEmail())
+                            && !authenticatedUserService.isAdmin(currentUser)) {
                         return ResponseEntity.status(403).body(Map.of("error", "Access denied"));
                     }
                     return ResponseEntity.ok(user);
@@ -43,19 +40,16 @@ public class UserController {
 
     @PutMapping("/{id}")
     public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody User userUpdates,
-            @CookieValue(value = "sb_token", required = false) String jwtToken) {
-        // 1. Validate session
-        if (jwtToken == null || !jwtToken.contains(".") || jwtToken.split("\\.").length != 3) {
+            Authentication authentication) {
+        User currentUser = authenticatedUserService.findAuthenticatedUser(authentication).orElse(null);
+        if (currentUser == null) {
             return ResponseEntity.status(401).body(Map.of("error", "Invalid session"));
         }
 
-        String email = jwtUtil.extractEmail(jwtToken);
-        String role = jwtUtil.extractRole(jwtToken);
-
         return userService.getUserById(id)
                 .map(existingUser -> {
-                    // 2. Ownership or Admin check
-                    if (!existingUser.getEmail().equals(email) && !"ADMIN".equalsIgnoreCase(role)) {
+                    if (!existingUser.getEmail().equals(currentUser.getEmail())
+                            && !authenticatedUserService.isAdmin(currentUser)) {
                         return ResponseEntity.status(403).body(Map.of("error", "Permission denied"));
                     }
                     if (userUpdates.getDisplayName() != null)
@@ -72,13 +66,12 @@ public class UserController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getAllUsers(@CookieValue(value = "sb_token", required = false) String jwtToken) {
-        // 1. Admin only
-        if (jwtToken == null)
+    public ResponseEntity<?> getAllUsers(Authentication authentication) {
+        User currentUser = authenticatedUserService.findAuthenticatedUser(authentication).orElse(null);
+        if (currentUser == null) {
             return ResponseEntity.status(401).body(Map.of("error", "Login required"));
-
-        String role = jwtUtil.extractRole(jwtToken);
-        if (!"ADMIN".equalsIgnoreCase(role)) {
+        }
+        if (!authenticatedUserService.isAdmin(currentUser)) {
             return ResponseEntity.status(403).body(Map.of("error", "Admin access only"));
         }
 
@@ -88,14 +81,12 @@ public class UserController {
     @PutMapping("/{id}/status")
     public ResponseEntity<?> updateUserStatus(@PathVariable Long id,
             @RequestBody java.util.Map<String, Boolean> payload,
-            @CookieValue(value = "sb_token", required = false) String jwtToken) {
-
-        // 1. Admin only
-        if (jwtToken == null)
+            Authentication authentication) {
+        User currentUser = authenticatedUserService.findAuthenticatedUser(authentication).orElse(null);
+        if (currentUser == null) {
             return ResponseEntity.status(401).body(Map.of("error", "Login required"));
-
-        String role = jwtUtil.extractRole(jwtToken);
-        if (!"ADMIN".equalsIgnoreCase(role)) {
+        }
+        if (!authenticatedUserService.isAdmin(currentUser)) {
             return ResponseEntity.status(403).body(Map.of("error", "Only admins can change account status"));
         }
 

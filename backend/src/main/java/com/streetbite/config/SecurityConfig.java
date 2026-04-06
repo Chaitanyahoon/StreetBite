@@ -13,9 +13,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -28,6 +26,12 @@ public class SecurityConfig {
 
     @Autowired
     private JwtRequestFilter jwtRequestFilter;
+
+    @Autowired
+    private OriginValidationFilter originValidationFilter;
+
+    @Autowired
+    private AllowedOrigins allowedOrigins;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -50,14 +54,25 @@ public class SecurityConfig {
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/reviews/**").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/promotions/**").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/hottopics").permitAll()
-                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/announcements/**").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/announcements/active").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/announcements/hot").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/zodiac/**").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/gamification/leaderboard").permitAll()
 
                         // Admin Only — administrative controls
                         .requestMatchers("/api/hottopics/admin/**").hasRole("ADMIN")
                         .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/hottopics").hasRole("ADMIN")
                         .requestMatchers(org.springframework.http.HttpMethod.PUT, "/api/hottopics/**").hasRole("ADMIN")
                         .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/hottopics/**").hasRole("ADMIN")
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/vendors/admin/all").hasRole("ADMIN")
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/announcements").hasRole("ADMIN")
+                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/announcements").hasRole("ADMIN")
+                        .requestMatchers(org.springframework.http.HttpMethod.PUT, "/api/announcements/**").hasRole("ADMIN")
+                        .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/announcements/**").hasRole("ADMIN")
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/reports").hasRole("ADMIN")
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/reports/status/**").hasRole("ADMIN")
+                        .requestMatchers(org.springframework.http.HttpMethod.PUT, "/api/reports/**").hasRole("ADMIN")
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/analytics/platform").hasRole("ADMIN")
 
                         // Public — newsletter & health
                         .requestMatchers("/api/newsletter/**").permitAll()
@@ -73,6 +88,7 @@ public class SecurityConfig {
                         // Default — require authentication for everything else (admin, writes, etc.)
                         .anyRequest().authenticated()
                 )
+                .addFilterBefore(originValidationFilter, JwtRequestFilter.class)
                 .addFilterBefore(jwtRequestFilter,
                         org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
 
@@ -82,7 +98,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(resolveAllowedOrigins());
+        configuration.setAllowedOriginPatterns(allowedOrigins.getAllowedOrigins());
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setExposedHeaders(Arrays.asList("Set-Cookie"));
@@ -92,34 +108,5 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
-    }
-
-    private List<String> resolveAllowedOrigins() {
-        String allowedOrigins = System.getenv("ALLOWED_ORIGINS");
-        String frontendUrl = System.getenv("FRONTEND_URL");
-
-        List<String> origins = new ArrayList<>();
-
-        if (allowedOrigins != null && !allowedOrigins.isBlank()) {
-            for (String origin : allowedOrigins.split(",")) {
-                String trimmed = origin.trim();
-                if (!trimmed.isEmpty()) {
-                    origins.add(trimmed);
-                }
-            }
-        }
-
-        if (frontendUrl != null && !frontendUrl.isBlank()) {
-            String trimmed = frontendUrl.trim();
-            if (!origins.contains(trimmed)) {
-                origins.add(trimmed);
-            }
-        }
-
-        if (origins.isEmpty()) {
-            origins.add("http://localhost:3000");
-        }
-
-        return origins;
     }
 }

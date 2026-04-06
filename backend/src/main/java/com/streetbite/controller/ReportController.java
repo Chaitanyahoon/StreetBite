@@ -1,9 +1,12 @@
 package com.streetbite.controller;
 
 import com.streetbite.model.Report;
+import com.streetbite.model.User;
 import com.streetbite.repository.ReportRepository;
+import com.streetbite.security.AuthenticatedUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,6 +19,9 @@ public class ReportController {
     @Autowired
     private ReportRepository reportRepository;
 
+    @Autowired
+    private AuthenticatedUserService authenticatedUserService;
+
     @GetMapping
     public List<Report> getAllReports() {
         return reportRepository.findAll();
@@ -27,8 +33,14 @@ public class ReportController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createReport(@RequestBody Report report) {
+    public ResponseEntity<?> createReport(@RequestBody Report report, Authentication authentication) {
         try {
+            User currentUser = authenticatedUserService.findAuthenticatedUser(authentication).orElse(null);
+            if (currentUser == null) {
+                return ResponseEntity.status(401).body(Map.of("error", "Login required"));
+            }
+
+            report.setReporterId(currentUser.getId());
             report.setStatus("PENDING");
             Report savedReport = reportRepository.save(report);
             return ResponseEntity.ok(savedReport);

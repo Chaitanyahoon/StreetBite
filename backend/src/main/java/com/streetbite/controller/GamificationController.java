@@ -1,6 +1,7 @@
 package com.streetbite.controller;
 
 import com.streetbite.model.User;
+import com.streetbite.security.AuthenticatedUserService;
 import com.streetbite.service.GamificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,9 @@ public class GamificationController {
     @Autowired
     private GamificationService gamificationService;
 
+    @Autowired
+    private AuthenticatedUserService authenticatedUserService;
+
     /**
      * Get top 10 users leaderboard (PUBLIC - No authentication required)
      * This allows visitors to see the leaderboard and get excited about
@@ -34,15 +38,9 @@ public class GamificationController {
      */
     @GetMapping("/stats")
     public ResponseEntity<Map<String, Object>> getUserStats(Authentication authentication) {
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return ResponseEntity.status(401).body(Map.of("error", "User not authenticated"));
-        }
-
-        String email = authentication.getName();
-        User user = getUserByEmail(email);
-
+        User user = authenticatedUserService.findAuthenticatedUser(authentication).orElse(null);
         if (user == null) {
-            return ResponseEntity.status(404).body(Map.of("error", "User not found"));
+            return ResponseEntity.status(401).body(Map.of("error", "User not authenticated"));
         }
 
         Map<String, Object> stats = gamificationService.getUserStats(user.getId());
@@ -57,15 +55,9 @@ public class GamificationController {
             @PathVariable String actionType,
             Authentication authentication) {
 
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return ResponseEntity.status(401).body(Map.of("error", "User not authenticated"));
-        }
-
-        String email = authentication.getName();
-        User user = getUserByEmail(email);
-
+        User user = authenticatedUserService.findAuthenticatedUser(authentication).orElse(null);
         if (user == null) {
-            return ResponseEntity.status(404).body(Map.of("error", "User not found"));
+            return ResponseEntity.status(401).body(Map.of("error", "User not authenticated"));
         }
 
         User updatedUser = gamificationService.awardXp(user.getId(), actionType);
@@ -78,12 +70,5 @@ public class GamificationController {
         response.put("level", newLevel);
 
         return ResponseEntity.ok(response);
-    }
-
-    /**
-     * Helper method to get user by email
-     */
-    private User getUserByEmail(String email) {
-        return gamificationService.getUserByEmail(email);
     }
 }

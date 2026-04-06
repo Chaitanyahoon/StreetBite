@@ -4,8 +4,8 @@ import com.streetbite.model.Favorite;
 import com.streetbite.model.User;
 import com.streetbite.model.Vendor;
 import com.streetbite.repository.FavoriteRepository;
-import com.streetbite.repository.UserRepository;
 import com.streetbite.repository.VendorRepository;
+import com.streetbite.security.AuthenticatedUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -23,7 +23,7 @@ public class FavoriteController {
     private FavoriteRepository favoriteRepository;
 
     @Autowired
-    private UserRepository userRepository;
+    private AuthenticatedUserService authenticatedUserService;
 
     @Autowired
     private VendorRepository vendorRepository;
@@ -33,15 +33,9 @@ public class FavoriteController {
      */
     @GetMapping
     public ResponseEntity<?> getUserFavorites(Authentication authentication) {
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return ResponseEntity.status(401).body(Map.of("error", "User not authenticated"));
-        }
-
-        String email = authentication.getName();
-        User user = userRepository.findByEmail(email).orElse(null);
-
+        User user = authenticatedUserService.findAuthenticatedUser(authentication).orElse(null);
         if (user == null) {
-            return ResponseEntity.status(404).body(Map.of("error", "User not found"));
+            return ResponseEntity.status(401).body(Map.of("error", "User not authenticated"));
         }
 
         List<Vendor> favoriteVendors = favoriteRepository.findFavoriteVendorsByUserId(user.getId());
@@ -53,13 +47,7 @@ public class FavoriteController {
      */
     @GetMapping("/check/{vendorId}")
     public ResponseEntity<?> checkFavorite(@PathVariable Long vendorId, Authentication authentication) {
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return ResponseEntity.ok(Map.of("isFavorite", false));
-        }
-
-        String email = authentication.getName();
-        User user = userRepository.findByEmail(email).orElse(null);
-
+        User user = authenticatedUserService.findAuthenticatedUser(authentication).orElse(null);
         if (user == null) {
             return ResponseEntity.ok(Map.of("isFavorite", false));
         }
@@ -73,15 +61,9 @@ public class FavoriteController {
      */
     @PostMapping("/{vendorId}")
     public ResponseEntity<?> addFavorite(@PathVariable Long vendorId, Authentication authentication) {
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return ResponseEntity.status(401).body(Map.of("error", "User not authenticated"));
-        }
-
-        String email = authentication.getName();
-        User user = userRepository.findByEmail(email).orElse(null);
-
+        User user = authenticatedUserService.findAuthenticatedUser(authentication).orElse(null);
         if (user == null) {
-            return ResponseEntity.status(404).body(Map.of("error", "User not found"));
+            return ResponseEntity.status(401).body(Map.of("error", "User not authenticated"));
         }
 
         Vendor vendor = vendorRepository.findById(vendorId).orElse(null);
@@ -106,15 +88,9 @@ public class FavoriteController {
     @DeleteMapping("/{vendorId}")
     @Transactional
     public ResponseEntity<?> removeFavorite(@PathVariable Long vendorId, Authentication authentication) {
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return ResponseEntity.status(401).body(Map.of("error", "User not authenticated"));
-        }
-
-        String email = authentication.getName();
-        User user = userRepository.findByEmail(email).orElse(null);
-
+        User user = authenticatedUserService.findAuthenticatedUser(authentication).orElse(null);
         if (user == null) {
-            return ResponseEntity.status(404).body(Map.of("error", "User not found"));
+            return ResponseEntity.status(401).body(Map.of("error", "User not authenticated"));
         }
 
         favoriteRepository.deleteByUserIdAndVendorId(user.getId(), vendorId);

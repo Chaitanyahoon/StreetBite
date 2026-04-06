@@ -1,29 +1,61 @@
 import { Metadata } from 'next'
 import VendorDetailClient from './VendorDetailClient'
+import { BreadcrumbListSchema } from '@/components/seo/breadcrumb-schema'
 
-// Define the shape of our Route params
 type Props = {
-    params: { id: string }
+    params: Promise<{ id: string }>
+}
+
+type VendorSeoData = {
+    id: string | number
+    slug?: string
+    name?: string
+    description?: string
+    cuisine?: string
+    address?: string
+    latitude?: number
+    longitude?: number
+    city?: string
+    state?: string
+    imageUrl?: string
+    bannerImageUrl?: string
+}
+
+async function fetchVendorSeoData(idOrSlug: string): Promise<VendorSeoData | null> {
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8081/api'
+
+    try {
+        const response = await fetch(`${backendUrl}/vendors/${idOrSlug}`, {
+            next: { revalidate: 60 } // revalidate every minute
+        })
+
+        if (!response.ok) {
+            return null
+        }
+
+        const vendor = await response.json()
+        return vendor && vendor.name ? vendor : null
+    } catch {
+        return null
+    }
 }
 
 // Ensure the page acts dynamically but leverages server-side fetching for metadata
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8081/api'
-    const baseUrl = process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://streetbite.app'
+    const { id } = await params
+    const baseUrl = process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://streetbitego.vercel.app'
+    const vendor = await fetchVendorSeoData(id)
+
+    if (!vendor) {
+        return {
+            title: 'Street Food Vendor | StreetBite',
+            description: 'Discover this amazing street food vendor on StreetBite.',
+        }
+    }
 
     try {
-        // We fetch minimal data purely for SEO purposes
-        const response = await fetch(`${backendUrl}/vendors/${params.id}`, {
-            next: { revalidate: 60 } // revalidate every minute
-        })
-        const vendor = await response.json()
-
-        if (!vendor || !vendor.name) {
-            return { title: 'Vendor Not Found | StreetBite' }
-        }
-
         const vendorImage = vendor.bannerImageUrl || vendor.imageUrl || `${baseUrl}/og-image.jpg`
-        const description = vendor.description 
+        const description = vendor.description
                             ? vendor.description.substring(0, 155) + '...'
                             : `Discover the best of ${vendor.name} on StreetBite.`
 
@@ -56,8 +88,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
                 'google-site-verification': 'googlee1e3021816c42e23.html',
             }
         }
-    } catch (error) {
-        // Fallback if the backend request fails during ISR
+    } catch {
         return {
             title: 'Street Food Vendor | StreetBite',
             description: 'Discover this amazing street food vendor on StreetBite.',
@@ -65,19 +96,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     }
 }
 
-import { BreadcrumbListSchema } from '@/components/seo/breadcrumb-schema'
-
 // -------------------------------------------------------------------------------- //
 // Server Component Layout 
 // Renders the Client Component transparently 
 // -------------------------------------------------------------------------------- //
 export default async function VendorDetailServerPage({ params }: Props) {
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://streetbite.onrender.com/api'
+    const { id } = await params
     const baseUrl = 'https://streetbitego.vercel.app'
-    
-    // Fetch data for JSON-LD (Next.js deduplicates this fetch)
-    const response = await fetch(`${backendUrl}/vendors/${params.id}`)
-    const vendor = await response.json()
+    const vendor = await fetchVendorSeoData(id)
 
     const jsonLd = vendor && vendor.name ? {
         '@context': 'https://schema.org',
@@ -117,7 +143,7 @@ export default async function VendorDetailServerPage({ params }: Props) {
                 />
             )}
             {breadcrumbs.length > 0 && <BreadcrumbListSchema items={breadcrumbs} />}
-            <VendorDetailClient vendorIdParams={params.id} />
+            <VendorDetailClient vendorIdParams={id} />
         </>
     )
 }

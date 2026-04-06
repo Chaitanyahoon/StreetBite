@@ -1,10 +1,12 @@
 package com.streetbite.controller;
 
+import com.streetbite.model.User;
 import com.streetbite.model.Vendor;
+import com.streetbite.security.AuthenticatedUserService;
 import com.streetbite.service.VendorService;
-import com.streetbite.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,7 +17,7 @@ import java.util.Map;
 public class VendorController {
 
     @Autowired
-    private JwtUtil jwtUtil;
+    private AuthenticatedUserService authenticatedUserService;
 
     @Autowired
     private VendorService vendorService;
@@ -118,21 +120,17 @@ public class VendorController {
 
     @PutMapping("/{id}")
     public ResponseEntity<?> updateVendor(@PathVariable Long id, @RequestBody Map<String, Object> updates,
-            @CookieValue(value = "sb_token", required = false) String jwtToken) {
-        
-        // 1. Validate session
-        if (jwtToken == null || !jwtToken.contains(".") || jwtToken.split("\\.").length != 3) {
+            Authentication authentication) {
+        User currentUser = authenticatedUserService.findAuthenticatedUser(authentication).orElse(null);
+        if (currentUser == null) {
             return ResponseEntity.status(401).body(Map.of("error", "Invalid session. Please log in again"));
         }
 
-        String email = jwtUtil.extractEmail(jwtToken);
-        String role = jwtUtil.extractRole(jwtToken);
-
         return vendorService.getVendorById(id)
                 .map(existingVendor -> {
-                    // 2. Ownership check: Only the owner or an ADMIN can update
-                    boolean isOwner = existingVendor.getOwner() != null && existingVendor.getOwner().getEmail().equals(email);
-                    boolean isAdmin = "ADMIN".equalsIgnoreCase(role);
+                    boolean isOwner = existingVendor.getOwner() != null
+                            && existingVendor.getOwner().getEmail().equals(currentUser.getEmail());
+                    boolean isAdmin = authenticatedUserService.isAdmin(currentUser);
 
                     if (!isOwner && !isAdmin) {
                         return ResponseEntity.status(403).body(Map.of("error", "You do not have permission to update this vendor"));
@@ -222,14 +220,13 @@ public class VendorController {
 
     @PutMapping("/{id}/status")
     public ResponseEntity<?> updateVendorStatus(@PathVariable Long id, @RequestBody Map<String, String> payload,
-            @CookieValue(value = "sb_token", required = false) String jwtToken) {
-        // 1. Admin Check
-        if (jwtToken == null || !jwtToken.contains(".") || jwtToken.split("\\.").length != 3) {
+            Authentication authentication) {
+        User currentUser = authenticatedUserService.findAuthenticatedUser(authentication).orElse(null);
+        if (currentUser == null) {
             return ResponseEntity.status(401).body(Map.of("error", "Invalid session"));
         }
-        
-        String role = jwtUtil.extractRole(jwtToken);
-        if (!"ADMIN".equalsIgnoreCase(role)) {
+
+        if (!authenticatedUserService.isAdmin(currentUser)) {
             return ResponseEntity.status(403).body(Map.of("error", "Only admins can perform this action"));
         }
 
