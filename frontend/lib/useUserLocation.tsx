@@ -11,8 +11,26 @@ type StoredLocation = {
   manual?: boolean
 }
 
+type GeocodeCoordinates = {
+  lat: number
+  lng: number
+}
+
 const COOKIE_NAME = 'userLocation'
 const COOKIE_EXPIRES_HOURS = 24
+
+const COMMON_CITY_COORDINATES: Record<string, GeocodeCoordinates> = {
+  mumbai: { lat: 19.076, lng: 72.8777 },
+  pune: { lat: 18.5204, lng: 73.8567 },
+  nashik: { lat: 19.9975, lng: 73.7898 },
+  delhi: { lat: 28.6139, lng: 77.209 },
+  bengaluru: { lat: 12.9716, lng: 77.5946 },
+  bangalore: { lat: 12.9716, lng: 77.5946 },
+  hyderabad: { lat: 17.385, lng: 78.4867 },
+  chennai: { lat: 13.0827, lng: 80.2707 },
+  kolkata: { lat: 22.5726, lng: 88.3639 },
+  ahmedabad: { lat: 23.0225, lng: 72.5714 },
+}
 
 function getCookie(name: string): string | null {
   if (typeof document === 'undefined') return null
@@ -41,6 +59,29 @@ function deleteCookie(name: string) {
 
 function normalizeCityInput(city: string) {
   return city.trim().replace(/\s+/g, ' ')
+}
+
+function normalizeCityKey(city: string) {
+  return normalizeCityInput(city).toLowerCase()
+}
+
+function extractResolvedCityName(result: any, fallbackCity: string) {
+  const preferredTypes = [
+    'locality',
+    'administrative_area_level_2',
+    'administrative_area_level_3',
+    'administrative_area_level_1',
+  ]
+
+  const components = Array.isArray(result?.address_components) ? result.address_components : []
+  for (const type of preferredTypes) {
+    const component = components.find((item: any) => Array.isArray(item?.types) && item.types.includes(type))
+    if (typeof component?.long_name === 'string' && component.long_name.trim()) {
+      return normalizeCityInput(component.long_name)
+    }
+  }
+
+  return normalizeCityInput(fallbackCity)
 }
 
 export function useUserLocation() {
@@ -172,15 +213,45 @@ export function useUserLocation() {
         return 'Enter a city name'
       }
 
-      const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''
-      if (!apiKey) {
-        return 'Google Maps API key is missing'
-      }
-
       setLoading(true)
       setError(null)
 
       try {
+        const staticCoordinates = COMMON_CITY_COORDINATES[normalizeCityKey(normalizedCity)]
+        if (staticCoordinates) {
+          setUserLocation(staticCoordinates, { cityName: normalizedCity, manual: true })
+          return null
+        }
+
+        const googleMaps = (window as any).google?.maps
+        if (googleMaps?.Geocoder) {
+          const geocoder = new googleMaps.Geocoder()
+          const geocoderResult = await new Promise<any>((resolve) => {
+            geocoder.geocode({ address: normalizedCity }, (results: any, status: string) => {
+              resolve({ results, status })
+            })
+          })
+
+          if (geocoderResult.status === 'OK' && geocoderResult.results?.[0]?.geometry?.location) {
+            const location = geocoderResult.results[0].geometry.location
+            const coordinates = {
+              lat: typeof location.lat === 'function' ? location.lat() : location.lat,
+              lng: typeof location.lng === 'function' ? location.lng() : location.lng,
+            }
+
+            if (typeof coordinates.lat === 'number' && typeof coordinates.lng === 'number') {
+              const resolvedCityName = extractResolvedCityName(geocoderResult.results[0], normalizedCity)
+              setUserLocation(coordinates, { cityName: resolvedCityName, manual: true })
+              return null
+            }
+          }
+        }
+
+        const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''
+        if (!apiKey) {
+          return 'Unable to look up this city right now'
+        }
+
         const response = await fetch(
           `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(normalizedCity)}&key=${apiKey}`
         )
@@ -191,6 +262,16 @@ export function useUserLocation() {
         }
 
         const data = await response.json()
+        if (data.status === 'REQUEST_DENIED') {
+          return 'City lookup is unavailable right now'
+        }
+        if (data.status === 'OVER_QUERY_LIMIT') {
+          return 'City lookup is busy right now'
+        }
+        if (data.status === 'ZERO_RESULTS') {
+          return 'City not found'
+        }
+
         const result = data.results?.[0]
         const coordinates = result?.geometry?.location
 
@@ -198,7 +279,7 @@ export function useUserLocation() {
           return 'City not found'
         }
 
-        const resolvedCityName = normalizedCity
+        const resolvedCityName = extractResolvedCityName(result, normalizedCity)
         setUserLocation(
           { lat: coordinates.lat, lng: coordinates.lng },
           { cityName: resolvedCityName, manual: true }
