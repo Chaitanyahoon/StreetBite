@@ -134,14 +134,14 @@ export default function OffersPage() {
     <div className="min-h-screen bg-[#FADFA1] bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px]">
       <BreadcrumbListSchema
         items={[
-          { name: 'Home', item: 'https://streetbitego.vercel.app' },
-          { name: 'Offers', item: 'https://streetbitego.vercel.app/offers' },
+          { name: 'Home', item: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://streetbitego.vercel.app'}` },
+          { name: 'Offers', item: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://streetbitego.vercel.app'}/offers` },
         ]}
       />
       <CollectionPageSchema
         name="StreetBite Offers"
         description="Browse active local street food deals, promo codes, and limited-time vendor offers on StreetBite."
-        url="https://streetbitego.vercel.app/offers"
+        url={`${process.env.NEXT_PUBLIC_SITE_URL || 'https://streetbitego.vercel.app'}/offers`}
       />
       <Navbar />
 

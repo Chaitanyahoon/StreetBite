@@ -23,24 +23,6 @@ export default function Home() {
     { value: '4.9', label: 'Average rating', icon: Star },
   ]
 
-  const discoverySignals = [
-    {
-      icon: MapPin,
-      title: 'Live nearby',
-      detail: 'Spot active stalls and fast-moving favorites around your area.',
-    },
-    {
-      icon: Clock,
-      title: 'Open right now',
-      detail: 'Cut the dead ends. See who is actually serving before you head out.',
-    },
-    {
-      icon: TrendingUp,
-      title: 'Worth the detour',
-      detail: 'Reviews, momentum, and crowd signals make the good options obvious.',
-    },
-  ]
-
   return (
     <div className="min-h-screen flex flex-col overflow-hidden">
       {/* Enhanced Navbar */}
@@ -51,129 +33,106 @@ export default function Home() {
 
 
         {/* Hero Section */}
-        <section className="relative overflow-hidden py-14 md:py-20 lg:py-24">
+        <section className="relative overflow-hidden py-16 md:py-24 lg:py-28">
           <div className="absolute inset-0 -z-10">
-            <div className="absolute left-[-10%] top-10 h-72 w-72 rounded-full bg-orange-300/25 blur-3xl md:h-96 md:w-96" />
-            <div className="absolute right-[-8%] top-0 h-72 w-72 rounded-full bg-yellow-300/30 blur-3xl md:h-[26rem] md:w-[26rem]" />
-            <div className="absolute bottom-[-12%] left-1/2 h-60 w-60 -translate-x-1/2 rounded-full bg-teal-200/20 blur-3xl md:h-80 md:w-80" />
+            <div className="absolute left-[-8%] top-10 h-56 w-56 rounded-[4rem] border-4 border-black/12 bg-orange-300/20 blur-2xl md:h-72 md:w-72" />
+            <div className="absolute right-[6%] top-16 h-28 w-28 rotate-12 rounded-[2rem] border-4 border-black/12 bg-yellow-300/35 shadow-[var(--shadow-soft)] md:h-40 md:w-40" />
+            <div className="absolute bottom-20 left-[8%] h-20 w-20 -rotate-12 rounded-full border-4 border-black/10 bg-teal-200/45 shadow-[var(--shadow-soft)] md:h-28 md:w-28" />
+            <div className="absolute bottom-8 right-[-4%] h-60 w-60 rounded-full bg-orange-200/25 blur-3xl md:h-80 md:w-80" />
             <div className="absolute inset-x-0 top-0 h-px bg-black/10" />
           </div>
 
-          <div className="max-w-screen-2xl mx-auto px-4 md:px-6">
-            <div className="grid gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(320px,0.95fr)] lg:items-center">
-              <div className="max-w-3xl">
-                <div className="animate-slide-up">
-                  <LiveCityBadge />
+          <div className="max-w-screen-2xl mx-auto px-4 md:px-6 text-center">
+            <div className="mx-auto max-w-5xl">
+              <div className="animate-slide-up">
+                <LiveCityBadge />
+              </div>
+
+              <div className="mt-8 inline-flex items-center gap-2 rounded-full border-2 border-black bg-white px-4 py-2 text-[0.72rem] font-black uppercase tracking-[0.24em] text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] animate-slide-up">
+                <Sparkles className="h-4 w-4 text-primary" />
+                Find the best food fast
+              </div>
+
+              <h1 className="mt-8 text-5xl leading-[0.9] font-black tracking-[-0.06em] text-black sm:text-6xl md:text-8xl lg:text-9xl animate-slide-up">
+                FIND THE
+                <br />
+                <span className="relative inline-block mt-2 text-primary drop-shadow-[4px_4px_0px_rgba(0,0,0,1)]">
+                  BEST FOOD
+                  <span className="absolute -right-8 -top-8 hidden md:block">
+                    <Sparkles className="h-12 w-12 fill-yellow-300 text-yellow-300 stroke-black stroke-2 animate-spin-slow" />
+                  </span>
+                </span>
+              </h1>
+
+              <p className="mt-8 max-w-2xl mx-auto text-lg font-bold leading-8 text-black/75 md:text-2xl animate-slide-up">
+                Discover hidden gems, trending stalls, and authentic flavors right in your neighborhood.
+              </p>
+
+              <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row animate-slide-up">
+                <Link href="/explore">
+                  <Button
+                    size="lg"
+                    className="h-16 w-full sm:w-auto rounded-full border-4 border-black bg-black px-10 text-lg font-black uppercase tracking-[0.12em] text-white shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] hover:bg-primary hover:shadow-[10px_10px_0px_0px_rgba(0,0,0,1)]"
+                  >
+                    <Search className="mr-2 h-6 w-6 stroke-[2.6]" />
+                    Find food
+                  </Button>
+                </Link>
+                <Link href="/signup?type=vendor">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="h-16 w-full sm:w-auto rounded-full border-4 border-black bg-white px-10 text-lg font-black uppercase tracking-[0.12em] text-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:bg-yellow-300 hover:shadow-[10px_10px_0px_0px_rgba(0,0,0,1)]"
+                  >
+                    <ChefHat className="mr-2 h-6 w-6 stroke-[2.6]" />
+                    List stall
+                  </Button>
+                </Link>
+              </div>
+
+              <div className="mt-8 flex flex-col gap-3 text-sm font-semibold text-black/70 sm:flex-row sm:flex-wrap sm:justify-center sm:items-center animate-fade-in">
+                <div className="inline-flex items-center justify-center gap-2 rounded-full bg-black px-4 py-2 text-white shadow-[var(--shadow-soft)]">
+                  <MapPin className="h-4 w-4" />
+                  Live vendor discovery
                 </div>
-
-                <div className="mt-8 inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/80 px-4 py-2 text-[0.72rem] font-bold uppercase tracking-[0.24em] text-black/80 shadow-[var(--shadow-soft)] backdrop-blur">
-                  <Sparkles className="h-4 w-4 text-primary" />
-                  Street food, minus the guesswork
+                <div className="inline-flex items-center justify-center gap-2 rounded-full border border-black/10 bg-white/80 px-4 py-2 shadow-[var(--shadow-soft)]">
+                  <Clock className="h-4 w-4 text-primary" />
+                  Open-now filtering
                 </div>
-
-                <h1 className="headline-display mt-6 max-w-4xl text-5xl leading-[0.92] text-black sm:text-6xl md:text-7xl lg:text-[5.5rem] animate-slide-up">
-                  Street food
-                  <span className="block text-primary">worth the detour.</span>
-                </h1>
-
-                <p className="mt-6 max-w-2xl text-lg font-medium leading-8 text-black/72 md:text-xl animate-slide-up">
-                  Discover authentic stalls, see who is actually open, and choose with confidence before you step out.
-                </p>
-
-                <div className="mt-8 flex flex-col gap-3 text-sm font-semibold text-black/70 sm:flex-row sm:flex-wrap sm:items-center animate-fade-in">
-                  <div className="inline-flex items-center gap-2 rounded-full bg-black px-4 py-2 text-white shadow-[var(--shadow-soft)]">
-                    <MapPin className="h-4 w-4" />
-                    Live vendor discovery
-                  </div>
-                  <div className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/80 px-4 py-2 shadow-[var(--shadow-soft)]">
-                    <Clock className="h-4 w-4 text-primary" />
-                    Open-now filtering
-                  </div>
-                  <div className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/80 px-4 py-2 shadow-[var(--shadow-soft)]">
-                    <Star className="h-4 w-4 fill-primary text-primary" />
-                    Verified reviews
-                  </div>
-                </div>
-
-                <div className="mt-10 flex flex-col gap-4 sm:flex-row animate-slide-up">
-                  <Link href="/explore">
-                    <Button size="lg" className="h-14 w-full rounded-full px-8 text-base font-black uppercase tracking-[0.12em] sm:w-auto">
-                      <Search className="mr-1 h-5 w-5 stroke-[2.6]" />
-                      Explore vendors
-                    </Button>
-                  </Link>
-                  <Link href="/signup?type=vendor">
-                    <Button size="lg" variant="outline" className="h-14 w-full rounded-full px-8 text-base font-black uppercase tracking-[0.12em] sm:w-auto">
-                      <ChefHat className="mr-1 h-5 w-5 stroke-[2.6]" />
-                      List your stall
-                    </Button>
-                  </Link>
-                </div>
-
-                <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3">
-                  {heroStats.map((stat) => {
-                    const Icon = stat.icon
-                    return (
-                      <div key={stat.label} className="surface-panel rounded-[1.4rem] px-5 py-4">
-                        <div className="flex items-center gap-2 text-3xl font-black text-black md:text-4xl">
-                          <span>{stat.value}</span>
-                          {Icon ? <Icon className="h-5 w-5 fill-primary text-primary md:h-6 md:w-6" /> : null}
-                        </div>
-                        <p className="mt-2 text-sm font-semibold uppercase tracking-[0.14em] text-black/55">
-                          {stat.label}
-                        </p>
-                      </div>
-                    )
-                  })}
+                <div className="inline-flex items-center justify-center gap-2 rounded-full border border-black/10 bg-white/80 px-4 py-2 shadow-[var(--shadow-soft)]">
+                  <TrendingUp className="h-4 w-4 text-primary" />
+                  Trending local picks
                 </div>
               </div>
 
-              <div className="relative animate-fade-in">
-                <div className="surface-panel-strong rounded-[2rem] p-5 md:p-7">
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <p className="eyebrow-label text-black/55">Tonight&apos;s edge</p>
-                      <h2 className="mt-3 max-w-xs text-3xl font-black leading-tight text-black md:text-4xl">
-                        Find the right stall fast.
-                      </h2>
-                    </div>
-                    <div className="rounded-2xl bg-black p-3 text-white shadow-[var(--shadow-soft)]">
-                      <TrendingUp className="h-6 w-6" />
-                    </div>
-                  </div>
+              <div className="mt-16 grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-8 max-w-4xl mx-auto animate-fade-in">
+                {heroStats.map((stat, index) => {
+                  const Icon = stat.icon
+                  const cardClassName =
+                    index === 1
+                      ? 'bg-yellow-300 md:translate-y-6'
+                      : 'bg-white'
 
-                  <div className="mt-6 grid gap-4">
-                    {discoverySignals.map((signal) => {
-                      const Icon = signal.icon
-                      return (
-                        <div key={signal.title} className="rounded-[1.4rem] border border-black/10 bg-white/88 p-4 shadow-[var(--shadow-soft)] backdrop-blur">
-                          <div className="flex items-start gap-4">
-                            <div className="mt-1 rounded-2xl bg-accent px-3 py-3 text-accent-foreground">
-                              <Icon className="h-5 w-5" />
-                            </div>
-                            <div>
-                              <h3 className="text-lg font-black text-black">{signal.title}</h3>
-                              <p className="mt-1 text-sm font-medium leading-6 text-black/65">{signal.detail}</p>
-                            </div>
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
-
-                  <div className="mt-6 flex flex-col gap-3 rounded-[1.6rem] bg-black px-5 py-5 text-white md:flex-row md:items-center md:justify-between">
-                    <div>
-                      <p className="eyebrow-label text-white/60">Built for both sides</p>
-                      <p className="mt-2 text-base font-semibold text-white/85">
-                        Foodies discover faster. Vendors show up when it matters.
+                  return (
+                    <div
+                      key={stat.label}
+                      className={`rounded-[1.8rem] border-4 border-black px-5 py-5 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-transform hover:-translate-y-1 ${cardClassName}`}
+                    >
+                      <div className="flex items-center justify-center gap-2 text-4xl font-black text-black md:text-5xl">
+                        <span>{stat.value}</span>
+                        {Icon ? <Icon className="h-6 w-6 fill-primary text-primary md:h-7 md:w-7" /> : null}
+                      </div>
+                      <p className="mt-3 text-[0.72rem] font-black uppercase tracking-[0.2em] text-black/55 md:text-xs">
+                        {stat.label}
                       </p>
                     </div>
-                    <Link href="/about" className="inline-flex items-center gap-2 text-sm font-black uppercase tracking-[0.14em] text-primary-foreground/90">
-                      See how it works
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  </div>
-                </div>
+                  )
+                })}
+              </div>
+
+              <div className="mt-10 inline-flex items-center gap-2 rounded-full bg-white/80 px-4 py-2 text-sm font-semibold text-black/65 shadow-[var(--shadow-soft)] backdrop-blur">
+                <ArrowRight className="h-4 w-4 text-primary" />
+                Street food, minus the guesswork
               </div>
             </div>
           </div>

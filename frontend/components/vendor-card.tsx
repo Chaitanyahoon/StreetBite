@@ -19,8 +19,6 @@ interface VendorCardProps {
   status?: string
 }
 
-const OPEN_STATUSES = new Set(['AVAILABLE', 'BUSY'])
-
 function getStatusLabel(status?: string) {
   if (status === 'BUSY') {
     return 'Busy'
@@ -92,7 +90,7 @@ export function VendorCard({
             {statusLabel ? (
               <span
                 className={`shrink-0 rounded-full px-3 py-1.5 text-[0.68rem] font-black uppercase tracking-[0.16em] ${
-                  OPEN_STATUSES.has(status || '')
+                  status === 'AVAILABLE'
                     ? 'bg-[#f8dd8a] text-black'
                     : 'bg-white/88 text-black/65'
                 }`}
@@ -132,7 +130,7 @@ export function VendorCard({
                 <Star size={15} className="fill-primary text-primary" />
                 <span className="text-[0.68rem] font-black uppercase tracking-[0.16em]">Reviews</span>
               </div>
-              <p className="mt-2 text-sm font-black text-black">{reviews} reviews</p>
+              <p className="mt-2 text-sm font-black text-black">{reviews} {reviews === 1 ? 'review' : 'reviews'}</p>
             </div>
           </div>
 
