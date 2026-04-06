@@ -25,7 +25,6 @@ public class JwtUtil {
         SECRET_KEY = (envSecret != null && !envSecret.isEmpty())
                 ? envSecret
                 : "StreetBiteSecretKeyForJWTTokenGeneration2024MustBe256BitsLong!!";
-        System.out.println("JWT Secret loaded: " + SECRET_KEY.substring(0, 15) + "...");
     }
 
     private Key getSigningKey() {

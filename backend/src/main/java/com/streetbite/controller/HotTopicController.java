@@ -54,7 +54,7 @@ public class HotTopicController {
 
     @PostMapping("/{id}/comment")
     public ResponseEntity<?> addComment(@PathVariable Long id, @RequestBody Map<String, String> payload,
-            @CookieValue(value = "jwt", required = false) String jwtToken) {
+            @CookieValue(value = "sb_token", required = false) String jwtToken) {
         try {
             // Validate token
             if (jwtToken == null || !jwtToken.contains(".") || jwtToken.split("\\.").length != 3) {
@@ -82,7 +82,7 @@ public class HotTopicController {
 
     @PostMapping("/{id}/like")
     public ResponseEntity<?> toggleLike(@PathVariable Long id,
-            @CookieValue(value = "jwt", required = false) String jwtToken) {
+            @CookieValue(value = "sb_token", required = false) String jwtToken) {
         try {
             // Validate token
             if (jwtToken == null || !jwtToken.contains(".") || jwtToken.split("\\.").length != 3) {

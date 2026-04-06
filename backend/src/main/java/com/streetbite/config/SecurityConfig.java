@@ -30,14 +30,41 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable()) // Disable CSRF for REST API
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Enable CORS
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Stateless
-                                                                                                              // sessions
-                                                                                                              // (JWT)
+                .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Allow all requests for now (development mode)
-                        .anyRequest().permitAll())
+                        // Public — authentication endpoints
+                        .requestMatchers("/api/auth/**").permitAll()
+
+                        // Public — read-only vendor browsing
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/vendors").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/vendors/search").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/vendors/slug/**").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/vendors/{id}").permitAll()
+
+                        // Public — read-only content
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/menu/**").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/reviews/**").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/promotions/**").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/hottopics").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/announcements/**").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/zodiac/**").permitAll()
+
+                        // Public — newsletter & health
+                        .requestMatchers("/api/newsletter/**").permitAll()
+                        .requestMatchers("/api/health").permitAll()
+
+                        // Authenticated — any logged-in user
+                        .requestMatchers("/api/favorites/**").authenticated()
+                        .requestMatchers("/api/gamification/**").authenticated()
+                        .requestMatchers("/api/reports/**").authenticated()
+                        .requestMatchers("/api/hottopics/*/comment").authenticated()
+                        .requestMatchers("/api/hottopics/*/like").authenticated()
+
+                        // Default — require authentication for everything else (admin, writes, etc.)
+                        .anyRequest().authenticated()
+                )
                 .addFilterBefore(jwtRequestFilter,
                         org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
 

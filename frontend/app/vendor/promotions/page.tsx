@@ -17,7 +17,7 @@ interface Promotion {
   code: string
   description: string
   discount: string
-  minOrder: number
+  minSpend: number
   expiryDate: string
   usageCount: number
   maxUsage: number
@@ -28,7 +28,7 @@ interface FormData {
   code: string
   description: string
   discount: string
-  minOrder: string
+  minSpend: string
   maxUsage: string
   expiryDate: string
   active: boolean
@@ -45,7 +45,7 @@ export default function Promotions() {
     code: '',
     description: '',
     discount: '',
-    minOrder: '',
+    minSpend: '',
     maxUsage: '100',
     expiryDate: '',
     active: true,
@@ -89,7 +89,7 @@ export default function Promotions() {
           code: p.promoCode,
           description: p.title,
           discount: `${p.discountValue}${p.discountType === 'PERCENTAGE' ? '%' : '₹'}`,
-          minOrder: p.minOrderValue || 0,
+          minSpend: p.minOrderValue || 0,
           expiryDate: p.endDate,
           usageCount: p.currentUses || 0,
           maxUsage: p.maxUses || 100,
@@ -127,7 +127,7 @@ export default function Promotions() {
         description: formData.description,
         discountType: isPercentage ? 'PERCENTAGE' : 'FIXED',
         discountValue: discountValue,
-        minOrderValue: formData.minOrder ? parseFloat(formData.minOrder) : 0,
+        minOrderValue: formData.minSpend ? parseFloat(formData.minSpend) : 0,
         promoCode: formData.code,
         endDate: formData.expiryDate || null,
         isActive: formData.active,
@@ -155,7 +155,7 @@ export default function Promotions() {
           code: p.promoCode,
           description: p.title,
           discount: `${p.discountValue}${p.discountType === 'PERCENTAGE' ? '%' : '₹'}`,
-          minOrder: p.minOrderValue || 0,
+          minSpend: p.minOrderValue || 0,
           expiryDate: p.endDate,
           usageCount: p.currentUses || 0,
           maxUsage: p.maxUses || 100,
@@ -164,7 +164,7 @@ export default function Promotions() {
       })
       setPromotions(uiPromotions)
 
-      setFormData({ code: '', description: '', discount: '', minOrder: '', maxUsage: '100', expiryDate: '', active: true })
+      setFormData({ code: '', description: '', discount: '', minSpend: '', maxUsage: '100', expiryDate: '', active: true })
       setEditingPromo(null)
       setIsDialogOpen(false)
     } catch (err: any) {
@@ -181,7 +181,7 @@ export default function Promotions() {
       code: promo.code,
       description: promo.description,
       discount: promo.discount,
-      minOrder: promo.minOrder.toString(),
+      minSpend: promo.minSpend.toString(),
       maxUsage: promo.maxUsage.toString(),
       expiryDate: promo.expiryDate ? promo.expiryDate.split('T')[0] : '',
       active: promo.active,
@@ -204,7 +204,7 @@ export default function Promotions() {
           code: p.promoCode,
           description: p.title,
           discount: `${p.discountValue}${p.discountType === 'PERCENTAGE' ? '%' : '₹'}`,
-          minOrder: p.minOrderValue || 0,
+          minSpend: p.minOrderValue || 0,
           expiryDate: p.endDate,
           usageCount: p.currentUses || 0,
           maxUsage: p.maxUses || 100,
@@ -248,7 +248,7 @@ export default function Promotions() {
           setIsDialogOpen(open)
           if (!open) {
             setEditingPromo(null)
-            setFormData({ code: '', description: '', discount: '', minOrder: '', maxUsage: '100', expiryDate: '' })
+            setFormData({ code: '', description: '', discount: '', minSpend: '', maxUsage: '100', expiryDate: '' })
           }
         }}>
           <DialogTrigger asChild>
@@ -278,7 +278,7 @@ export default function Promotions() {
                 <Label htmlFor="description">Description</Label>
                 <Input
                   id="description"
-                  placeholder="e.g., 20% off on all orders"
+                  placeholder="e.g., 20% off all items"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 />
@@ -294,13 +294,13 @@ export default function Promotions() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="minOrder">Min Order Value (₹)</Label>
+                  <Label htmlFor="minSpend">Min. Spend (₹)</Label>
                   <Input
-                    id="minOrder"
+                    id="minSpend"
                     type="number"
                     placeholder="100"
-                    value={formData.minOrder}
-                    onChange={(e) => setFormData({ ...formData, minOrder: e.target.value })}
+                    value={formData.minSpend}
+                    onChange={(e) => setFormData({ ...formData, minSpend: e.target.value })}
                   />
                 </div>
               </div>
@@ -363,7 +363,7 @@ export default function Promotions() {
                   <TableHead>Code</TableHead>
                   <TableHead>Description</TableHead>
                   <TableHead>Discount</TableHead>
-                  <TableHead>Min Order</TableHead>
+                  <TableHead>Min. Spend</TableHead>
                   <TableHead>Usage</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Actions</TableHead>
@@ -379,7 +379,7 @@ export default function Promotions() {
                     </TableCell>
                     <TableCell className="text-sm">{promo.description}</TableCell>
                     <TableCell className="font-semibold text-orange-600">{promo.discount}</TableCell>
-                    <TableCell>₹{promo.minOrder}</TableCell>
+                    <TableCell>₹{promo.minSpend}</TableCell>
                     <TableCell>
                       <div className="text-sm">
                         <p className="font-medium">{promo.usageCount}/{promo.maxUsage}</p>

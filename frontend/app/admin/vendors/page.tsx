@@ -17,7 +17,7 @@ interface Vendor {
   city: string
   email: string
   phone: string
-  status: 'APPROVED' | 'PENDING' | 'SUSPENDED' | 'REJECTED' | 'AVAILABLE' | 'BUSY' | 'UNAVAILABLE'
+  status: 'APPROVED' | 'PENDING' | 'SUSPENDED' | 'REJECTED' | 'AVAILABLE' | 'BUSY' | 'UNAVAILABLE' | 'BANNED'
   joined: string
   rating: number
   revenue: string
@@ -80,6 +80,8 @@ export default function VendorManagement() {
       case 'SUSPENDED':
       case 'REJECTED':
         return 'bg-red-100 text-red-700'
+      case 'BANNED':
+        return 'bg-red-200 text-red-900 font-black'
       default:
         return 'bg-gray-100 text-gray-700'
     }
@@ -115,6 +117,7 @@ export default function VendorManagement() {
               <option value="PENDING">Pending</option>
               <option value="REJECTED">Rejected</option>
               <option value="SUSPENDED">Suspended</option>
+              <option value="BANNED">Banned</option>
             </select>
           </div>
         </CardContent>
@@ -242,6 +245,18 @@ export default function VendorManagement() {
                                 >
                                   Suspend Vendor
                                 </Button>
+                                <Button
+                                  className="flex-1 bg-red-900 hover:bg-red-950 text-white gap-2"
+                                  onClick={async () => {
+                                    if (confirm('⚠️ PERMANENT BAN: This will ban the vendor AND lock their account. Are you sure?')) {
+                                      await vendorApi.updateStatus(vendor.id.toString(), 'BANNED')
+                                      fetchVendors()
+                                    }
+                                  }}
+                                >
+                                  <XCircle className="w-4 h-4" />
+                                  Ban Vendor
+                                </Button>
                               </div>
                             )}
                             {vendor.status === 'SUSPENDED' && (
@@ -255,6 +270,22 @@ export default function VendorManagement() {
                                 >
                                   <CheckCircle className="w-4 h-4" />
                                   Unsuspend / Re-activate
+                                </Button>
+                              </div>
+                            )}
+                            {vendor.status === 'BANNED' && (
+                              <div className="flex gap-2 pt-4 border-t">
+                                <Button
+                                  className="flex-1 bg-blue-600 hover:bg-blue-700 gap-2"
+                                  onClick={async () => {
+                                    if (confirm('This will unban the vendor and reactivate their account. Continue?')) {
+                                      await vendorApi.updateStatus(vendor.id.toString(), 'APPROVED')
+                                      fetchVendors()
+                                    }
+                                  }}
+                                >
+                                  <CheckCircle className="w-4 h-4" />
+                                  Unban Vendor
                                 </Button>
                               </div>
                             )}

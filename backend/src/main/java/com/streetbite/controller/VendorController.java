@@ -211,16 +211,28 @@ public class VendorController {
             return vendorService.getVendorById(id)
                     .map(vendor -> {
                         vendor.setStatus(status);
-                        // If approved, ensure it's active
+
+                        // Approve / Reactivate → make vendor and owner active
                         if (status == com.streetbite.model.VendorStatus.APPROVED
                                 || status == com.streetbite.model.VendorStatus.AVAILABLE) {
                             vendor.setActive(true);
-                            // Also reactivate the owner user if they exist
                             if (vendor.getOwner() != null) {
                                 vendor.getOwner().setActive(true);
                                 userService.saveUser(vendor.getOwner());
                             }
                         }
+
+                        // Suspend or Ban → deactivate vendor AND lock the owner account
+                        if (status == com.streetbite.model.VendorStatus.SUSPENDED
+                                || status == com.streetbite.model.VendorStatus.BANNED
+                                || status == com.streetbite.model.VendorStatus.REJECTED) {
+                            vendor.setActive(false);
+                            if (vendor.getOwner() != null) {
+                                vendor.getOwner().setActive(false);
+                                userService.saveUser(vendor.getOwner());
+                            }
+                        }
+
                         vendorService.saveVendor(vendor);
                         return ResponseEntity.ok(vendor);
                     })

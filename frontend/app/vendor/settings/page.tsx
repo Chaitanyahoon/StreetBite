@@ -38,7 +38,6 @@ export default function Settings() {
   const [displayPreview, setDisplayPreview] = useState<string | null>(null)
 
   const [settings, setSettings] = useState({
-    autoAcceptOrders: true,
     notifications: true,
     weeklyReports: true,
     emailPromos: false,
@@ -552,19 +551,8 @@ export default function Settings() {
               <CardContent className="p-6 space-y-5">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label className="text-sm font-medium">Auto Accept</Label>
-                    <p className="text-xs text-muted-foreground">Automatically accept orders</p>
-                  </div>
-                  <Switch
-                    checked={settings.autoAcceptOrders}
-                    onCheckedChange={(c) => setSettings({ ...settings, autoAcceptOrders: c })}
-                  />
-                </div>
-                <Separator />
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
                     <Label className="text-sm font-medium">Notifications</Label>
-                    <p className="text-xs text-muted-foreground">Receive order alerts</p>
+                    <p className="text-xs text-muted-foreground">Receive review & engagement alerts</p>
                   </div>
                   <Switch
                     checked={settings.notifications}

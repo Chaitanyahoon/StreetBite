@@ -60,17 +60,17 @@ export default function Analytics() {
     // Create CSV content
     const csvData = [
       ['Metric', 'Value'],
-      ['Total Revenue', `₹${analytics.totalRevenue}`],
-      ['Total Orders', analytics.totalOrders],
+      ['Profile Views', analytics.profileViews],
+      ['Direction Clicks', analytics.directionClicks],
       ['Average Rating', analytics.averageRating],
-      ['Active Customers', analytics.activeCustomers],
+      ['Total Reviews', analytics.totalReviews],
       ['Menu Items', menuItems.length],
       [''],
-      ['Top Items', 'Sales', 'Revenue'],
+      ['Top Items', 'Views', 'Clicks'],
       ...(analytics.topItems || []).map((item: any) => [
         item.name,
-        item.sales,
-        `₹${item.revenue}`
+        item.views,
+        item.clicks
       ])
     ]
 
@@ -108,23 +108,23 @@ export default function Analytics() {
     if (!acc[category]) {
       acc[category] = 0
     }
-    acc[category] += item.totalOrders || 0
+    acc[category] += 1
     return acc
   }, {})
 
 
-  const totalCategoryOrders = Object.values(categoryBreakdown).reduce((a: any, b: any) => a + b, 0) || 1
+  const totalCategoryItems = Object.values(categoryBreakdown).reduce((a: any, b: any) => a + b, 0) || 1
   const categoryData = Object.entries(categoryBreakdown).map(([name, value]: any, idx) => ({
     name,
-    value: Math.round((Number(value) / Number(totalCategoryOrders)) * 100),
+    value: Math.round((Number(value) / Number(totalCategoryItems)) * 100),
     color: ['#FF7A32', '#FFA45C', '#FFD6B3', '#FFE5D0', '#FFF0E5'][idx % 5]
   }))
 
   const customerMetrics = [
-    { metric: 'Total Revenue', value: `₹${(analytics?.totalRevenue ?? 0).toFixed(0)}`, change: 'All time' },
-    { metric: 'Total Orders', value: analytics?.totalOrders ?? 0, change: 'All time' },
-    { metric: 'Average Rating', value: `${(analytics?.averageRating ?? 0).toFixed(1)}/5`, change: 'Menu items' },
-    { metric: 'Active Customers', value: analytics?.activeCustomers ?? 0, change: 'Estimated' },
+    { metric: 'Profile Views', value: analytics?.profileViews ?? 0, change: 'Last 7 days' },
+    { metric: 'Direction Clicks', value: analytics?.directionClicks ?? 0, change: 'Last 7 days' },
+    { metric: 'Average Rating', value: `${(analytics?.averageRating ?? 0).toFixed(1)}/5`, change: `${analytics?.totalReviews ?? 0} reviews` },
+    { metric: 'Menu Interactions', value: analytics?.menuInteractions ?? 0, change: 'Last 7 days' },
   ]
 
   return (
@@ -168,8 +168,8 @@ export default function Analytics() {
         <div className="lg:col-span-2">
           <Card className="border-none shadow-lg bg-white/40 backdrop-blur-xl">
             <CardHeader>
-              <CardTitle>Top Selling Items</CardTitle>
-              <CardDescription>Best performing menu items</CardDescription>
+              <CardTitle>Most Popular Items</CardTitle>
+              <CardDescription>Items with most engagement</CardDescription>
             </CardHeader>
             <CardContent>
               {analytics.topItems && analytics.topItems.length > 0 ? (
@@ -182,16 +182,16 @@ export default function Analytics() {
                         </div>
                         <div>
                           <p className="font-medium">{item.name}</p>
-                          <p className="text-xs text-muted-foreground">{item.sales} sales</p>
+                          <p className="text-xs text-muted-foreground">{item.views} views</p>
                         </div>
                       </div>
-                      <p className="font-bold text-orange-600">₹{item.revenue}</p>
+                      <p className="font-bold text-orange-600">{item.clicks} clicks</p>
                     </div>
                   ))}
                 </div>
               ) : (
                 <div className="text-center py-8 text-muted-foreground">
-                  No sales data yet
+                  No engagement data yet
                 </div>
               )}
             </CardContent>
@@ -200,8 +200,8 @@ export default function Analytics() {
 
         <Card className="border-none shadow-lg bg-white/40 backdrop-blur-xl">
           <CardHeader>
-            <CardTitle>Sales by Category</CardTitle>
-            <CardDescription>Distribution of orders</CardDescription>
+            <CardTitle>Menu by Category</CardTitle>
+            <CardDescription>Distribution of menu items</CardDescription>
           </CardHeader>
           <CardContent>
             {categoryData.length > 0 ? (

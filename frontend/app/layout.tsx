@@ -18,6 +18,7 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://streetbite.app'),
   title: {
     default: 'StreetBite — Discover Amazing Street Food Near You',
     template: '%s | StreetBite',

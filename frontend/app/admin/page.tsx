@@ -3,7 +3,7 @@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { TrendingUp, Users, ShoppingCart, AlertCircle, ShieldCheck, Trash2 } from 'lucide-react'
+import { TrendingUp, Users, Heart, AlertCircle, ShieldCheck, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { analyticsApi, vendorApi, announcementApi } from '@/lib/api'
 
@@ -11,7 +11,7 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState<any>({
     totalUsers: 0,
     totalVendors: 0,
-    totalOrders: 0,
+    totalFavorites: 0,
     totalReviews: 0,
     recentActivity: []
   })
@@ -116,7 +116,7 @@ export default function AdminDashboard() {
                 ["Total Vendors", stats.totalVendors],
                 ["Total Users", stats.totalUsers],
                 ["Total Reviews", stats.totalReviews],
-                ["Total Orders", stats.totalOrders],
+                ["Total Favorites", stats.totalFavorites],
                 [], // Empty row for spacer
                 ["Recent Vendors"],
                 ["Name", "Cuisine", "Status", "Date"]
@@ -221,7 +221,7 @@ export default function AdminDashboard() {
                 </div>
               </div>
               <div className="p-4 bg-gradient-to-br from-green-100 to-green-200 rounded-xl shadow-inner">
-                <ShoppingCart className="w-6 h-6 text-green-700" />
+                <Heart className="w-6 h-6 text-green-700" />
               </div>
             </div>
           </CardContent>

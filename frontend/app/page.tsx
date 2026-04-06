@@ -1,16 +1,13 @@
-'use client'
-
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { MapPin, Search, Star, ChefHat, ArrowRight, Sparkles, TrendingUp, Clock, Utensils, ScanEye } from 'lucide-react'
 import { Logo } from '@/components/logo'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
-import { useCityName } from '@/hooks/use-city-name'
+import { LiveCityBadge } from '@/components/live-city-badge'
 import { ScrollingTicker } from '@/components/scrolling-ticker'
 
 export default function Home() {
-  const { cityName, loading } = useCityName()
 
   return (
     <div className="min-h-screen flex flex-col overflow-hidden">
@@ -31,15 +28,7 @@ export default function Home() {
 
           <div className="max-w-screen-2xl mx-auto px-4 text-center relative z-10">
             {/* Live Badge */}
-            <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-all cursor-default group transform -rotate-1">
-              <span className="relative flex h-3 w-3">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500 border border-black"></span>
-              </span>
-              <span className="text-sm font-black text-black tracking-wide uppercase">
-                Live in <span className="bg-black text-white px-2 py-0.5 rounded ml-1 group-hover:bg-orange-500 transition-colors">{loading ? '...' : (cityName?.trim() ? cityName : 'YOUR CITY')}</span>
-              </span>
-            </div>
+            <LiveCityBadge />
 
             {/* Main Headline */}
             <h1 className="mt-8 text-6xl md:text-8xl lg:text-9xl font-black tracking-tighter text-black leading-[0.9] animate-slide-up">

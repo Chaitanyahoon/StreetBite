@@ -21,16 +21,13 @@ public class AnalyticsService {
 
     private final AnalyticsRepository analyticsRepository;
     private final MenuItemRepository menuItemRepository;
-    private final com.streetbite.repository.OrderRepository orderRepository;
     private final com.streetbite.repository.ReviewRepository reviewRepository;
 
     @Autowired
     public AnalyticsService(AnalyticsRepository analyticsRepository, MenuItemRepository menuItemRepository,
-            com.streetbite.repository.OrderRepository orderRepository,
             com.streetbite.repository.ReviewRepository reviewRepository) {
         this.analyticsRepository = analyticsRepository;
         this.menuItemRepository = menuItemRepository;
-        this.orderRepository = orderRepository;
         this.reviewRepository = reviewRepository;
     }
 
@@ -97,10 +94,7 @@ public class AnalyticsService {
             return itemMap;
         }).collect(Collectors.toList());
 
-        // Real Data from Orders and Reviews
-        java.math.BigDecimal totalRevenue = orderRepository.sumTotalAmountByVendorId(vendorId);
-        Long totalOrders = orderRepository.countByVendorId(vendorId);
-        Long activeCustomers = orderRepository.countDistinctUserIdByVendorId(vendorId);
+        // Real Data from Reviews
         Double averageRating = reviewRepository.findAverageRatingByVendorId(vendorId);
         Long totalReviews = reviewRepository.countByVendorId(vendorId);
 
@@ -113,9 +107,9 @@ public class AnalyticsService {
         result.put("topItems", topItems);
 
         // Add real metrics
-        result.put("totalRevenue", totalRevenue != null ? totalRevenue : java.math.BigDecimal.ZERO);
-        result.put("totalOrders", totalOrders != null ? totalOrders : 0L);
-        result.put("activeCustomers", activeCustomers != null ? activeCustomers : 0L);
+        result.put("totalRevenue", java.math.BigDecimal.ZERO);
+        result.put("totalOrders", 0L);
+        result.put("activeCustomers", 0L);
         result.put("averageRating", averageRating != null ? averageRating : 0.0);
         result.put("totalReviews", totalReviews != null ? totalReviews : 0L);
 

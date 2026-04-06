@@ -20,9 +20,6 @@ public class VendorService {
     private com.streetbite.repository.FavoriteRepository favoriteRepository;
 
     @Autowired
-    private com.streetbite.repository.OrderRepository orderRepository;
-
-    @Autowired
     private VendorRepository vendorRepository;
 
     @Autowired
@@ -38,7 +35,13 @@ public class VendorService {
     }
 
     public List<Vendor> getActiveVendors() {
-        return vendorRepository.findByIsActiveTrue();
+        return vendorRepository.findByIsActiveTrueAndStatusNotIn(
+                java.util.List.of(
+                        com.streetbite.model.VendorStatus.BANNED,
+                        com.streetbite.model.VendorStatus.SUSPENDED,
+                        com.streetbite.model.VendorStatus.REJECTED
+                )
+        );
     }
 
     public Optional<Vendor> getVendorById(Long id) {
@@ -68,7 +71,6 @@ public class VendorService {
         // Manually cascade delete related entities
         reviewRepository.deleteByVendorId(id);
         favoriteRepository.deleteByVendorId(id);
-        orderRepository.deleteByVendorId(id);
 
         // Delete the vendor
         vendorRepository.deleteById(id);
