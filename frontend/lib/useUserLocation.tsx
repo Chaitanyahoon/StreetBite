@@ -1,25 +1,22 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
-/**
- * User location type
- */
 export type UserLocation = { lat: number; lng: number } | null
 
-/**
- * Cookie configuration
- */
-const COOKIE_NAME = 'userLocation'
-const COOKIE_EXPIRES_HOURS = 24 // 24 hours expiration
+type StoredLocation = {
+  lat: number
+  lng: number
+  cityName?: string
+  manual?: boolean
+}
 
-/**
- * Cookie helper functions using native browser cookies
- * Works in both App Router and Pages Router
- */
+const COOKIE_NAME = 'userLocation'
+const COOKIE_EXPIRES_HOURS = 24
+
 function getCookie(name: string): string | null {
   if (typeof document === 'undefined') return null
-  const match = document.cookie.split('; ').find(row => row.startsWith(name + '='))
+  const match = document.cookie.split('; ').find((row) => row.startsWith(name + '='))
   if (!match) return null
   const value = match.split('=').slice(1).join('=')
   try {
@@ -32,36 +29,33 @@ function getCookie(name: string): string | null {
 function setCookie(name: string, value: string, hours: number) {
   if (typeof document === 'undefined') return
   const expires = new Date(Date.now() + hours * 3600 * 1000).toUTCString()
-  document.cookie = `${encodeURIComponent(name)}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax; Secure`
+  const secureAttribute = window.location.protocol === 'https:' ? '; Secure' : ''
+  document.cookie = `${encodeURIComponent(name)}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax${secureAttribute}`
 }
 
-/**
- * React hook for managing user location with cookie-based caching
- * 
- * Behavior:
- * 1. First checks cookie for existing location (24h expiration)
- * 2. If cookie exists → use it immediately (NO geolocation API call)
- * 3. If no cookie → request geolocation ONCE → store in cookie
- * 4. Never calls geolocation API again within 24 hours
- * 
- * @returns { location, loading, error, setUserLocation }
- */
+function deleteCookie(name: string) {
+  if (typeof document === 'undefined') return
+  const secureAttribute = window.location.protocol === 'https:' ? '; Secure' : ''
+  document.cookie = `${encodeURIComponent(name)}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax${secureAttribute}`
+}
+
+function normalizeCityInput(city: string) {
+  return city.trim().replace(/\s+/g, ' ')
+}
+
 export function useUserLocation() {
   const [location, setLocation] = useState<UserLocation>(null)
-  const [loading, setLoading] = useState<boolean>(true)
+  const [cityName, setCityName] = useState('')
+  const [isManualLocation, setIsManualLocation] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  /**
-   * Read location from cookie
-   * Returns null if cookie doesn't exist or is invalid
-   */
-  const readCookie = useCallback((): UserLocation => {
+  const readCookie = useCallback((): StoredLocation | null => {
     const raw = getCookie(COOKIE_NAME)
     if (!raw) return null
 
     try {
       const parsed = JSON.parse(raw)
-      // Validate structure: { lat: number, lng: number }
       if (
         typeof parsed === 'object' &&
         parsed !== null &&
@@ -69,121 +63,192 @@ export function useUserLocation() {
         typeof parsed.lng === 'number' &&
         !isNaN(parsed.lat) &&
         !isNaN(parsed.lng) &&
-        parsed.lat >= -90 && parsed.lat <= 90 &&
-        parsed.lng >= -180 && parsed.lng <= 180
+        parsed.lat >= -90 &&
+        parsed.lat <= 90 &&
+        parsed.lng >= -180 &&
+        parsed.lng <= 180
       ) {
-        return { lat: parsed.lat, lng: parsed.lng }
+        return {
+          lat: parsed.lat,
+          lng: parsed.lng,
+          cityName: typeof parsed.cityName === 'string' ? parsed.cityName : undefined,
+          manual: parsed.manual === true,
+        }
       }
-    } catch (e) {
-      // Invalid JSON or structure - ignore
-      console.warn('Invalid location cookie format:', e)
+    } catch (readError) {
+      console.warn('Invalid location cookie format:', readError)
     }
+
     return null
   }, [])
 
-  /**
-   * Store location in cookie with 24-hour expiration
-   */
-  const storeCookie = useCallback((loc: { lat: number; lng: number }) => {
+  const storeCookie = useCallback((nextLocation: StoredLocation) => {
     try {
-      const jsonValue = JSON.stringify({ lat: loc.lat, lng: loc.lng })
-      setCookie(COOKIE_NAME, jsonValue, COOKIE_EXPIRES_HOURS)
-      setLocation(loc)
-    } catch (e) {
-      console.error('Failed to store location cookie:', e)
+      const payload: StoredLocation = {
+        lat: nextLocation.lat,
+        lng: nextLocation.lng,
+        cityName: nextLocation.cityName?.trim() || undefined,
+        manual: nextLocation.manual === true,
+      }
+      setCookie(COOKIE_NAME, JSON.stringify(payload), COOKIE_EXPIRES_HOURS)
+      setLocation({ lat: payload.lat, lng: payload.lng })
+      setCityName(payload.cityName || '')
+      setIsManualLocation(payload.manual === true)
+    } catch (writeError) {
+      console.error('Failed to store location cookie:', writeError)
     }
   }, [])
 
-  /**
-   * Request geolocation from browser (only called once if no cookie)
-   */
-  /**
-   * Request geolocation from browser (only called once if no cookie)
-   */
   const requestGeolocation = useCallback((): Promise<string | null> => {
     return new Promise((resolve) => {
       if (!('geolocation' in navigator)) {
-        const msg = 'Geolocation not available in this browser'
-        setError(msg)
+        const message = 'Geolocation not available in this browser'
+        setError(message)
         setLoading(false)
-        resolve(msg)
+        resolve(message)
         return
       }
 
       const options: PositionOptions = {
-        enableHighAccuracy: false, // Use less accurate but faster method
-        maximumAge: 0, // Don't use cached position
-        timeout: 10000 // 10 second timeout
+        enableHighAccuracy: false,
+        maximumAge: 0,
+        timeout: 10000,
       }
 
-      const onSuccess = (pos: GeolocationPosition) => {
-        const loc = {
-          lat: pos.coords.latitude,
-          lng: pos.coords.longitude
-        }
-        // Store in cookie immediately to avoid future API calls
-        storeCookie(loc)
+      const onSuccess = (position: GeolocationPosition) => {
+        storeCookie({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+          manual: false,
+        })
         setLoading(false)
         setError(null)
-        resolve(null) // Success (no error)
+        resolve(null)
       }
 
-      const onError = (err: GeolocationPositionError) => {
-        let errorMessage = 'Failed to get location'
-        switch (err.code) {
-          case err.PERMISSION_DENIED:
-            errorMessage = 'Location permission denied'
+      const onError = (geoError: GeolocationPositionError) => {
+        let message = 'Failed to get location'
+        switch (geoError.code) {
+          case geoError.PERMISSION_DENIED:
+            message = 'Location permission denied'
             break
-          case err.POSITION_UNAVAILABLE:
-            errorMessage = 'Location information unavailable'
+          case geoError.POSITION_UNAVAILABLE:
+            message = 'Location information unavailable'
             break
-          case err.TIMEOUT:
-            errorMessage = 'Location request timed out'
+          case geoError.TIMEOUT:
+            message = 'Location request timed out'
             break
         }
-        setError(errorMessage)
+        setError(message)
         setLoading(false)
-        resolve(errorMessage)
+        resolve(message)
       }
 
       navigator.geolocation.getCurrentPosition(onSuccess, onError, options)
     })
   }, [storeCookie])
 
-  /**
-   * Initialize location on mount
-   * Priority: Cookie → Geolocation API
-   */
+  const setUserLocation = useCallback(
+    (
+      nextLocation: { lat: number; lng: number },
+      options?: { cityName?: string; manual?: boolean }
+    ) => {
+      storeCookie({
+        lat: nextLocation.lat,
+        lng: nextLocation.lng,
+        cityName: options?.cityName,
+        manual: options?.manual,
+      })
+      setError(null)
+      setLoading(false)
+    },
+    [storeCookie]
+  )
+
+  const setManualLocationByCity = useCallback(
+    async (cityInput: string): Promise<string | null> => {
+      const normalizedCity = normalizeCityInput(cityInput)
+      if (!normalizedCity) {
+        return 'Enter a city name'
+      }
+
+      const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''
+      if (!apiKey) {
+        return 'Google Maps API key is missing'
+      }
+
+      setLoading(true)
+      setError(null)
+
+      try {
+        const response = await fetch(
+          `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(normalizedCity)}&key=${apiKey}`
+        )
+
+        if (!response.ok) {
+          const errorText = await response.text()
+          throw new Error(`Geocoding API error: ${response.status} ${response.statusText} - ${errorText}`)
+        }
+
+        const data = await response.json()
+        const result = data.results?.[0]
+        const coordinates = result?.geometry?.location
+
+        if (!coordinates || typeof coordinates.lat !== 'number' || typeof coordinates.lng !== 'number') {
+          return 'City not found'
+        }
+
+        const resolvedCityName = normalizedCity
+        setUserLocation(
+          { lat: coordinates.lat, lng: coordinates.lng },
+          { cityName: resolvedCityName, manual: true }
+        )
+
+        return null
+      } catch (fetchError) {
+        console.error('Failed to set manual city:', fetchError)
+        return 'Unable to set city right now'
+      } finally {
+        setLoading(false)
+      }
+    },
+    [setUserLocation]
+  )
+
+  const clearUserLocation = useCallback(() => {
+    deleteCookie(COOKIE_NAME)
+    setLocation(null)
+    setCityName('')
+    setIsManualLocation(false)
+    setError(null)
+    setLoading(false)
+  }, [])
+
   useEffect(() => {
     setLoading(true)
     setError(null)
 
-    // Step 1: Check cookie first (avoids geolocation API call)
-    // const existing = readCookie()
-    // if (existing) {
-    //   // Cookie exists and is valid - use it immediately
-    //   setLocation(existing)
-    //   setLoading(false)
-    //   return
-    // }
+    const existing = readCookie()
+    if (existing) {
+      setLocation({ lat: existing.lat, lng: existing.lng })
+      setCityName(existing.cityName?.trim() || '')
+      setIsManualLocation(existing.manual === true)
+      setLoading(false)
+      return
+    }
 
-    // Step 2: No cookie - request geolocation ONCE
     requestGeolocation()
   }, [readCookie, requestGeolocation])
 
-  /**
-   * Manually set user location (e.g., from map click)
-   * This will also store in cookie
-   */
-  const setUserLocation = useCallback((loc: { lat: number; lng: number }) => {
-    storeCookie(loc)
-  }, [storeCookie])
-
   return {
     location,
+    cityName,
+    isManualLocation,
     loading,
     error,
     setUserLocation,
-    requestGeolocation
+    setManualLocationByCity,
+    clearUserLocation,
+    requestGeolocation,
   }
 }

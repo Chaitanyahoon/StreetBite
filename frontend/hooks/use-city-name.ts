@@ -1,81 +1,123 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useUserLocation } from '@/lib/useUserLocation'
+import { useEffect, useState } from 'react'
 import { GOOGLE_MAPS_API_KEY } from '@/lib/maps-config'
+import { useUserLocation } from '@/lib/useUserLocation'
 
-/**
- * Custom hook to reverse geocode the user's current location into a city name.
- * Uses Google Maps Geocoding API.
- * @returns {Object} Object containing the city name and loading state.
- */
+type GoogleGeocodeResult = {
+  address_components?: Array<{
+    long_name: string
+    types: string[]
+  }>
+}
+
+function extractCityName(results: GoogleGeocodeResult[]): string | null {
+  const preferredTypes = [
+    'locality',
+    'administrative_area_level_2',
+    'administrative_area_level_3',
+    'sublocality_level_1',
+    'administrative_area_level_1',
+  ]
+
+  for (const type of preferredTypes) {
+    for (const result of results) {
+      const component = result.address_components?.find((item) => item.types.includes(type))
+      if (component?.long_name?.trim()) {
+        return component.long_name
+      }
+    }
+  }
+
+  return null
+}
+
 export function useCityName() {
-    const { location } = useUserLocation()
-    const [cityName, setCityName] = useState<string>('Nashik')
-    const [loading, setLoading] = useState<boolean>(false)
+  const {
+    location,
+    cityName: cachedCityName,
+    isManualLocation,
+    loading: locationLoading,
+    error,
+    requestGeolocation,
+    setUserLocation,
+    setManualLocationByCity,
+    clearUserLocation,
+  } = useUserLocation()
+  const [cityName, setCityName] = useState('')
+  const [loading, setLoading] = useState(false)
 
-    useEffect(() => {
-        if (!location) return
+  useEffect(() => {
+    if (!location) {
+      setCityName('')
+      setLoading(false)
+      return
+    }
 
-        const fetchCity = async () => {
-            setLoading(true)
+    if (cachedCityName.trim()) {
+      setCityName(cachedCityName)
+      setLoading(false)
+      return
+    }
 
-            // Create AbortController for timeout
-            const controller = new AbortController()
-            const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
+    const fetchCity = async () => {
+      setLoading(true)
 
-            try {
-                const apiKey = GOOGLE_MAPS_API_KEY
-                if (!apiKey) {
-                    console.warn('Google Maps API key not found')
-                    setLoading(false) // Reset loading before early return
-                    return
-                }
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 10000)
 
-                const response = await fetch(
-                    `https://maps.googleapis.com/maps/api/geocode/json?latlng=${location.lat},${location.lng}&key=${apiKey}`,
-                    { signal: controller.signal }
-                )
-
-                // Clear timeout on successful response
-                clearTimeout(timeoutId)
-
-                // Check HTTP status before parsing
-                if (!response.ok) {
-                    const errorText = await response.text()
-                    throw new Error(`Geocoding API error: ${response.status} ${response.statusText} - ${errorText}`)
-                }
-
-                const data = await response.json()
-
-                if (data.results && data.results.length > 0) {
-                    // Look for locality (city) or administrative_area_level_2 (district)
-                    const addressComponents = data.results[0].address_components
-                    const cityComponent = addressComponents.find((component: any) =>
-                        component.types.includes('locality')
-                    ) || addressComponents.find((component: any) =>
-                        component.types.includes('administrative_area_level_2')
-                    )
-
-                    if (cityComponent) {
-                        setCityName(cityComponent.long_name)
-                    }
-                }
-            } catch (error) {
-                // Handle abort/timeout separately
-                if (error instanceof Error && error.name === 'AbortError') {
-                    console.error('Geocoding request timed out after 10 seconds')
-                } else {
-                    console.error('Error fetching city name:', error)
-                }
-            } finally {
-                clearTimeout(timeoutId) // Ensure timeout is always cleared
-                setLoading(false)
-            }
+      try {
+        const apiKey = GOOGLE_MAPS_API_KEY
+        if (!apiKey) {
+          console.warn('Google Maps API key not found')
+          setLoading(false)
+          return
         }
 
-        fetchCity()
-    }, [location])
+        const response = await fetch(
+          `https://maps.googleapis.com/maps/api/geocode/json?latlng=${location.lat},${location.lng}&key=${apiKey}`,
+          { signal: controller.signal }
+        )
 
-    return { cityName, loading }
+        clearTimeout(timeoutId)
+
+        if (!response.ok) {
+          const errorText = await response.text()
+          throw new Error(`Geocoding API error: ${response.status} ${response.statusText} - ${errorText}`)
+        }
+
+        const data = await response.json()
+        const resolvedCityName = extractCityName(data.results ?? [])
+
+        if (resolvedCityName) {
+          setCityName(resolvedCityName)
+          setUserLocation(
+            { lat: location.lat, lng: location.lng },
+            { cityName: resolvedCityName, manual: isManualLocation }
+          )
+        }
+      } catch (fetchError) {
+        if (fetchError instanceof Error && fetchError.name === 'AbortError') {
+          console.error('Geocoding request timed out after 10 seconds')
+        } else {
+          console.error('Error fetching city name:', fetchError)
+        }
+      } finally {
+        clearTimeout(timeoutId)
+        setLoading(false)
+      }
+    }
+
+    fetchCity()
+  }, [cachedCityName, isManualLocation, location, setUserLocation])
+
+  return {
+    cityName,
+    loading: loading || locationLoading,
+    error,
+    isManualLocation,
+    setManualLocationByCity,
+    clearUserLocation,
+    requestGeolocation,
+  }
 }
