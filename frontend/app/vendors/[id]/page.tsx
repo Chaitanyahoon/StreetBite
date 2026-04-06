@@ -65,13 +65,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     }
 }
 
+import { BreadcrumbListSchema } from '@/components/seo/breadcrumb-schema'
+
 // -------------------------------------------------------------------------------- //
 // Server Component Layout 
 // Renders the Client Component transparently 
 // -------------------------------------------------------------------------------- //
 export default async function VendorDetailServerPage({ params }: Props) {
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://streetbite.onrender.com/api'
-    const baseUrl = process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://streetbitego.vercel.app'
+    const baseUrl = 'https://streetbitego.vercel.app'
     
     // Fetch data for JSON-LD (Next.js deduplicates this fetch)
     const response = await fetch(`${backendUrl}/vendors/${params.id}`)
@@ -100,6 +102,12 @@ export default async function VendorDetailServerPage({ params }: Props) {
         'url': `${baseUrl}/vendors/${vendor.slug || vendor.id}`
     } : null;
 
+    const breadcrumbs = vendor && vendor.name ? [
+        { name: 'Home', item: baseUrl },
+        { name: 'Explore', item: `${baseUrl}/explore` },
+        { name: vendor.name, item: `${baseUrl}/vendors/${vendor.slug || vendor.id}` }
+    ] : [];
+
     return (
         <>
             {jsonLd && (
@@ -108,6 +116,7 @@ export default async function VendorDetailServerPage({ params }: Props) {
                     dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
                 />
             )}
+            {breadcrumbs.length > 0 && <BreadcrumbListSchema items={breadcrumbs} />}
             <VendorDetailClient vendorIdParams={params.id} />
         </>
     )

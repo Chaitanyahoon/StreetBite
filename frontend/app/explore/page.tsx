@@ -12,6 +12,7 @@ import { useUserLocation } from '@/lib/useUserLocation'
 import { vendorApi, favoriteApi } from '@/lib/api'
 import { Footer } from '@/components/footer'
 import { useAuth } from '@/context/AuthContext'
+import { BreadcrumbListSchema } from '@/components/seo/breadcrumb-schema'
 
 // Lazy-load map + sheet — heavy components only needed on interaction
 const VendorMap = dynamic(() => import('@/components/vendor-map').then(m => m.VendorMap), {
@@ -133,6 +134,10 @@ export default function ExplorePage() {
 
   return (
     <div className="min-h-screen bg-[#FFFBF0] bg-[radial-gradient(#E5E7EB_1px,transparent_1px)] [background-size:24px_24px]">
+      <BreadcrumbListSchema items={[
+        { name: 'Home', item: 'https://streetbitego.vercel.app' },
+        { name: 'Explore', item: 'https://streetbitego.vercel.app/explore' }
+      ]} />
       <Navbar />
 
       {/* Hero Section */}
@@ -287,7 +292,7 @@ export default function ExplorePage() {
                       className="hover:z-10 transition-all duration-300 animate-slide-up"
                       style={{ animationDelay: `${index * 0.05}s` }}
                     >
-                      <VendorCard id={vendor.id} slug={vendor.slug} {...vendor} />
+                      <VendorCard id={vendor.id} slug={vendor.slug} {...vendor} priority={index < 4} />
                     </div>
                   ))}
                 </div>

@@ -43,6 +43,7 @@ const VENDORS = [
 
 import { useGamification } from '@/context/GamificationContext'
 import { hotTopicApi, vendorApi, announcementApi } from '@/lib/api';
+import { BreadcrumbListSchema } from '@/components/seo/breadcrumb-schema'
 
 // ... existing imports ...
 
@@ -233,6 +234,10 @@ export default function CommunityPage() {
 
     return (
         <div className="min-h-screen bg-[#FFFBF0] bg-[radial-gradient(#E5E7EB_1px,transparent_1px)] [background-size:24px_24px]">
+            <BreadcrumbListSchema items={[
+                { name: 'Home', item: 'https://streetbitego.vercel.app' },
+                { name: 'Community', item: 'https://streetbitego.vercel.app/community' }
+            ]} />
             <Navbar />
 
             {/* Dynamic Hero Section */}

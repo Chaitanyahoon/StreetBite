@@ -10,6 +10,7 @@ import { ScrollingTicker } from '@/components/scrolling-ticker'
 import { Counter } from '@/components/counter'
 import { TeamCard } from '@/components/team-card'
 import { ContactDialog } from '@/components/contact-dialog'
+import { BreadcrumbListSchema } from '@/components/seo/breadcrumb-schema'
 
 import { motion, Variants } from 'framer-motion'
 import { TeamMember } from '@/components/team-card'
@@ -68,6 +69,10 @@ export default function AboutPage() {
 
   return (
     <div className="min-h-screen bg-[#FFFBF0] bg-[radial-gradient(#E5E7EB_1px,transparent_1px)] [background-size:24px_24px] overflow-x-hidden">
+      <BreadcrumbListSchema items={[
+        { name: 'Home', item: 'https://streetbitego.vercel.app' },
+        { name: 'About', item: 'https://streetbitego.vercel.app/about' }
+      ]} />
       <Navbar />
 
       {/* Hero Section */}

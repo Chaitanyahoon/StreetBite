@@ -1,8 +1,17 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'About StreetBite — Our Mission',
-  description: 'Learn about StreetBite, our mission to connect food lovers with the best street food vendors, and how we are building the future of street food discovery.',
+  title: 'About StreetBite | The Street Food Revolution',
+  description: 'Learn about the mission behind StreetBite. We are empowering local street food vendors and connecting foodies with hidden culinary gems.',
+  alternates: {
+    canonical: 'https://streetbitego.vercel.app/about',
+  },
+  openGraph: {
+    title: 'The StreetBite Story | Empowering Local Vendors',
+    description: 'Discover how we are digitizing the street food ecosystem.',
+    url: 'https://streetbitego.vercel.app/about',
+    type: 'website',
+  }
 }
 
 export default function AboutLayout({ children }: { children: React.ReactNode }) {

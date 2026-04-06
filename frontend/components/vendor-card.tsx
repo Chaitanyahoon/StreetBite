@@ -15,9 +15,10 @@ interface VendorCardProps {
   displayImageUrl?: string
   reviews: number
   tags: string[]
+  priority?: boolean
 }
 
-export function VendorCard({ id, slug, name, cuisine, rating, distance, image, displayImageUrl, reviews, tags }: VendorCardProps) {
+export function VendorCard({ id, slug, name, cuisine, rating, distance, image, displayImageUrl, reviews, tags, priority = false }: VendorCardProps) {
   const vendorUrl = slug ? `/vendors/${slug}` : `/vendors/${id}`
   return (
     <Link href={vendorUrl} className="block group">
@@ -28,6 +29,7 @@ export function VendorCard({ id, slug, name, cuisine, rating, distance, image, d
             alt={`${name} - ${cuisine} street food stall in your local area`}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            priority={priority}
             className="object-cover group-hover:scale-110 transition-transform duration-500"
           />
           {/* Gradient overlay */}
