@@ -82,12 +82,19 @@ export default async function VendorDetailServerPage({ params }: Props) {
         '@type': 'Restaurant',
         'name': vendor.name,
         'image': vendor.imageUrl || vendor.bannerImageUrl,
-        'description': vendor.description,
+        'description': vendor.description || `Authentic ${vendor.cuisine} street food by ${vendor.name}.`,
         'servesCuisine': vendor.cuisine,
+        'priceRange': '₹',
+        'geo': vendor.latitude && vendor.longitude ? {
+            '@type': 'GeoCoordinates',
+            'latitude': vendor.latitude,
+            'longitude': vendor.longitude
+        } : null,
         'address': {
             '@type': 'PostalAddress',
             'streetAddress': vendor.address,
             'addressLocality': vendor.city || 'Mumbai',
+            'addressRegion': vendor.state || 'Maharashtra',
             'addressCountry': 'IN'
         },
         'url': `${baseUrl}/vendors/${vendor.slug || vendor.id}`

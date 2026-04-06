@@ -25,7 +25,7 @@ export function VendorCard({ id, slug, name, cuisine, rating, distance, image, d
         <div className="relative h-48 md:h-56 bg-muted overflow-hidden flex-shrink-0">
           <Image
             src={displayImageUrl || image || "/placeholder.svg?height=224&width=400&query=street+food+vendor"}
-            alt={name}
+            alt={`${name} - ${cuisine} street food stall in your local area`}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             className="object-cover group-hover:scale-110 transition-transform duration-500"

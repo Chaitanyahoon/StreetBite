@@ -17,10 +17,12 @@ const inter = Inter({
   display: 'swap',
 })
 
+import { OrganizationSchema } from '@/components/seo/organization-schema'
+
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://streetbite.app'),
+  metadataBase: new URL('https://streetbitego.vercel.app'),
   title: {
-    default: 'StreetBite — Discover Amazing Street Food Near You',
+    default: 'StreetBite — Discover Authentic Street Food Near You',
     template: '%s | StreetBite',
   },
   description: 'Discover the best street food near you. Geolocation-based discovery of authentic street food vendors in your city.',
@@ -28,7 +30,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'StreetBite — Discover Amazing Street Food',
     description: 'Find top-rated street food vendors, join the community, and track your foodie journey.',
-    url: 'https://streetbite.app',
+    url: 'https://streetbitego.vercel.app',
     siteName: 'StreetBite',
     images: [
       {
@@ -67,6 +69,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body suppressHydrationWarning className={`${inter.variable} ${outfit.variable} font-sans antialiased text-foreground selection:bg-primary/20 selection:text-primary`}>
+        <OrganizationSchema />
         <AuthProvider>
           <GamificationProvider>
             <NotificationProvider>

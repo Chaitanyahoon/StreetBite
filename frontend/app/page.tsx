@@ -7,6 +7,16 @@ import { Footer } from '@/components/footer'
 import { LiveCityBadge } from '@/components/live-city-badge'
 import { ScrollingTicker } from '@/components/scrolling-ticker'
 
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'StreetBite | Discover Authentic Local Street Food Near You',
+  description: 'The ultimate guide to street food. Find hidden gems, trending stalls, and live tracking for the best street food vendors in your neighborhood.',
+  alternates: {
+    canonical: 'https://streetbitego.vercel.app',
+  },
+}
+
 export default function Home() {
 
   return (
