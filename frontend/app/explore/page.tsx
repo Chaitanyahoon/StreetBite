@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic'
 import Form from 'next/form'
+import { Suspense } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useDeferredValue, useEffect, useRef, useState } from 'react'
 import { Navbar } from '@/components/navbar'
@@ -129,7 +130,7 @@ function normalizeVendor(vendor: any, location?: { lat: number; lng: number } | 
   }
 }
 
-export default function ExplorePage() {
+function ExplorePageContent() {
   const { isLoggedIn } = useAuth()
   const { location, loading: loadingLocation, error: locationError } = useUserLocation()
   const pathname = usePathname()
@@ -671,5 +672,34 @@ export default function ExplorePage() {
         />
       ) : null}
     </div>
+  )
+}
+
+export default function ExplorePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#FFFBF0]">
+          <Navbar />
+          <main className="px-4 py-28 md:px-6">
+            <div className="mx-auto max-w-7xl animate-pulse space-y-6">
+              <div className="h-12 w-64 rounded-full bg-white/70" />
+              <div className="h-40 rounded-[2rem] bg-white/60" />
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+                {Array.from({ length: 8 }).map((_, index) => (
+                  <div
+                    key={index}
+                    className="h-80 rounded-[1.75rem] border border-black/8 bg-white/60"
+                  />
+                ))}
+              </div>
+            </div>
+          </main>
+          <Footer />
+        </div>
+      }
+    >
+      <ExplorePageContent />
+    </Suspense>
   )
 }
