@@ -5,10 +5,10 @@ import { MetadataRoute } from 'next'
  * Automatically discovers all vendors and social pages for SEO indexing.
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://streetbite.app'
-  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8081/api'
+  const baseUrl = 'https://streetbitego.vercel.app'
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://streetbite.onrender.com/api'
 
-  // Static routes
+  // Static routes (Always returned)
   const staticRoutes = [
     '',
     '/explore',
