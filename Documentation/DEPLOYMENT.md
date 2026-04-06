@@ -66,7 +66,11 @@ ALLOWED_ORIGINS=https://streetbitego.vercel.app,https://streetbite-git-feature-b
 
 ```env
 GOOGLE_GEOCODING_API_KEY=
+# Render does not guarantee arbitrary secret file mounts at /etc/secrets by default.
+# Prefer providing the Firebase service account JSON as a secret string and writing it to a temp file during startup,
+# or use Render's dedicated secret file feature if your service supports it.
 GOOGLE_APPLICATION_CREDENTIALS=/etc/secrets/firebase-admin.json
+FIREBASE_ADMIN_JSON=<base64-or-raw-service-account-json-string>
 
 SPRING_MAIL_HOST=
 SPRING_MAIL_PORT=587

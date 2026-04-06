@@ -25,6 +25,7 @@ export function useLiveVendorLocation(vendorId: string | number) {
         }
 
         if (!realtimeDb) {
+            console.warn(`useLiveVendorLocation: realtimeDb not configured for vendorId=${vendorId}`)
             setLoading(false)
             return
         }

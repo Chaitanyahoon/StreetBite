@@ -5,6 +5,7 @@ import com.streetbite.model.Vendor;
 import com.streetbite.repository.MenuItemRepository;
 import com.streetbite.repository.VendorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,12 +22,14 @@ public class MenuService {
     private VendorRepository vendorRepository;
 
     @Autowired
-    private RealTimeSyncService realTimeSyncService;
+    private ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public MenuItem saveMenuItem(MenuItem menuItem) {
         MenuItem saved = menuItemRepository.saveAndFlush(menuItem);
-        syncRealtimeAvailability(saved);
+        if (saved.getId() != null) {
+            eventPublisher.publishEvent(new RealtimeSyncEvents.MenuItemSavedEvent(saved.getId(), saved.isAvailable()));
+        }
         return saved;
     }
 
@@ -38,7 +41,9 @@ public class MenuService {
         menuItem.setVendor(vendor);
 
         MenuItem saved = menuItemRepository.saveAndFlush(menuItem);
-        syncRealtimeAvailability(saved);
+        if (saved.getId() != null) {
+            eventPublisher.publishEvent(new RealtimeSyncEvents.MenuItemSavedEvent(saved.getId(), saved.isAvailable()));
+        }
         return saved;
     }
 
@@ -57,13 +62,6 @@ public class MenuService {
     @Transactional
     public void deleteMenuItem(Long id) {
         menuItemRepository.deleteById(id);
-        realTimeSyncService.deleteMenuAvailability(id);
-    }
-
-    private void syncRealtimeAvailability(MenuItem menuItem) {
-        if (menuItem.getId() == null) {
-            return;
-        }
-        realTimeSyncService.updateMenuAvailability(menuItem.getId(), menuItem.isAvailable());
+        eventPublisher.publishEvent(new RealtimeSyncEvents.MenuItemDeletedEvent(id));
     }
 }

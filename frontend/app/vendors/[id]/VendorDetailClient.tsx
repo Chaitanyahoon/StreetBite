@@ -674,7 +674,12 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
                                         <div className="flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold text-white backdrop-blur-sm">
                                             <Star size={15} className="fill-amber-300 text-amber-300" />
                                             <span>{vendorRating.toFixed(1)}</span>
-                                            <span className="text-white/70">from {Math.max(vendorReviewCount, 1)} review{vendorReviewCount === 1 ? '' : 's'}</span>
+                                            <span className="text-white/70">
+                                            {(() => {
+                                                const displayCount = Math.max(vendorReviewCount, 1)
+                                                return `from ${displayCount} review${displayCount === 1 ? '' : 's'}`
+                                            })()}
+                                        </span>
                                         </div>
                                     )}
                                     <div className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold uppercase tracking-[0.18em] shadow-lg backdrop-blur-sm ${activeStatusMeta.badgeClassName}`}>

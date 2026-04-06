@@ -5,6 +5,7 @@ import com.streetbite.model.VendorStatus;
 import com.streetbite.repository.VendorRepository;
 import com.streetbite.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,12 +28,20 @@ public class VendorService {
     private UserRepository userRepository;
 
     @Autowired
-    private RealTimeSyncService realTimeSyncService;
+    private ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public Vendor saveVendor(Vendor vendor) {
         Vendor savedVendor = vendorRepository.save(vendor);
-        syncRealtimeState(savedVendor);
+        if (savedVendor.getId() != null) {
+            eventPublisher.publishEvent(new RealtimeSyncEvents.VendorUpdatedEvent(
+                    savedVendor.getId(),
+                    savedVendor.getStatus(),
+                    savedVendor.getLatitude(),
+                    savedVendor.getLongitude(),
+                    savedVendor.getAddress()
+            ));
+        }
         return savedVendor;
     }
 
@@ -76,6 +85,16 @@ public class VendorService {
             userRepository.save(vendor.getOwner());
         }
 
+        if (vendor.getId() != null) {
+            eventPublisher.publishEvent(new RealtimeSyncEvents.VendorUpdatedEvent(
+                    vendor.getId(),
+                    vendor.getStatus(),
+                    vendor.getLatitude(),
+                    vendor.getLongitude(),
+                    vendor.getAddress()
+            ));
+        }
+
         return vendor;
     }
 
@@ -97,29 +116,11 @@ public class VendorService {
 
         // Delete the vendor
         vendorRepository.deleteById(id);
-        realTimeSyncService.deleteVendorRealtimeState(id);
+        eventPublisher.publishEvent(new RealtimeSyncEvents.VendorDeletedEvent(id));
 
         // Also delete the owner User so they can re-register
         if (ownerId != null) {
             userRepository.deleteById(ownerId);
-        }
-    }
-
-    private void syncRealtimeState(Vendor vendor) {
-        if (vendor.getId() == null) {
-            return;
-        }
-
-        if (vendor.getStatus() != null) {
-            realTimeSyncService.updateVendorStatus(vendor.getId(), vendor.getStatus());
-        }
-
-        if (vendor.getLatitude() != null && vendor.getLongitude() != null) {
-            realTimeSyncService.updateVendorLocation(
-                    vendor.getId(),
-                    vendor.getLatitude(),
-                    vendor.getLongitude(),
-                    vendor.getAddress());
         }
     }
 }

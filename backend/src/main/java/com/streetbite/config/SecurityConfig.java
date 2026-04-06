@@ -88,9 +88,9 @@ public class SecurityConfig {
                         // Default — require authentication for everything else (admin, writes, etc.)
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(originValidationFilter, JwtRequestFilter.class)
                 .addFilterBefore(jwtRequestFilter,
-                        org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
+                        org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(originValidationFilter, JwtRequestFilter.class);
 
         return http.build();
     }

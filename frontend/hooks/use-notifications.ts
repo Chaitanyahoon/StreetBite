@@ -27,7 +27,7 @@ export function useNotifications(userId?: number) {
     }, [])
 
     const requestPermission = async (): Promise<NotificationPermission | null> => {
-        if (!pushMessaging) {
+        if (!isPushMessagingEnabled()) {
             console.error('Firebase messaging not supported')
             return null
         }

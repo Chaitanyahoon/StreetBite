@@ -28,14 +28,17 @@ export function useLiveMenuAvailability(menuItems: LiveMenuItem[]) {
 
         const initialAvailability: MenuAvailability = {}
         menuItems.forEach(item => {
-            const id = item.id || item.itemId
-            if (id) {
+            const id = item.id ?? item.itemId
+            if (id != null) {
                 initialAvailability[String(id)] = item.isAvailable ?? true
             }
         })
         setAvailability(initialAvailability)
 
-        const itemIds = menuItems.map(item => String(item.id || item.itemId)).filter(Boolean)
+        const itemIds = menuItems
+            .map(item => item.id ?? item.itemId)
+            .filter((id): id is string | number => id != null)
+            .map(id => String(id))
 
         if (itemIds.length === 0) return
 

@@ -104,9 +104,9 @@ The frontend is structured using the **Next.js App Router**:
 1. **Frontend**: User submits credentials (email/password).
 2. **Backend**: `AuthController` verifies credentials against MySQL.
 3. **Backend**: Generates a **JWT** containing `userId` and `role`.
-4. **Backend**: Sends the token in the `sb_token` HttpOnly cookie.
-5. **Frontend**: Uses credentialed requests to the backend instead of storing the token in local storage.
-6. **Backend**: `JwtRequestFilter` reads the cookie and validates the token before processing requests.
+4. **Backend**: Sends the token in the `sb_token` HttpOnly cookie with `SameSite` set to a restrictive value (`Strict` or `Lax` recommended) and `Secure` enabled in production.
+5. **Frontend**: Uses credentialed requests (`withCredentials` / `credentials: 'include'`) so the `sb_token` cookie is sent automatically instead of storing the token in local storage.
+6. **Backend**: `JwtRequestFilter` reads the cookie and validates the token before processing requests, while CORS is configured to allow only explicit origins and `Access-Control-Allow-Credentials: true`.
 
 ### 2. Vendor Search (Geolocation)
 1. **Frontend**: Gets user's browser location (Lat/Lng).
@@ -125,10 +125,13 @@ The frontend is structured using the **Next.js App Router**:
    - (Optional) Sends notification to Vendor via Firebase Cloud Messaging.
 
 ### 4. Realtime Vendor/Menu Updates
-1. **Backend**: Writes vendors and menu items to MySQL first.
-2. **Backend**: Mirrors selected live state into Firestore using `RealTimeSyncService`.
-3. **Frontend**: Reads normal application data from the backend API.
-4. **Frontend**: Subscribes to Firestore only for live UI updates such as menu availability and vendor status/location.
+1. **Backend**: Writes vendors and menu items to MySQL first, with Firestore used as a real-time mirror rather than the source of truth.
+2. **Backend**: Mirrors selected live state into Firestore using `RealTimeSyncService`. Firestore failures are handled with retry/backoff, dead-letter/error queue support, and alerting/monitoring so outages do not silently drop updates.
+3. **Backend**: Accepts that dual-write introduces an eventual consistency window between MySQL and Firestore. The frontend may briefly see stale data, so critical reads should fall back to the backend API for authoritative results.
+4. **Backend**: Uses ordering/consistency mitigations for rapid vendor/location updates, such as timestamps or sequence IDs, idempotent updates, or single-writer semantics to avoid lost or misordered data.
+5. **Observability**: The system records metrics and logs for Firestore sync success, retry attempts, error queue events, and reconciliation activity.
+6. **Recovery**: Out-of-sync repairs are supported through reconciliation tooling or manual resync processes that compare MySQL state to Firestore and correct drift.
+7. **Frontend**: Subscribes to Firestore only for live UI updates such as menu availability and vendor status/location.
 
 ---
 

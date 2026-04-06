@@ -20,7 +20,7 @@ export function useLiveMenuItem(itemId: number | undefined, initialAvailability:
     useEffect(() => {
         if (!itemId || !realtimeDb) return;
 
-        // Listen to "live_menu_items" collection for real-time updates
+        // Listen to the realtime collection for menu availability updates
         // The document ID is the menu item ID (stringified)
         const unsub = onSnapshot(doc(realtimeDb, REALTIME_COLLECTIONS.menuAvailability, String(itemId)), (doc) => {
             if (doc.exists()) {

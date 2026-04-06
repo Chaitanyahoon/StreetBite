@@ -2,6 +2,9 @@
 SERVER_PORT=8081
 
 # Database: MySQL is the source of truth
+# WARNING: allowPublicKeyRetrieval=true can expose credentials and should not be used in production.
+# For deployed environments, remove allowPublicKeyRetrieval or enable useSSL=true with proper certificate validation
+# and a trusted certificate store instead of relying on this insecure flag.
 SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/streetbite?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
 SPRING_DATASOURCE_USERNAME=root
 SPRING_DATASOURCE_PASSWORD=change_me
