@@ -1,8 +1,8 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
-import Image from "next/image";
-import { Star, MapPin, TrendingUp, Clock, Heart, MoveRight } from 'lucide-react'
+import { MapPin, MoveRight, Star } from 'lucide-react'
 
 interface VendorCardProps {
   id: string
@@ -16,78 +16,141 @@ interface VendorCardProps {
   reviews: number
   tags: string[]
   priority?: boolean
+  status?: string
 }
 
-export function VendorCard({ id, slug, name, cuisine, rating, distance, image, displayImageUrl, reviews, tags, priority = false }: VendorCardProps) {
+const OPEN_STATUSES = new Set(['AVAILABLE', 'BUSY'])
+
+function getStatusLabel(status?: string) {
+  if (status === 'BUSY') {
+    return 'Busy'
+  }
+
+  if (status === 'AVAILABLE') {
+    return 'Open now'
+  }
+
+  return null
+}
+
+export function VendorCard({
+  id,
+  slug,
+  name,
+  cuisine,
+  rating,
+  distance,
+  image,
+  displayImageUrl,
+  reviews,
+  tags,
+  priority = false,
+  status,
+}: VendorCardProps) {
   const vendorUrl = slug ? `/vendors/${slug}` : `/vendors/${id}`
+  const statusLabel = getStatusLabel(status)
+  const formattedDistance = !Number.isNaN(parseFloat(distance))
+    ? `${parseFloat(distance).toFixed(1)} km`
+    : distance
+
   return (
-    <Link href={vendorUrl} className="block group">
-      <div className="overflow-hidden rounded-2xl bg-white border-2 border-border/20 hover:border-primary/40 shadow-md hover:shadow-2xl transition-all duration-300 cursor-pointer h-full flex flex-col hover:-translate-y-2">
-        <div className="relative h-48 md:h-56 bg-muted overflow-hidden flex-shrink-0">
+    <Link
+      href={vendorUrl}
+      className="block h-full group"
+      aria-label={`View ${name}, ${cuisine} street food vendor`}
+    >
+      <article className="surface-panel flex h-full flex-col overflow-hidden rounded-[1.75rem] border border-black/10 transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-[var(--shadow-lifted)]">
+        <div className="relative h-44 overflow-hidden bg-muted sm:h-52 md:h-56">
           <Image
-            src={displayImageUrl || image || "/placeholder.svg?height=224&width=400&query=street+food+vendor"}
+            src={displayImageUrl || image || '/placeholder.svg?height=224&width=400&query=street+food+vendor'}
             alt={`${name} - ${cuisine} street food stall in your local area`}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             priority={priority}
-            className="object-cover group-hover:scale-110 transition-transform duration-500"
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
           />
-          {/* Gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/72 via-black/20 to-transparent" />
 
-          {/* Rating badge with gradient */}
-          <div className="absolute top-4 right-4 bg-gradient-to-br from-orange-500 to-red-500 text-white px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 shadow-lg backdrop-blur-sm">
-            <Star size={14} fill="currentColor" className="drop-shadow" />
-            {rating}
+          <div className="absolute left-3 right-3 top-3 flex items-start justify-between gap-3">
+            <span className="max-w-[70%] rounded-full bg-white/92 px-3 py-1.5 text-[0.68rem] font-black uppercase tracking-[0.16em] text-black shadow-[var(--shadow-soft)] backdrop-blur">
+              {cuisine}
+            </span>
+            <div className="rounded-full bg-black/82 px-3 py-1.5 text-xs font-black text-white shadow-[var(--shadow-soft)] backdrop-blur">
+              <span className="inline-flex items-center gap-1">
+                <Star size={13} fill="currentColor" className="text-yellow-400" />
+                {rating > 0 ? rating.toFixed(1) : 'New'}
+              </span>
+            </div>
           </div>
 
-          {/* Hover overlay with view details */}
-          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <div className="bg-white/90 backdrop-blur-sm px-6 py-3 rounded-full font-semibold text-primary shadow-lg transform scale-90 group-hover:scale-100 transition-transform duration-300">
-              View Details →
+          <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between gap-3">
+            <div className="min-w-0">
+              <h3 className="line-clamp-2 text-lg font-black leading-tight text-white md:text-xl">
+                {name}
+              </h3>
             </div>
+            {statusLabel ? (
+              <span
+                className={`shrink-0 rounded-full px-3 py-1.5 text-[0.68rem] font-black uppercase tracking-[0.16em] ${
+                  OPEN_STATUSES.has(status || '')
+                    ? 'bg-[#f8dd8a] text-black'
+                    : 'bg-white/88 text-black/65'
+                }`}
+              >
+                {statusLabel}
+              </span>
+            ) : null}
           </div>
         </div>
 
-        <div className="p-4 md:p-5 space-y-3 md:space-y-4 flex flex-col flex-grow">
-          <div>
-            <h3 className="font-bold text-base md:text-lg text-foreground mb-1 group-hover:text-primary transition-colors line-clamp-1">{name}</h3>
-            <p className="text-primary font-semibold text-xs md:text-sm">{cuisine}</p>
-          </div>
-
-          <div className="flex items-center gap-2 text-muted-foreground text-sm">
-            <MapPin size={16} className="text-primary flex-shrink-0" />
-            <span className="font-medium">
-              {!isNaN(parseFloat(distance))
-                ? `${parseFloat(distance).toFixed(1)} km`
-                : distance}
-            </span>
-          </div>
-
-          {/* Tags with gradient backgrounds */}
-          <div className="flex gap-2 flex-wrap">
-            {(tags || []).slice(0, 3).map((tag, index) => (
+        <div className="flex flex-1 flex-col gap-4 p-4 md:p-5">
+          <div className="flex flex-wrap gap-2">
+            {(tags || []).slice(0, 2).map((tag, index) => (
               <span
                 key={tag}
-                className={`text-xs font-semibold px-3 py-1.5 rounded-full transition-all duration-200 hover:scale-105 ${index === 0
-                  ? 'bg-gradient-to-r from-orange-100 to-red-100 text-orange-700'
-                  : 'bg-primary/10 text-primary'
-                  }`}
+                className={`rounded-full px-3 py-1.5 text-[0.68rem] font-black uppercase tracking-[0.14em] ${
+                  index === 0
+                    ? 'bg-accent text-accent-foreground'
+                    : 'bg-black/5 text-black/65'
+                }`}
               >
                 {tag}
               </span>
             ))}
           </div>
 
-          <div className="flex items-center justify-between pt-4 border-t border-border/30 mt-auto">
-            <div className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
-              <Star size={14} className="text-orange-400 fill-orange-400" />
-              <span>{reviews} reviews</span>
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <div className="rounded-2xl bg-black/[0.035] px-3 py-3">
+              <div className="flex items-center gap-2 text-black/65">
+                <MapPin size={15} className="text-primary" />
+                <span className="text-[0.68rem] font-black uppercase tracking-[0.16em]">Distance</span>
+              </div>
+              <p className="mt-2 text-sm font-black text-black">{formattedDistance}</p>
             </div>
-            <TrendingUp size={18} className="text-primary opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300" />
+            <div className="rounded-2xl bg-black/[0.035] px-3 py-3">
+              <div className="flex items-center gap-2 text-black/65">
+                <Star size={15} className="fill-primary text-primary" />
+                <span className="text-[0.68rem] font-black uppercase tracking-[0.16em]">Reviews</span>
+              </div>
+              <p className="mt-2 text-sm font-black text-black">{reviews} reviews</p>
+            </div>
+          </div>
+
+          <div className="mt-auto flex items-center justify-between gap-4 border-t border-black/8 pt-4">
+            <div className="min-w-0">
+              <p className="text-[0.68rem] font-black uppercase tracking-[0.16em] text-black/45">
+                StreetBite pick
+              </p>
+              <p className="mt-1 text-sm font-semibold text-black/70">
+                Tap for menu, map, reviews, and live stall details
+              </p>
+            </div>
+            <div className="flex h-11 min-w-11 items-center justify-center rounded-full bg-black text-white shadow-[var(--shadow-soft)] transition-transform duration-200 group-hover:translate-x-1">
+              <MoveRight size={18} />
+            </div>
           </div>
         </div>
-      </div>
+      </article>
     </Link>
   )
 }

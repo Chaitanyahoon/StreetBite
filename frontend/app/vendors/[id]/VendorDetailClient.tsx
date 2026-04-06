@@ -1128,7 +1128,7 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
                                         <Utensils className="w-6 h-6" />
                                         <span className="font-semibold">Fresh Ingredients</span>
                                     </div>
-                                    <div className="flex items-center gap-3 p-3 rounded-xl bg-purple-50 text-purple-800">
+                                    <div className="flex items-center gap-3 p-3 rounded-xl bg-teal-50 text-teal-800">
                                         <Star className="w-6 h-6" />
                                         <span className="font-semibold">Top Rated Vendor</span>
                                     </div>

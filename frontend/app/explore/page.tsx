@@ -1,12 +1,15 @@
 'use client'
 
-import { type FormEvent, useDeferredValue, useEffect, useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
+import Form from 'next/form'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import { useDeferredValue, useEffect, useRef, useState } from 'react'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import { VendorCard } from '@/components/vendor-card'
 import { MapListToggle } from '@/components/map-list-toggle'
 import { BreadcrumbListSchema } from '@/components/seo/breadcrumb-schema'
+import { CollectionPageSchema } from '@/components/seo/collection-page-schema'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { favoriteApi, vendorApi } from '@/lib/api'
@@ -129,6 +132,9 @@ function normalizeVendor(vendor: any, location?: { lat: number; lng: number } | 
 export default function ExplorePage() {
   const { isLoggedIn } = useAuth()
   const { location, loading: loadingLocation, error: locationError } = useUserLocation()
+  const pathname = usePathname()
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const resultsRef = useRef<HTMLElement | null>(null)
 
   const [searchInput, setSearchInput] = useState('')
@@ -142,6 +148,33 @@ export default function ExplorePage() {
   const [vendors, setVendors] = useState<ExploreVendor[]>([])
   const [favorites, setFavorites] = useState<ExploreVendor[]>([])
   const [loadingVendors, setLoadingVendors] = useState(true)
+
+  useEffect(() => {
+    const query = searchParams.get('q')?.trim() ?? ''
+    const cuisine = searchParams.get('cuisine')?.trim() ?? 'all'
+    const filter = searchParams.get('filter')
+    const sort = searchParams.get('sort')
+    const view = searchParams.get('view')
+
+    setSearchInput(query)
+    setSearchTerm(query)
+    setSelectedCuisine(cuisine || 'all')
+    setSelectedQuickFilter(
+      filter && QUICK_FILTERS.some((option) => option.id === filter)
+        ? (filter as QuickFilter)
+        : 'all',
+    )
+    setSelectedSort(
+      sort && SORT_OPTIONS.some((option) => option.id === sort)
+        ? (sort as SortMode)
+        : 'recommended',
+    )
+    setViewMode(
+      view === 'map' || view === 'list'
+        ? view
+        : 'list',
+    )
+  }, [searchParams])
 
   useEffect(() => {
     const fetchFavorites = async () => {
@@ -274,11 +307,19 @@ export default function ExplorePage() {
         ? 'Location unavailable, showing all public vendors'
         : 'Location not shared, showing all public vendors'
 
-  const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    setSearchTerm(searchInput.trim())
-    setViewMode('list')
-    resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  const replaceExploreQuery = (updates: Record<string, string | undefined>) => {
+    const nextParams = new URLSearchParams(searchParams.toString())
+
+    for (const [key, value] of Object.entries(updates)) {
+      if (!value || value === 'all' || value === 'recommended' || value === 'list') {
+        nextParams.delete(key)
+      } else {
+        nextParams.set(key, value)
+      }
+    }
+
+    const nextQuery = nextParams.toString()
+    router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, { scroll: false })
   }
 
   const handleResetFilters = () => {
@@ -288,6 +329,7 @@ export default function ExplorePage() {
     setSelectedQuickFilter('all')
     setSelectedSort('recommended')
     setViewMode('list')
+    router.replace(pathname, { scroll: false })
   }
 
   const showFavoritesPreview =
@@ -302,6 +344,11 @@ export default function ExplorePage() {
           { name: 'Home', item: 'https://streetbitego.vercel.app' },
           { name: 'Explore', item: 'https://streetbitego.vercel.app/explore' },
         ]}
+      />
+      <CollectionPageSchema
+        name="StreetBite Explore"
+        description="Explore nearby street food vendors by cuisine, rating, distance, and live stall status."
+        url="https://streetbitego.vercel.app/explore"
       />
       <Navbar />
 
@@ -330,10 +377,18 @@ export default function ExplorePage() {
       <section className="sticky top-16 z-30 -mt-10 px-4 pb-8 md:top-20 md:px-6">
         <div className="mx-auto max-w-7xl">
           <div className="surface-panel-strong rounded-[2rem] p-4 md:p-5">
-            <form onSubmit={handleSearchSubmit} className="flex flex-col gap-3 lg:flex-row lg:items-center">
+            <Form
+              action={pathname}
+              onSubmit={() => {
+                setViewMode('list')
+                resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+              }}
+              className="flex flex-col gap-3 lg:flex-row lg:items-center"
+            >
               <div className="relative flex-1">
                 <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-black/45" />
                 <Input
+                  name="q"
                   placeholder="Search vendors, cuisines, or tags"
                   value={searchInput}
                   onChange={(event) => {
@@ -341,16 +396,22 @@ export default function ExplorePage() {
                     setSearchInput(nextValue)
                     if (nextValue.trim().length === 0) {
                       setSearchTerm('')
+                      replaceExploreQuery({ q: undefined })
                     }
                   }}
                   className="h-13 rounded-2xl border-black/10 bg-white pl-12 pr-11 text-base font-semibold shadow-none"
                 />
+                <input type="hidden" name="cuisine" value={selectedCuisine === 'all' ? '' : selectedCuisine} />
+                <input type="hidden" name="filter" value={selectedQuickFilter === 'all' ? '' : selectedQuickFilter} />
+                <input type="hidden" name="sort" value={selectedSort === 'recommended' ? '' : selectedSort} />
+                <input type="hidden" name="view" value="" />
                 {searchInput ? (
                   <button
                     type="button"
                     onClick={() => {
                       setSearchInput('')
                       setSearchTerm('')
+                      replaceExploreQuery({ q: undefined })
                     }}
                     className="absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-black/45 hover:bg-black/5 hover:text-black"
                     aria-label="Clear search"
@@ -364,9 +425,15 @@ export default function ExplorePage() {
                 <Button type="submit" size="lg" className="h-13 rounded-2xl px-6 font-black uppercase tracking-[0.14em]">
                   Search
                 </Button>
-                <MapListToggle value={viewMode} onViewChange={setViewMode} />
+                <MapListToggle
+                  value={viewMode}
+                  onViewChange={(nextView) => {
+                    setViewMode(nextView)
+                    replaceExploreQuery({ view: nextView })
+                  }}
+                />
               </div>
-            </form>
+            </Form>
 
             <div className="mt-4 flex flex-col gap-4 border-t border-black/8 pt-4">
               <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
@@ -390,7 +457,10 @@ export default function ExplorePage() {
                     <button
                       key={option.id}
                       type="button"
-                      onClick={() => setSelectedSort(option.id)}
+                      onClick={() => {
+                        setSelectedSort(option.id)
+                        replaceExploreQuery({ sort: option.id })
+                      }}
                       className={`rounded-full border px-4 py-2 text-xs font-black uppercase tracking-[0.16em] transition-all ${
                         selectedSort === option.id
                           ? 'border-black bg-black text-white shadow-[var(--shadow-soft)]'
@@ -409,7 +479,10 @@ export default function ExplorePage() {
                     <button
                       key={filter.id}
                       type="button"
-                      onClick={() => setSelectedQuickFilter(filter.id)}
+                      onClick={() => {
+                        setSelectedQuickFilter(filter.id)
+                        replaceExploreQuery({ filter: filter.id })
+                      }}
                       className={`rounded-full border px-4 py-2 text-xs font-black uppercase tracking-[0.16em] transition-all ${
                         selectedQuickFilter === filter.id
                           ? 'border-black bg-yellow-400 text-black shadow-[var(--shadow-soft)]'
@@ -426,7 +499,10 @@ export default function ExplorePage() {
                     <button
                       key={filter}
                       type="button"
-                      onClick={() => setSelectedCuisine(filter)}
+                      onClick={() => {
+                        setSelectedCuisine(filter)
+                        replaceExploreQuery({ cuisine: filter })
+                      }}
                       className={`rounded-full border px-4 py-2 text-xs font-black uppercase tracking-[0.16em] transition-all ${
                         selectedCuisine === filter
                           ? 'border-black bg-white text-black shadow-[var(--shadow-soft)]'
@@ -476,6 +552,7 @@ export default function ExplorePage() {
                       reviews={vendor.reviews || 0}
                       tags={vendor.tags || []}
                       priority={index < 2}
+                      status={vendor.status}
                     />
                   </div>
                 ))}
@@ -559,6 +636,7 @@ export default function ExplorePage() {
                     reviews={vendor.reviews || 0}
                     tags={vendor.tags || []}
                     priority={index < 4}
+                    status={vendor.status}
                   />
                 </div>
               ))}

@@ -7,6 +7,8 @@ import { useState, useEffect } from 'react'
 import { promotionApi } from '@/lib/api'
 import { Footer } from '@/components/footer'
 import Link from 'next/link'
+import { BreadcrumbListSchema } from '@/components/seo/breadcrumb-schema'
+import { CollectionPageSchema } from '@/components/seo/collection-page-schema'
 
 interface Vendor {
   id: number
@@ -130,6 +132,17 @@ export default function OffersPage() {
 
   return (
     <div className="min-h-screen bg-[#FADFA1] bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px]">
+      <BreadcrumbListSchema
+        items={[
+          { name: 'Home', item: 'https://streetbitego.vercel.app' },
+          { name: 'Offers', item: 'https://streetbitego.vercel.app/offers' },
+        ]}
+      />
+      <CollectionPageSchema
+        name="StreetBite Offers"
+        description="Browse active local street food deals, promo codes, and limited-time vendor offers on StreetBite."
+        url="https://streetbitego.vercel.app/offers"
+      />
       <Navbar />
 
       {/* Hero Section */}

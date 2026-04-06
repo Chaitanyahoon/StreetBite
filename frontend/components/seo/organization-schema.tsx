@@ -27,7 +27,7 @@ export function OrganizationSchema() {
       'url': 'https://streetbitego.vercel.app',
       'potentialAction': {
         '@type': 'SearchAction',
-        'target': 'https://streetbitego.vercel.app/explore?search={search_term_string}',
+        'target': 'https://streetbitego.vercel.app/explore?q={search_term_string}',
         'query-input': 'required name=search_term_string'
       }
     }

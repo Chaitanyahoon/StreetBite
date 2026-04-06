@@ -182,7 +182,7 @@ export default function AdminAnalytics() {
 									cursor={{ fill: '#F3F4F6' }}
 									contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
 								/>
-								<Bar dataKey="reviews" fill="#8B5CF6" radius={[0, 4, 4, 0]} name="Total Reviews" />
+								<Bar dataKey="reviews" fill="#0F9F8E" radius={[0, 4, 4, 0]} name="Total Reviews" />
 							</BarChart>
 						</ResponsiveContainer>
 					</CardContent>
