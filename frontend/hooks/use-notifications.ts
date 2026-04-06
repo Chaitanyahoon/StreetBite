@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { getToken, onMessage } from 'firebase/messaging'
+import { getToken } from 'firebase/messaging'
 import { isPushMessagingEnabled, pushMessaging } from '@/lib/realtime'
 
 /**
@@ -33,22 +33,22 @@ export function useNotifications(userId?: number) {
         }
 
         try {
-
             const permission = await Notification.requestPermission()
 
             setPermission(permission)
 
             if (permission === 'granted') {
+                if (!pushMessaging) {
+                    return null
+                }
+
                 // Get FCM token
-                const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
-
-
-                const currentToken = await getToken(pushMessaging, { vapidKey });
+                const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY
+                const currentToken = await getToken(pushMessaging, { vapidKey })
                 if (currentToken) {
-                    setToken(currentToken);
+                    setToken(currentToken)
 
-
-                    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8081/api';
+                    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8081/api'
                     const response = await fetch(`${backendUrl}/notifications/token`, {
                         method: 'POST',
                         headers: {
@@ -64,13 +64,11 @@ export function useNotifications(userId?: number) {
                     if (!response.ok) {
                         throw new Error('Failed to save token')
                     }
-                } else {
-
                 }
             }
             return permission
         } catch (err) {
-            console.log('An error occurred while retrieving token. ', err);
+            console.log('An error occurred while retrieving token. ', err)
             return null
         }
     }

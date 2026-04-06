@@ -1,19 +1,19 @@
 import type { Metadata } from 'next'
 import Script from 'next/script'
 import { GOOGLE_MAPS_API_KEY } from '@/lib/maps-config'
-import { Outfit, Inter } from 'next/font/google'
+import { Archivo, Space_Grotesk } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 
-const outfit = Outfit({
+const archivo = Archivo({
   subsets: ['latin'],
-  variable: '--font-heading',
+  variable: '--font-display',
   display: 'swap',
 })
 
-const inter = Inter({
+const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
-  variable: '--font-sans',
+  variable: '--font-body',
   display: 'swap',
 })
 
@@ -68,7 +68,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body suppressHydrationWarning className={`${inter.variable} ${outfit.variable} font-sans antialiased text-foreground selection:bg-primary/20 selection:text-primary`}>
+      <body suppressHydrationWarning className={`${spaceGrotesk.variable} ${archivo.variable} font-sans antialiased text-foreground selection:bg-primary/20 selection:text-primary`}>
         <OrganizationSchema />
         <AuthProvider>
           <GamificationProvider>
