@@ -19,16 +19,13 @@ public class DataSeeder implements CommandLineRunner {
     private final VendorRepository vendorRepository;
     private final UserRepository userRepository;
     private final ReportRepository reportRepository;
-    private final com.streetbite.repository.OrderRepository orderRepository;
     private final PasswordEncoder passwordEncoder;
 
     public DataSeeder(VendorRepository vendorRepository, UserRepository userRepository,
-            ReportRepository reportRepository, com.streetbite.repository.OrderRepository orderRepository,
-            PasswordEncoder passwordEncoder) {
+            ReportRepository reportRepository, PasswordEncoder passwordEncoder) {
         this.vendorRepository = vendorRepository;
         this.userRepository = userRepository;
         this.reportRepository = reportRepository;
-        this.orderRepository = orderRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -47,12 +44,6 @@ public class DataSeeder implements CommandLineRunner {
                 if (reportRepository.count() == 0) {
                     seedReports();
                 }
-            }
-
-            // Seed Orders for Analytics if none exist
-            if (orderRepository.count() == 0) {
-                System.out.println("Seeding past orders for analytics...");
-                seedOrders();
             }
         } catch (Exception e) {
             System.err.println("CRITICAL ERROR during data seeding: " + e.getMessage());
@@ -195,36 +186,6 @@ public class DataSeeder implements CommandLineRunner {
         reportRepository.save(r3);
     }
 
-    private void seedOrders() {
-        java.util.List<User> users = userRepository.findAll();
-        java.util.List<Vendor> vendors = vendorRepository.findAll();
-        java.util.Random random = new java.util.Random();
-
-        if (users.isEmpty() || vendors.isEmpty())
-            return;
-
-        // Generate orders for the last 10 days
-        for (int i = 0; i < 50; i++) {
-            User user = users.get(random.nextInt(users.size()));
-            Vendor vendor = vendors.get(random.nextInt(vendors.size()));
-
-            com.streetbite.model.Order order = new com.streetbite.model.Order();
-            order.setUser(user);
-            order.setVendor(vendor);
-
-            // Random amount between 100 and 1000
-            double amount = 100 + (900 * random.nextDouble());
-            order.setTotalAmount(java.math.BigDecimal.valueOf(amount));
-
-            order.setStatus(com.streetbite.model.Order.OrderStatus.COMPLETED);
-
-            // Random date in last 10 days
-            int daysAgo = random.nextInt(10);
-            order.setCreatedAt(java.time.LocalDateTime.now().minusDays(daysAgo));
-
-            orderRepository.save(order);
-        }
-    }
 
     private Vendor createVendor(String name, String description, String cuisine, String address,
             Double lat, Double lon, String phone, String hours, String bannerUrl, String displayUrl, User owner) {
