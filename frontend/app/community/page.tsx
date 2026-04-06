@@ -352,9 +352,9 @@ export default function CommunityPage() {
                                         <div className="p-3 bg-black rounded-xl -rotate-3 shadow-md">
                                             <MessageSquare className="w-6 h-6 text-white" />
                                         </div>
-                                        <CardTitle className="text-3xl font-black uppercase tracking-tight text-black">
+                                        <h2 className="text-3xl font-black uppercase tracking-tight text-black">
                                             Hot Topics
-                                        </CardTitle>
+                                        </h2>
                                     </div>
                                     <div className="relative w-full sm:w-72">
                                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-black" />

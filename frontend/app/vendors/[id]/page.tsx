@@ -30,6 +30,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         return {
             title: `${vendor.name} | StreetBite`,
             description: description,
+            alternates: {
+                canonical: `${baseUrl}/vendors/${vendor.slug || vendor.id}`,
+            },
             openGraph: {
                 title: `${vendor.name} on StreetBite`,
                 description: description,
@@ -49,6 +52,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
                 description: description,
                 images: [vendorImage],
             },
+            other: {
+                'google-site-verification': 'googlee1e3021816c42e23.html',
+            }
         }
     } catch (error) {
         // Fallback if the backend request fails during ISR
@@ -63,8 +69,39 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 // Server Component Layout 
 // Renders the Client Component transparently 
 // -------------------------------------------------------------------------------- //
-export default function VendorDetailServerPage({ params }: Props) {
-    // Next.js handles the `params.id` extraction. 
-    // Data fetching & client-side interaction is fully delegated.
-    return <VendorDetailClient vendorIdParams={params.id} />
+export default async function VendorDetailServerPage({ params }: Props) {
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://streetbite.onrender.com/api'
+    const baseUrl = process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://streetbitego.vercel.app'
+    
+    // Fetch data for JSON-LD (Next.js deduplicates this fetch)
+    const response = await fetch(`${backendUrl}/vendors/${params.id}`)
+    const vendor = await response.json()
+
+    const jsonLd = vendor && vendor.name ? {
+        '@context': 'https://schema.org',
+        '@type': 'Restaurant',
+        'name': vendor.name,
+        'image': vendor.imageUrl || vendor.bannerImageUrl,
+        'description': vendor.description,
+        'servesCuisine': vendor.cuisine,
+        'address': {
+            '@type': 'PostalAddress',
+            'streetAddress': vendor.address,
+            'addressLocality': vendor.city || 'Mumbai',
+            'addressCountry': 'IN'
+        },
+        'url': `${baseUrl}/vendors/${vendor.slug || vendor.id}`
+    } : null;
+
+    return (
+        <>
+            {jsonLd && (
+                <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+                />
+            )}
+            <VendorDetailClient vendorIdParams={params.id} />
+        </>
+    )
 }
