@@ -7,6 +7,8 @@ interface LoginResult {
   success: boolean
   error?: string
   user?: AuthUser
+  requiresEmailVerification?: boolean
+  email?: string
 }
 
 interface AuthContextType {
@@ -44,6 +46,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = useCallback(async (email: string, password: string) => {
     try {
       const response = await authApi.login({ email, password })
+      if (response.requiresEmailVerification) {
+        return {
+          success: true,
+          requiresEmailVerification: true,
+          email: response.email,
+        }
+      }
 
       // Verify the cookie-backed session actually persisted before treating login as successful.
       let userData = response.user as AuthUser

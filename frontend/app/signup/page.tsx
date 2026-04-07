@@ -1,11 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Logo } from '@/components/logo'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, ChevronRight, Sparkles, Eye, EyeOff, UtensilsCrossed, Store, MapPin, ShieldCheck } from 'lucide-react'
+import { ArrowLeft, ChevronRight, Sparkles, Eye, EyeOff, UtensilsCrossed, Store, MapPin, ShieldCheck, Mail } from 'lucide-react'
 import { authApi, type RegisterRequest } from '@/lib/api'
 import { useUserLocation } from '@/lib/useUserLocation'
 import { useAuth } from '@/context/AuthContext'
@@ -13,7 +13,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 
 export default function SignUpPage() {
   const router = useRouter()
-  const { refreshUser } = useAuth()
+  const { login } = useAuth()
   const [step, setStep] = useState(1)
   const [userType, setUserType] = useState<'customer' | 'vendor' | null>(null)
   const [formData, setFormData] = useState({
@@ -27,9 +27,21 @@ export default function SignUpPage() {
   const [error, setError] = useState<string | null>(null)
   const [passwordStrength, setPasswordStrength] = useState(0)
   const [showPassword, setShowPassword] = useState(false)
+  const [verificationEmail, setVerificationEmail] = useState('')
+  const [verificationCode, setVerificationCode] = useState('')
+  const [verificationMessage, setVerificationMessage] = useState<string | null>(null)
   const { location } = useUserLocation()
 
   const [showUserExistsModal, setShowUserExistsModal] = useState(false)
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const verify = new URLSearchParams(window.location.search).get('verify')
+    if (verify) {
+      setStep(3)
+      setVerificationEmail(verify.toLowerCase())
+    }
+  }, [])
 
   const handleContinue = () => {
     if (step === 1 && userType) {
@@ -57,21 +69,14 @@ export default function SignUpPage() {
       }
 
       const response = await authApi.register(registerData)
-      await refreshUser()
-
-      const role = response.user?.role?.toUpperCase()
-      if (role === 'VENDOR') {
-        router.push('/vendor')
+      if (response.requiresEmailVerification) {
+        setVerificationEmail(response.email || formData.email)
+        setVerificationCode('')
+        setVerificationMessage('We sent a 6-digit verification code to your email.')
+        setStep(3)
+        setIsLoading(false)
         return
       }
-
-      if (role === 'ADMIN') {
-        router.push('/admin')
-        return
-      }
-
-      router.push('/explore')
-      return
     } catch (err: any) {
       // Handle User Already Exists (409) - Check this FIRST and don't log as error
       if (err.response?.status === 409 || err.message?.includes('409')) {
@@ -91,6 +96,41 @@ export default function SignUpPage() {
       }
 
       setError(errorMessage)
+      setIsLoading(false)
+    }
+  }
+
+  const handleVerifyEmail = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsLoading(true)
+    setError(null)
+    setVerificationMessage(null)
+
+    try {
+      await authApi.verifyEmail({ email: verificationEmail, code: verificationCode })
+      const result = await login(verificationEmail, formData.password)
+      if (result.success && result.user) {
+        const role = result.user.role?.toUpperCase()
+        router.push(role === 'VENDOR' ? '/vendor' : role === 'ADMIN' ? '/admin' : '/explore')
+        return
+      }
+
+      router.push('/signin')
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Verification failed. Please try again.')
+      setIsLoading(false)
+    }
+  }
+
+  const handleResendVerification = async () => {
+    setIsLoading(true)
+    setError(null)
+    try {
+      const response = await authApi.resendVerification(verificationEmail)
+      setVerificationMessage(response.message || 'Verification code sent again.')
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Failed to resend verification code.')
+    } finally {
       setIsLoading(false)
     }
   }
@@ -404,6 +444,93 @@ export default function SignUpPage() {
                     SIGN IN
                   </Link>
                 </p>
+              </motion.form>
+            )}
+
+            {step === 3 && (
+              <motion.form
+                key="step3"
+                initial={{ opacity: 0, x: 50 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 50 }}
+                onSubmit={handleVerifyEmail}
+                className="bg-white rounded-[2rem] shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] p-6 sm:p-8 md:p-10 space-y-5 border-4 border-black relative overflow-hidden"
+              >
+                <div className="relative z-10 rounded-[1.5rem] border-4 border-black bg-[#FFF5D8] p-4 sm:p-5 shadow-[5px_5px_0px_0px_rgba(0,0,0,1)]">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <p className="text-xs font-black uppercase tracking-[0.3em] text-gray-500">Email Verification</p>
+                      <h2 className="mt-2 text-xl sm:text-2xl font-black uppercase text-black">Unlock Your Account</h2>
+                    </div>
+                    <div className="inline-flex items-center gap-2 rounded-full border-4 border-black bg-white px-4 py-2 text-xs font-black uppercase tracking-[0.25em] text-black">
+                      <Mail className="size-4" strokeWidth={3} />
+                      6-digit code
+                    </div>
+                  </div>
+                  <p className="mt-2 text-xs sm:text-sm font-bold text-gray-700">
+                    Enter the code sent to <span className="text-black">{verificationEmail}</span>. Your account goes live as soon as this is confirmed.
+                  </p>
+                </div>
+
+                {error && (
+                  <div className="bg-red-100 border-4 border-black text-black px-4 py-3 rounded-xl font-bold flex items-center gap-3">
+                    <div className="w-4 h-4 bg-red-500 rounded-full border border-black flex-shrink-0" />
+                    {error}
+                  </div>
+                )}
+
+                {verificationMessage && (
+                  <div className="bg-yellow-100 border-4 border-black text-black px-4 py-3 rounded-xl font-bold">
+                    {verificationMessage}
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <label className="block text-sm font-black text-black uppercase tracking-wider ml-1">Verification Code</label>
+                  <div className="relative">
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-black size-6" strokeWidth={2.5} />
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      maxLength={6}
+                      value={verificationCode}
+                      onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                      placeholder="123456"
+                      className="w-full pl-14 pr-4 py-4 border-4 border-black rounded-xl text-lg font-bold tracking-[0.4em] focus:outline-none focus:ring-4 focus:ring-yellow-400 bg-gray-50 transition-all placeholder:text-gray-300"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-col-reverse gap-4 pt-2 sm:flex-row">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setStep(2)}
+                    disabled={isLoading}
+                    className="flex-1 rounded-xl h-14 border-4 border-black font-black text-lg hover:bg-gray-100"
+                  >
+                    BACK
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={isLoading || verificationCode.length !== 6}
+                    className="flex-[2] bg-orange-500 hover:bg-orange-600 text-white rounded-xl h-14 border-4 border-black font-black text-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all disabled:opacity-70 disabled:hover:translate-y-0"
+                  >
+                    {isLoading ? 'VERIFYING...' : 'VERIFY ACCOUNT'}
+                  </Button>
+                </div>
+
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={handleResendVerification}
+                  disabled={isLoading || !verificationEmail}
+                  className="w-full text-gray-600 font-black uppercase tracking-wide hover:text-black hover:bg-transparent"
+                >
+                  Resend verification code
+                </Button>
               </motion.form>
             )}
 

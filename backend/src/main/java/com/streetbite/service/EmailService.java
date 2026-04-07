@@ -1,14 +1,8 @@
 package com.streetbite.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.stereotype.Service;
-
-import jakarta.mail.internet.MimeMessage;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -22,17 +16,11 @@ public class EmailService {
     private final HttpClient httpClient = HttpClient.newHttpClient();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    @Autowired(required = false)
-    private JavaMailSender mailSender;
-
     @Value("${FRONTEND_URL:http://localhost:3000}")
     private String frontendUrl;
 
-    @Value("${spring.mail.username:noreply@streetbite.com}")
+    @Value("${EMAILJS_FROM_EMAIL:noreply@streetbite.com}")
     private String fromEmail;
-
-    @Value("${spring.mail.host:}")
-    private String mailHost;
 
     @Value("${EMAILJS_SERVICE_ID:}")
     private String emailJsServiceId;
@@ -49,14 +37,8 @@ public class EmailService {
     @Value("${EMAILJS_TEMPLATE_ID_PASSWORD_RESET:}")
     private String emailJsPasswordResetTemplateId;
 
-    @Value("${RESEND_API_KEY:}")
-    private String resendApiKey;
-
-    @Value("${RESEND_FROM_EMAIL:StreetBite <onboarding@resend.dev>}")
-    private String resendFromEmail;
-
     public boolean canSendEmail() {
-        return canSendWithResend() || (mailSender != null && mailHost != null && !mailHost.isBlank());
+        return canSendWithEmailJs();
     }
 
     public String getLastErrorMessage() {
@@ -71,10 +53,6 @@ public class EmailService {
 
         String normalized = message.replaceAll("\\s+", " ").trim();
         this.lastErrorMessage = normalized;
-    }
-
-    private boolean canSendWithResend() {
-        return resendApiKey != null && !resendApiKey.trim().isBlank();
     }
 
     private boolean canSendWithEmailJs() {
@@ -93,10 +71,8 @@ public class EmailService {
                 return sendWithEmailJs(to, subject, htmlContent, templateId, label);
             }
         }
-        if (canSendWithResend()) {
-            return sendWithResend(to, subject, htmlContent, label);
-        }
-        return sendWithSmtp(to, subject, htmlContent, label);
+        setLastErrorMessage("EmailJS is not configured correctly");
+        return false;
     }
 
     private boolean sendWithEmailJs(String to, String subject, String htmlContent, String templateId, String label) {
@@ -144,124 +120,6 @@ public class EmailService {
         }
     }
 
-    private boolean sendWithResend(String to, String subject, String htmlContent, String label) {
-        try {
-            String payload = objectMapper.writeValueAsString(Map.of(
-                    "from", resendFromEmail,
-                    "to", new String[]{to},
-                    "subject", subject,
-                    "html", htmlContent));
-
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("https://api.resend.com/emails"))
-                    .header("Authorization", "Bearer " + resendApiKey.trim())
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(payload))
-                    .build();
-
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            if (response.statusCode() >= 200 && response.statusCode() < 300) {
-                System.out.println(label + " sent successfully via Resend to " + to);
-                setLastErrorMessage("OK");
-                return true;
-            }
-
-            setLastErrorMessage("Resend API error " + response.statusCode() + ": " + response.body());
-            System.err.println("Failed to send " + label + " via Resend to " + to + ": " + response.body());
-            return false;
-        } catch (Exception e) {
-            setLastErrorMessage(e.getClass().getSimpleName() + ": " + e.getMessage());
-            System.err.println("Failed to send " + label + " via Resend to " + to + ": " + e.getMessage());
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    private boolean sendWithSmtp(String to, String subject, String htmlContent, String label) {
-        if (mailSender == null || mailHost == null || mailHost.isBlank()) {
-            System.err.println("JavaMailSender not configured - email not sent. Check mail properties.");
-            setLastErrorMessage("Mail sender is not configured correctly");
-            return false;
-        }
-
-        try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-
-            helper.setFrom(fromEmail);
-            helper.setTo(to);
-            helper.setSubject(subject);
-            helper.setText(htmlContent, true);
-            mailSender.send(message);
-            System.out.println(label + " sent successfully via SMTP to " + to);
-            setLastErrorMessage("OK");
-            return true;
-        } catch (Exception e) {
-            System.err.println("Failed to send " + label + " via SMTP to " + to + ": " + e.getMessage());
-            e.printStackTrace();
-            if (shouldRetryWithGmailSsl(e)) {
-                System.out.println("Retrying " + label + " via Gmail SSL on port 465");
-                boolean retrySuccess = sendWithGmailSslFallback(to, subject, htmlContent, label);
-                if (retrySuccess) {
-                    return true;
-                }
-            }
-            setLastErrorMessage(e.getClass().getSimpleName() + ": " + e.getMessage());
-            return false;
-        }
-    }
-
-    private boolean shouldRetryWithGmailSsl(Exception exception) {
-        String normalizedHost = mailHost != null ? mailHost.trim().toLowerCase() : "";
-        String message = exception.getMessage() != null ? exception.getMessage().toLowerCase() : "";
-        return normalizedHost.contains("gmail")
-                && (message.contains("timeout") || message.contains("couldn't connect to host"));
-    }
-
-    private boolean sendWithGmailSslFallback(String to, String subject, String htmlContent, String label) {
-        if (!(mailSender instanceof JavaMailSenderImpl primarySender)) {
-            setLastErrorMessage("Gmail SSL fallback unavailable");
-            return false;
-        }
-
-        try {
-            JavaMailSenderImpl fallbackSender = new JavaMailSenderImpl();
-            fallbackSender.setHost("smtp.gmail.com");
-            fallbackSender.setPort(465);
-            fallbackSender.setUsername(primarySender.getUsername());
-            fallbackSender.setPassword(primarySender.getPassword());
-
-            java.util.Properties primaryProps = primarySender.getJavaMailProperties();
-            java.util.Properties fallbackProps = fallbackSender.getJavaMailProperties();
-            fallbackProps.put("mail.transport.protocol", "smtp");
-            fallbackProps.put("mail.smtp.auth", primaryProps.getProperty("mail.smtp.auth", "true"));
-            fallbackProps.put("mail.smtp.ssl.enable", "true");
-            fallbackProps.put("mail.smtp.starttls.enable", "false");
-            fallbackProps.put("mail.smtp.starttls.required", "false");
-            fallbackProps.put("mail.smtp.connectiontimeout", primaryProps.getProperty("mail.smtp.connectiontimeout", "10000"));
-            fallbackProps.put("mail.smtp.timeout", primaryProps.getProperty("mail.smtp.timeout", "10000"));
-            fallbackProps.put("mail.smtp.writetimeout", primaryProps.getProperty("mail.smtp.writetimeout", "10000"));
-            fallbackProps.put("mail.smtp.ssl.trust", "smtp.gmail.com");
-
-            MimeMessage message = fallbackSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-            helper.setFrom(fromEmail);
-            helper.setTo(to);
-            helper.setSubject(subject);
-            helper.setText(htmlContent, true);
-            fallbackSender.send(message);
-
-            System.out.println(label + " sent successfully via Gmail SSL fallback to " + to);
-            setLastErrorMessage("OK");
-            return true;
-        } catch (Exception fallbackException) {
-            System.err.println("Failed Gmail SSL fallback for " + label + " to " + to + ": " + fallbackException.getMessage());
-            fallbackException.printStackTrace();
-            setLastErrorMessage(fallbackException.getClass().getSimpleName() + ": " + fallbackException.getMessage());
-            return false;
-        }
-    }
-
     public boolean sendVerificationCodeEmail(String to, String code) {
         System.out.println("==================================================");
         System.out.println("EMAIL VERIFICATION CODE FOR: " + to);
@@ -269,8 +127,8 @@ public class EmailService {
         System.out.println("==================================================");
 
         if (!canSendEmail()) {
-            System.err.println("JavaMailSender not configured - verification email not sent. Check mail properties.");
-            setLastErrorMessage("Mail sender is not configured correctly");
+            System.err.println("EmailJS not configured - verification email not sent.");
+            setLastErrorMessage("EmailJS is not configured correctly");
             return false;
         }
 
@@ -295,8 +153,8 @@ public class EmailService {
         System.out.println("==================================================");
 
         if (!canSendEmail()) {
-            System.err.println("JavaMailSender not configured - 2FA email not sent. Check mail properties.");
-            setLastErrorMessage("Mail sender is not configured correctly");
+            System.err.println("EmailJS not configured - 2FA email not sent.");
+            setLastErrorMessage("EmailJS is not configured correctly");
             return false;
         }
 
@@ -326,10 +184,9 @@ public class EmailService {
         System.out.println(resetLink);
         System.out.println("==================================================");
 
-        // If mail sender is not configured, just log and return
         if (!canSendEmail()) {
-            System.err.println("JavaMailSender not configured - email not sent. Check mail properties.");
-            setLastErrorMessage("Mail sender is not configured correctly");
+            System.err.println("EmailJS not configured - password reset email not sent.");
+            setLastErrorMessage("EmailJS is not configured correctly");
             return false;
         }
 
