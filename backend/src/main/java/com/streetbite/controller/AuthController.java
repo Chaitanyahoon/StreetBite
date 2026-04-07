@@ -9,23 +9,19 @@ import com.streetbite.dto.auth.RegisterRequest;
 import com.streetbite.dto.auth.ResetPasswordRequest;
 import com.streetbite.dto.auth.VerifyEmailRequest;
 import com.streetbite.model.User;
-import com.streetbite.model.Vendor;
+import com.streetbite.service.AuthService;
 import com.streetbite.service.AuthRateLimitService;
 import com.streetbite.service.UserService;
-import com.streetbite.service.VendorService;
-import com.streetbite.service.EmailService;
 import com.streetbite.util.JwtUtil;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
-import java.time.Duration;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -33,28 +29,11 @@ public class AuthController {
 
     private static final String COOKIE_NAME = "sb_token";
     private static final int COOKIE_MAX_AGE = 24 * 60 * 60; // 24 hours
-    private static final int VERIFICATION_EXPIRY_MINUTES = 10;
-
-    @Autowired
-    private UserService userService;
-
-    @Autowired
-    private VendorService vendorService;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private JwtUtil jwtUtil;
-
-    @Autowired
-    private CookieSettings cookieSettings;
-
-    @Autowired
-    private EmailService emailService;
-
-    @Autowired
-    private AuthRateLimitService authRateLimitService;
+    private final UserService userService;
+    private final AuthService authService;
+    private final JwtUtil jwtUtil;
+    private final CookieSettings cookieSettings;
+    private final AuthRateLimitService authRateLimitService;
 
     private static final Duration LOGIN_WINDOW = Duration.ofMinutes(10);
     private static final Duration LOGIN_BLOCK = Duration.ofMinutes(15);
@@ -67,18 +46,17 @@ public class AuthController {
     private static final Duration RESEND_COOLDOWN = Duration.ofMinutes(2);
     private static final Duration FORGOT_PASSWORD_COOLDOWN = Duration.ofMinutes(2);
 
-    /**
-     * Helper: build the user data map (without password hash).
-     */
-    private AuthUserResponse buildUserData(User user) {
-        AuthUserResponse userData = AuthUserResponse.from(user);
-        if (user.getRole() == User.Role.VENDOR) {
-            java.util.List<Vendor> vendors = vendorService.getVendorsByOwner(user.getId());
-            if (!vendors.isEmpty()) {
-                userData.setVendorId(vendors.get(0).getId());
-            }
-        }
-        return userData;
+    public AuthController(
+            UserService userService,
+            AuthService authService,
+            JwtUtil jwtUtil,
+            CookieSettings cookieSettings,
+            AuthRateLimitService authRateLimitService) {
+        this.userService = userService;
+        this.authService = authService;
+        this.jwtUtil = jwtUtil;
+        this.cookieSettings = cookieSettings;
+        this.authRateLimitService = authRateLimitService;
     }
 
     /**
@@ -126,54 +104,6 @@ public class AuthController {
         return null;
     }
 
-    private String generateSixDigitCode() {
-        return String.format("%06d", new java.security.SecureRandom().nextInt(1_000_000));
-    }
-
-    private boolean prepareAndSendEmailVerification(User user) {
-        String code = generateSixDigitCode();
-        user.setEmailVerificationCodeHash(passwordEncoder.encode(code));
-        user.setEmailVerificationCodeExpiry(java.time.LocalDateTime.now().plusMinutes(VERIFICATION_EXPIRY_MINUTES));
-        userService.saveUser(user);
-        boolean emailSent = emailService.sendVerificationCodeEmail(user.getEmail(), code);
-        if (!emailSent) {
-            clearEmailVerification(user);
-            userService.saveUser(user);
-        }
-        return emailSent;
-    }
-
-    private void clearEmailVerification(User user) {
-        user.setEmailVerificationCodeHash(null);
-        user.setEmailVerificationCodeExpiry(null);
-    }
-
-    private void upsertPendingVendorProfile(User user, RegisterRequest payload, String displayName, String phoneNumber) {
-        if (user.getRole() != User.Role.VENDOR) {
-            return;
-        }
-
-        java.util.List<Vendor> existingVendors = vendorService.getVendorsByOwner(user.getId());
-        Vendor vendor = existingVendors.isEmpty() ? new Vendor() : existingVendors.get(0);
-        vendor.setOwner(user);
-        vendor.setName(payload.getBusinessName() != null ? payload.getBusinessName() : displayName + "'s Stall");
-        vendor.setPhone(phoneNumber);
-        vendor.setDescription(vendor.getDescription() != null ? vendor.getDescription() : "New vendor");
-        vendor.setCuisine(vendor.getCuisine() != null ? vendor.getCuisine() : "Street Food");
-
-        RegisterRequest.LocationRequest location = payload.getLocation();
-        if (location != null) {
-            if (location.getLatitude() != null) {
-                vendor.setLatitude(location.getLatitude());
-            }
-            if (location.getLongitude() != null) {
-                vendor.setLongitude(location.getLongitude());
-            }
-        }
-
-        vendorService.saveVendor(vendor);
-    }
-
     private String extractClientAddress(HttpServletRequest request) {
         String forwardedFor = request.getHeader("X-Forwarded-For");
         if (forwardedFor != null && !forwardedFor.isBlank()) {
@@ -195,12 +125,8 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest payload, HttpServletRequest request) {
         try {
-
-            String email = payload.getEmail() != null ? payload.getEmail().trim().toLowerCase() : null;
+            String email = authService.normalizeEmail(payload.getEmail());
             String password = payload.getPassword();
-            String displayName = payload.getDisplayName();
-            String phoneNumber = payload.getPhoneNumber();
-            String roleStr = payload.getRole() != null ? payload.getRole() : "USER";
 
             if (email == null || password == null) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Email and password are required"));
@@ -212,45 +138,21 @@ public class AuthController {
                 return registerLimit.get();
             }
 
-            Optional<User> existingUserOpt = userService.getUserByEmail(email);
             User savedUser;
-
-            if (existingUserOpt.isPresent()) {
-                User existingUser = existingUserOpt.get();
-                if (existingUser.getEmailVerified()) {
+            try {
+                savedUser = authService.registerOrRefreshPendingUser(payload);
+            } catch (IllegalStateException exception) {
+                if ("USER_ALREADY_EXISTS".equals(exception.getMessage())) {
                     return ResponseEntity.status(409).body(Map.of("error", "User already exists"));
                 }
-
-                existingUser.setPasswordHash(passwordEncoder.encode(password));
-                existingUser.setDisplayName(displayName);
-                existingUser.setPhoneNumber(phoneNumber);
-                existingUser.setRole(User.Role.valueOf(roleStr.toUpperCase()));
-                existingUser.setActive(true);
-                existingUser.setEmailVerified(false);
-                clearEmailVerification(existingUser);
-                savedUser = userService.saveUser(existingUser);
-                upsertPendingVendorProfile(savedUser, payload, displayName, phoneNumber);
-            } else {
-                // Hash password with BCrypt
-                String passwordHash = passwordEncoder.encode(password);
-
-                User user = new User();
-                user.setEmail(email);
-                user.setPasswordHash(passwordHash);
-                user.setDisplayName(displayName);
-                user.setPhoneNumber(phoneNumber);
-                user.setRole(User.Role.valueOf(roleStr.toUpperCase()));
-                user.setEmailVerified(false);
-
-                savedUser = userService.saveUser(user);
-                upsertPendingVendorProfile(savedUser, payload, displayName, phoneNumber);
+                throw exception;
             }
 
-            boolean emailSent = prepareAndSendEmailVerification(savedUser);
+            boolean emailSent = authService.prepareAndSendEmailVerification(savedUser);
             if (!emailSent) {
                 authRateLimitService.recordFailure("register", identifier, 3, REGISTER_WINDOW, REGISTER_BLOCK);
                 return ResponseEntity.status(503).body(Map.of(
-                        "error", "Email verification is unavailable right now: " + emailService.getLastErrorMessage()));
+                        "error", "Email verification is unavailable right now: " + authService.getLastEmailErrorMessage()));
             }
 
             authRateLimitService.reset("register", identifier);
@@ -272,8 +174,7 @@ public class AuthController {
             HttpServletResponse response,
             HttpServletRequest request) {
         try {
-
-            String email = payload.getEmail() != null ? payload.getEmail().trim().toLowerCase() : null;
+            String email = authService.normalizeEmail(payload.getEmail());
             String password = payload.getPassword();
 
             if (email == null || password == null) {
@@ -286,7 +187,7 @@ public class AuthController {
                 return loginLimit.get();
             }
 
-            Optional<User> userOpt = userService.getUserByEmail(email);
+            Optional<User> userOpt = authService.getUserByEmail(email);
             if (userOpt.isEmpty()) {
                 authRateLimitService.recordFailure("login", identifier, 5, LOGIN_WINDOW, LOGIN_BLOCK);
                 return ResponseEntity.status(401).body(Map.of("error", "Invalid email or password"));
@@ -295,7 +196,7 @@ public class AuthController {
             User user = userOpt.get();
 
             // Verify password with BCrypt
-            if (!passwordEncoder.matches(password, user.getPasswordHash())) {
+            if (!authService.passwordMatches(user, password)) {
                 authRateLimitService.recordFailure("login", identifier, 5, LOGIN_WINDOW, LOGIN_BLOCK);
                 return ResponseEntity.status(401).body(Map.of("error", "Invalid email or password"));
             }
@@ -305,13 +206,12 @@ public class AuthController {
             }
 
             if (!user.getEmailVerified()) {
-                if (user.getEmailVerificationCodeExpiry() == null
-                        || user.getEmailVerificationCodeExpiry().isBefore(java.time.LocalDateTime.now())) {
-                    boolean emailSent = prepareAndSendEmailVerification(user);
+                if (authService.isVerificationExpired(user)) {
+                    boolean emailSent = authService.prepareAndSendEmailVerification(user);
                     if (!emailSent) {
                         authRateLimitService.recordFailure("login", identifier, 5, LOGIN_WINDOW, LOGIN_BLOCK);
                         return ResponseEntity.status(503).body(Map.of(
-                                "error", "Email verification is unavailable right now: " + emailService.getLastErrorMessage()));
+                                "error", "Email verification is unavailable right now: " + authService.getLastEmailErrorMessage()));
                     }
                 }
 
@@ -326,7 +226,7 @@ public class AuthController {
             setTokenCookie(response, token);
             authRateLimitService.reset("login", identifier);
 
-            AuthUserResponse userData = buildUserData(user);
+            AuthUserResponse userData = authService.buildUserData(user);
 
             // Token is issued via HttpOnly cookie.
             return ResponseEntity.ok(new AuthSuccessResponse(true, userData));
@@ -342,7 +242,7 @@ public class AuthController {
             HttpServletResponse response,
             HttpServletRequest request) {
         try {
-            String email = payload.getEmail() != null ? payload.getEmail().trim().toLowerCase() : null;
+            String email = authService.normalizeEmail(payload.getEmail());
             String code = payload.getCode() != null ? payload.getCode().trim() : null;
 
             if (email == null || email.isBlank() || code == null || code.isBlank()) {
@@ -355,7 +255,7 @@ public class AuthController {
                 return verifyLimit.get();
             }
 
-            Optional<User> userOpt = userService.getUserByEmail(email);
+            Optional<User> userOpt = authService.getUserByEmail(email);
             if (userOpt.isEmpty()) {
                 authRateLimitService.recordFailure("verify-email", identifier, 5, VERIFY_WINDOW, VERIFY_BLOCK);
                 return ResponseEntity.status(401).body(Map.of("error", "Invalid verification request"));
@@ -366,29 +266,25 @@ public class AuthController {
                 return ResponseEntity.status(403).body(Map.of("error", "Account is banned or inactive"));
             }
 
-            if (user.getEmailVerificationCodeExpiry() == null
-                    || user.getEmailVerificationCodeExpiry().isBefore(java.time.LocalDateTime.now())) {
-                clearEmailVerification(user);
+            if (authService.isVerificationExpired(user)) {
+                authService.clearEmailVerification(user);
                 userService.saveUser(user);
                 authRateLimitService.recordFailure("verify-email", identifier, 5, VERIFY_WINDOW, VERIFY_BLOCK);
                 return ResponseEntity.status(401).body(Map.of("error", "Verification code expired"));
             }
 
-            if (user.getEmailVerificationCodeHash() == null
-                    || !passwordEncoder.matches(code, user.getEmailVerificationCodeHash())) {
+            if (!authService.matchesVerificationCode(user, code)) {
                 authRateLimitService.recordFailure("verify-email", identifier, 5, VERIFY_WINDOW, VERIFY_BLOCK);
                 return ResponseEntity.status(401).body(Map.of("error", "Invalid verification code"));
             }
 
-            user.setEmailVerified(true);
-            clearEmailVerification(user);
-            userService.saveUser(user);
+            user = authService.markEmailVerified(user);
 
             String token = jwtUtil.generateToken(user.getEmail(), user.getId(), user.getRole().name());
             setTokenCookie(response, token);
             authRateLimitService.reset("verify-email", identifier);
 
-            AuthUserResponse userData = buildUserData(user);
+            AuthUserResponse userData = authService.buildUserData(user);
             return ResponseEntity.ok(new AuthSuccessResponse(true, userData));
         } catch (Exception e) {
             e.printStackTrace();
@@ -399,7 +295,7 @@ public class AuthController {
     @PostMapping("/resend-verification")
     public ResponseEntity<?> resendVerification(@RequestBody EmailRequest payload, HttpServletRequest request) {
         try {
-            String email = payload.getEmail() != null ? payload.getEmail().trim().toLowerCase() : null;
+            String email = authService.normalizeEmail(payload.getEmail());
             if (email == null || email.isBlank()) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Email is required"));
             }
@@ -410,7 +306,7 @@ public class AuthController {
                 return resendLimit.get();
             }
 
-            Optional<User> userOpt = userService.getUserByEmail(email);
+            Optional<User> userOpt = authService.getUserByEmail(email);
             if (userOpt.isEmpty()) {
                 authRateLimitService.throttle("resend-verification", identifier, RESEND_COOLDOWN);
                 return ResponseEntity.ok(Map.of("success", true, "message", "If the account exists, a code was sent."));
@@ -422,11 +318,11 @@ public class AuthController {
                 return ResponseEntity.ok(Map.of("success", true, "message", "Email is already verified."));
             }
 
-            boolean emailSent = prepareAndSendEmailVerification(user);
+            boolean emailSent = authService.prepareAndSendEmailVerification(user);
             if (!emailSent) {
                 authRateLimitService.recordFailure("resend-verification", identifier, 3, VERIFY_WINDOW, VERIFY_BLOCK);
                 return ResponseEntity.status(503).body(Map.of(
-                        "error", "Email verification is unavailable right now: " + emailService.getLastErrorMessage()));
+                        "error", "Email verification is unavailable right now: " + authService.getLastEmailErrorMessage()));
             }
 
             authRateLimitService.throttle("resend-verification", identifier, RESEND_COOLDOWN);
@@ -455,7 +351,7 @@ public class AuthController {
                 return ResponseEntity.status(401).body(Map.of("error", "Invalid token"));
             }
 
-            Optional<User> userOpt = userService.getUserByEmail(email);
+            Optional<User> userOpt = authService.getUserByEmail(email);
             if (userOpt.isEmpty() || !userOpt.get().getActive()) {
                 return ResponseEntity.status(401).body(Map.of("error", "User not found or inactive"));
             }
@@ -464,7 +360,7 @@ public class AuthController {
                 return ResponseEntity.status(401).body(Map.of("error", "Token expired"));
             }
 
-            AuthUserResponse userData = buildUserData(userOpt.get());
+            AuthUserResponse userData = authService.buildUserData(userOpt.get());
             return ResponseEntity.ok(userData);
         } catch (Exception e) {
             return ResponseEntity.status(401).body(Map.of("error", "Invalid token"));
@@ -482,7 +378,7 @@ public class AuthController {
 
     @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(@RequestBody EmailRequest payload, HttpServletRequest request) {
-        String email = payload.getEmail() != null ? payload.getEmail().trim().toLowerCase() : null;
+        String email = authService.normalizeEmail(payload.getEmail());
         if (email == null || email.isBlank()) {
             return ResponseEntity.badRequest().body(Map.of("error", "Email is required"));
         }
@@ -493,7 +389,7 @@ public class AuthController {
             return forgotLimit.get();
         }
 
-        Optional<User> userOpt = userService.getUserByEmail(email);
+        Optional<User> userOpt = authService.getUserByEmail(email);
         if (userOpt.isEmpty()) {
             authRateLimitService.throttle("forgot-password", identifier, FORGOT_PASSWORD_COOLDOWN);
             // Don't reveal that user doesn't exist - return same response
@@ -503,16 +399,13 @@ public class AuthController {
         }
 
         User user = userOpt.get();
-        String token = java.util.UUID.randomUUID().toString();
-        user.setResetPasswordToken(token);
-        user.setResetPasswordTokenExpiry(java.time.LocalDateTime.now().plusMinutes(15));
-        userService.saveUser(user);
+        String token = authService.issuePasswordResetToken(user);
 
-        boolean emailSent = emailService.sendPasswordResetEmail(email, token);
+        boolean emailSent = authService.sendPasswordResetEmail(email, token);
         if (!emailSent) {
             authRateLimitService.recordFailure("forgot-password", identifier, 3, RESET_WINDOW, RESET_BLOCK);
             return ResponseEntity.status(503).body(Map.of(
-                    "error", "Password reset email is unavailable right now: " + emailService.getLastErrorMessage()));
+                    "error", "Password reset email is unavailable right now: " + authService.getLastEmailErrorMessage()));
         }
 
         authRateLimitService.throttle("forgot-password", identifier, FORGOT_PASSWORD_COOLDOWN);
@@ -531,18 +424,16 @@ public class AuthController {
             return ResponseEntity.badRequest().body(Map.of("valid", false, "error", "Token is required"));
         }
 
-        Optional<User> userOpt = userService.getUserByResetPasswordToken(token);
+        Optional<User> userOpt = authService.getUserByResetPasswordToken(token);
         if (userOpt.isEmpty()) {
             return ResponseEntity.ok(Map.of("valid", false, "error", "Invalid or already used token"));
         }
 
         User user = userOpt.get();
         java.time.LocalDateTime expiry = user.getResetPasswordTokenExpiry();
-        if (expiry == null || expiry.isBefore(java.time.LocalDateTime.now())) {
+        if (authService.isResetTokenExpired(user)) {
             // Token expired — clear it
-            user.setResetPasswordToken(null);
-            user.setResetPasswordTokenExpiry(null);
-            userService.saveUser(user);
+            authService.clearExpiredResetToken(user);
             return ResponseEntity.ok(Map.of("valid", false, "error", "Token has expired"));
         }
 
@@ -565,22 +456,19 @@ public class AuthController {
             return resetLimit.get();
         }
 
-        Optional<User> userOpt = userService.getUserByResetPasswordToken(token);
+        Optional<User> userOpt = authService.getUserByResetPasswordToken(token);
         if (userOpt.isEmpty()) {
             authRateLimitService.recordFailure("reset-password", identifier, 5, RESET_WINDOW, RESET_BLOCK);
             return ResponseEntity.badRequest().body(Map.of("error", "Invalid or expired token"));
         }
 
         User user = userOpt.get();
-        if (user.getResetPasswordTokenExpiry().isBefore(java.time.LocalDateTime.now())) {
+        if (authService.isResetTokenExpired(user)) {
             authRateLimitService.recordFailure("reset-password", identifier, 5, RESET_WINDOW, RESET_BLOCK);
             return ResponseEntity.badRequest().body(Map.of("error", "Token has expired"));
         }
 
-        user.setPasswordHash(passwordEncoder.encode(newPassword));
-        user.setResetPasswordToken(null);
-        user.setResetPasswordTokenExpiry(null);
-        userService.saveUser(user);
+        authService.resetPassword(user, newPassword);
         authRateLimitService.reset("reset-password", identifier);
 
         return ResponseEntity.ok(Map.of("message", "Password reset successfully"));
