@@ -1,19 +1,23 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { VendorNavbar } from '@/components/dashboard/vendor-navbar'
 import { Button } from '@/components/ui/button'
-import { MessageSquare, AlertCircle, History, CheckCircle, Clock, Loader2, Send } from 'lucide-react'
+import { MessageSquare, AlertCircle, History, Clock, Loader2, Send } from 'lucide-react'
 import { reportApi } from '@/lib/api'
 import { useToast } from '@/components/ui/use-toast'
 import { useAuth } from '@/context/AuthContext'
+import {
+    EMPTY_SUPPORT_FORM,
+    getTicketStatusClassName,
+    SUPPORT_CATEGORY_OPTIONS,
+    SUPPORT_PRIORITY_OPTIONS,
+    SUPPORT_QUICK_TIPS,
+} from './support-helpers'
 
 export default function VendorSupportPage() {
     return (
-        <div className="min-h-screen bg-muted/20">
-            <VendorNavbar />
-
-            <main className="container mx-auto px-4 py-8 max-w-6xl">
+        <div className="space-y-8">
+            <main className="max-w-6xl">
                 <div className="flex flex-col md:flex-row gap-8">
 
                     {/* Header & Ticket Form */}
@@ -53,9 +57,9 @@ export default function VendorSupportPage() {
                                 Quick Tips
                             </h3>
                             <ul className="text-sm text-blue-700 space-y-2 list-disc pl-4">
-                                <li>Check your menu items for accuracy before publishing.</li>
-                                <li>Keep your business hours updated.</li>
-                                <li>Respond to reviews to build trust.</li>
+                                {SUPPORT_QUICK_TIPS.map((tip) => (
+                                    <li key={tip}>{tip}</li>
+                                ))}
                             </ul>
                         </div>
                     </div>
@@ -71,12 +75,7 @@ function SupportTicketForm() {
     const { toast } = useToast()
     const { user } = useAuth()
 
-    const [formData, setFormData] = useState({
-        subject: '',
-        description: '',
-        category: 'TECHNICAL',
-        priority: 'NORMAL'
-    })
+    const [formData, setFormData] = useState(EMPTY_SUPPORT_FORM)
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -100,12 +99,7 @@ function SupportTicketForm() {
             })
 
             // Reset form
-            setFormData({
-                subject: '',
-                description: '',
-                category: 'TECHNICAL',
-                priority: 'NORMAL'
-            })
+            setFormData(EMPTY_SUPPORT_FORM)
 
             // Trigger history refresh event
             window.dispatchEvent(new Event('ticket-created'))
@@ -132,10 +126,9 @@ function SupportTicketForm() {
                         onChange={e => setFormData({ ...formData, category: e.target.value })}
                         className="w-full px-4 py-2.5 rounded-xl border bg-background"
                     >
-                        <option value="TECHNICAL">Technical Issue</option>
-                        <option value="BILLING">Billing/Payments</option>
-                        <option value="ACCOUNT">Account Support</option>
-                        <option value="OTHER">Other</option>
+                        {SUPPORT_CATEGORY_OPTIONS.map((option) => (
+                            <option key={option.value} value={option.value}>{option.label}</option>
+                        ))}
                     </select>
                 </div>
                 <div className="space-y-1.5">
@@ -145,10 +138,9 @@ function SupportTicketForm() {
                         onChange={e => setFormData({ ...formData, priority: e.target.value })}
                         className="w-full px-4 py-2.5 rounded-xl border bg-background"
                     >
-                        <option value="LOW">Low</option>
-                        <option value="NORMAL">Normal</option>
-                        <option value="HIGH">High</option>
-                        <option value="URGENT">Urgent</option>
+                        {SUPPORT_PRIORITY_OPTIONS.map((option) => (
+                            <option key={option.value} value={option.value}>{option.label}</option>
+                        ))}
                     </select>
                 </div>
             </div>
@@ -229,10 +221,7 @@ function TicketHistory() {
             {tickets.map((ticket, i) => (
                 <div key={i} className="p-3 bg-background rounded-xl border text-sm hover:border-primary/30 transition-colors">
                     <div className="flex justify-between items-start mb-1">
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${ticket.status === 'RESOLVED' ? 'bg-green-100 text-green-700' :
-                            ticket.status === 'PENDING' ? 'bg-yellow-100 text-yellow-700' :
-                                'bg-gray-100 text-gray-700'
-                            }`}>
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${getTicketStatusClassName(ticket.status)}`}>
                             {ticket.status}
                         </span>
                         <span className="text-xs text-muted-foreground flex items-center gap-1">

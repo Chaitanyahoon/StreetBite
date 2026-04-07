@@ -7,6 +7,11 @@ import { Button } from '@/components/ui/button'
 import { Download, Calendar } from 'lucide-react'
 import { analyticsApi, menuApi } from '@/lib/api'
 import { useAuth } from '@/context/AuthContext'
+import {
+  buildCategoryData,
+  buildCustomerMetrics,
+  getAverageMenuPrice,
+} from './analytics-helpers'
 
 export default function Analytics() {
   const { user } = useAuth()
@@ -102,30 +107,8 @@ export default function Analytics() {
     )
   }
 
-  // Calculate category breakdown from menu items
-  const categoryBreakdown = menuItems.reduce((acc: any, item: any) => {
-    const category = item.category || 'Other'
-    if (!acc[category]) {
-      acc[category] = 0
-    }
-    acc[category] += 1
-    return acc
-  }, {})
-
-
-  const totalCategoryItems = Object.values(categoryBreakdown).reduce((a: any, b: any) => a + b, 0) || 1
-  const categoryData = Object.entries(categoryBreakdown).map(([name, value]: any, idx) => ({
-    name,
-    value: Math.round((Number(value) / Number(totalCategoryItems)) * 100),
-    color: ['#FF7A32', '#FFA45C', '#FFD6B3', '#FFE5D0', '#FFF0E5'][idx % 5]
-  }))
-
-  const customerMetrics = [
-    { metric: 'Profile Views', value: analytics?.profileViews ?? 0, change: 'Last 7 days' },
-    { metric: 'Direction Clicks', value: analytics?.directionClicks ?? 0, change: 'Last 7 days' },
-    { metric: 'Average Rating', value: `${(analytics?.averageRating ?? 0).toFixed(1)}/5`, change: `${analytics?.totalReviews ?? 0} reviews` },
-    { metric: 'Menu Interactions', value: analytics?.menuInteractions ?? 0, change: 'Last 7 days' },
-  ]
+  const categoryData = buildCategoryData(menuItems)
+  const customerMetrics = buildCustomerMetrics(analytics)
 
   return (
     <div className="p-8 space-y-6">
@@ -256,7 +239,7 @@ export default function Analytics() {
             <div className="p-4 bg-white/50 rounded-xl">
               <p className="text-sm text-muted-foreground">Avg Price</p>
               <p className="text-2xl font-bold mt-1">
-                ₹{menuItems.length > 0 ? (menuItems.reduce((sum, item) => sum + (item.price || 0), 0) / menuItems.length).toFixed(0) : 0}
+                ₹{getAverageMenuPrice(menuItems)}
               </p>
             </div>
           </div>
