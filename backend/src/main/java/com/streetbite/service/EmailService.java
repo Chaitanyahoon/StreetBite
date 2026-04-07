@@ -1,5 +1,6 @@
 package com.streetbite.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -7,11 +8,18 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import jakarta.mail.internet.MimeMessage;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.Map;
 
 @Service
 public class EmailService {
 
     private volatile String lastErrorMessage = "Email delivery is unavailable";
+    private final HttpClient httpClient = HttpClient.newHttpClient();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired(required = false)
     private JavaMailSender mailSender;
@@ -25,8 +33,14 @@ public class EmailService {
     @Value("${spring.mail.host:}")
     private String mailHost;
 
+    @Value("${RESEND_API_KEY:}")
+    private String resendApiKey;
+
+    @Value("${RESEND_FROM_EMAIL:StreetBite <onboarding@resend.dev>}")
+    private String resendFromEmail;
+
     public boolean canSendEmail() {
-        return mailSender != null && mailHost != null && !mailHost.isBlank();
+        return canSendWithResend() || (mailSender != null && mailHost != null && !mailHost.isBlank());
     }
 
     public String getLastErrorMessage() {
@@ -43,6 +57,77 @@ public class EmailService {
         this.lastErrorMessage = normalized;
     }
 
+    private boolean canSendWithResend() {
+        return resendApiKey != null && !resendApiKey.trim().isBlank();
+    }
+
+    private boolean sendEmail(String to, String subject, String htmlContent, String label) {
+        if (canSendWithResend()) {
+            return sendWithResend(to, subject, htmlContent, label);
+        }
+        return sendWithSmtp(to, subject, htmlContent, label);
+    }
+
+    private boolean sendWithResend(String to, String subject, String htmlContent, String label) {
+        try {
+            String payload = objectMapper.writeValueAsString(Map.of(
+                    "from", resendFromEmail,
+                    "to", new String[]{to},
+                    "subject", subject,
+                    "html", htmlContent));
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://api.resend.com/emails"))
+                    .header("Authorization", "Bearer " + resendApiKey.trim())
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(payload))
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() >= 200 && response.statusCode() < 300) {
+                System.out.println(label + " sent successfully via Resend to " + to);
+                setLastErrorMessage("OK");
+                return true;
+            }
+
+            setLastErrorMessage("Resend API error " + response.statusCode() + ": " + response.body());
+            System.err.println("Failed to send " + label + " via Resend to " + to + ": " + response.body());
+            return false;
+        } catch (Exception e) {
+            setLastErrorMessage(e.getClass().getSimpleName() + ": " + e.getMessage());
+            System.err.println("Failed to send " + label + " via Resend to " + to + ": " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    private boolean sendWithSmtp(String to, String subject, String htmlContent, String label) {
+        if (mailSender == null || mailHost == null || mailHost.isBlank()) {
+            System.err.println("JavaMailSender not configured - email not sent. Check mail properties.");
+            setLastErrorMessage("Mail sender is not configured correctly");
+            return false;
+        }
+
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(fromEmail);
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setText(htmlContent, true);
+            mailSender.send(message);
+            System.out.println(label + " sent successfully via SMTP to " + to);
+            setLastErrorMessage("OK");
+            return true;
+        } catch (Exception e) {
+            System.err.println("Failed to send " + label + " via SMTP to " + to + ": " + e.getMessage());
+            e.printStackTrace();
+            setLastErrorMessage(e.getClass().getSimpleName() + ": " + e.getMessage());
+            return false;
+        }
+    }
+
     public boolean sendVerificationCodeEmail(String to, String code) {
         System.out.println("==================================================");
         System.out.println("EMAIL VERIFICATION CODE FOR: " + to);
@@ -55,36 +140,18 @@ public class EmailService {
             return false;
         }
 
-        try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-
-            helper.setFrom(fromEmail);
-            helper.setTo(to);
-            helper.setSubject("StreetBite - Verify Your Email");
-
-            String htmlContent = """
-                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                        <h2 style="color: #ff6b35;">Verify your StreetBite account</h2>
-                        <p>Use this 6-digit code to finish creating your account:</p>
-                        <div style="margin: 24px 0; font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #111;">
-                            %s
-                        </div>
-                        <p style="color: #666;">This code expires in 10 minutes.</p>
+        String htmlContent = """
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <h2 style="color: #ff6b35;">Verify your StreetBite account</h2>
+                    <p>Use this 6-digit code to finish creating your account:</p>
+                    <div style="margin: 24px 0; font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #111;">
+                        %s
                     </div>
-                    """.formatted(code);
+                    <p style="color: #666;">This code expires in 10 minutes.</p>
+                </div>
+                """.formatted(code);
 
-            helper.setText(htmlContent, true);
-            mailSender.send(message);
-            System.out.println("Verification email sent successfully to " + to);
-            setLastErrorMessage("OK");
-            return true;
-        } catch (Exception e) {
-            System.err.println("Failed to send verification email to " + to + ": " + e.getMessage());
-            e.printStackTrace();
-            setLastErrorMessage(e.getClass().getSimpleName() + ": " + e.getMessage());
-            return false;
-        }
+        return sendEmail(to, "StreetBite - Verify Your Email", htmlContent, "Verification email");
     }
 
     public boolean sendTwoFactorCodeEmail(String to, String code) {
@@ -99,40 +166,21 @@ public class EmailService {
             return false;
         }
 
-        try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-
-            helper.setFrom(fromEmail);
-            helper.setTo(to);
-            helper.setSubject("StreetBite - Your Login Verification Code");
-
-            String htmlContent = """
-                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                        <h2 style="color: #ff6b35;">StreetBite Login Verification</h2>
-                        <p>Use this one-time code to complete your sign in:</p>
-                        <div style="margin: 24px 0; font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #111;">
-                            %s
-                        </div>
-                        <p style="color: #666;">This code expires in 10 minutes.</p>
-                        <p style="color: #999; font-size: 12px; margin-top: 30px;">
-                            If you did not try to sign in, you can ignore this email.
-                        </p>
+        String htmlContent = """
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <h2 style="color: #ff6b35;">StreetBite Login Verification</h2>
+                    <p>Use this one-time code to complete your sign in:</p>
+                    <div style="margin: 24px 0; font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #111;">
+                        %s
                     </div>
-                    """
-                    .formatted(code);
+                    <p style="color: #666;">This code expires in 10 minutes.</p>
+                    <p style="color: #999; font-size: 12px; margin-top: 30px;">
+                        If you did not try to sign in, you can ignore this email.
+                    </p>
+                </div>
+                """.formatted(code);
 
-            helper.setText(htmlContent, true);
-            mailSender.send(message);
-            System.out.println("2FA email sent successfully to " + to);
-            setLastErrorMessage("OK");
-            return true;
-        } catch (Exception e) {
-            System.err.println("Failed to send 2FA email to " + to + ": " + e.getMessage());
-            e.printStackTrace();
-            setLastErrorMessage(e.getClass().getSimpleName() + ": " + e.getMessage());
-            return false;
-        }
+        return sendEmail(to, "StreetBite - Your Login Verification Code", htmlContent, "2FA email");
     }
 
     public boolean sendPasswordResetEmail(String to, String token) {
@@ -151,44 +199,23 @@ public class EmailService {
             return false;
         }
 
-        try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+        String htmlContent = """
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <h2 style="color: #ff6b35;">StreetBite Password Reset</h2>
+                    <p>You requested to reset your password. Click the button below to proceed:</p>
+                    <p style="margin: 30px 0;">
+                        <a href="%s" style="background-color: #ff6b35; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">
+                            Reset Password
+                        </a>
+                    </p>
+                    <p>Or copy and paste this link in your browser:</p>
+                    <p style="word-break: break-all; color: #666;">%s</p>
+                    <p style="color: #999; font-size: 12px; margin-top: 30px;">
+                        This link expires in 15 minutes. If you didn't request this, please ignore this email.
+                    </p>
+                </div>
+                """.formatted(resetLink, resetLink);
 
-            helper.setFrom(fromEmail);
-            helper.setTo(to);
-            helper.setSubject("StreetBite - Password Reset Request");
-
-            String htmlContent = """
-                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                        <h2 style="color: #ff6b35;">StreetBite Password Reset</h2>
-                        <p>You requested to reset your password. Click the button below to proceed:</p>
-                        <p style="margin: 30px 0;">
-                            <a href="%s" style="background-color: #ff6b35; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">
-                                Reset Password
-                            </a>
-                        </p>
-                        <p>Or copy and paste this link in your browser:</p>
-                        <p style="word-break: break-all; color: #666;">%s</p>
-                        <p style="color: #999; font-size: 12px; margin-top: 30px;">
-                            This link expires in 15 minutes. If you didn't request this, please ignore this email.
-                        </p>
-                    </div>
-                    """
-                    .formatted(resetLink, resetLink);
-
-            helper.setText(htmlContent, true);
-            mailSender.send(message);
-
-            System.out.println("Password reset email sent successfully to " + to);
-            setLastErrorMessage("OK");
-            return true;
-        } catch (Exception e) {
-            // Catch ALL exceptions - don't let email failure crash the request
-            System.err.println("Failed to send email to " + to + ": " + e.getMessage());
-            e.printStackTrace();
-            setLastErrorMessage(e.getClass().getSimpleName() + ": " + e.getMessage());
-            return false;
-        }
+        return sendEmail(to, "StreetBite - Password Reset Request", htmlContent, "Password reset email");
     }
 }
