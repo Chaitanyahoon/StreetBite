@@ -10,6 +10,7 @@ import com.streetbite.dto.auth.ResetPasswordRequest;
 import com.streetbite.dto.auth.VerifyEmailRequest;
 import com.streetbite.model.User;
 import com.streetbite.model.Vendor;
+import com.streetbite.service.AuthRateLimitService;
 import com.streetbite.service.UserService;
 import com.streetbite.service.VendorService;
 import com.streetbite.service.EmailService;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 import java.util.Optional;
+import java.time.Duration;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -50,6 +52,20 @@ public class AuthController {
 
     @Autowired
     private EmailService emailService;
+
+    @Autowired
+    private AuthRateLimitService authRateLimitService;
+
+    private static final Duration LOGIN_WINDOW = Duration.ofMinutes(10);
+    private static final Duration LOGIN_BLOCK = Duration.ofMinutes(15);
+    private static final Duration VERIFY_WINDOW = Duration.ofMinutes(10);
+    private static final Duration VERIFY_BLOCK = Duration.ofMinutes(10);
+    private static final Duration RESET_WINDOW = Duration.ofMinutes(15);
+    private static final Duration RESET_BLOCK = Duration.ofMinutes(15);
+    private static final Duration REGISTER_WINDOW = Duration.ofMinutes(15);
+    private static final Duration REGISTER_BLOCK = Duration.ofMinutes(20);
+    private static final Duration RESEND_COOLDOWN = Duration.ofMinutes(2);
+    private static final Duration FORGOT_PASSWORD_COOLDOWN = Duration.ofMinutes(2);
 
     /**
      * Helper: build the user data map (without password hash).
@@ -158,8 +174,26 @@ public class AuthController {
         vendorService.saveVendor(vendor);
     }
 
+    private String extractClientAddress(HttpServletRequest request) {
+        String forwardedFor = request.getHeader("X-Forwarded-For");
+        if (forwardedFor != null && !forwardedFor.isBlank()) {
+            return forwardedFor.split(",")[0].trim();
+        }
+        return request.getRemoteAddr();
+    }
+
+    private ResponseEntity<Map<String, String>> tooManyRequests(String message) {
+        return ResponseEntity.status(429).body(Map.of("error", message));
+    }
+
+    private Optional<ResponseEntity<Map<String, String>>> checkRateLimit(
+            String bucket,
+            String identifier) {
+        return authRateLimitService.check(bucket, identifier).map(this::tooManyRequests);
+    }
+
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterRequest payload) {
+    public ResponseEntity<?> register(@RequestBody RegisterRequest payload, HttpServletRequest request) {
         try {
 
             String email = payload.getEmail() != null ? payload.getEmail().trim().toLowerCase() : null;
@@ -170,6 +204,12 @@ public class AuthController {
 
             if (email == null || password == null) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Email and password are required"));
+            }
+
+            String identifier = extractClientAddress(request) + "::" + email;
+            Optional<ResponseEntity<Map<String, String>>> registerLimit = checkRateLimit("register", identifier);
+            if (registerLimit.isPresent()) {
+                return registerLimit.get();
             }
 
             Optional<User> existingUserOpt = userService.getUserByEmail(email);
@@ -208,9 +248,12 @@ public class AuthController {
 
             boolean emailSent = prepareAndSendEmailVerification(savedUser);
             if (!emailSent) {
+                authRateLimitService.recordFailure("register", identifier, 3, REGISTER_WINDOW, REGISTER_BLOCK);
                 return ResponseEntity.status(503).body(Map.of(
                         "error", "Email verification is unavailable right now: " + emailService.getLastErrorMessage()));
             }
+
+            authRateLimitService.reset("register", identifier);
 
             return ResponseEntity.ok(Map.of(
                     "success", true,
@@ -224,7 +267,10 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest payload, HttpServletResponse response) {
+    public ResponseEntity<?> login(
+            @RequestBody LoginRequest payload,
+            HttpServletResponse response,
+            HttpServletRequest request) {
         try {
 
             String email = payload.getEmail() != null ? payload.getEmail().trim().toLowerCase() : null;
@@ -234,9 +280,15 @@ public class AuthController {
                 return ResponseEntity.badRequest().body(Map.of("error", "Email and password are required"));
             }
 
+            String identifier = extractClientAddress(request) + "::" + email;
+            Optional<ResponseEntity<Map<String, String>>> loginLimit = checkRateLimit("login", identifier);
+            if (loginLimit.isPresent()) {
+                return loginLimit.get();
+            }
+
             Optional<User> userOpt = userService.getUserByEmail(email);
             if (userOpt.isEmpty()) {
-
+                authRateLimitService.recordFailure("login", identifier, 5, LOGIN_WINDOW, LOGIN_BLOCK);
                 return ResponseEntity.status(401).body(Map.of("error", "Invalid email or password"));
             }
 
@@ -244,7 +296,7 @@ public class AuthController {
 
             // Verify password with BCrypt
             if (!passwordEncoder.matches(password, user.getPasswordHash())) {
-
+                authRateLimitService.recordFailure("login", identifier, 5, LOGIN_WINDOW, LOGIN_BLOCK);
                 return ResponseEntity.status(401).body(Map.of("error", "Invalid email or password"));
             }
 
@@ -257,6 +309,7 @@ public class AuthController {
                         || user.getEmailVerificationCodeExpiry().isBefore(java.time.LocalDateTime.now())) {
                     boolean emailSent = prepareAndSendEmailVerification(user);
                     if (!emailSent) {
+                        authRateLimitService.recordFailure("login", identifier, 5, LOGIN_WINDOW, LOGIN_BLOCK);
                         return ResponseEntity.status(503).body(Map.of(
                                 "error", "Email verification is unavailable right now: " + emailService.getLastErrorMessage()));
                     }
@@ -271,6 +324,7 @@ public class AuthController {
             // Generate JWT token and set as HttpOnly cookie
             String token = jwtUtil.generateToken(user.getEmail(), user.getId(), user.getRole().name());
             setTokenCookie(response, token);
+            authRateLimitService.reset("login", identifier);
 
             AuthUserResponse userData = buildUserData(user);
 
@@ -283,7 +337,10 @@ public class AuthController {
     }
 
     @PostMapping("/verify-email")
-    public ResponseEntity<?> verifyEmail(@RequestBody VerifyEmailRequest payload, HttpServletResponse response) {
+    public ResponseEntity<?> verifyEmail(
+            @RequestBody VerifyEmailRequest payload,
+            HttpServletResponse response,
+            HttpServletRequest request) {
         try {
             String email = payload.getEmail() != null ? payload.getEmail().trim().toLowerCase() : null;
             String code = payload.getCode() != null ? payload.getCode().trim() : null;
@@ -292,8 +349,15 @@ public class AuthController {
                 return ResponseEntity.badRequest().body(Map.of("error", "Email and code are required"));
             }
 
+            String identifier = extractClientAddress(request) + "::" + email;
+            Optional<ResponseEntity<Map<String, String>>> verifyLimit = checkRateLimit("verify-email", identifier);
+            if (verifyLimit.isPresent()) {
+                return verifyLimit.get();
+            }
+
             Optional<User> userOpt = userService.getUserByEmail(email);
             if (userOpt.isEmpty()) {
+                authRateLimitService.recordFailure("verify-email", identifier, 5, VERIFY_WINDOW, VERIFY_BLOCK);
                 return ResponseEntity.status(401).body(Map.of("error", "Invalid verification request"));
             }
 
@@ -306,11 +370,13 @@ public class AuthController {
                     || user.getEmailVerificationCodeExpiry().isBefore(java.time.LocalDateTime.now())) {
                 clearEmailVerification(user);
                 userService.saveUser(user);
+                authRateLimitService.recordFailure("verify-email", identifier, 5, VERIFY_WINDOW, VERIFY_BLOCK);
                 return ResponseEntity.status(401).body(Map.of("error", "Verification code expired"));
             }
 
             if (user.getEmailVerificationCodeHash() == null
                     || !passwordEncoder.matches(code, user.getEmailVerificationCodeHash())) {
+                authRateLimitService.recordFailure("verify-email", identifier, 5, VERIFY_WINDOW, VERIFY_BLOCK);
                 return ResponseEntity.status(401).body(Map.of("error", "Invalid verification code"));
             }
 
@@ -320,6 +386,7 @@ public class AuthController {
 
             String token = jwtUtil.generateToken(user.getEmail(), user.getId(), user.getRole().name());
             setTokenCookie(response, token);
+            authRateLimitService.reset("verify-email", identifier);
 
             AuthUserResponse userData = buildUserData(user);
             return ResponseEntity.ok(new AuthSuccessResponse(true, userData));
@@ -330,28 +397,39 @@ public class AuthController {
     }
 
     @PostMapping("/resend-verification")
-    public ResponseEntity<?> resendVerification(@RequestBody EmailRequest payload) {
+    public ResponseEntity<?> resendVerification(@RequestBody EmailRequest payload, HttpServletRequest request) {
         try {
             String email = payload.getEmail() != null ? payload.getEmail().trim().toLowerCase() : null;
             if (email == null || email.isBlank()) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Email is required"));
             }
 
+            String identifier = extractClientAddress(request) + "::" + email;
+            Optional<ResponseEntity<Map<String, String>>> resendLimit = checkRateLimit("resend-verification", identifier);
+            if (resendLimit.isPresent()) {
+                return resendLimit.get();
+            }
+
             Optional<User> userOpt = userService.getUserByEmail(email);
             if (userOpt.isEmpty()) {
+                authRateLimitService.throttle("resend-verification", identifier, RESEND_COOLDOWN);
                 return ResponseEntity.ok(Map.of("success", true, "message", "If the account exists, a code was sent."));
             }
 
             User user = userOpt.get();
             if (user.getEmailVerified()) {
+                authRateLimitService.throttle("resend-verification", identifier, RESEND_COOLDOWN);
                 return ResponseEntity.ok(Map.of("success", true, "message", "Email is already verified."));
             }
 
             boolean emailSent = prepareAndSendEmailVerification(user);
             if (!emailSent) {
+                authRateLimitService.recordFailure("resend-verification", identifier, 3, VERIFY_WINDOW, VERIFY_BLOCK);
                 return ResponseEntity.status(503).body(Map.of(
                         "error", "Email verification is unavailable right now: " + emailService.getLastErrorMessage()));
             }
+
+            authRateLimitService.throttle("resend-verification", identifier, RESEND_COOLDOWN);
 
             return ResponseEntity.ok(Map.of("success", true, "message", "Verification code sent."));
         } catch (Exception e) {
@@ -403,14 +481,21 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<?> forgotPassword(@RequestBody EmailRequest payload) {
-        String email = payload.getEmail();
-        if (email == null) {
+    public ResponseEntity<?> forgotPassword(@RequestBody EmailRequest payload, HttpServletRequest request) {
+        String email = payload.getEmail() != null ? payload.getEmail().trim().toLowerCase() : null;
+        if (email == null || email.isBlank()) {
             return ResponseEntity.badRequest().body(Map.of("error", "Email is required"));
+        }
+
+        String identifier = extractClientAddress(request) + "::" + email;
+        Optional<ResponseEntity<Map<String, String>>> forgotLimit = checkRateLimit("forgot-password", identifier);
+        if (forgotLimit.isPresent()) {
+            return forgotLimit.get();
         }
 
         Optional<User> userOpt = userService.getUserByEmail(email);
         if (userOpt.isEmpty()) {
+            authRateLimitService.throttle("forgot-password", identifier, FORGOT_PASSWORD_COOLDOWN);
             // Don't reveal that user doesn't exist - return same response
             return ResponseEntity.ok(Map.of(
                     "message", "If an account exists, a reset link has been sent."
@@ -425,9 +510,12 @@ public class AuthController {
 
         boolean emailSent = emailService.sendPasswordResetEmail(email, token);
         if (!emailSent) {
+            authRateLimitService.recordFailure("forgot-password", identifier, 3, RESET_WINDOW, RESET_BLOCK);
             return ResponseEntity.status(503).body(Map.of(
                     "error", "Password reset email is unavailable right now: " + emailService.getLastErrorMessage()));
         }
+
+        authRateLimitService.throttle("forgot-password", identifier, FORGOT_PASSWORD_COOLDOWN);
 
         return ResponseEntity.ok(Map.of(
                 "message", "If an account exists, a reset link has been sent."));
@@ -463,7 +551,7 @@ public class AuthController {
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequest payload) {
+    public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequest payload, HttpServletRequest request) {
         String token = payload.getToken();
         String newPassword = payload.getNewPassword();
 
@@ -471,13 +559,21 @@ public class AuthController {
             return ResponseEntity.badRequest().body(Map.of("error", "Token and new password are required"));
         }
 
+        String identifier = extractClientAddress(request) + "::" + token;
+        Optional<ResponseEntity<Map<String, String>>> resetLimit = checkRateLimit("reset-password", identifier);
+        if (resetLimit.isPresent()) {
+            return resetLimit.get();
+        }
+
         Optional<User> userOpt = userService.getUserByResetPasswordToken(token);
         if (userOpt.isEmpty()) {
+            authRateLimitService.recordFailure("reset-password", identifier, 5, RESET_WINDOW, RESET_BLOCK);
             return ResponseEntity.badRequest().body(Map.of("error", "Invalid or expired token"));
         }
 
         User user = userOpt.get();
         if (user.getResetPasswordTokenExpiry().isBefore(java.time.LocalDateTime.now())) {
+            authRateLimitService.recordFailure("reset-password", identifier, 5, RESET_WINDOW, RESET_BLOCK);
             return ResponseEntity.badRequest().body(Map.of("error", "Token has expired"));
         }
 
@@ -485,6 +581,7 @@ public class AuthController {
         user.setResetPasswordToken(null);
         user.setResetPasswordTokenExpiry(null);
         userService.saveUser(user);
+        authRateLimitService.reset("reset-password", identifier);
 
         return ResponseEntity.ok(Map.of("message", "Password reset successfully"));
     }
