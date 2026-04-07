@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Logo } from '@/components/logo'
 import { Button } from '@/components/ui/button'
-import { Mail, Lock, ArrowLeft, Eye, EyeOff } from 'lucide-react'
+import { Mail, Lock, ArrowLeft, Eye, EyeOff, ShieldCheck, Sparkles } from 'lucide-react'
 import { authApi } from '@/lib/api'
 import { useAuth } from '@/context/AuthContext'
 import { motion } from 'framer-motion'
@@ -88,21 +88,21 @@ function SignInContent() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FFFBF0] bg-[radial-gradient(#E5E7EB_1px,transparent_1px)] [background-size:24px_24px] flex flex-col relative overflow-hidden">
+    <div className="min-h-dvh bg-[#FFFBF0] bg-[radial-gradient(#E5E7EB_1px,transparent_1px)] [background-size:24px_24px] flex flex-col relative overflow-hidden">
       {/* Animated Background */}
       <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-yellow-200/40 rounded-full mix-blend-multiply filter blur-[80px] opacity-70 animate-blob -z-10" />
       <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-orange-200/40 rounded-full mix-blend-multiply filter blur-[80px] opacity-70 animate-blob animation-delay-2000 -z-10" />
 
       {/* Back button */}
-      <div className="p-6 relative z-10">
-        <Link href="/" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white text-black font-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-all">
-          <ArrowLeft size={24} strokeWidth={3} />
+      <div className="px-4 pt-4 pb-2 sm:px-6 sm:pt-6 sm:pb-3 relative z-10">
+        <Link href="/" className="inline-flex items-center gap-2 px-4 py-2.5 sm:px-6 sm:py-3 rounded-xl bg-white text-black font-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-all text-sm sm:text-base">
+          <ArrowLeft size={20} strokeWidth={3} />
           BACK TO HOME
         </Link>
       </div>
 
       {/* Sign In Form */}
-      <div className="flex-1 flex items-center justify-center px-4 py-8 relative z-10">
+      <div className="flex-1 flex items-center justify-center px-4 py-4 sm:py-6 relative z-10">
         <motion.div
           className="w-full max-w-md"
           variants={containerVariants}
@@ -110,21 +110,33 @@ function SignInContent() {
           animate="visible"
         >
           {/* Logo and Heading */}
-          <div className="text-center mb-8">
+          <div className="text-center mb-5 sm:mb-7">
             <motion.div
-              className="flex justify-center mb-6 transform hover:scale-110 transition-transform duration-300"
+              className="flex justify-center mb-4 sm:mb-5 transform hover:scale-110 transition-transform duration-300"
               whileHover={{ rotate: [0, -10, 10, 0] }}
             >
               <Logo />
             </motion.div>
-            <motion.h1 variants={itemVariants} className="text-4xl md:text-5xl font-black mb-4 text-black tracking-tight">
+            <motion.div
+              variants={itemVariants}
+              className="mb-3 inline-flex items-center gap-2 rounded-full border-4 border-black bg-white px-3 py-1.5 text-[10px] sm:text-xs font-black uppercase tracking-[0.25em] text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+            >
+              <ShieldCheck className="size-4" strokeWidth={3} />
+              Cookie-Secure Access
+            </motion.div>
+            <motion.h1 variants={itemVariants} className="text-3xl sm:text-4xl md:text-5xl font-black mb-3 text-black tracking-tight">
               {showForgotPassword ? 'RESET PASSWORD' : 'WELCOME BACK!'}
             </motion.h1>
-            <motion.p variants={itemVariants} className="text-xl font-bold text-gray-700">
+            <motion.p variants={itemVariants} className="text-lg sm:text-xl font-bold text-gray-700">
               {showForgotPassword
                 ? 'Don\'t worry, we\'ll get you back in!'
                 : 'Ready to satisfy those cravings?'}
             </motion.p>
+            {!showForgotPassword && (
+              <motion.p variants={itemVariants} className="mt-2 text-[11px] sm:text-sm font-bold uppercase tracking-[0.2em] text-gray-500">
+                Sign in with the account you already use on StreetBite
+              </motion.p>
+            )}
           </div>
 
           {showForgotPassword ? (
@@ -209,8 +221,23 @@ function SignInContent() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
               onSubmit={handleSignIn}
-              className="bg-white rounded-[2rem] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-8 border-4 border-black relative overflow-hidden"
+              className="bg-white rounded-[2rem] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-6 sm:p-8 border-4 border-black relative overflow-hidden"
             >
+              <div className="mb-5 rounded-[1.5rem] border-4 border-black bg-[#FFF5D8] p-4 sm:p-5 shadow-[5px_5px_0px_0px_rgba(0,0,0,1)]">
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <p className="text-xs font-black uppercase tracking-[0.3em] text-gray-500">Email + Password</p>
+                    <h2 className="mt-2 text-xl sm:text-2xl font-black uppercase text-black">Jump Back In Fast</h2>
+                  </div>
+                  <div className="flex size-12 sm:size-14 shrink-0 items-center justify-center rounded-2xl border-4 border-black bg-white">
+                    <Sparkles className="size-6 sm:size-7 text-orange-500" strokeWidth={2.8} />
+                  </div>
+                </div>
+                <p className="mt-2 text-xs sm:text-sm font-bold text-gray-700">
+                  Your session is verified from the backend, so make sure cookies are enabled before signing in.
+                </p>
+              </div>
+
               {error && (
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
@@ -312,7 +339,7 @@ function SignInContent() {
               {/* Divider */}
               <motion.div variants={itemVariants} className="flex items-center gap-3 my-8">
                 <div className="flex-1 h-1 bg-gray-200 rounded-full" />
-                <span className="text-xs text-gray-400 font-black uppercase tracking-widest">OR</span>
+                <span className="text-xs text-gray-400 font-black uppercase tracking-widest">NEW HERE?</span>
                 <div className="flex-1 h-1 bg-gray-200 rounded-full" />
               </motion.div>
 

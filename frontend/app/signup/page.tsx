@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Logo } from '@/components/logo'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, ChevronRight, Sparkles, Eye, EyeOff } from 'lucide-react'
+import { ArrowLeft, ChevronRight, Sparkles, Eye, EyeOff, UtensilsCrossed, Store, MapPin, ShieldCheck } from 'lucide-react'
 import { authApi, type RegisterRequest } from '@/lib/api'
 import { useUserLocation } from '@/lib/useUserLocation'
 import { useAuth } from '@/context/AuthContext'
@@ -96,7 +96,7 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FFFBF0] bg-[radial-gradient(#E5E7EB_1px,transparent_1px)] [background-size:24px_24px] flex flex-col relative overflow-hidden">
+    <div className="min-h-dvh bg-[#FFFBF0] bg-[radial-gradient(#E5E7EB_1px,transparent_1px)] [background-size:24px_24px] flex flex-col relative overflow-hidden">
       {/* Animated Background */}
       <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-yellow-200/40 rounded-full mix-blend-multiply filter blur-[80px] opacity-70 animate-blob -z-10" />
       <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-orange-200/40 rounded-full mix-blend-multiply filter blur-[80px] opacity-70 animate-blob animation-delay-2000 -z-10" />
@@ -138,32 +138,39 @@ export default function SignUpPage() {
       </AnimatePresence>
 
       {/* Back button */}
-      <div className="p-6 relative z-10">
-        <Link href="/" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white text-black font-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-all">
-          <ArrowLeft size={24} strokeWidth={3} />
+      <div className="px-4 pt-4 pb-2 sm:px-6 sm:pt-6 sm:pb-3 relative z-10">
+        <Link href="/" className="inline-flex items-center gap-2 px-4 py-2.5 sm:px-6 sm:py-3 rounded-xl bg-white text-black font-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-all text-sm sm:text-base">
+          <ArrowLeft size={20} strokeWidth={3} />
           BACK TO HOME
         </Link>
       </div>
 
       {/* Sign Up Form */}
-      <div className="flex-1 flex items-center justify-center px-4 py-8 relative z-10">
+      <div className="flex-1 flex items-center justify-center px-4 py-4 sm:py-6 relative z-10">
         <div className="w-full max-w-2xl">
           {/* Logo and Heading */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-10"
+            className="text-center mb-6 sm:mb-8"
           >
             <motion.div
-              className="flex justify-center mb-6 transform"
+              className="flex justify-center mb-4 sm:mb-5 transform"
               whileHover={{ rotate: [0, -10, 10, 0] }}
             >
               <Logo />
             </motion.div>
-            <h1 className="text-5xl font-black mb-4 text-black tracking-tight uppercase">
+            <div className="mb-3 inline-flex items-center gap-2 rounded-full border-4 border-black bg-white px-3 py-1.5 text-[10px] sm:text-xs font-black uppercase tracking-[0.25em] text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+              <ShieldCheck className="size-4" strokeWidth={3} />
+              Quick Secure Setup
+            </div>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black mb-3 text-black tracking-tight uppercase">
               Join the Feast
             </h1>
-            <p className="text-xl font-bold text-gray-700">Choose your flavor to get started</p>
+            <p className="text-lg sm:text-xl font-bold text-gray-700">Choose your flavor to get started</p>
+            <p className="mt-2 text-[11px] sm:text-sm font-bold uppercase tracking-[0.2em] text-gray-500">
+              Create your account, save your city, and start exploring immediately
+            </p>
           </motion.div>
 
           <AnimatePresence mode="wait">
@@ -173,19 +180,22 @@ export default function SignUpPage() {
                 initial={{ opacity: 0, x: -50 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -50 }}
-                className="grid md:grid-cols-2 gap-8"
+                className="grid md:grid-cols-2 gap-5 sm:gap-6"
               >
                 {/* Customer Card */}
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setUserType('customer')}
-                  className={`p-8 rounded-[2rem] border-4 cursor-pointer transition-all ${userType === 'customer'
+                    className={`p-6 sm:p-8 rounded-[2rem] border-4 cursor-pointer transition-all ${userType === 'customer'
                     ? 'bg-yellow-400 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] z-10'
                     : 'bg-white border-black hover:bg-yellow-50 hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]'
                     }`}
                 >
-                  <div className="text-6xl mb-6 animate-bounce" style={{ animationDuration: '3s' }}>🍔</div>
+                  <div className="mb-6 flex size-20 items-center justify-center rounded-[1.5rem] border-4 border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                    <UtensilsCrossed className="size-10 text-orange-500" strokeWidth={2.7} />
+                  </div>
+                  <p className="mb-3 inline-flex rounded-full border-2 border-black bg-white px-3 py-1 text-[11px] font-black uppercase tracking-[0.25em] text-gray-600">Customer</p>
                   <h2 className="text-3xl font-black text-black mb-2 uppercase">Foodie</h2>
                   <p className="text-gray-700 font-medium mb-6 leading-relaxed">Discover hidden gems, rate your bites, and follow your favorite trucks.</p>
                   <div className="space-y-3 font-bold text-sm text-black/80">
@@ -200,12 +210,15 @@ export default function SignUpPage() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setUserType('vendor')}
-                  className={`p-8 rounded-[2rem] border-4 cursor-pointer transition-all ${userType === 'vendor'
+                    className={`p-6 sm:p-8 rounded-[2rem] border-4 cursor-pointer transition-all ${userType === 'vendor'
                     ? 'bg-orange-500 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] z-10'
                     : 'bg-white border-black hover:bg-orange-50 hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]'
                     }`}
                 >
-                  <div className="text-6xl mb-6 animate-bounce" style={{ animationDuration: '3s', animationDelay: '0.5s' }}>👨‍🍳</div>
+                  <div className="mb-6 flex size-20 items-center justify-center rounded-[1.5rem] border-4 border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                    <Store className="size-10 text-orange-500" strokeWidth={2.7} />
+                  </div>
+                  <p className="mb-3 inline-flex rounded-full border-2 border-black bg-white px-3 py-1 text-[11px] font-black uppercase tracking-[0.25em] text-gray-600">Vendor</p>
                   <h2 className="text-3xl font-black text-black mb-2 uppercase">Old Master</h2>
                   <p className="text-black/80 font-medium mb-6 leading-relaxed">Showcase your menu, manage orders, and feed the hungry masses.</p>
                   <div className="space-y-3 font-bold text-sm text-black/80">
@@ -225,10 +238,28 @@ export default function SignUpPage() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 50 }}
                 onSubmit={handleSubmit}
-                className="bg-white rounded-[2rem] shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] p-8 md:p-12 space-y-6 border-4 border-black relative overflow-hidden"
+                className="bg-white rounded-[2rem] shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] p-6 sm:p-8 md:p-10 space-y-5 border-4 border-black relative overflow-hidden"
               >
                 {/* Decorative Element */}
                 <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-400 rounded-bl-[100%] z-0 opacity-20"></div>
+
+                <div className="relative z-10 rounded-[1.5rem] border-4 border-black bg-[#FFF5D8] p-4 sm:p-5 shadow-[5px_5px_0px_0px_rgba(0,0,0,1)]">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <p className="text-xs font-black uppercase tracking-[0.3em] text-gray-500">Account Setup</p>
+                      <h2 className="mt-2 text-xl sm:text-2xl font-black uppercase text-black">
+                        {userType === 'vendor' ? 'Launch Your Vendor Profile' : 'Build Your Foodie Profile'}
+                      </h2>
+                    </div>
+                    <div className="inline-flex items-center gap-2 rounded-full border-4 border-black bg-white px-4 py-2 text-xs font-black uppercase tracking-[0.25em] text-black">
+                      {location ? <MapPin className="size-4" strokeWidth={3} /> : <Sparkles className="size-4" strokeWidth={3} />}
+                      {location ? 'City picked up' : 'City optional'}
+                    </div>
+                  </div>
+                  <p className="mt-2 text-xs sm:text-sm font-bold text-gray-700">
+                    This creates your StreetBite account instantly. You can finish the rest of your profile after you get in.
+                  </p>
+                </div>
 
                 {error && (
                   <div className="bg-red-100 border-4 border-black text-black px-4 py-3 rounded-xl font-bold flex items-center gap-3 relative z-10 animate-shake">
@@ -273,6 +304,7 @@ export default function SignUpPage() {
                     autoComplete="username"
                     className="w-full px-4 py-4 border-4 border-black rounded-xl text-lg font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400 bg-gray-50 transition-all placeholder:text-gray-300 lowercase"
                   />
+                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-gray-500">Use the email you want to keep for orders and saved vendors.</p>
                 </div>
 
                 <div className="space-y-2 relative z-10">
@@ -343,10 +375,11 @@ export default function SignUpPage() {
                       onChange={(e) => setFormData({ ...formData, businessName: e.target.value })}
                       className="w-full px-4 py-4 border-4 border-black rounded-xl text-lg font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400 bg-gray-50 transition-all placeholder:text-gray-300 uppercase"
                     />
+                    <p className="text-xs font-bold uppercase tracking-[0.2em] text-gray-500">This appears on your vendor dashboard first. You can refine it later.</p>
                   </div>
                 )}
 
-                <div className="flex gap-4 pt-6 relative z-10">
+                <div className="flex flex-col-reverse gap-4 pt-6 relative z-10 sm:flex-row">
                   <Button
                     type="button"
                     variant="outline"
@@ -385,7 +418,7 @@ export default function SignUpPage() {
             >
               <Button
                 onClick={handleContinue}
-                className="bg-black text-white rounded-full px-12 py-8 text-2xl font-black flex items-center gap-4 shadow-[8px_8px_0px_0px_#fbbf24] border-4 border-black hover:-translate-y-2 hover:shadow-[12px_12px_0px_0px_#fbbf24] transition-all"
+                className="w-full max-w-md bg-black text-white rounded-full px-8 py-7 text-xl sm:px-12 sm:py-8 sm:text-2xl font-black flex items-center justify-center gap-4 shadow-[8px_8px_0px_0px_#fbbf24] border-4 border-black hover:-translate-y-2 hover:shadow-[12px_12px_0px_0px_#fbbf24] transition-all"
               >
                 CONTINUE
                 <ChevronRight size={32} strokeWidth={4} />

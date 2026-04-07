@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { MapPin, Search, Star, ChefHat, ArrowRight, Sparkles, TrendingUp, Clock, Utensils, ScanEye } from 'lucide-react'
+import { MapPin, Search, Star, ChefHat, ArrowRight, Sparkles, TrendingUp, Clock, Utensils, ScanEye, Flame, Sandwich, CupSoda, Leaf, Drumstick, Soup, Croissant, CookingPot } from 'lucide-react'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import { LiveCityBadge } from '@/components/live-city-badge'
@@ -21,6 +21,16 @@ export default function Home() {
     { value: '500+', label: 'Active vendors' },
     { value: '10K+', label: 'Foodie check-ins' },
     { value: '4.9', label: 'Average rating', icon: Star },
+  ]
+  const cravingCategories = [
+    { icon: Flame, label: 'Spicy' },
+    { icon: Soup, label: 'Momos' },
+    { icon: Sandwich, label: 'Sandwiches' },
+    { icon: CupSoda, label: 'Drinks' },
+    { icon: Leaf, label: 'Healthy' },
+    { icon: Croissant, label: 'Sweet' },
+    { icon: Drumstick, label: 'Non-Veg' },
+    { icon: CookingPot, label: 'Thali' },
   ]
 
   return (
@@ -162,23 +172,18 @@ export default function Home() {
             </div>
 
             <div className="flex flex-wrap justify-center md:justify-start gap-4 animate-slide-up" style={{ animationDelay: '0.1s' }}>
-              {[
-                { icon: "🔥", label: "Spicy" },
-                { icon: "🥟", label: "Momos" },
-                { icon: "🥪", label: "Sandwiches" },
-                { icon: "🥤", label: "Drinks" },
-                { icon: "🥗", label: "Healthy" },
-                { icon: "🍰", label: "Sweet" },
-                { icon: "🍗", label: "Non-Veg" },
-                { icon: "🥘", label: "Thali" },
-              ].map((item, idx) => (
+              {cravingCategories.map((item, idx) => {
+                const Icon = item.icon
+                return (
                 <Link href={`/explore?category=${item.label}`} key={idx}>
                   <div className="flex items-center gap-3 px-6 py-4 rounded-xl bg-white border-3 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-all cursor-pointer group hover:bg-yellow-100">
-                    <span className="text-2xl group-hover:animate-bounce-slow filter drop-shadow-sm">{item.icon}</span>
+                    <span className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-black bg-yellow-200 text-black transition-transform group-hover:scale-110">
+                      <Icon className="h-5 w-5 stroke-[2.4]" />
+                    </span>
                     <span className="font-black text-lg text-foreground uppercase tracking-wide">{item.label}</span>
                   </div>
                 </Link>
-              ))}
+              )})}
             </div>
           </div>
         </section>

@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
-import { MessageSquare, Award, Gamepad2, Camera, CalendarDays, Heart, Send, X, Search, Flame, MapPin, ShieldCheck, Star, Loader2 } from 'lucide-react'
+import { MessageSquare, Award, Gamepad2, Camera, CalendarDays, Heart, Send, X, Search, Flame, MapPin, ShieldCheck, Star, Loader2, UtensilsCrossed } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -718,7 +718,9 @@ export default function CommunityPage() {
                                                 ) : (
                                                     <>
                                                         <div className="absolute inset-0 bg-yellow-400 opacity-20 group-hover:opacity-0 transition-opacity"></div>
-                                                        <span className="text-7xl animate-bounce drop-shadow-lg">🍛</span>
+                                                        <div className="flex h-24 w-24 items-center justify-center rounded-[2rem] border-4 border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                                                            <UtensilsCrossed className="h-12 w-12 text-orange-500" strokeWidth={2.7} />
+                                                        </div>
                                                     </>
                                                 )}
                                             </div>
@@ -730,7 +732,10 @@ export default function CommunityPage() {
                                                         <span className="line-clamp-1">{vendor?.address || "Unknown Location"}</span>
                                                     </div>
                                                     <span className="w-1.5 h-1.5 bg-gray-600 rounded-full shrink-0"></span>
-                                                    <span className="text-yellow-400 shrink-0">{vendor?.rating ? vendor.rating.toFixed(1) : "New"}★</span>
+                                                    <span className="inline-flex items-center gap-1 text-yellow-400 shrink-0">
+                                                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                                                        {vendor?.rating ? vendor.rating.toFixed(1) : "New"}
+                                                    </span>
                                                 </div>
                                             </div>
                                             <Button
@@ -796,7 +801,9 @@ export default function CommunityPage() {
                                             ) : (
                                                 <>
                                                     <div className="absolute inset-0 bg-yellow-400 opacity-20 group-hover:opacity-0 transition-opacity"></div>
-                                                    <span className="text-7xl animate-bounce drop-shadow-lg">🍛</span>
+                                                    <div className="flex h-24 w-24 items-center justify-center rounded-[2rem] border-4 border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                                                        <UtensilsCrossed className="h-12 w-12 text-orange-500" strokeWidth={2.7} />
+                                                    </div>
                                                 </>
                                             )}
                                         </div>
@@ -808,7 +815,10 @@ export default function CommunityPage() {
                                                     <span className="line-clamp-1">{vendor?.address || "Unknown Location"}</span>
                                                 </div>
                                                 <span className="w-1.5 h-1.5 bg-gray-600 rounded-full shrink-0"></span>
-                                                <span className="text-yellow-400 shrink-0">{vendor?.rating ? vendor.rating.toFixed(1) : "New"}★</span>
+                                                <span className="inline-flex items-center gap-1 text-yellow-400 shrink-0">
+                                                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                                                    {vendor?.rating ? vendor.rating.toFixed(1) : "New"}
+                                                </span>
                                             </div>
                                         </div>
                                         <Button
