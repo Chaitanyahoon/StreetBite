@@ -26,49 +26,19 @@ import { useLiveVendorStatus } from '@/hooks/use-live-vendor-status'
 import { useLiveMenuAvailability } from '@/hooks/use-live-menu-availability'
 import { useToast } from '@/hooks/use-toast'
 import { useAuth } from '@/context/AuthContext'
-
-interface Vendor {
-    id: string
-    name: string
-    description: string
-    cuisine: string
-    address: string
-    latitude: number
-    longitude: number
-    rating: number
-    imageUrl?: string
-    bannerImageUrl?: string
-    displayImageUrl?: string
-    phone?: string
-    hours?: string
-    galleryImages?: string[]
-    status?: 'AVAILABLE' | 'BUSY' | 'UNAVAILABLE' | 'SUSPENDED' | 'APPROVED' | 'PENDING' | 'REJECTED'
-    location?: string
-    openingHours?: string
-    isOpen?: boolean
-}
-
-interface MenuItem {
-    itemId: string
-    name: string
-    description: string
-    price: number
-    imageUrl?: string
-    category: string
-    isAvailable: boolean
-    rating?: number
-}
-
-interface Review {
-    id: number
-    rating: number
-    comment: string
-    createdAt: string
-    user: {
-        id: number
-        displayName: string
-    }
-}
+import {
+    buildPromotionShareText,
+    filterAndSortPromotions,
+    getPromotionBadges,
+    groupMenuItemsByCategory,
+    MenuItem,
+    OfferFilter,
+    OfferSort,
+    Review,
+    statusMeta,
+    Vendor,
+    VendorPromotion,
+} from './vendor-detail-helpers'
 
 export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?: string }) {
     const params = useParams()
@@ -83,12 +53,12 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
     const [loading, setLoading] = useState(true)
     const [activeTab, setActiveTab] = useState('menu')
     const [isFavorite, setIsFavorite] = useState(false)
-    const [promotions, setPromotions] = useState<any[]>([])
+    const [promotions, setPromotions] = useState<VendorPromotion[]>([])
     const [resolvedVendorId, setResolvedVendorId] = useState<string>('')
 
     // Offers filter and sort state
-    const [offerFilter, setOfferFilter] = useState<'all' | 'percentage' | 'fixed'>('all')
-    const [offerSort, setOfferSort] = useState<'discount' | 'ending' | 'popular'>('discount')
+    const [offerFilter, setOfferFilter] = useState<OfferFilter>('all')
+    const [offerSort, setOfferSort] = useState<OfferSort>('discount')
 
     // Real-time vendor status from Firebase
     const { status: liveStatus } = useLiveVendorStatus(resolvedVendorId)
@@ -531,56 +501,12 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
         )
     }
 
-    // Group menu items by category
-    const menuByCategory = menuItems.reduce((acc, item) => {
-        const category = item.category || 'Other'
-        if (!acc[category]) acc[category] = []
-        acc[category].push(item)
-        return acc
-    }, {} as Record<string, MenuItem[]>)
-
-    const statusMeta: Record<string, { label: string; badgeClassName: string; dotClassName: string }> = {
-        AVAILABLE: {
-            label: 'Open now',
-            badgeClassName: 'bg-emerald-500/90 text-white',
-            dotClassName: 'bg-white animate-pulse'
-        },
-        BUSY: {
-            label: 'Busy right now',
-            badgeClassName: 'bg-amber-500/90 text-white',
-            dotClassName: 'bg-white'
-        },
-        APPROVED: {
-            label: 'Verified vendor',
-            badgeClassName: 'bg-sky-500/90 text-white',
-            dotClassName: 'bg-white'
-        },
-        PENDING: {
-            label: 'Pending review',
-            badgeClassName: 'bg-slate-500/90 text-white',
-            dotClassName: 'bg-white/80'
-        },
-        REJECTED: {
-            label: 'Unavailable',
-            badgeClassName: 'bg-rose-500/90 text-white',
-            dotClassName: 'bg-white/80'
-        },
-        UNAVAILABLE: {
-            label: 'Closed for now',
-            badgeClassName: 'bg-gray-700/90 text-white',
-            dotClassName: 'bg-white/70'
-        },
-        SUSPENDED: {
-            label: 'Temporarily unavailable',
-            badgeClassName: 'bg-gray-700/90 text-white',
-            dotClassName: 'bg-white/70'
-        }
-    }
-
+    const menuByCategory = groupMenuItemsByCategory(menuItems)
     const activeStatusMeta = statusMeta[displayVendor?.status || 'UNAVAILABLE'] || statusMeta.UNAVAILABLE
     const vendorRating = displayVendor?.rating ?? 0
     const vendorReviewCount = reviews.length
     const vendorPhone = displayVendor?.phone
+    const filteredPromotions = filterAndSortPromotions(promotions, offerFilter, offerSort)
 
     const quickStats = [
         {
@@ -948,81 +874,10 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
                                 <h3 className="text-xl font-bold text-gray-900 mb-2">No Active Offers</h3>
                                 <p className="text-gray-500">Check back soon for exciting deals!</p>
                             </div>
-                        ) : (() => {
-                            // Filter promotions
-                            let filtered = promotions.filter(promo => {
-                                if (offerFilter === 'all') return true
-                                if (offerFilter === 'percentage') return promo.discountType === 'PERCENTAGE'
-                                if (offerFilter === 'fixed') return promo.discountType === 'FIXED'
-                                return true
-                            })
-
-                            // Sort promotions
-                            filtered = [...filtered].sort((a, b) => {
-                                if (offerSort === 'discount') {
-                                    return b.discountValue - a.discountValue
-                                }
-                                if (offerSort === 'ending') {
-                                    if (!a.endDate) return 1
-                                    if (!b.endDate) return -1
-                                    return new Date(a.endDate).getTime() - new Date(b.endDate).getTime()
-                                }
-                                // popular - use id as proxy for now
-                                return b.id - a.id
-                            })
-
-                            const getBadges = (promo: any) => {
-                                const badges = []
-
-                                // Hot Deal Badge
-                                if (promo.discountValue >= 30) {
-                                    badges.push({ text: '🔥 HOT DEAL', color: 'bg-red-500' })
-                                }
-
-                                // Ending Soon Badge
-                                if (promo.endDate) {
-                                    const daysLeft = Math.ceil((new Date(promo.endDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
-                                    if (daysLeft <= 7 && daysLeft > 0) {
-                                        badges.push({ text: `⏰ ${daysLeft}d LEFT`, color: 'bg-yellow-500' })
-                                    }
-                                }
-
-                                // Best Value Badge
-                                if (promo.minOrderValue < 200) {
-                                    badges.push({ text: '💰 LOW MIN', color: 'bg-green-500' })
-                                }
-
-                                return badges
-                            }
-
-                            const handleGetDirections = () => {
-                                if (vendor?.latitude && vendor?.longitude) {
-                                    window.open(`https://www.google.com/maps/dir/?api=1&destination=${vendor.latitude},${vendor.longitude}`, '_blank')
-                                }
-                            }
-
-                            const handleShare = (promo: any) => {
-                                const shareText = `Check out this amazing offer at ${vendor?.name}!\n\n${promo.title}\nCode: ${promo.promoCode}\n${promo.discountType === 'PERCENTAGE' ? `${promo.discountValue}% OFF` : `₹${promo.discountValue} OFF`}\n\nFound on StreetBite 🍔`
-
-                                if (navigator.share) {
-                                    navigator.share({
-                                        title: `Offer at ${vendor?.name}`,
-                                        text: shareText,
-                                        url: window.location.href
-                                    }).catch(() => { })
-                                } else {
-                                    navigator.clipboard.writeText(shareText)
-                                    toast({
-                                        title: 'Offer copied',
-                                        description: 'Offer details copied to your clipboard.',
-                                    })
-                                }
-                            }
-
-                            return (
+                        ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    {filtered.map((promo) => {
-                                        const badges = getBadges(promo)
+                                    {filteredPromotions.map((promo) => {
+                                        const badges = getPromotionBadges(promo)
 
                                         return (
                                             <div key={promo.id} className="bg-gradient-to-br from-orange-50 to-red-50 border-2 border-orange-200 rounded-2xl p-6 hover:shadow-xl transition-all hover:-translate-y-1 relative overflow-hidden">
@@ -1101,7 +956,23 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
                                                         Directions
                                                     </button>
                                                     <button
-                                                        onClick={() => handleShare(promo)}
+                                                        onClick={() => {
+                                                            const shareText = buildPromotionShareText(vendor?.name, promo)
+
+                                                            if (navigator.share) {
+                                                                navigator.share({
+                                                                    title: `Offer at ${vendor?.name}`,
+                                                                    text: shareText,
+                                                                    url: window.location.href
+                                                                }).catch(() => { })
+                                                            } else {
+                                                                navigator.clipboard.writeText(shareText)
+                                                                toast({
+                                                                    title: 'Offer copied',
+                                                                    description: 'Offer details copied to your clipboard.',
+                                                                })
+                                                            }
+                                                        }}
                                                         className="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white text-sm font-bold py-2.5 px-4 rounded-lg transition-colors"
                                                     >
                                                         <Share2 size={16} />
@@ -1123,8 +994,7 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
                                         )
                                     })}
                                 </div>
-                            )
-                        })()}
+                        )}
                     </div>
                 )}
 
