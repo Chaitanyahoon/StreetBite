@@ -109,6 +109,15 @@ export interface ApiUser {
   updatedAt?: string
 }
 
+export interface ApiVendorOwner {
+  id: number
+  email?: string
+  displayName?: string
+  profilePicture?: string
+  role?: 'USER' | 'VENDOR' | 'ADMIN' | string
+  isActive?: boolean
+}
+
 export interface ForgotPasswordResponse {
   message?: string
   email?: string
@@ -134,6 +143,7 @@ export interface VendorLocation {
 
 export interface ApiVendor {
   id: number | string
+  owner?: ApiVendorOwner
   slug?: string
   name: string
   address?: string
@@ -149,6 +159,8 @@ export interface ApiVendor {
   hours?: string
   bannerImageUrl?: string
   status?: VendorStatus
+  isActive?: boolean
+  galleryImages?: string[]
   tags?: string[]
   location?: VendorLocation
   reviewCount?: number
@@ -200,13 +212,13 @@ export const userApi = {
 
 export const vendorApi = {
   getAll: () => api.get('/vendors') as Promise<ApiVendor[]>,
-  getAllAdmin: () => api.get('/vendors/admin/all') as Promise<any>,
+  getAllAdmin: () => api.get('/vendors/admin/all') as Promise<ApiVendor[]>,
   getById: (id: string) => api.get(`/vendors/${id}`) as Promise<ApiVendor>,
   getBySlug: (slug: string) => api.get(`/vendors/slug/${slug}`) as Promise<ApiVendor>,
-  create: (data: any) => api.post('/vendors', data) as Promise<any>,
-  update: (id: string, data: any) => api.put(`/vendors/${id}`, data) as Promise<any>,
-  updateStatus: (id: string | number, status: string) => api.put(`/vendors/${id}/status`, { status }) as Promise<any>,
-  delete: (id: string | number) => api.delete(`/vendors/${id}`) as Promise<any>,
+  create: (data: any) => api.post('/vendors', data) as Promise<ApiVendor>,
+  update: (id: string, data: any) => api.put(`/vendors/${id}`, data) as Promise<ApiVendor>,
+  updateStatus: (id: string | number, status: string) => api.put(`/vendors/${id}/status`, { status }) as Promise<ApiVendor>,
+  delete: (id: string | number) => api.delete(`/vendors/${id}`) as Promise<void>,
   search: (lat: number, lng: number, radius: number = 2000) =>
     api.get(`/vendors/search`, { params: { lat, lng, radius } }) as Promise<ApiVendor[]>,
 };

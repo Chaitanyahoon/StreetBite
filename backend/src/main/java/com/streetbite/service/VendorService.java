@@ -1,10 +1,12 @@
 package com.streetbite.service;
 
+import com.streetbite.dto.vendor.VendorCreateRequest;
+import com.streetbite.dto.vendor.VendorUpdateRequest;
+import com.streetbite.model.User;
 import com.streetbite.model.Vendor;
 import com.streetbite.model.VendorStatus;
-import com.streetbite.repository.VendorRepository;
 import com.streetbite.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.streetbite.repository.VendorRepository;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,20 +17,24 @@ import java.util.Optional;
 @Service
 public class VendorService {
 
-    @Autowired
-    private com.streetbite.repository.ReviewRepository reviewRepository;
+    private final com.streetbite.repository.ReviewRepository reviewRepository;
+    private final com.streetbite.repository.FavoriteRepository favoriteRepository;
+    private final VendorRepository vendorRepository;
+    private final UserRepository userRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
-    @Autowired
-    private com.streetbite.repository.FavoriteRepository favoriteRepository;
-
-    @Autowired
-    private VendorRepository vendorRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private ApplicationEventPublisher eventPublisher;
+    public VendorService(
+            com.streetbite.repository.ReviewRepository reviewRepository,
+            com.streetbite.repository.FavoriteRepository favoriteRepository,
+            VendorRepository vendorRepository,
+            UserRepository userRepository,
+            ApplicationEventPublisher eventPublisher) {
+        this.reviewRepository = reviewRepository;
+        this.favoriteRepository = favoriteRepository;
+        this.vendorRepository = vendorRepository;
+        this.userRepository = userRepository;
+        this.eventPublisher = eventPublisher;
+    }
 
     @Transactional
     public Vendor saveVendor(Vendor vendor) {
@@ -69,6 +75,76 @@ public class VendorService {
 
     public Optional<Vendor> getVendorBySlug(String slug) {
         return vendorRepository.findBySlug(slug);
+    }
+
+    @Transactional
+    public Vendor createVendor(VendorCreateRequest request) {
+        Vendor vendor = new Vendor();
+        if (request.getOwnerId() != null) {
+            User owner = userRepository.findById(request.getOwnerId())
+                    .orElseThrow(() -> new IllegalArgumentException("Owner not found"));
+            vendor.setOwner(owner);
+        }
+
+        applyVendorCreateRequest(vendor, request);
+        return saveVendor(vendor);
+    }
+
+    @Transactional
+    public Vendor updateVendor(Vendor vendor, VendorUpdateRequest updates) {
+        applyVendorUpdateRequest(vendor, updates);
+        return saveVendor(vendor);
+    }
+
+    private void applyVendorCreateRequest(Vendor vendor, VendorCreateRequest request) {
+        vendor.setName(request.getName());
+        vendor.setDescription(request.getDescription());
+        vendor.setCuisine(request.getCuisine());
+        vendor.setAddress(request.getAddress());
+        vendor.setLatitude(request.getLatitude());
+        vendor.setLongitude(request.getLongitude());
+        vendor.setPhone(request.getPhone());
+        vendor.setHours(request.getHours());
+        vendor.setBannerImageUrl(request.getBannerImageUrl());
+        vendor.setDisplayImageUrl(request.getDisplayImageUrl());
+        vendor.setSlug(null);
+    }
+
+    private void applyVendorUpdateRequest(Vendor vendor, VendorUpdateRequest updates) {
+        if (updates.getName() != null) {
+            vendor.setName(updates.getName());
+            vendor.setSlug(null);
+        }
+        if (updates.getDescription() != null) {
+            vendor.setDescription(updates.getDescription());
+        }
+        if (updates.getCuisine() != null) {
+            vendor.setCuisine(updates.getCuisine());
+        }
+        if (updates.getAddress() != null) {
+            vendor.setAddress(updates.getAddress());
+        }
+        if (updates.getLatitude() != null) {
+            vendor.setLatitude(updates.getLatitude());
+        }
+        if (updates.getLongitude() != null) {
+            vendor.setLongitude(updates.getLongitude());
+        }
+        if (updates.getPhone() != null) {
+            vendor.setPhone(updates.getPhone());
+        }
+        if (updates.getHours() != null) {
+            vendor.setHours(updates.getHours());
+        }
+        if (updates.getBannerImageUrl() != null) {
+            vendor.setBannerImageUrl(updates.getBannerImageUrl());
+        }
+        if (updates.getDisplayImageUrl() != null) {
+            vendor.setDisplayImageUrl(updates.getDisplayImageUrl());
+        }
+        if (updates.getStatus() != null) {
+            applyStatusChange(vendor, VendorStatus.valueOf(updates.getStatus()));
+        }
     }
 
     @Transactional

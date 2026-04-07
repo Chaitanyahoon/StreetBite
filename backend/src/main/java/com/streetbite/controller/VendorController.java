@@ -1,91 +1,111 @@
 package com.streetbite.controller;
 
+import com.streetbite.dto.vendor.VendorCreateRequest;
+import com.streetbite.dto.vendor.VendorResponse;
+import com.streetbite.dto.vendor.VendorStatusUpdateRequest;
+import com.streetbite.dto.vendor.VendorUpdateRequest;
 import com.streetbite.model.User;
 import com.streetbite.model.Vendor;
+import com.streetbite.model.VendorStatus;
 import com.streetbite.security.AuthenticatedUserService;
 import com.streetbite.service.VendorService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/vendors")
 public class VendorController {
 
-    @Autowired
-    private AuthenticatedUserService authenticatedUserService;
+    private final AuthenticatedUserService authenticatedUserService;
+    private final VendorService vendorService;
+    private final com.streetbite.service.VendorSearchService vendorSearchService;
 
-    @Autowired
-    private VendorService vendorService;
+    public VendorController(
+            AuthenticatedUserService authenticatedUserService,
+            VendorService vendorService,
+            com.streetbite.service.VendorSearchService vendorSearchService) {
+        this.authenticatedUserService = authenticatedUserService;
+        this.vendorService = vendorService;
+        this.vendorSearchService = vendorSearchService;
+    }
 
-    @Autowired
-    private com.streetbite.service.VendorSearchService vendorSearchService;
-
-    /**
-     * Validates if a string is a valid URL
-     * 
-     * @param url The URL string to validate
-     * @return true if valid, false otherwise
-     */
     private boolean isValidUrl(String url) {
         if (url == null || url.trim().isEmpty()) {
             return false;
         }
 
-        // Allow data URLs for base64 encoded images (no length limit)
         if (url.startsWith("data:image/")) {
             return true;
         }
 
-        // Check length constraint for regular URLs
         if (url.length() > 2048) {
             return false;
         }
 
-        // Validate HTTP/HTTPS URLs
         try {
-            java.net.URI uri = new java.net.URI(url);
+            URI uri = new URI(url);
             String protocol = uri.getScheme();
             return "http".equals(protocol) || "https".equals(protocol);
-        } catch (java.net.URISyntaxException e) {
+        } catch (URISyntaxException e) {
             return false;
         }
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<Vendor>> searchVendors(
+    public ResponseEntity<List<VendorResponse>> searchVendors(
             @RequestParam double lat,
             @RequestParam double lng,
             @RequestParam(defaultValue = "2000") double radius) {
-        return ResponseEntity.ok(vendorSearchService.searchNearby(lat, lng, radius));
+        return ResponseEntity.ok(vendorSearchService.searchNearby(lat, lng, radius).stream()
+                .map(VendorResponse::from)
+                .toList());
     }
 
     @GetMapping
-    public ResponseEntity<List<Vendor>> getAllVendors() {
-        return ResponseEntity.ok(vendorService.getActiveVendors());
+    public ResponseEntity<List<VendorResponse>> getAllVendors() {
+        return ResponseEntity.ok(vendorService.getActiveVendors().stream().map(VendorResponse::from).toList());
     }
 
     @GetMapping("/admin/all")
-    public ResponseEntity<List<Vendor>> getAllVendorsForAdmin() {
-        return ResponseEntity.ok(vendorService.getAllVendors());
+    public ResponseEntity<?> getAllVendorsForAdmin(Authentication authentication) {
+        User currentUser = resolveAuthenticatedUser(authentication);
+        if (currentUser == null) {
+            return unauthorized("Login required");
+        }
+        if (!authenticatedUserService.isAdmin(currentUser)) {
+            return forbidden("Admin access only");
+        }
+
+        return ResponseEntity.ok(vendorService.getAllVendors().stream().map(VendorResponse::from).toList());
     }
 
     @GetMapping("/{idOrSlug}")
     public ResponseEntity<?> getVendor(@PathVariable String idOrSlug) {
-        // Try as ID first if it's numeric
         if (idOrSlug.matches("\\d+")) {
             Long id = Long.parseLong(idOrSlug);
             return vendorService.getVendorById(id)
+                    .map(VendorResponse::from)
                     .map(ResponseEntity::ok)
                     .orElse(ResponseEntity.notFound().build());
         }
-        
-        // Otherwise try as Slug
+
         return vendorService.getVendorBySlug(idOrSlug)
+                .map(VendorResponse::from)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -93,139 +113,99 @@ public class VendorController {
     @GetMapping("/slug/{slug}")
     public ResponseEntity<?> getVendorBySlug(@PathVariable String slug) {
         return vendorService.getVendorBySlug(slug)
+                .map(VendorResponse::from)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    public ResponseEntity<?> createVendor(@RequestBody Vendor vendor) {
-        try {
-            // Validate image URLs before creating
-            if (vendor.getBannerImageUrl() != null && !isValidUrl(vendor.getBannerImageUrl())) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Invalid banner image URL"));
-            }
-            if (vendor.getDisplayImageUrl() != null && !isValidUrl(vendor.getDisplayImageUrl())) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Invalid display image URL"));
-            }
+    public ResponseEntity<?> createVendor(@RequestBody VendorCreateRequest request, Authentication authentication) {
+        User currentUser = resolveAuthenticatedUser(authentication);
+        if (currentUser == null) {
+            return unauthorized("Login required");
+        }
+        if (!authenticatedUserService.isAdmin(currentUser)) {
+            return forbidden("Admin access only");
+        }
 
-            Vendor savedVendor = vendorService.saveVendor(vendor);
-            return ResponseEntity.ok(savedVendor);
+        try {
+            validateCoordinateRange(request.getLatitude(), request.getLongitude());
+            validateOptionalImageUrl(request.getBannerImageUrl(), "Invalid banner image URL");
+            validateOptionalImageUrl(request.getDisplayImageUrl(), "Invalid display image URL");
+
+            Vendor savedVendor = vendorService.createVendor(request);
+            return ResponseEntity.ok(VendorResponse.from(savedVendor));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
         }
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateVendor(@PathVariable Long id, @RequestBody Map<String, Object> updates,
+    public ResponseEntity<?> updateVendor(
+            @PathVariable Long id,
+            @RequestBody VendorUpdateRequest updates,
             Authentication authentication) {
-        User currentUser = authenticatedUserService.findAuthenticatedUser(authentication).orElse(null);
+        User currentUser = resolveAuthenticatedUser(authentication);
         if (currentUser == null) {
-            return ResponseEntity.status(401).body(Map.of("error", "Invalid session. Please log in again"));
+            return unauthorized("Invalid session. Please log in again");
         }
 
         return vendorService.getVendorById(id)
                 .map(existingVendor -> {
                     boolean isOwner = existingVendor.getOwner() != null
-                            && existingVendor.getOwner().getEmail().equals(currentUser.getEmail());
+                            && Objects.equals(existingVendor.getOwner().getId(), currentUser.getId());
                     boolean isAdmin = authenticatedUserService.isAdmin(currentUser);
 
                     if (!isOwner && !isAdmin) {
-                        return ResponseEntity.status(403).body(Map.of("error", "You do not have permission to update this vendor"));
-                    }
-                    if (updates.containsKey("name")) {
-                        existingVendor.setName((String) updates.get("name"));
-                        // Regenerate slug when name changes
-                        existingVendor.setSlug(null);
-                    }
-                    if (updates.containsKey("description"))
-                        existingVendor.setDescription((String) updates.get("description"));
-                    if (updates.containsKey("cuisine"))
-                        existingVendor.setCuisine((String) updates.get("cuisine"));
-                    if (updates.containsKey("phone"))
-                        existingVendor.setPhone((String) updates.get("phone"));
-                    if (updates.containsKey("address"))
-                        existingVendor.setAddress((String) updates.get("address"));
-                    if (updates.containsKey("hours"))
-                        existingVendor.setHours((String) updates.get("hours"));
-
-                    if (updates.containsKey("status")) {
-                        try {
-                            String statusStr = (String) updates.get("status");
-                            com.streetbite.model.VendorStatus status = com.streetbite.model.VendorStatus
-                                    .valueOf(statusStr);
-                            vendorService.applyStatusChange(existingVendor, status);
-                        } catch (IllegalArgumentException e) {
-                            return ResponseEntity.badRequest().body(Map.of("error", "Invalid status value"));
-                        }
+                        return forbidden("You do not have permission to update this vendor");
                     }
 
-                    if (updates.containsKey("latitude")) {
-                        Double lat = Double.valueOf(updates.get("latitude").toString());
-                        if (lat < -90 || lat > 90) {
-                            return ResponseEntity.badRequest()
-                                    .body(Map.of("error", "Invalid latitude: must be between -90 and 90"));
-                        }
-                        existingVendor.setLatitude(lat);
-                    }
-                    if (updates.containsKey("longitude")) {
-                        Double lng = Double.valueOf(updates.get("longitude").toString());
-                        if (lng < -180 || lng > 180) {
-                            return ResponseEntity.badRequest()
-                                    .body(Map.of("error", "Invalid longitude: must be between -180 and 180"));
-                        }
-                        existingVendor.setLongitude(lng);
-                    }
+                    try {
+                        validateCoordinateRange(updates.getLatitude(), updates.getLongitude());
+                        validateOptionalImageUrl(updates.getBannerImageUrl(), "Invalid banner image URL");
+                        validateOptionalImageUrl(updates.getDisplayImageUrl(), "Invalid display image URL");
 
-                    // Validate and update banner image URL
-                    if (updates.containsKey("bannerImageUrl")) {
-                        String url = (String) updates.get("bannerImageUrl");
-                        if (isValidUrl(url)) {
-                            existingVendor.setBannerImageUrl(url);
-                        } else {
-                            return ResponseEntity.badRequest().body(Map.of("error", "Invalid banner image URL"));
+                        if (updates.getStatus() != null) {
+                            VendorStatus.valueOf(updates.getStatus());
                         }
-                    }
 
-                    // Validate and update display image URL
-                    if (updates.containsKey("displayImageUrl")) {
-                        String url = (String) updates.get("displayImageUrl");
-                        if (isValidUrl(url)) {
-                            existingVendor.setDisplayImageUrl(url);
-                        } else {
-                            return ResponseEntity.badRequest().body(Map.of("error", "Invalid display image URL"));
-                        }
+                        Vendor updated = vendorService.updateVendor(existingVendor, updates);
+                        return ResponseEntity.ok(VendorResponse.from(updated));
+                    } catch (IllegalArgumentException e) {
+                        return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
                     }
-
-                    Vendor updated = vendorService.saveVendor(existingVendor);
-                    return ResponseEntity.ok(updated);
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PutMapping("/{id}/status")
-    public ResponseEntity<?> updateVendorStatus(@PathVariable Long id, @RequestBody Map<String, String> payload,
+    public ResponseEntity<?> updateVendorStatus(
+            @PathVariable Long id,
+            @RequestBody VendorStatusUpdateRequest payload,
             Authentication authentication) {
-        User currentUser = authenticatedUserService.findAuthenticatedUser(authentication).orElse(null);
+        User currentUser = resolveAuthenticatedUser(authentication);
         if (currentUser == null) {
-            return ResponseEntity.status(401).body(Map.of("error", "Invalid session"));
+            return unauthorized("Invalid session");
         }
 
         if (!authenticatedUserService.isAdmin(currentUser)) {
-            return ResponseEntity.status(403).body(Map.of("error", "Only admins can perform this action"));
+            return forbidden("Only admins can perform this action");
         }
 
         try {
-            String statusStr = payload.get("status");
+            String statusStr = payload.getStatus();
             if (statusStr == null) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Status is required"));
             }
 
-            com.streetbite.model.VendorStatus status = com.streetbite.model.VendorStatus.valueOf(statusStr);
+            VendorStatus status = VendorStatus.valueOf(statusStr);
 
             return vendorService.getVendorById(id)
                     .map(vendor -> {
                         vendorService.applyStatusChange(vendor, status);
-                        return ResponseEntity.ok(vendorService.saveVendor(vendor));
+                        return ResponseEntity.ok(VendorResponse.from(vendorService.saveVendor(vendor)));
                     })
                     .orElse(ResponseEntity.notFound().build());
         } catch (IllegalArgumentException e) {
@@ -234,12 +214,47 @@ public class VendorController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteVendor(@PathVariable Long id) {
+    public ResponseEntity<?> deleteVendor(@PathVariable Long id, Authentication authentication) {
+        User currentUser = resolveAuthenticatedUser(authentication);
+        if (currentUser == null) {
+            return unauthorized("Login required");
+        }
+        if (!authenticatedUserService.isAdmin(currentUser)) {
+            return forbidden("Admin access only");
+        }
+
         try {
             vendorService.deleteVendor(id);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of("error", "Failed to delete vendor"));
         }
+    }
+
+    private User resolveAuthenticatedUser(Authentication authentication) {
+        return authenticatedUserService.findAuthenticatedUser(authentication).orElse(null);
+    }
+
+    private void validateOptionalImageUrl(String url, String errorMessage) {
+        if (url != null && !isValidUrl(url)) {
+            throw new IllegalArgumentException(errorMessage);
+        }
+    }
+
+    private void validateCoordinateRange(Double latitude, Double longitude) {
+        if (latitude != null && (latitude < -90 || latitude > 90)) {
+            throw new IllegalArgumentException("Invalid latitude: must be between -90 and 90");
+        }
+        if (longitude != null && (longitude < -180 || longitude > 180)) {
+            throw new IllegalArgumentException("Invalid longitude: must be between -180 and 180");
+        }
+    }
+
+    private ResponseEntity<Map<String, String>> unauthorized(String message) {
+        return ResponseEntity.status(401).body(Map.of("error", message));
+    }
+
+    private ResponseEntity<Map<String, String>> forbidden(String message) {
+        return ResponseEntity.status(403).body(Map.of("error", message));
     }
 }
