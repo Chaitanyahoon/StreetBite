@@ -188,6 +188,27 @@ export interface ApiPromotion {
   minOrderValue?: number
 }
 
+export interface ApiReviewImage {
+  id: number
+  imageUrl: string
+}
+
+export interface ApiReviewUser {
+  id: number
+  displayName: string
+  profilePicture?: string
+}
+
+export interface ApiReview {
+  id: number
+  vendorId?: number
+  rating: number
+  comment: string
+  createdAt: string
+  user: ApiReviewUser
+  images?: ApiReviewImage[]
+}
+
 export const authApi = {
   register: (data: RegisterRequest) => api.post('/auth/register', data) as Promise<AuthResponse>,
   login: (data: LoginRequest) => api.post('/auth/login', data) as Promise<AuthResponse>,
@@ -232,12 +253,13 @@ export const menuApi = {
 };
 
 export const reviewApi = {
-  getByVendor: (vendorId: string) => api.get(`/reviews/vendor/${vendorId}`) as Promise<any>,
-  create: (data: any) => api.post('/reviews', data) as Promise<any>,
-  update: (reviewId: number, data: { userId: number; rating?: number; comment?: string }) =>
-    api.put(`/reviews/${reviewId}`, data) as Promise<any>,
-  delete: (reviewId: number, userId: number) =>
-    api.delete(`/reviews/${reviewId}?userId=${userId}`) as Promise<any>,
+  getByVendor: (vendorId: string) => api.get(`/reviews/vendor/${vendorId}`) as Promise<ApiReview[]>,
+  create: (data: { vendorId: number; rating: number; comment: string; imageUrls?: string[] }) =>
+    api.post('/reviews', data) as Promise<ApiReview>,
+  update: (reviewId: number, data: { rating?: number; comment?: string; imageUrls?: string[] }) =>
+    api.put(`/reviews/${reviewId}`, data) as Promise<ApiReview>,
+  delete: (reviewId: number) =>
+    api.delete(`/reviews/${reviewId}`) as Promise<{ success: boolean; message: string }>,
 };
 
 export const orderApi = {

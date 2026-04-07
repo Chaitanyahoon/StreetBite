@@ -280,8 +280,7 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
         setSubmittingReview(true)
         try {
             const reviewData = {
-                vendor: { id: parseInt(resolvedVendorId) },
-                user: { id: authUser.id },
+                vendorId: parseInt(resolvedVendorId, 10),
                 rating: reviewRating,
                 comment: reviewComment
             }
@@ -323,7 +322,6 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
 
         try {
             await reviewApi.update(reviewId, {
-                userId: authUser.id,
                 rating: editRating,
                 comment: editComment
             })
@@ -357,7 +355,7 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
         }
 
         try {
-            await reviewApi.delete(reviewId, authUser.id)
+            await reviewApi.delete(reviewId)
 
             // Refresh reviews
             const updatedReviews = await reviewApi.getByVendor(resolvedVendorId)
