@@ -1,14 +1,13 @@
-// @ts-nocheck
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Plus, Edit2, Trash2, Copy } from 'lucide-react'
+import { Copy, Edit2, Plus, Trash2 } from 'lucide-react'
 import { promotionApi } from '@/lib/api'
 import { useAuth } from '@/context/AuthContext'
 
@@ -24,7 +23,7 @@ interface Promotion {
   active: boolean
 }
 
-interface FormData {
+interface PromotionFormData {
   code: string
   description: string
   discount: string
@@ -34,82 +33,125 @@ interface FormData {
   active: boolean
 }
 
+interface ApiPromotion {
+  id?: string
+  promotionId?: string
+  promoCode: string
+  title: string
+  discountValue: number
+  discountType: string
+  minOrderValue?: number
+  endDate: string
+  currentUses?: number
+  maxUses?: number
+  active?: boolean
+  isActive?: boolean
+}
+
+const EMPTY_FORM: PromotionFormData = {
+  code: '',
+  description: '',
+  discount: '',
+  minSpend: '',
+  maxUsage: '100',
+  expiryDate: '',
+  active: true,
+}
+
+function normalizePromotion(promotion: ApiPromotion): Promotion {
+  const isPercentage = promotion.discountType === 'PERCENTAGE'
+  const active = promotion.active !== undefined ? promotion.active : Boolean(promotion.isActive)
+
+  return {
+    id: promotion.id || promotion.promotionId || '',
+    code: promotion.promoCode,
+    description: promotion.title,
+    discount: `${promotion.discountValue}${isPercentage ? '%' : '₹'}`,
+    minSpend: promotion.minOrderValue || 0,
+    expiryDate: promotion.endDate,
+    usageCount: promotion.currentUses || 0,
+    maxUsage: promotion.maxUses || 100,
+    active,
+  }
+}
+
+function buildPromotionPayload(formData: PromotionFormData) {
+  const isPercentage = formData.discount.includes('%')
+  const discountValue = parseFloat(formData.discount.replace(/[%₹]/g, ''))
+
+  return {
+    title: formData.description,
+    description: formData.description,
+    discountType: isPercentage ? 'PERCENTAGE' : 'FIXED',
+    discountValue,
+    minOrderValue: formData.minSpend ? parseFloat(formData.minSpend) : 0,
+    promoCode: formData.code,
+    endDate: formData.expiryDate || null,
+    isActive: formData.active,
+    maxUses: formData.maxUsage ? parseInt(formData.maxUsage, 10) : 100,
+  }
+}
+
 export default function Promotions() {
   const { user } = useAuth()
   const [promotions, setPromotions] = useState<Promotion[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [vendorId, setVendorId] = useState<string | null>(null)
-
-  const [formData, setFormData] = useState<FormData>({
-    code: '',
-    description: '',
-    discount: '',
-    minSpend: '',
-    maxUsage: '100',
-    expiryDate: '',
-    active: true,
-  })
-
+  const [formData, setFormData] = useState<PromotionFormData>(EMPTY_FORM)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingPromo, setEditingPromo] = useState<Promotion | null>(null)
-  const [mounted, setMounted] = useState(false)
 
-  useEffect(() => {
-    setMounted(true)
-  }, [])
+  const activePromotionCount = useMemo(
+    () => promotions.filter((promotion) => promotion.active).length,
+    [promotions]
+  )
 
   useEffect(() => {
     const loadPromotions = async () => {
       try {
         if (!user) {
           setError('Please sign in to view promotions')
-          setLoading(false)
           return
         }
 
         if (!user.vendorId && user.role === 'VENDOR') {
           setError('Vendor ID not found. Please sign out and sign in again.')
-          setLoading(false)
           return
         }
 
-        const vid = String(user.vendorId)
-        if (!vid || vid === 'undefined') {
+        const nextVendorId = String(user.vendorId || '')
+        if (!nextVendorId || nextVendorId === 'undefined') {
           setError('You need to be a vendor to view promotions')
-          setLoading(false)
           return
         }
-        setVendorId(vid)
 
-        const apiPromotions = await promotionApi.getByVendor(vid)
-
-        const uiPromotions: Promotion[] = apiPromotions.map(p => ({
-          id: p.id || p.promotionId || '',
-          code: p.promoCode,
-          description: p.title,
-          discount: `${p.discountValue}${p.discountType === 'PERCENTAGE' ? '%' : '₹'}`,
-          minSpend: p.minOrderValue || 0,
-          expiryDate: p.endDate,
-          usageCount: p.currentUses || 0,
-          maxUsage: p.maxUses || 100,
-          active: p.active !== undefined ? p.active : p.isActive,
-        }))
-
-        setPromotions(uiPromotions)
-      } catch (err: any) {
-        setError(err.message || 'Failed to load promotions')
+        setVendorId(nextVendorId)
+        const apiPromotions = (await promotionApi.getByVendor(nextVendorId)) as ApiPromotion[]
+        setPromotions(apiPromotions.map(normalizePromotion))
+        setError(null)
+      } catch (loadError) {
+        const message = loadError instanceof Error ? loadError.message : 'Failed to load promotions'
+        setError(message)
       } finally {
         setLoading(false)
       }
     }
 
-    if (mounted) {
-      loadPromotions()
-    }
-  }, [mounted, user])
+    loadPromotions()
+  }, [user])
 
-  const handleAddPromotion = async () => {
+  const refreshPromotions = async (currentVendorId: string) => {
+    const apiPromotions = (await promotionApi.getByVendor(currentVendorId)) as ApiPromotion[]
+    setPromotions(apiPromotions.map(normalizePromotion))
+  }
+
+  const resetDialogState = () => {
+    setEditingPromo(null)
+    setFormData(EMPTY_FORM)
+  }
+
+  const handleSavePromotion = async () => {
     if (!formData.code || !formData.description || !formData.discount || !vendorId) {
       alert('Please fill in all required fields')
       return
@@ -117,143 +159,90 @@ export default function Promotions() {
 
     try {
       setLoading(true)
-
-      // Parse discount (e.g., "20%" or "₹50")
-      const isPercentage = formData.discount.includes('%')
-      const discountValue = parseFloat(formData.discount.replace(/[%₹]/g, ''))
-
-      const promotionData = {
-        title: formData.description,
-        description: formData.description,
-        discountType: isPercentage ? 'PERCENTAGE' : 'FIXED',
-        discountValue: discountValue,
-        minOrderValue: formData.minSpend ? parseFloat(formData.minSpend) : 0,
-        promoCode: formData.code,
-        endDate: formData.expiryDate || null,
-        isActive: formData.active,
-        maxUses: formData.maxUsage ? parseInt(formData.maxUsage) : 100,
-      }
-
-
+      const payload = buildPromotionPayload(formData)
 
       if (editingPromo) {
-        // Update existing promotion
-        await promotionApi.update(editingPromo.id, promotionData)
+        await promotionApi.update(editingPromo.id, payload)
       } else {
-        // Create new promotion
-        await promotionApi.create({ ...promotionData, vendorId })
+        await promotionApi.create({ ...payload, vendorId })
       }
 
-      // Reload promotions
-      const apiPromotions = await promotionApi.getByVendor(vendorId)
-      console.log('API Promotions:', apiPromotions)
-      const uiPromotions: Promotion[] = apiPromotions.map(p => {
-        const active = p.active !== undefined ? p.active : p.isActive
-        console.log(`Promotion ${p.promoCode}: p.active=${p.active}, p.isActive=${p.isActive}, final=${active}`)
-        return {
-          id: p.id || p.promotionId || '',
-          code: p.promoCode,
-          description: p.title,
-          discount: `${p.discountValue}${p.discountType === 'PERCENTAGE' ? '%' : '₹'}`,
-          minSpend: p.minOrderValue || 0,
-          expiryDate: p.endDate,
-          usageCount: p.currentUses || 0,
-          maxUsage: p.maxUses || 100,
-          active: active,
-        }
-      })
-      setPromotions(uiPromotions)
-
-      setFormData({ code: '', description: '', discount: '', minSpend: '', maxUsage: '100', expiryDate: '', active: true })
-      setEditingPromo(null)
+      await refreshPromotions(vendorId)
+      resetDialogState()
       setIsDialogOpen(false)
-    } catch (err: any) {
-      setError(err.message || 'Failed to save promotion')
-      alert(err.message || 'Failed to save promotion')
+      setError(null)
+    } catch (saveError) {
+      const message = saveError instanceof Error ? saveError.message : 'Failed to save promotion'
+      setError(message)
+      alert(message)
     } finally {
       setLoading(false)
     }
   }
 
-  const handleEditPromotion = (promo: Promotion) => {
-    setEditingPromo(promo)
+  const handleEditPromotion = (promotion: Promotion) => {
+    setEditingPromo(promotion)
     setFormData({
-      code: promo.code,
-      description: promo.description,
-      discount: promo.discount,
-      minSpend: promo.minSpend.toString(),
-      maxUsage: promo.maxUsage.toString(),
-      expiryDate: promo.expiryDate ? promo.expiryDate.split('T')[0] : '',
-      active: promo.active,
+      code: promotion.code,
+      description: promotion.description,
+      discount: promotion.discount,
+      minSpend: promotion.minSpend.toString(),
+      maxUsage: promotion.maxUsage.toString(),
+      expiryDate: promotion.expiryDate ? promotion.expiryDate.split('T')[0] : '',
+      active: promotion.active,
     })
     setIsDialogOpen(true)
   }
 
   const handleDeletePromotion = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this promotion?')) return
+    if (!vendorId || !confirm('Are you sure you want to delete this promotion?')) return
 
     try {
       setLoading(true)
       await promotionApi.delete(id)
-
-      // Reload promotions
-      if (vendorId) {
-        const apiPromotions = await promotionApi.getByVendor(vendorId)
-        const uiPromotions: Promotion[] = apiPromotions.map(p => ({
-          id: p.id || p.promotionId || '',
-          code: p.promoCode,
-          description: p.title,
-          discount: `${p.discountValue}${p.discountType === 'PERCENTAGE' ? '%' : '₹'}`,
-          minSpend: p.minOrderValue || 0,
-          expiryDate: p.endDate,
-          usageCount: p.currentUses || 0,
-          maxUsage: p.maxUses || 100,
-          active: p.active !== undefined ? p.active : p.isActive,
-        }))
-        setPromotions(uiPromotions)
-      }
-    } catch (err: any) {
-      setError(err.message || 'Failed to delete promotion')
-      alert(err.message || 'Failed to delete promotion')
+      await refreshPromotions(vendorId)
+      setError(null)
+    } catch (deleteError) {
+      const message = deleteError instanceof Error ? deleteError.message : 'Failed to delete promotion'
+      setError(message)
+      alert(message)
     } finally {
       setLoading(false)
     }
   }
 
-  const copyToClipboard = (code: string) => {
-    navigator.clipboard.writeText(code)
+  const copyToClipboard = async (code: string) => {
+    await navigator.clipboard.writeText(code)
     alert(`Copied "${code}" to clipboard!`)
-  }
-
-  if (!mounted) {
-    return null // Prevent hydration mismatch
   }
 
   if (loading && promotions.length === 0) {
     return (
-      <div className="flex items-center justify-center h-[50vh]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"></div>
+      <div className="flex h-[50vh] items-center justify-center">
+        <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-orange-600" />
       </div>
     )
   }
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="space-y-6 p-8">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Promotions & Offers</h1>
-          <p className="text-muted-foreground mt-1">Create and manage promotional codes</p>
+          <p className="mt-1 text-muted-foreground">Create and manage promotional codes</p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={(open) => {
-          setIsDialogOpen(open)
-          if (!open) {
-            setEditingPromo(null)
-            setFormData({ code: '', description: '', discount: '', minSpend: '', maxUsage: '100', expiryDate: '' })
-          }
-        }}>
+        <Dialog
+          open={isDialogOpen}
+          onOpenChange={(open) => {
+            setIsDialogOpen(open)
+            if (!open) {
+              resetDialogState()
+            }
+          }}
+        >
           <DialogTrigger asChild>
-            <Button className="bg-orange-600 hover:bg-orange-700 gap-2">
-              <Plus className="w-4 h-4" />
+            <Button className="gap-2 bg-orange-600 hover:bg-orange-700">
+              <Plus className="h-4 w-4" />
               Create Promotion
             </Button>
           </DialogTrigger>
@@ -271,7 +260,7 @@ export default function Promotions() {
                   id="code"
                   placeholder="e.g., SAVE20"
                   value={formData.code}
-                  onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
+                  onChange={(event) => setFormData({ ...formData, code: event.target.value.toUpperCase() })}
                 />
               </div>
               <div>
@@ -280,7 +269,7 @@ export default function Promotions() {
                   id="description"
                   placeholder="e.g., 20% off all items"
                   value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  onChange={(event) => setFormData({ ...formData, description: event.target.value })}
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -290,7 +279,7 @@ export default function Promotions() {
                     id="discount"
                     placeholder="e.g., 20% or ₹100"
                     value={formData.discount}
-                    onChange={(e) => setFormData({ ...formData, discount: e.target.value })}
+                    onChange={(event) => setFormData({ ...formData, discount: event.target.value })}
                   />
                 </div>
                 <div>
@@ -300,7 +289,7 @@ export default function Promotions() {
                     type="number"
                     placeholder="100"
                     value={formData.minSpend}
-                    onChange={(e) => setFormData({ ...formData, minSpend: e.target.value })}
+                    onChange={(event) => setFormData({ ...formData, minSpend: event.target.value })}
                   />
                 </div>
               </div>
@@ -312,7 +301,7 @@ export default function Promotions() {
                     type="number"
                     placeholder="100"
                     value={formData.maxUsage}
-                    onChange={(e) => setFormData({ ...formData, maxUsage: e.target.value })}
+                    onChange={(event) => setFormData({ ...formData, maxUsage: event.target.value })}
                   />
                 </div>
                 <div>
@@ -321,27 +310,29 @@ export default function Promotions() {
                     id="expiryDate"
                     type="date"
                     value={formData.expiryDate}
-                    onChange={(e) => setFormData({ ...formData, expiryDate: e.target.value })}
+                    onChange={(event) => setFormData({ ...formData, expiryDate: event.target.value })}
                   />
                 </div>
               </div>
-              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+              <div className="flex items-center justify-between rounded-lg bg-gray-50 p-4">
                 <div>
-                  <Label htmlFor="active" className="font-semibold">Active Status</Label>
+                  <Label htmlFor="active" className="font-semibold">
+                    Active Status
+                  </Label>
                   <p className="text-sm text-gray-500">Enable or disable this promotion</p>
                 </div>
-                <label className="relative inline-flex items-center cursor-pointer">
+                <label className="relative inline-flex cursor-pointer items-center">
                   <input
                     type="checkbox"
                     id="active"
-                    className="sr-only peer"
-                    checked={!!formData.active}
-                    onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
+                    className="peer sr-only"
+                    checked={formData.active}
+                    onChange={(event) => setFormData({ ...formData, active: event.target.checked })}
                   />
-                  <div className="w-14 h-7 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-orange-600"></div>
+                  <div className="h-7 w-14 rounded-full bg-gray-300 peer-checked:bg-orange-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 after:absolute after:start-[4px] after:top-0.5 after:h-6 after:w-6 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white rtl:peer-checked:after:-translate-x-full" />
                 </label>
               </div>
-              <Button onClick={handleAddPromotion} className="w-full bg-orange-600 hover:bg-orange-700">
+              <Button onClick={handleSavePromotion} className="w-full bg-orange-600 hover:bg-orange-700">
                 {editingPromo ? 'Update Promotion' : 'Create Promotion'}
               </Button>
             </div>
@@ -349,11 +340,16 @@ export default function Promotions() {
         </Dialog>
       </div>
 
-      {/* Active Promotions */}
+      {error ? (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+          {error}
+        </div>
+      ) : null}
+
       <Card>
         <CardHeader>
           <CardTitle>Active Promotions</CardTitle>
-          <CardDescription>{promotions.filter(p => p.active).length} active promotions running</CardDescription>
+          <CardDescription>{activePromotionCount} active promotions running</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
@@ -370,30 +366,35 @@ export default function Promotions() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {promotions.map((promo) => (
-                  <TableRow key={promo.id}>
+                {promotions.map((promotion) => (
+                  <TableRow key={promotion.id}>
                     <TableCell>
-                      <code className="px-2 py-1 bg-muted rounded font-mono font-semibold">
-                        {promo.code}
+                      <code className="rounded bg-muted px-2 py-1 font-mono font-semibold">
+                        {promotion.code}
                       </code>
                     </TableCell>
-                    <TableCell className="text-sm">{promo.description}</TableCell>
-                    <TableCell className="font-semibold text-orange-600">{promo.discount}</TableCell>
-                    <TableCell>₹{promo.minSpend}</TableCell>
+                    <TableCell className="text-sm">{promotion.description}</TableCell>
+                    <TableCell className="font-semibold text-orange-600">{promotion.discount}</TableCell>
+                    <TableCell>₹{promotion.minSpend}</TableCell>
                     <TableCell>
                       <div className="text-sm">
-                        <p className="font-medium">{promo.usageCount}/{promo.maxUsage}</p>
+                        <p className="font-medium">
+                          {promotion.usageCount}/{promotion.maxUsage}
+                        </p>
                         <p className="text-xs text-muted-foreground">
-                          {Math.round((promo.usageCount / promo.maxUsage) * 100)}% used
+                          {Math.round((promotion.usageCount / promotion.maxUsage) * 100)}% used
                         </p>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${promo.active
-                        ? 'bg-emerald-100 text-emerald-700'
-                        : 'bg-gray-100 text-gray-700'
-                        }`}>
-                        {promo.active ? 'Active' : 'Inactive'}
+                      <span
+                        className={`rounded-full px-2 py-1 text-xs font-medium ${
+                          promotion.active
+                            ? 'bg-emerald-100 text-emerald-700'
+                            : 'bg-gray-100 text-gray-700'
+                        }`}
+                      >
+                        {promotion.active ? 'Active' : 'Inactive'}
                       </span>
                     </TableCell>
                     <TableCell>
@@ -402,25 +403,25 @@ export default function Promotions() {
                           variant="ghost"
                           size="sm"
                           className="text-green-600 hover:text-green-700"
-                          onClick={() => copyToClipboard(promo.code)}
+                          onClick={() => copyToClipboard(promotion.code)}
                         >
-                          <Copy className="w-4 h-4" />
+                          <Copy className="h-4 w-4" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
                           className="text-blue-600 hover:text-blue-700"
-                          onClick={() => handleEditPromotion(promo)}
+                          onClick={() => handleEditPromotion(promotion)}
                         >
-                          <Edit2 className="w-4 h-4" />
+                          <Edit2 className="h-4 w-4" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
                           className="text-red-600 hover:text-red-700"
-                          onClick={() => handleDeletePromotion(promo.id)}
+                          onClick={() => handleDeletePromotion(promotion.id)}
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </TableCell>

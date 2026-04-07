@@ -23,6 +23,9 @@ frontend/.next/
 frontend/.vercel/
 frontend/dist/
 frontend/build/
+frontend/tsconfig.tsbuildinfo
+frontend/src_backup/
+frontend/**/*.backup
 
 # ============================================================================
 # Backend (Maven / Java)
@@ -34,6 +37,7 @@ backend/.project
 backend/.settings/
 backend/*.jar
 backend/*.war
+backend/**/*.bak
 
 # ============================================================================
 # Root Node Modules (if any)
@@ -61,6 +65,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 logs/
+*.tsbuildinfo
 
 # ============================================================================
 # OS-specific
