@@ -192,10 +192,10 @@ export default function SignUpPage() {
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-6 sm:mb-8"
+            className="text-center mb-5 sm:mb-7"
           >
             <motion.div
-              className="flex justify-center mb-4 sm:mb-5 transform"
+              className="flex justify-center mb-3 sm:mb-4 transform"
               whileHover={{ rotate: [0, -10, 10, 0] }}
             >
               <Logo />
@@ -207,9 +207,9 @@ export default function SignUpPage() {
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-black mb-3 text-black tracking-tight uppercase">
               Join the Feast
             </h1>
-            <p className="text-lg sm:text-xl font-bold text-gray-700">Choose your flavor to get started</p>
+            <p className="text-base sm:text-lg font-bold text-gray-700">Create your account and get into StreetBite fast.</p>
             <p className="mt-2 text-[11px] sm:text-sm font-bold uppercase tracking-[0.2em] text-gray-500">
-              Create your account, save your city, and start exploring immediately
+              Pick your role, enter the basics, verify once
             </p>
           </motion.div>
 
@@ -220,51 +220,51 @@ export default function SignUpPage() {
                 initial={{ opacity: 0, x: -50 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -50 }}
-                className="grid md:grid-cols-2 gap-5 sm:gap-6"
+                className="grid md:grid-cols-2 gap-4 sm:gap-5"
               >
                 {/* Customer Card */}
                 <motion.div
-                  whileHover={{ scale: 1.05 }}
+                  whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setUserType('customer')}
-                    className={`p-6 sm:p-8 rounded-[2rem] border-4 cursor-pointer transition-all ${userType === 'customer'
+                    className={`p-5 sm:p-6 rounded-[2rem] border-4 cursor-pointer transition-all ${userType === 'customer'
                     ? 'bg-yellow-400 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] z-10'
                     : 'bg-white border-black hover:bg-yellow-50 hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]'
                     }`}
                 >
-                  <div className="mb-6 flex size-20 items-center justify-center rounded-[1.5rem] border-4 border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                    <UtensilsCrossed className="size-10 text-orange-500" strokeWidth={2.7} />
+                  <div className="mb-4 flex size-16 items-center justify-center rounded-[1.25rem] border-4 border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                    <UtensilsCrossed className="size-8 text-orange-500" strokeWidth={2.7} />
                   </div>
                   <p className="mb-3 inline-flex rounded-full border-2 border-black bg-white px-3 py-1 text-[11px] font-black uppercase tracking-[0.25em] text-gray-600">Customer</p>
-                  <h2 className="text-3xl font-black text-black mb-2 uppercase">Foodie</h2>
-                  <p className="text-gray-700 font-medium mb-6 leading-relaxed">Discover hidden gems, rate your bites, and follow your favorite trucks.</p>
-                  <div className="space-y-3 font-bold text-sm text-black/80">
-                    <div className="flex items-center gap-2"><Sparkles className="w-5 h-5 text-black" /> Epic Food Discovery</div>
-                    <div className="flex items-center gap-2"><Sparkles className="w-5 h-5 text-black" /> Real-time Updates</div>
-                    <div className="flex items-center gap-2"><Sparkles className="w-5 h-5 text-black" /> Exclusive Deals</div>
+                  <h2 className="text-2xl font-black text-black mb-2 uppercase">Foodie</h2>
+                  <p className="text-gray-700 font-medium mb-4 leading-relaxed">Save favorite vendors, track offers, and discover what is nearby.</p>
+                  <div className="space-y-2 font-bold text-sm text-black/80">
+                    <div>Save favorites</div>
+                    <div>Join community posts</div>
+                    <div>Track live vendors</div>
                   </div>
                 </motion.div>
 
                 {/* Vendor Card */}
                 <motion.div
-                  whileHover={{ scale: 1.05 }}
+                  whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setUserType('vendor')}
-                    className={`p-6 sm:p-8 rounded-[2rem] border-4 cursor-pointer transition-all ${userType === 'vendor'
+                    className={`p-5 sm:p-6 rounded-[2rem] border-4 cursor-pointer transition-all ${userType === 'vendor'
                     ? 'bg-orange-500 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] z-10'
                     : 'bg-white border-black hover:bg-orange-50 hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]'
                     }`}
                 >
-                  <div className="mb-6 flex size-20 items-center justify-center rounded-[1.5rem] border-4 border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                    <Store className="size-10 text-orange-500" strokeWidth={2.7} />
+                  <div className="mb-4 flex size-16 items-center justify-center rounded-[1.25rem] border-4 border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                    <Store className="size-8 text-orange-500" strokeWidth={2.7} />
                   </div>
                   <p className="mb-3 inline-flex rounded-full border-2 border-black bg-white px-3 py-1 text-[11px] font-black uppercase tracking-[0.25em] text-gray-600">Vendor</p>
-                  <h2 className="text-3xl font-black text-black mb-2 uppercase">Old Master</h2>
-                  <p className="text-black/80 font-medium mb-6 leading-relaxed">Showcase your menu, manage orders, and feed the hungry masses.</p>
-                  <div className="space-y-3 font-bold text-sm text-black/80">
-                    <div className="flex items-center gap-2"><Sparkles className="w-5 h-5 text-black" /> Build Your Brand</div>
-                    <div className="flex items-center gap-2"><Sparkles className="w-5 h-5 text-black" /> Live Location Tracking</div>
-                    <div className="flex items-center gap-2"><Sparkles className="w-5 h-5 text-black" /> Grow Your Audience</div>
+                  <h2 className="text-2xl font-black text-black mb-2 uppercase">Vendor</h2>
+                  <p className="text-black/80 font-medium mb-4 leading-relaxed">Launch your stall profile, publish offers, and manage your dashboard.</p>
+                  <div className="space-y-2 font-bold text-sm text-black/80">
+                    <div>Vendor dashboard</div>
+                    <div>Menu and offer control</div>
+                    <div>Location visibility</div>
                   </div>
                 </motion.div>
               </motion.div>
@@ -278,12 +278,12 @@ export default function SignUpPage() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 50 }}
                 onSubmit={handleSubmit}
-                className="bg-white rounded-[2rem] shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] p-6 sm:p-8 md:p-10 space-y-5 border-4 border-black relative overflow-hidden"
+                className="bg-white rounded-[2rem] shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] p-6 sm:p-8 md:p-9 space-y-5 border-4 border-black relative overflow-hidden"
               >
                 {/* Decorative Element */}
                 <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-400 rounded-bl-[100%] z-0 opacity-20"></div>
 
-                <div className="relative z-10 rounded-[1.5rem] border-4 border-black bg-[#FFF5D8] p-4 sm:p-5 shadow-[5px_5px_0px_0px_rgba(0,0,0,1)]">
+                <div className="relative z-10 rounded-[1.25rem] border-4 border-black bg-[#FFF5D8] p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                       <p className="text-xs font-black uppercase tracking-[0.3em] text-gray-500">Account Setup</p>
@@ -297,7 +297,7 @@ export default function SignUpPage() {
                     </div>
                   </div>
                   <p className="mt-2 text-xs sm:text-sm font-bold text-gray-700">
-                    This creates your StreetBite account instantly. You can finish the rest of your profile after you get in.
+                    Add the basics now. You can finish the rest after you sign in.
                   </p>
                 </div>
 
@@ -344,7 +344,7 @@ export default function SignUpPage() {
                     autoComplete="username"
                     className="w-full px-4 py-4 border-4 border-black rounded-xl text-lg font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400 bg-gray-50 transition-all placeholder:text-gray-300 lowercase"
                   />
-                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-gray-500">Use the email you want to keep for orders and saved vendors.</p>
+                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-gray-500">Use the email you want to keep on this account.</p>
                 </div>
 
                 <div className="space-y-2 relative z-10">
@@ -352,7 +352,7 @@ export default function SignUpPage() {
                   <div className="relative">
                     <input
                       type={showPassword ? "text" : "password"}
-                      placeholder="MAKE IT STRONG"
+                      placeholder="Create a strong password"
                       value={formData.password}
                       onChange={(e) => {
                         const newPass = e.target.value
@@ -399,7 +399,7 @@ export default function SignUpPage() {
                       </div>
                       <p className={`text-xs text-right font-black uppercase tracking-wider ${passwordStrength <= 2 ? 'text-red-600' : passwordStrength <= 3 ? 'text-yellow-600' : 'text-green-600'
                         }`}>
-                        {passwordStrength <= 2 ? 'Weak Sauce' : passwordStrength <= 3 ? 'Getting Spicy' : 'Fiery Hot!'}
+                        {passwordStrength <= 2 ? 'Weak' : passwordStrength <= 3 ? 'Medium' : 'Strong'}
                       </p>
                     </div>
                   )}
@@ -415,7 +415,7 @@ export default function SignUpPage() {
                       onChange={(e) => setFormData({ ...formData, businessName: e.target.value })}
                       className="w-full px-4 py-4 border-4 border-black rounded-xl text-lg font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400 bg-gray-50 transition-all placeholder:text-gray-300 uppercase"
                     />
-                    <p className="text-xs font-bold uppercase tracking-[0.2em] text-gray-500">This appears on your vendor dashboard first. You can refine it later.</p>
+                    <p className="text-xs font-bold uppercase tracking-[0.2em] text-gray-500">You can edit this later from the vendor dashboard.</p>
                   </div>
                 )}
 
@@ -438,7 +438,7 @@ export default function SignUpPage() {
                   </Button>
                 </div>
 
-                <p className="text-center text-lg font-medium text-gray-600 relative z-10">
+                <p className="text-center text-base sm:text-lg font-medium text-gray-600 relative z-10">
                   Already part of the crew?{' '}
                   <Link href="/signin" className="text-black font-black decoration-4 underline decoration-yellow-400 hover:bg-yellow-400 transition-colors px-1">
                     SIGN IN
@@ -454,9 +454,9 @@ export default function SignUpPage() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 50 }}
                 onSubmit={handleVerifyEmail}
-                className="bg-white rounded-[2rem] shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] p-6 sm:p-8 md:p-10 space-y-5 border-4 border-black relative overflow-hidden"
+                className="bg-white rounded-[2rem] shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] p-6 sm:p-8 md:p-9 space-y-5 border-4 border-black relative overflow-hidden"
               >
-                <div className="relative z-10 rounded-[1.5rem] border-4 border-black bg-[#FFF5D8] p-4 sm:p-5 shadow-[5px_5px_0px_0px_rgba(0,0,0,1)]">
+                <div className="relative z-10 rounded-[1.25rem] border-4 border-black bg-[#FFF5D8] p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                       <p className="text-xs font-black uppercase tracking-[0.3em] text-gray-500">Email Verification</p>
@@ -467,8 +467,8 @@ export default function SignUpPage() {
                       6-digit code
                     </div>
                   </div>
-                  <p className="mt-2 text-xs sm:text-sm font-bold text-gray-700">
-                    Enter the code sent to <span className="text-black">{verificationEmail}</span>. Your account goes live as soon as this is confirmed.
+                  <p className="mt-2 text-xs sm:text-sm font-bold text-gray-700 break-all">
+                    Enter the 6-digit code sent to <span className="text-black">{verificationEmail}</span>.
                   </p>
                 </div>
 
@@ -541,14 +541,14 @@ export default function SignUpPage() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mt-12 flex justify-center"
+              className="mt-8 flex justify-center"
             >
               <Button
                 onClick={handleContinue}
-                className="w-full max-w-md bg-black text-white rounded-full px-8 py-7 text-xl sm:px-12 sm:py-8 sm:text-2xl font-black flex items-center justify-center gap-4 shadow-[8px_8px_0px_0px_#fbbf24] border-4 border-black hover:-translate-y-2 hover:shadow-[12px_12px_0px_0px_#fbbf24] transition-all"
+                className="w-full max-w-md bg-black text-white rounded-full px-8 py-6 text-lg sm:px-10 sm:py-7 sm:text-xl font-black flex items-center justify-center gap-3 shadow-[8px_8px_0px_0px_#fbbf24] border-4 border-black hover:-translate-y-2 hover:shadow-[12px_12px_0px_0px_#fbbf24] transition-all"
               >
                 CONTINUE
-                <ChevronRight size={32} strokeWidth={4} />
+                <ChevronRight size={26} strokeWidth={4} />
               </Button>
             </motion.div>
           )}

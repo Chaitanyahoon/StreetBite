@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Logo } from '@/components/logo'
 import { Button } from '@/components/ui/button'
-import { Mail, Lock, ArrowLeft, Eye, EyeOff, ShieldCheck, Sparkles, Cookie, RefreshCcw } from 'lucide-react'
+import { Mail, Lock, ArrowLeft, Eye, EyeOff, ShieldCheck, Cookie, RefreshCcw } from 'lucide-react'
 import { authApi } from '@/lib/api'
 import { useAuth } from '@/context/AuthContext'
 import { motion } from 'framer-motion'
@@ -121,9 +121,9 @@ function SignInContent() {
           animate="visible"
         >
           {/* Logo and Heading */}
-          <div className="text-center mb-5 sm:mb-7">
+          <div className="text-center mb-4 sm:mb-6">
             <motion.div
-              className="flex justify-center mb-4 sm:mb-5 transform hover:scale-110 transition-transform duration-300"
+              className="flex justify-center mb-3 sm:mb-4 transform hover:scale-110 transition-transform duration-300"
               whileHover={{ rotate: [0, -10, 10, 0] }}
             >
               <Logo />
@@ -138,16 +138,11 @@ function SignInContent() {
             <motion.h1 variants={itemVariants} className="text-3xl sm:text-4xl md:text-5xl font-black mb-3 text-black tracking-tight">
               {showForgotPassword ? 'RESET PASSWORD' : 'WELCOME BACK!'}
             </motion.h1>
-            <motion.p variants={itemVariants} className="text-lg sm:text-xl font-bold text-gray-700">
+            <motion.p variants={itemVariants} className="text-base sm:text-lg font-bold text-gray-700">
               {showForgotPassword
                 ? 'Don\'t worry, we\'ll get you back in!'
-                : 'Ready to satisfy those cravings?'}
+                : 'Sign in and get straight back to your saved bites.'}
             </motion.p>
-            {!showForgotPassword && (
-              <motion.p variants={itemVariants} className="mt-2 text-[11px] sm:text-sm font-bold uppercase tracking-[0.2em] text-gray-500">
-                Sign in with the account you already use on StreetBite
-              </motion.p>
-            )}
           </div>
 
           {showForgotPassword ? (
@@ -157,17 +152,17 @@ function SignInContent() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
               onSubmit={handleForgotPassword}
-              className="bg-white rounded-[2rem] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-8 border-4 border-black relative overflow-hidden"
+              className="bg-white rounded-[2rem] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-6 sm:p-8 border-4 border-black relative overflow-hidden"
             >
               {resetStatus === 'sent' ? (
-                <div className="text-center space-y-6">
-                  <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full border-4 border-black flex items-center justify-center mx-auto shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                    <Mail size={32} strokeWidth={3} />
+                <div className="text-center space-y-5">
+                  <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full border-4 border-black flex items-center justify-center mx-auto shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                    <Mail size={26} strokeWidth={3} />
                   </div>
                   <div className="space-y-2">
-                    <h3 className="text-2xl font-black text-black">CHECK YOUR EMAIL</h3>
-                    <p className="text-gray-600 font-medium">
-                      We sent a recovery link to <br /><span className="font-bold text-black bg-yellow-200 px-1">{resetEmail}</span>
+                    <h3 className="text-xl sm:text-2xl font-black text-black">CHECK YOUR EMAIL</h3>
+                    <p className="text-sm sm:text-base text-gray-600 font-medium">
+                      We sent a recovery link to <span className="font-bold text-black bg-yellow-200 px-1">{resetEmail}</span>
                     </p>
                   </div>
                   <Button
@@ -236,20 +231,12 @@ function SignInContent() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
               onSubmit={handleSignIn}
-              className="bg-white rounded-[2rem] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-6 sm:p-8 border-4 border-black relative overflow-hidden"
+              className="bg-white rounded-[2rem] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-6 sm:p-7 border-4 border-black relative overflow-hidden"
             >
-              <div className="mb-5 rounded-[1.5rem] border-4 border-black bg-[#FFF5D8] p-4 sm:p-5 shadow-[5px_5px_0px_0px_rgba(0,0,0,1)]">
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <p className="text-xs font-black uppercase tracking-[0.3em] text-gray-500">Email + Password</p>
-                    <h2 className="mt-2 text-xl sm:text-2xl font-black uppercase text-black">Jump Back In Fast</h2>
-                  </div>
-                  <div className="flex size-12 sm:size-14 shrink-0 items-center justify-center rounded-2xl border-4 border-black bg-white">
-                    <Sparkles className="size-6 sm:size-7 text-orange-500" strokeWidth={2.8} />
-                  </div>
-                </div>
-                <p className="mt-2 text-xs sm:text-sm font-bold text-gray-700">
-                  StreetBite uses a secure session cookie to keep you signed in.
+              <div className="mb-5 rounded-[1.25rem] border-4 border-black bg-[#FFF5D8] px-4 py-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                <p className="text-[11px] font-black uppercase tracking-[0.26em] text-gray-500">Email + Password</p>
+                <p className="mt-1 text-sm font-bold text-gray-700">
+                  StreetBite uses one secure session cookie to keep you signed in.
                 </p>
               </div>
 
@@ -275,7 +262,7 @@ function SignInContent() {
                       <Cookie className="size-4" strokeWidth={2.8} />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-black uppercase tracking-[0.18em] text-black">Allow Cookies To Sign In</p>
+                      <p className="text-xs font-black uppercase tracking-[0.2em] text-black">Allow Cookies To Sign In</p>
                       <p className="mt-1 text-sm font-bold leading-6 text-black">
                         Your browser blocked the StreetBite session cookie. Allow cookies for this site, then try again.
                       </p>
@@ -286,7 +273,7 @@ function SignInContent() {
                     <button
                       type="button"
                       onClick={() => setShowCookieHelp((current) => !current)}
-                      className="inline-flex items-center justify-center rounded-xl border-4 border-black bg-white px-4 py-3 text-xs font-black uppercase tracking-[0.18em] text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:-translate-y-1"
+                      className="inline-flex items-center justify-center rounded-xl border-4 border-black bg-white px-4 py-3 text-[11px] font-black uppercase tracking-[0.18em] text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:-translate-y-1"
                     >
                       {showCookieHelp ? 'Hide Steps' : 'How To Allow'}
                     </button>
@@ -294,7 +281,7 @@ function SignInContent() {
                       type="button"
                       onClick={() => performLogin(email, password)}
                       disabled={isLoading || !email || !password}
-                      className="inline-flex items-center justify-center gap-2 rounded-xl border-4 border-black bg-orange-500 px-4 py-3 text-xs font-black uppercase tracking-[0.18em] text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:-translate-y-1 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
+                      className="inline-flex items-center justify-center gap-2 rounded-xl border-4 border-black bg-orange-500 px-4 py-3 text-[11px] font-black uppercase tracking-[0.18em] text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:-translate-y-1 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
                     >
                       <RefreshCcw className="size-4" strokeWidth={2.8} />
                       Try Again
@@ -326,7 +313,7 @@ function SignInContent() {
               )}
 
               {/* Email Input */}
-              <motion.div variants={itemVariants} className="space-y-4 mb-6">
+              <motion.div variants={itemVariants} className="space-y-3 mb-5">
                 <label className="block text-sm font-black text-black uppercase tracking-wider ml-1">Email Address</label>
                 <div className="relative group">
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-black transition-colors size-6" strokeWidth={2.5} />
@@ -342,7 +329,7 @@ function SignInContent() {
               </motion.div>
 
               {/* Password Input */}
-              <motion.div variants={itemVariants} className="space-y-4 mb-8">
+              <motion.div variants={itemVariants} className="space-y-3 mb-7">
                 <label className="block text-sm font-black text-black uppercase tracking-wider ml-1">Password</label>
                 <div className="relative group">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-black transition-colors size-6" strokeWidth={2.5} />
@@ -393,14 +380,14 @@ function SignInContent() {
               </motion.div>
 
               {/* Divider */}
-              <motion.div variants={itemVariants} className="flex items-center gap-3 my-8">
+              <motion.div variants={itemVariants} className="flex items-center gap-3 my-6">
                 <div className="flex-1 h-1 bg-gray-200 rounded-full" />
                 <span className="text-xs text-gray-400 font-black uppercase tracking-widest">NEW HERE?</span>
                 <div className="flex-1 h-1 bg-gray-200 rounded-full" />
               </motion.div>
 
               {/* Sign Up Link */}
-              <motion.p variants={itemVariants} className="text-center text-lg font-medium text-gray-600">
+              <motion.p variants={itemVariants} className="text-center text-base sm:text-lg font-medium text-gray-600">
                 New to StreetBite?{' '}
                 <Link href="/signup" className="text-black font-black decoration-4 underline decoration-yellow-400 hover:bg-yellow-400 transition-colors px-1">
                   CREATE ACCOUNT
