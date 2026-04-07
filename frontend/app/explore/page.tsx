@@ -18,11 +18,13 @@ import { useUserLocation } from '@/lib/useUserLocation'
 import { useAuth } from '@/context/AuthContext'
 import {
   ArrowUpDown,
+  ChevronDown,
   Flame,
   Heart,
   LoaderCircle,
   MapPin,
   Search,
+  SlidersHorizontal,
   Sparkles,
   Star,
   X,
@@ -79,6 +81,7 @@ function ExplorePageContent() {
   const [selectedSort, setSelectedSort] = useState<SortMode>('recommended')
   const [viewMode, setViewMode] = useState<ViewMode>('list')
   const [selectedVendor, setSelectedVendor] = useState<ExploreVendor | null>(null)
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false)
   const [vendors, setVendors] = useState<ExploreVendor[]>([])
   const [favorites, setFavorites] = useState<ExploreVendor[]>([])
   const [loadingVendors, setLoadingVendors] = useState(true)
@@ -188,6 +191,13 @@ function ExplorePageContent() {
   const hasActiveFilters =
     searchTerm.length > 0 || selectedCuisine !== 'all' || selectedQuickFilter !== 'all' || selectedSort !== 'recommended'
 
+  const activeFilterCount = [
+    searchTerm.length > 0,
+    selectedCuisine !== 'all',
+    selectedQuickFilter !== 'all',
+    selectedSort !== 'recommended',
+  ].filter(Boolean).length
+
   const locationSummary = getLocationSummary(loadingLocation, location, locationError)
 
   const replaceExploreQuery = (updates: Record<string, string | undefined>) => {
@@ -212,6 +222,7 @@ function ExplorePageContent() {
     setSelectedQuickFilter('all')
     setSelectedSort('recommended')
     setViewMode('list')
+    setShowAdvancedFilters(false)
     router.replace(pathname, { scroll: false })
   }
 
@@ -235,7 +246,7 @@ function ExplorePageContent() {
       />
       <Navbar />
 
-      <section className="relative overflow-hidden px-4 py-24 md:px-6 md:py-28">
+      <section className="relative overflow-hidden px-4 pb-20 pt-24 md:px-6 md:pb-24 md:pt-28">
         <div className="absolute inset-0 -z-10">
           <div className="absolute left-[-8%] top-8 h-56 w-56 rounded-[4rem] border-4 border-black/12 bg-orange-300/20 blur-2xl md:h-72 md:w-72" />
           <div className="absolute right-[6%] top-14 h-28 w-28 rotate-12 rounded-[2rem] border-4 border-black/12 bg-yellow-300/35 shadow-[var(--shadow-soft)] md:h-40 md:w-40" />
@@ -264,7 +275,7 @@ function ExplorePageContent() {
         </div>
       </section>
 
-      <section className="sticky top-16 z-30 -mt-10 px-4 pb-8 md:top-20 md:px-6">
+      <section className="-mt-8 px-4 pb-10 md:-mt-10 md:px-6">
         <div className="mx-auto max-w-7xl">
           <div className="rounded-[2rem] border-4 border-black bg-[#fff8ef] p-4 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] md:p-5">
             <Form
@@ -326,7 +337,7 @@ function ExplorePageContent() {
             </Form>
 
             <div className="mt-4 flex flex-col gap-4 border-t-2 border-black/15 pt-4">
-              <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                 <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
                   <div className="inline-flex items-center gap-2 rounded-full border-2 border-black bg-black px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-white shadow-[3px_3px_0px_0px_rgba(251,191,36,1)]">
                     <Flame className="h-4 w-4 text-primary" />
@@ -338,72 +349,123 @@ function ExplorePageContent() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowAdvancedFilters((value) => !value)}
+                    className="inline-flex items-center gap-2 rounded-full border-2 border-black bg-white px-4 py-2 text-xs font-black uppercase tracking-[0.16em] text-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-transform hover:-translate-y-0.5"
+                  >
+                    <SlidersHorizontal className="h-4 w-4" />
+                    {showAdvancedFilters ? 'Hide filters' : 'Filters'}
+                    {activeFilterCount > 0 ? (
+                      <span className="inline-flex min-w-6 items-center justify-center rounded-full bg-yellow-300 px-1.5 py-0.5 text-[0.65rem] text-black">
+                        {activeFilterCount}
+                      </span>
+                    ) : null}
+                    <ChevronDown className={`h-4 w-4 transition-transform ${showAdvancedFilters ? 'rotate-180' : ''}`} />
+                  </button>
+
                   <div className="inline-flex items-center gap-2 rounded-full border-2 border-black bg-white px-3 py-2 text-xs font-black uppercase tracking-[0.16em] text-black/55">
                     <ArrowUpDown className="h-4 w-4" />
-                    Sort
+                    {SORT_OPTIONS.find((option) => option.id === selectedSort)?.label ?? 'Recommended'}
                   </div>
-                  {SORT_OPTIONS.map((option) => (
-                    <button
-                      key={option.id}
+
+                  {hasActiveFilters ? (
+                    <Button
                       type="button"
-                      onClick={() => {
-                        setSelectedSort(option.id)
-                        replaceExploreQuery({ sort: option.id })
-                      }}
-                      className={`rounded-full border px-4 py-2 text-xs font-black uppercase tracking-[0.16em] transition-all ${
-                        selectedSort === option.id
-                          ? 'border-2 border-black bg-black text-white shadow-[3px_3px_0px_0px_rgba(249,115,22,1)]'
-                          : 'border-2 border-black bg-white text-black/60 hover:bg-yellow-100 hover:text-black'
-                      }`}
+                      variant="outline"
+                      onClick={handleResetFilters}
+                      className="h-10 rounded-full border-2 border-black px-4 text-[0.68rem] font-black uppercase tracking-[0.16em]"
                     >
-                      {option.label}
-                    </button>
-                  ))}
+                      Reset
+                    </Button>
+                  ) : null}
                 </div>
               </div>
 
-              <div className="flex flex-col gap-3">
-                <div className="flex gap-2 overflow-x-auto pb-1">
-                  {QUICK_FILTERS.map((filter) => (
-                    <button
-                      key={filter.id}
-                      type="button"
-                      onClick={() => {
-                        setSelectedQuickFilter(filter.id)
-                        replaceExploreQuery({ filter: filter.id })
-                      }}
-                      className={`rounded-full border px-4 py-2 text-xs font-black uppercase tracking-[0.16em] transition-all ${
-                        selectedQuickFilter === filter.id
-                          ? 'border-2 border-black bg-yellow-300 text-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]'
-                          : 'border-2 border-black bg-white text-black/60 hover:bg-yellow-100'
-                      }`}
-                    >
-                      {filter.label}
-                    </button>
-                  ))}
-                </div>
+              {showAdvancedFilters ? (
+                <div className="rounded-[1.5rem] border-2 border-black/15 bg-white/70 p-4 md:p-5">
+                  <div className="flex flex-col gap-4">
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 text-[0.68rem] font-black uppercase tracking-[0.18em] text-black/55">
+                        <ArrowUpDown className="h-4 w-4" />
+                        Sort by
+                      </div>
+                      <div className="flex gap-2 overflow-x-auto pb-1">
+                        {SORT_OPTIONS.map((option) => (
+                          <button
+                            key={option.id}
+                            type="button"
+                            onClick={() => {
+                              setSelectedSort(option.id)
+                              replaceExploreQuery({ sort: option.id })
+                            }}
+                            className={`rounded-full border px-4 py-2 text-xs font-black uppercase tracking-[0.16em] transition-all ${
+                              selectedSort === option.id
+                                ? 'border-2 border-black bg-black text-white shadow-[3px_3px_0px_0px_rgba(249,115,22,1)]'
+                                : 'border-2 border-black bg-white text-black/60 hover:bg-yellow-100 hover:text-black'
+                            }`}
+                          >
+                            {option.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
 
-                <div className="flex gap-2 overflow-x-auto pb-1">
-                  {cuisineFilters.map((filter) => (
-                    <button
-                      key={filter}
-                      type="button"
-                      onClick={() => {
-                        setSelectedCuisine(filter)
-                        replaceExploreQuery({ cuisine: filter })
-                      }}
-                      className={`rounded-full border px-4 py-2 text-xs font-black uppercase tracking-[0.16em] transition-all ${
-                        selectedCuisine === filter
-                          ? 'border-2 border-black bg-black text-yellow-300 shadow-[3px_3px_0px_0px_rgba(251,191,36,1)]'
-                          : 'border-2 border-black bg-white text-black/55 hover:bg-white hover:text-black'
-                      }`}
-                    >
-                      {filter === 'all' ? 'All cuisines' : filter}
-                    </button>
-                  ))}
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 text-[0.68rem] font-black uppercase tracking-[0.18em] text-black/55">
+                        <Flame className="h-4 w-4" />
+                        Quick filters
+                      </div>
+                      <div className="flex gap-2 overflow-x-auto pb-1">
+                        {QUICK_FILTERS.map((filter) => (
+                          <button
+                            key={filter.id}
+                            type="button"
+                            onClick={() => {
+                              setSelectedQuickFilter(filter.id)
+                              replaceExploreQuery({ filter: filter.id })
+                            }}
+                            className={`rounded-full border px-4 py-2 text-xs font-black uppercase tracking-[0.16em] transition-all ${
+                              selectedQuickFilter === filter.id
+                                ? 'border-2 border-black bg-yellow-300 text-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]'
+                                : 'border-2 border-black bg-white text-black/60 hover:bg-yellow-100'
+                            }`}
+                          >
+                            {filter.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 text-[0.68rem] font-black uppercase tracking-[0.18em] text-black/55">
+                        <Sparkles className="h-4 w-4" />
+                        Cuisines
+                      </div>
+                      <div className="flex gap-2 overflow-x-auto pb-1">
+                        {cuisineFilters.map((filter) => (
+                          <button
+                            key={filter}
+                            type="button"
+                            onClick={() => {
+                              setSelectedCuisine(filter)
+                              replaceExploreQuery({ cuisine: filter })
+                            }}
+                            className={`rounded-full border px-4 py-2 text-xs font-black uppercase tracking-[0.16em] transition-all ${
+                              selectedCuisine === filter
+                                ? 'border-2 border-black bg-black text-yellow-300 shadow-[3px_3px_0px_0px_rgba(251,191,36,1)]'
+                                : 'border-2 border-black bg-white text-black/55 hover:bg-white hover:text-black'
+                            }`}
+                          >
+                            {filter === 'all' ? 'All cuisines' : filter}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              ) : null}
             </div>
           </div>
         </div>
