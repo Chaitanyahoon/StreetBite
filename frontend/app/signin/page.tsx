@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Logo } from '@/components/logo'
 import { Button } from '@/components/ui/button'
-import { Mail, Lock, ArrowLeft, Eye, EyeOff, ShieldCheck, Sparkles } from 'lucide-react'
+import { Mail, Lock, ArrowLeft, Eye, EyeOff, ShieldCheck, Sparkles, Cookie, RefreshCcw } from 'lucide-react'
 import { authApi } from '@/lib/api'
 import { useAuth } from '@/context/AuthContext'
 import { motion } from 'framer-motion'
@@ -25,6 +25,7 @@ function SignInContent() {
   const [resetEmail, setResetEmail] = useState('')
   const [resetStatus, setResetStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
   const [resetError, setResetError] = useState<string | null>(null)
+  const [showCookieHelp, setShowCookieHelp] = useState(false)
   const isCookieIssue = !!error?.toLowerCase().includes('allow cookies')
 
   const performLogin = async (emailInput: string, passwordInput: string) => {
@@ -248,7 +249,7 @@ function SignInContent() {
                   </div>
                 </div>
                 <p className="mt-2 text-xs sm:text-sm font-bold text-gray-700">
-                  Sign in with cookies enabled so StreetBite can keep your session active.
+                  StreetBite uses a secure session cookie to keep you signed in.
                 </p>
               </div>
 
@@ -269,7 +270,48 @@ function SignInContent() {
                   animate={{ opacity: 1, y: 0 }}
                   className="mb-6 rounded-xl border-4 border-black bg-yellow-100 px-4 py-4 text-sm font-bold text-black"
                 >
-                  Allow cookies for StreetBite, then try signing in again.
+                  <div className="flex items-start gap-3">
+                    <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-full border-2 border-black bg-white">
+                      <Cookie className="size-4" strokeWidth={2.8} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-black uppercase tracking-[0.18em] text-black">Allow Cookies To Sign In</p>
+                      <p className="mt-1 text-sm font-bold leading-6 text-black">
+                        Your browser blocked the StreetBite session cookie. Allow cookies for this site, then try again.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+                    <button
+                      type="button"
+                      onClick={() => setShowCookieHelp((current) => !current)}
+                      className="inline-flex items-center justify-center rounded-xl border-4 border-black bg-white px-4 py-3 text-xs font-black uppercase tracking-[0.18em] text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:-translate-y-1"
+                    >
+                      {showCookieHelp ? 'Hide Steps' : 'How To Allow'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => performLogin(email, password)}
+                      disabled={isLoading || !email || !password}
+                      className="inline-flex items-center justify-center gap-2 rounded-xl border-4 border-black bg-orange-500 px-4 py-3 text-xs font-black uppercase tracking-[0.18em] text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:-translate-y-1 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
+                    >
+                      <RefreshCcw className="size-4" strokeWidth={2.8} />
+                      Try Again
+                    </button>
+                  </div>
+
+                  {showCookieHelp && (
+                    <div className="mt-4 rounded-xl border-4 border-black bg-white p-4 text-sm font-bold leading-6 text-black">
+                      <p className="font-black uppercase tracking-[0.18em] text-gray-500">Quick Fix</p>
+                      <p className="mt-2">Chrome or Edge: click the site settings icon near the address bar and allow cookies.</p>
+                      <p>Brave: turn Shields off for StreetBite, then refresh.</p>
+                      <p>Safari or strict privacy mode: allow cross-site cookies for this login.</p>
+                      <p className="mt-2 text-gray-600">
+                        If you changed the browser setting already, press <span className="text-black">Try Again</span>.
+                      </p>
+                    </div>
+                  )}
                 </motion.div>
               )}
 
