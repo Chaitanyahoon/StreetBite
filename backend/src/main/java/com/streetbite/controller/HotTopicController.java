@@ -1,11 +1,17 @@
 package com.streetbite.controller;
 
+import com.streetbite.dto.hottopic.CommunityTopicRequest;
+import com.streetbite.dto.hottopic.HotTopicCommentCreateRequest;
+import com.streetbite.dto.hottopic.HotTopicCommentResponse;
+import com.streetbite.dto.hottopic.HotTopicCreateRequest;
+import com.streetbite.dto.hottopic.HotTopicResponse;
+import com.streetbite.dto.hottopic.HotTopicUpdateRequest;
+import com.streetbite.dto.hottopic.TopicSubmissionResponse;
 import com.streetbite.model.HotTopic;
 import com.streetbite.model.TopicComment;
 import com.streetbite.model.User;
 import com.streetbite.security.AuthenticatedUserService;
 import com.streetbite.service.HotTopicService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -17,59 +23,89 @@ import java.util.Map;
 @RequestMapping("/api/hottopics")
 public class HotTopicController {
 
-    @Autowired
-    private HotTopicService hotTopicService;
+    private final HotTopicService hotTopicService;
+    private final AuthenticatedUserService authenticatedUserService;
 
-    @Autowired
-    private AuthenticatedUserService authenticatedUserService;
+    public HotTopicController(HotTopicService hotTopicService, AuthenticatedUserService authenticatedUserService) {
+        this.hotTopicService = hotTopicService;
+        this.authenticatedUserService = authenticatedUserService;
+    }
 
     @GetMapping
-    public List<HotTopic> getAllActive() {
-        return hotTopicService.getAllActiveHotTopics();
+    public List<HotTopicResponse> getAllActive() {
+        return hotTopicService.getAllActiveHotTopics().stream().map(HotTopicResponse::from).toList();
     }
 
     @GetMapping("/admin/all")
-    public List<HotTopic> getAll() {
-        return hotTopicService.getAllHotTopics();
+    public ResponseEntity<?> getAll(Authentication authentication) {
+        User currentUser = resolveAuthenticatedUser(authentication);
+        if (currentUser == null) {
+            return unauthorized("Login required");
+        }
+        if (!authenticatedUserService.isAdmin(currentUser)) {
+            return forbidden("Admin access only");
+        }
+
+        List<HotTopicResponse> topics = hotTopicService.getAllHotTopics().stream().map(HotTopicResponse::from).toList();
+        return ResponseEntity.ok(topics);
     }
 
     @PostMapping
-    public HotTopic create(@RequestBody HotTopic hotTopic) {
-        return hotTopicService.createHotTopic(hotTopic);
+    public ResponseEntity<?> create(@RequestBody HotTopicCreateRequest request, Authentication authentication) {
+        User currentUser = resolveAuthenticatedUser(authentication);
+        if (currentUser == null) {
+            return unauthorized("Login required");
+        }
+        if (!authenticatedUserService.isAdmin(currentUser)) {
+            return forbidden("Admin access only");
+        }
+
+        HotTopic created = hotTopicService.createHotTopic(request);
+        return ResponseEntity.ok(HotTopicResponse.from(created));
     }
 
     @PutMapping("/{id}")
-    public HotTopic update(@PathVariable Long id, @RequestBody Map<String, Object> updates) {
-        return hotTopicService.updateHotTopic(id, updates);
+    public ResponseEntity<?> update(@PathVariable Long id,
+            @RequestBody HotTopicUpdateRequest updates,
+            Authentication authentication) {
+        User currentUser = resolveAuthenticatedUser(authentication);
+        if (currentUser == null) {
+            return unauthorized("Login required");
+        }
+        if (!authenticatedUserService.isAdmin(currentUser)) {
+            return forbidden("Admin access only");
+        }
+
+        HotTopic updated = hotTopicService.updateHotTopic(id, updates);
+        return ResponseEntity.ok(HotTopicResponse.from(updated));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> delete(@PathVariable Long id) {
+    public ResponseEntity<?> delete(@PathVariable Long id, Authentication authentication) {
+        User currentUser = resolveAuthenticatedUser(authentication);
+        if (currentUser == null) {
+            return unauthorized("Login required");
+        }
+        if (!authenticatedUserService.isAdmin(currentUser)) {
+            return forbidden("Admin access only");
+        }
+
         hotTopicService.deleteHotTopic(id);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(Map.of("success", true));
     }
 
     @PostMapping("/{id}/comment")
-    public ResponseEntity<?> addComment(@PathVariable Long id, @RequestBody Map<String, String> payload,
+    public ResponseEntity<?> addComment(@PathVariable Long id, @RequestBody HotTopicCommentCreateRequest payload,
             Authentication authentication) {
         try {
-            User user = authenticatedUserService.findAuthenticatedUser(authentication).orElse(null);
+            User user = resolveAuthenticatedUser(authentication);
             if (user == null) {
-                return ResponseEntity.status(401).body(Map.of("error", "Invalid session. Please log in again"));
+                return unauthorized("Invalid session. Please log in again");
             }
 
-            TopicComment comment = hotTopicService.addComment(id, user.getId(), payload.get("text"));
-
-            // Return simple response to avoid serialization issues
-            return ResponseEntity.ok(Map.of(
-                    "id", comment.getId(),
-                    "content", comment.getContent(),
-                    "createdAt", comment.getCreatedAt().toString(),
-                    "userId", user.getId(),
-                    "userName", user.getDisplayName() != null ? user.getDisplayName() : user.getEmail()));
+            TopicComment comment = hotTopicService.addComment(id, user.getId(), payload.getText());
+            return ResponseEntity.ok(HotTopicCommentResponse.from(comment));
         } catch (Exception e) {
-            System.err.println("Failed to add comment: " + e.getMessage());
-            e.printStackTrace();
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
@@ -77,36 +113,33 @@ public class HotTopicController {
     @PostMapping("/{id}/like")
     public ResponseEntity<?> toggleLike(@PathVariable Long id, Authentication authentication) {
         try {
-            User user = authenticatedUserService.findAuthenticatedUser(authentication).orElse(null);
+            User user = resolveAuthenticatedUser(authentication);
             if (user == null) {
-                return ResponseEntity.status(401).body(Map.of("error", "Invalid session. Please log in again"));
+                return unauthorized("Invalid session. Please log in again");
             }
 
             hotTopicService.toggleLike(id, user.getId());
-            return ResponseEntity.ok().build();
+            return ResponseEntity.ok(Map.of("success", true));
         } catch (Exception e) {
-            System.err.println("Failed to toggle like: " + e.getMessage());
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
 
     @PostMapping("/community")
-    public ResponseEntity<?> createCommunityTopic(@RequestBody Map<String, String> payload,
+    public ResponseEntity<?> createCommunityTopic(@RequestBody CommunityTopicRequest payload,
             Authentication authentication) {
         try {
-            User user = authenticatedUserService.findAuthenticatedUser(authentication).orElse(null);
+            User user = resolveAuthenticatedUser(authentication);
             if (user == null) {
-                return ResponseEntity.status(401).body(Map.of("error", "Invalid session. Please log in again"));
+                return unauthorized("Invalid session. Please log in again");
             }
 
-            String title = payload.get("title");
-            String content = payload.get("content");
-            String imageUrl = payload.get("imageUrl");
-
-            HotTopic created = hotTopicService.createCommunityHotTopic(user, title, content, imageUrl);
-            return ResponseEntity.ok(Map.of(
-                    "message", "Topic submitted for review",
-                    "topicId", created.getId()));
+            HotTopic created = hotTopicService.createCommunityHotTopic(
+                    user,
+                    payload.getTitle(),
+                    payload.getContent(),
+                    payload.getImageUrl());
+            return ResponseEntity.ok(new TopicSubmissionResponse("Topic submitted for review", created.getId()));
         } catch (Exception e) {
             String message = e.getMessage() != null ? e.getMessage() : "Unable to submit topic";
             if (message.toLowerCase().contains("limit")) {
@@ -114,5 +147,17 @@ public class HotTopicController {
             }
             return ResponseEntity.badRequest().body(Map.of("error", message));
         }
+    }
+
+    private User resolveAuthenticatedUser(Authentication authentication) {
+        return authenticatedUserService.findAuthenticatedUser(authentication).orElse(null);
+    }
+
+    private ResponseEntity<Map<String, String>> unauthorized(String message) {
+        return ResponseEntity.status(401).body(Map.of("error", message));
+    }
+
+    private ResponseEntity<Map<String, String>> forbidden(String message) {
+        return ResponseEntity.status(403).body(Map.of("error", message));
     }
 }

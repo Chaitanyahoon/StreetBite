@@ -1,8 +1,15 @@
 package com.streetbite.service;
 
-import com.streetbite.model.*;
-import com.streetbite.repository.*;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.streetbite.dto.hottopic.HotTopicCreateRequest;
+import com.streetbite.dto.hottopic.HotTopicUpdateRequest;
+import com.streetbite.model.HotTopic;
+import com.streetbite.model.TopicComment;
+import com.streetbite.model.TopicLike;
+import com.streetbite.model.User;
+import com.streetbite.repository.HotTopicRepository;
+import com.streetbite.repository.TopicCommentRepository;
+import com.streetbite.repository.TopicLikeRepository;
+import com.streetbite.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,17 +19,21 @@ import java.util.Optional;
 @Service
 public class HotTopicService {
 
-    @Autowired
-    private HotTopicRepository hotTopicRepository;
+    private final HotTopicRepository hotTopicRepository;
+    private final TopicCommentRepository topicCommentRepository;
+    private final TopicLikeRepository topicLikeRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private TopicCommentRepository topicCommentRepository;
-
-    @Autowired
-    private TopicLikeRepository topicLikeRepository;
-
-    @Autowired
-    private UserRepository userRepository;
+    public HotTopicService(
+            HotTopicRepository hotTopicRepository,
+            TopicCommentRepository topicCommentRepository,
+            TopicLikeRepository topicLikeRepository,
+            UserRepository userRepository) {
+        this.hotTopicRepository = hotTopicRepository;
+        this.topicCommentRepository = topicCommentRepository;
+        this.topicLikeRepository = topicLikeRepository;
+        this.userRepository = userRepository;
+    }
 
     public List<HotTopic> getAllActiveHotTopics() {
         return hotTopicRepository.findByIsActiveTrueAndIsApprovedTrueOrderByCreatedAtDesc();
@@ -32,7 +43,11 @@ public class HotTopicService {
         return hotTopicRepository.findAll();
     }
 
-    public HotTopic createHotTopic(HotTopic hotTopic) {
+    public HotTopic createHotTopic(HotTopicCreateRequest request) {
+        HotTopic hotTopic = new HotTopic();
+        hotTopic.setTitle(request.getTitle());
+        hotTopic.setContent(request.getContent());
+        hotTopic.setImageUrl(request.getImageUrl());
         hotTopic.setActive(true);
         hotTopic.setApproved(true);
         return hotTopicRepository.save(hotTopic);
@@ -53,28 +68,22 @@ public class HotTopicService {
         return hotTopicRepository.save(topic);
     }
 
-    public HotTopic updateHotTopic(Long id, java.util.Map<String, Object> updates) {
+    public HotTopic updateHotTopic(Long id, HotTopicUpdateRequest updates) {
         HotTopic topic = hotTopicRepository.findById(id).orElseThrow(() -> new RuntimeException("Topic not found"));
-        if (updates.containsKey("title")) {
-            topic.setTitle((String) updates.get("title"));
+        if (updates.getTitle() != null) {
+            topic.setTitle(updates.getTitle());
         }
-        if (updates.containsKey("content")) {
-            topic.setContent((String) updates.get("content"));
+        if (updates.getContent() != null) {
+            topic.setContent(updates.getContent());
         }
-        if (updates.containsKey("imageUrl")) {
-            topic.setImageUrl((String) updates.get("imageUrl"));
+        if (updates.getImageUrl() != null) {
+            topic.setImageUrl(updates.getImageUrl());
         }
-        if (updates.containsKey("isActive")) {
-            Object isActive = updates.get("isActive");
-            if (isActive instanceof Boolean) {
-                topic.setActive((Boolean) isActive);
-            }
+        if (updates.getIsActive() != null) {
+            topic.setActive(updates.getIsActive());
         }
-        if (updates.containsKey("isApproved")) {
-            Object isApproved = updates.get("isApproved");
-            if (isApproved instanceof Boolean) {
-                topic.setApproved((Boolean) isApproved);
-            }
+        if (updates.getIsApproved() != null) {
+            topic.setApproved(updates.getIsApproved());
         }
         return hotTopicRepository.save(topic);
     }
@@ -115,10 +124,14 @@ public class HotTopicService {
                 .orElseThrow(() -> new RuntimeException("Topic not found"));
         User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
 
+        if (text == null || text.trim().length() < 2 || text.length() > 400) {
+            throw new RuntimeException("Comment must be between 2 and 400 characters");
+        }
+
         TopicComment comment = new TopicComment();
         comment.setTopic(topic);
         comment.setUser(user);
-        comment.setContent(text);
+        comment.setContent(text.trim());
 
         return topicCommentRepository.save(comment);
     }
