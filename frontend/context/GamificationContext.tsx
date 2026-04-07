@@ -1,6 +1,6 @@
 'use client'
 
-import React, { createContext, useContext, useState, useEffect } from 'react'
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import { gamificationApi } from '@/lib/api'
 import { toast } from 'sonner'
 import { useAuth } from '@/context/AuthContext'
@@ -59,16 +59,12 @@ export function GamificationProvider({ children }: { children: React.ReactNode }
     const [lastCheckIn, setLastCheckIn] = useState<string | null>(null)
     const [hasCheckedInToday, setHasCheckedInToday] = useState(false)
 
-    useEffect(() => {
-        if (isLoggedIn) {
-            fetchStats()
-        }
-    }, [isLoggedIn])
+    const checkIfCheckedInToday = useCallback((lastDate: string) => {
+        const today = new Date().toISOString().split('T')[0]
+        setHasCheckedInToday(lastDate === today)
+    }, [])
 
-    // Recalculate level whenever XP changes - REMOVED to prevent refresh bug
-    // Level is now managed explicitly in addXP, performAction, and fetchStats
-
-    const fetchStats = async () => {
+    const fetchStats = useCallback(async () => {
         try {
             const stats = await gamificationApi.getUserStats()
             setXp(stats.xp)
@@ -88,12 +84,16 @@ export function GamificationProvider({ children }: { children: React.ReactNode }
             }
             console.error("Failed to fetch gamification stats", error)
         }
-    }
+    }, [checkIfCheckedInToday])
 
-    const checkIfCheckedInToday = (lastDate: string) => {
-        const today = new Date().toISOString().split('T')[0]
-        setHasCheckedInToday(lastDate === today)
-    }
+    useEffect(() => {
+        if (isLoggedIn) {
+            fetchStats()
+        }
+    }, [isLoggedIn, fetchStats])
+
+    // Recalculate level whenever XP changes - REMOVED to prevent refresh bug
+    // Level is now managed explicitly in addXP, performAction, and fetchStats
 
     const addXP = async (amount: number, source: string) => {
         // Optimistic update

@@ -32,8 +32,6 @@ export function VendorDetailsSheet({ vendor, open, onOpenChange, onFavoriteToggl
     const [isFavorite, setIsFavorite] = useState(false)
     const [loading, setLoading] = useState(false)
 
-    if (!vendor) return null
-
     // Use vendor data directly (no real-time status from Firebase)
     const isOnline = vendor.isOnline || false
     const isAcceptingOrders = vendor.isAcceptingOrders || false
@@ -50,7 +48,9 @@ export function VendorDetailsSheet({ vendor, open, onOpenChange, onFavoriteToggl
             }
         }
         checkFavoriteStatus()
-    }, [vendor?.id])
+    }, [vendor?.id, isLoggedIn])
+
+    if (!vendor) return null
 
     const handleShare = async () => {
         const shareData = {

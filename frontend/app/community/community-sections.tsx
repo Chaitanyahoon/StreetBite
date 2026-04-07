@@ -42,6 +42,14 @@ interface DiscussionModalProps {
   onPostComment: () => void
 }
 
+const formatDiscussionDate = (createdAt?: string | null) => {
+  if (!createdAt) {
+    return 'Recently'
+  }
+
+  return new Date(createdAt).toLocaleDateString()
+}
+
 export function CommunityAnnouncementsBanner({ announcements }: { announcements: CommunityAnnouncement[] }) {
   if (!announcements.length) return null
 
@@ -323,7 +331,7 @@ export function DiscussionModal({
                 <span className="bg-white px-3 py-1 rounded-lg border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
                   @{selectedDiscussion.createdByDisplayName || 'StreetBiteTeam'}
                 </span>
-                <span className="text-white">• {new Date(selectedDiscussion.createdAt ?? Date.now()).toLocaleDateString()}</span>
+                <span className="text-white">• {formatDiscussionDate(selectedDiscussion.createdAt)}</span>
               </div>
               <h3 className="text-3xl font-black leading-tight drop-shadow-md mb-2">{selectedDiscussion.title}</h3>
               <p className="text-white/90 font-medium text-lg">{selectedDiscussion.content}</p>
