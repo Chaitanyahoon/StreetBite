@@ -12,9 +12,18 @@ import java.util.Properties;
 @Configuration
 public class MailConfig {
 
+    private String sanitize(String value) {
+        String sanitized = value != null ? value.trim() : "";
+        if ((sanitized.startsWith("\"") && sanitized.endsWith("\""))
+                || (sanitized.startsWith("'") && sanitized.endsWith("'"))) {
+            sanitized = sanitized.substring(1, sanitized.length() - 1).trim();
+        }
+        return sanitized;
+    }
+
     private String normalizeHost(String host, String username) {
-        String normalizedHost = host != null ? host.trim() : "";
-        String normalizedUsername = username != null ? username.trim() : "";
+        String normalizedHost = sanitize(host);
+        String normalizedUsername = sanitize(username);
 
         if (normalizedHost.isBlank() || normalizedHost.contains("@")) {
             if (normalizedUsername.endsWith("@gmail.com")) {
@@ -26,8 +35,8 @@ public class MailConfig {
     }
 
     private String normalizePassword(String password, String username) {
-        String normalizedPassword = password != null ? password.trim() : "";
-        String normalizedUsername = username != null ? username.trim() : "";
+        String normalizedPassword = sanitize(password);
+        String normalizedUsername = sanitize(username);
 
         if (normalizedUsername.endsWith("@gmail.com")) {
             return normalizedPassword.replace(" ", "");
@@ -51,10 +60,10 @@ public class MailConfig {
             @Value("${spring.mail.properties.mail.smtp.writetimeout:10000}") int writeTimeout,
             @Value("${spring.mail.properties.mail.smtp.ssl.trust:smtp.gmail.com}") String sslTrust) {
 
-        String normalizedUsername = username != null ? username.trim() : "";
+        String normalizedUsername = sanitize(username);
         String normalizedHost = normalizeHost(host, normalizedUsername);
         String normalizedPassword = normalizePassword(password, normalizedUsername);
-        String normalizedSslTrust = sslTrust != null && !sslTrust.isBlank() ? sslTrust.trim() : normalizedHost;
+        String normalizedSslTrust = !sanitize(sslTrust).isBlank() ? sanitize(sslTrust) : normalizedHost;
 
         JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
         mailSender.setHost(normalizedHost);
