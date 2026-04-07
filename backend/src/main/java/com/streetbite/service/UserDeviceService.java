@@ -2,7 +2,6 @@ package com.streetbite.service;
 
 import com.streetbite.model.UserDevice;
 import com.streetbite.repository.UserDeviceRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,14 +12,18 @@ import java.util.stream.Collectors;
 @Service
 public class UserDeviceService {
 
-    @Autowired
-    private UserDeviceRepository userDeviceRepository;
+    private final UserDeviceRepository userDeviceRepository;
+
+    public UserDeviceService(UserDeviceRepository userDeviceRepository) {
+        this.userDeviceRepository = userDeviceRepository;
+    }
 
     /**
      * Save or update FCM token for a user
      */
     @Transactional
     public UserDevice saveToken(Long userId, String fcmToken, String deviceType) {
+        validateToken(fcmToken);
         // Check if token already exists
         Optional<UserDevice> existing = userDeviceRepository.findByFcmToken(fcmToken);
 
@@ -59,6 +62,7 @@ public class UserDeviceService {
      */
     @Transactional
     public void deleteToken(String fcmToken) {
+        validateToken(fcmToken);
         userDeviceRepository.deleteByFcmToken(fcmToken);
     }
 
@@ -68,5 +72,11 @@ public class UserDeviceService {
     @Transactional
     public void deleteUserTokens(Long userId) {
         userDeviceRepository.deleteByUserId(userId);
+    }
+
+    private void validateToken(String fcmToken) {
+        if (fcmToken == null || fcmToken.trim().isEmpty()) {
+            throw new IllegalArgumentException("FCM token is required");
+        }
     }
 }
