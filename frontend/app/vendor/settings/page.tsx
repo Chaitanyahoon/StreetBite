@@ -7,8 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Separator } from '@/components/ui/separator'
-import { Switch } from '@/components/ui/switch'
-import { Upload, Save, MapPin, Clock, Phone, Store, X } from 'lucide-react'
+import { MapPin, Clock, Phone, Store } from 'lucide-react'
 import { vendorApi } from '@/lib/api'
 import { toast } from 'sonner'
 import { useAuth } from '@/context/AuthContext'
@@ -18,13 +17,16 @@ import {
   EMPTY_VENDOR_SETTINGS_FORM,
   formatCoordinatePair,
   hasValidCoordinates,
-  SETTINGS_CARD_ICONS,
-  VENDOR_PREFERENCE_OPTIONS,
-  VENDOR_SECURITY_ACTIONS,
-  VENDOR_STATUS_OPTIONS,
   type VendorPreferenceState,
   type VendorSettingsFormState,
 } from './settings-helpers'
+import {
+  SettingsStatusSwitcher,
+  VendorImageUploads,
+  VendorPreferencesCard,
+  VendorSaveButton,
+  VendorSecurityCard,
+} from './settings-sections'
 
 export default function Settings() {
   const { user } = useAuth()
@@ -202,25 +204,7 @@ export default function Settings() {
             <p className="text-muted-foreground mt-1 text-base">Manage your business profile and preferences.</p>
           </div>
 
-          <div className="flex items-center gap-2 bg-white p-1 rounded-full shadow-sm border border-gray-200">
-            {VENDOR_STATUS_OPTIONS.map((option) => {
-              const Icon = option.icon
-
-              return (
-                <button
-                  key={option.value}
-                  onClick={() => updateStatus(option.value)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 flex items-center gap-2 ${vendorData.status === option.value
-                    ? option.activeClassName
-                    : 'text-gray-500 hover:bg-gray-50'
-                    }`}
-                >
-                  <Icon className="w-4 h-4" />
-                  {option.label}
-                </button>
-              )
-            })}
-          </div>
+          <SettingsStatusSwitcher status={vendorData.status} onStatusChange={updateStatus} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -240,96 +224,14 @@ export default function Settings() {
               </CardHeader>
               <CardContent className="p-6 space-y-6">
                 {/* Images Section - Compact Layout */}
-                <div className="flex flex-col md:flex-row gap-6 items-start">
-                  {/* Logo Upload */}
-                  <div className="space-y-2 flex-shrink-0">
-                    <Label className="text-sm font-medium text-gray-900">Logo</Label>
-                    <div className="relative">
-                      <label className="block cursor-pointer group relative">
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0]
-                            if (file) handleImageUpload(file, 'display')
-                          }}
-                        />
-                        <div className={`w-32 h-32 rounded-xl border-2 border-dashed transition-all duration-200 flex flex-col items-center justify-center text-center p-2 overflow-hidden relative ${displayPreview ? 'border-primary/50 bg-primary/5' : 'border-gray-200 hover:border-primary/50 hover:bg-gray-50'
-                          }`}>
-                          {displayPreview ? (
-                            <>
-                              <img src={displayPreview} alt="Logo" className="w-full h-full object-cover absolute inset-0" />
-                              <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                                <Upload className="w-6 h-6 text-white mb-1" />
-                                <span className="text-white font-medium text-xs">Change</span>
-                              </div>
-                            </>
-                          ) : (
-                            <>
-                              <Upload className="w-6 h-6 text-gray-400 mb-2" />
-                              <p className="text-xs text-muted-foreground">Upload Logo</p>
-                            </>
-                          )}
-                        </div>
-                      </label>
-                      {displayPreview && (
-                        <button
-                          onClick={() => handleRemoveImage('display')}
-                          className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 shadow-lg transition-all hover:scale-110"
-                          title="Remove logo"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Banner Upload */}
-                  <div className="space-y-2 flex-grow">
-                    <Label className="text-sm font-medium text-gray-900">Banner Image</Label>
-                    <div className="relative">
-                      <label className="block cursor-pointer group relative">
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0]
-                            if (file) handleImageUpload(file, 'banner')
-                          }}
-                        />
-                        <div className={`h-32 w-full rounded-xl border-2 border-dashed transition-all duration-200 flex flex-col items-center justify-center text-center p-4 overflow-hidden relative ${bannerPreview ? 'border-primary/50 bg-primary/5' : 'border-gray-200 hover:border-primary/50 hover:bg-gray-50'
-                          }`}>
-                          {bannerPreview ? (
-                            <>
-                              <img src={bannerPreview} alt="Banner" className="w-full h-full object-cover absolute inset-0" />
-                              <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                                <Upload className="w-8 h-8 text-white mb-2" />
-                                <span className="text-white font-medium text-sm">Change Banner</span>
-                              </div>
-                            </>
-                          ) : (
-                            <>
-                              <Upload className="w-8 h-8 text-gray-400 mb-2" />
-                              <p className="text-sm font-medium text-gray-900">Upload Banner</p>
-                              <p className="text-xs text-muted-foreground">1920x1080 recommended</p>
-                            </>
-                          )}
-                        </div>
-                      </label>
-                      {bannerPreview && (
-                        <button
-                          onClick={() => handleRemoveImage('banner')}
-                          className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 shadow-lg transition-all hover:scale-110"
-                          title="Remove banner"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
+                <VendorImageUploads
+                  bannerPreview={bannerPreview}
+                  displayPreview={displayPreview}
+                  onBannerSelect={(file) => handleImageUpload(file, 'banner')}
+                  onDisplaySelect={(file) => handleImageUpload(file, 'display')}
+                  onBannerRemove={() => handleRemoveImage('banner')}
+                  onDisplayRemove={() => handleRemoveImage('display')}
+                />
 
                 <Separator className="bg-gray-100" />
 
@@ -507,83 +409,11 @@ export default function Settings() {
 
           {/* Right Column - Settings */}
           <div className="space-y-6">
-            {/* Preferences Card */}
-            <Card className="border-none shadow-sm overflow-hidden">
-              <CardHeader className="bg-gradient-to-r from-emerald-50 to-white border-b border-emerald-100/50 py-4 px-6">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-emerald-100 rounded-lg">
-                    <SETTINGS_CARD_ICONS.preferences className="w-5 h-5 text-emerald-600" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-lg">Preferences</CardTitle>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="p-6 space-y-5">
-                {VENDOR_PREFERENCE_OPTIONS.map((option, index) => (
-                  <div key={option.key}>
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label className="text-sm font-medium">{option.title}</Label>
-                        <p className="text-xs text-muted-foreground">{option.description}</p>
-                      </div>
-                      <Switch
-                        checked={settings[option.key]}
-                        onCheckedChange={(checked) => setSettings({ ...settings, [option.key]: checked })}
-                      />
-                    </div>
-                    {index < VENDOR_PREFERENCE_OPTIONS.length - 1 ? <Separator /> : null}
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
+            <VendorPreferencesCard settings={settings} onSettingsChange={setSettings} />
 
-            {/* Security Card */}
-            <Card className="border-none shadow-sm overflow-hidden">
-              <CardHeader className="bg-gradient-to-r from-gray-50 to-white border-b border-gray-100/50 py-4 px-6">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-gray-100 rounded-lg">
-                    <SETTINGS_CARD_ICONS.security className="w-5 h-5 text-gray-600" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-lg">Security</CardTitle>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="p-6 space-y-3">
-                {VENDOR_SECURITY_ACTIONS.map((action) => (
-                  <Button
-                    key={action.label}
-                    variant="outline"
-                    className="w-full justify-start h-10 text-sm"
-                    onClick={() => toast.info(action.toastMessage)}
-                  >
-                    {action.label}
-                  </Button>
-                ))}
-              </CardContent>
-            </Card>
+            <VendorSecurityCard />
 
-            {/* Save Button - Sticky on Mobile */}
-            <div className="sticky bottom-4 md:static">
-              <Button
-                onClick={handleSave}
-                disabled={saving}
-                className="w-full h-11 text-base font-semibold bg-primary hover:bg-primary/90 shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5"
-              >
-                {saving ? (
-                  <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2"></div>
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    <Save className="w-5 h-5 mr-2" />
-                    Save Changes
-                  </>
-                )}
-              </Button>
-            </div>
+            <VendorSaveButton saving={saving} onSave={handleSave} />
           </div>
         </div>
       </div>
