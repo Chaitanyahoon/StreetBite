@@ -145,11 +145,40 @@ public class AuthController {
         user.setEmailVerificationCodeExpiry(null);
     }
 
+    private void upsertPendingVendorProfile(User user, Map<String, Object> payload, String displayName, String phoneNumber) {
+        if (user.getRole() != User.Role.VENDOR) {
+            return;
+        }
+
+        java.util.List<Vendor> existingVendors = vendorService.getVendorsByOwner(user.getId());
+        Vendor vendor = existingVendors.isEmpty() ? new Vendor() : existingVendors.get(0);
+        vendor.setOwner(user);
+        vendor.setName((String) payload.getOrDefault("businessName", displayName + "'s Stall"));
+        vendor.setPhone(phoneNumber);
+        vendor.setDescription(vendor.getDescription() != null ? vendor.getDescription() : "New vendor");
+        vendor.setCuisine(vendor.getCuisine() != null ? vendor.getCuisine() : "Street Food");
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> location = (Map<String, Object>) payload.get("location");
+        if (location != null) {
+            Object lat = location.get("latitude");
+            Object lng = location.get("longitude");
+            if (lat instanceof Number) {
+                vendor.setLatitude(((Number) lat).doubleValue());
+            }
+            if (lng instanceof Number) {
+                vendor.setLongitude(((Number) lng).doubleValue());
+            }
+        }
+
+        vendorService.saveVendor(vendor);
+    }
+
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody Map<String, Object> payload) {
         try {
 
-            String email = (String) payload.get("email");
+            String email = payload.get("email") != null ? payload.get("email").toString().trim().toLowerCase() : null;
             String password = (String) payload.get("password");
             String displayName = (String) payload.get("displayName");
             String phoneNumber = (String) payload.get("phoneNumber");
@@ -159,62 +188,53 @@ public class AuthController {
                 return ResponseEntity.badRequest().body(Map.of("error", "Email and password are required"));
             }
 
-            if (userService.getUserByEmail(email).isPresent()) {
+            Optional<User> existingUserOpt = userService.getUserByEmail(email);
+            User savedUser;
 
-                return ResponseEntity.status(409).body(Map.of("error", "User already exists"));
-            }
-
-            // Hash password with BCrypt
-            String passwordHash = passwordEncoder.encode(password);
-
-            User user = new User();
-            user.setEmail(email);
-            user.setPasswordHash(passwordHash);
-            user.setDisplayName(displayName);
-            user.setPhoneNumber(phoneNumber);
-            user.setRole(User.Role.valueOf(roleStr.toUpperCase()));
-            user.setEmailVerified(false);
-            user.setTwoFactorEnabled(false);
-
-            // Generate firebase_uid if not provided
-            String firebaseUid = (String) payload.get("firebaseUid");
-            if (firebaseUid == null || firebaseUid.isEmpty()) {
-                firebaseUid = java.util.UUID.randomUUID().toString();
-            }
-            user.setFirebaseUid(firebaseUid);
-
-            User savedUser = userService.saveUser(user);
-
-            // Create vendor profile if role is VENDOR
-            if (user.getRole() == User.Role.VENDOR) {
-
-                Vendor vendor = new Vendor();
-                vendor.setOwner(savedUser);
-                vendor.setName((String) payload.getOrDefault("businessName", displayName + "'s Stall"));
-                vendor.setPhone(phoneNumber);
-                vendor.setDescription("New vendor");
-                vendor.setCuisine("Street Food");
-
-                // Handle location if present
-                @SuppressWarnings("unchecked")
-                Map<String, Object> location = (Map<String, Object>) payload.get("location");
-                if (location != null) {
-                    Object lat = location.get("latitude");
-                    Object lng = location.get("longitude");
-                    if (lat instanceof Number)
-                        vendor.setLatitude(((Number) lat).doubleValue());
-                    if (lng instanceof Number)
-                        vendor.setLongitude(((Number) lng).doubleValue());
+            if (existingUserOpt.isPresent()) {
+                User existingUser = existingUserOpt.get();
+                if (existingUser.getEmailVerified()) {
+                    return ResponseEntity.status(409).body(Map.of("error", "User already exists"));
                 }
 
-                vendorService.saveVendor(vendor);
+                existingUser.setPasswordHash(passwordEncoder.encode(password));
+                existingUser.setDisplayName(displayName);
+                existingUser.setPhoneNumber(phoneNumber);
+                existingUser.setRole(User.Role.valueOf(roleStr.toUpperCase()));
+                existingUser.setActive(true);
+                existingUser.setEmailVerified(false);
+                existingUser.setTwoFactorEnabled(false);
+                clearEmailVerification(existingUser);
+                savedUser = userService.saveUser(existingUser);
+                upsertPendingVendorProfile(savedUser, payload, displayName, phoneNumber);
+            } else {
+                // Hash password with BCrypt
+                String passwordHash = passwordEncoder.encode(password);
 
+                User user = new User();
+                user.setEmail(email);
+                user.setPasswordHash(passwordHash);
+                user.setDisplayName(displayName);
+                user.setPhoneNumber(phoneNumber);
+                user.setRole(User.Role.valueOf(roleStr.toUpperCase()));
+                user.setEmailVerified(false);
+                user.setTwoFactorEnabled(false);
+
+                // Generate firebase_uid if not provided
+                String firebaseUid = (String) payload.get("firebaseUid");
+                if (firebaseUid == null || firebaseUid.isEmpty()) {
+                    firebaseUid = java.util.UUID.randomUUID().toString();
+                }
+                user.setFirebaseUid(firebaseUid);
+
+                savedUser = userService.saveUser(user);
+                upsertPendingVendorProfile(savedUser, payload, displayName, phoneNumber);
             }
 
             boolean emailSent = prepareAndSendEmailVerification(savedUser);
             if (!emailSent) {
                 return ResponseEntity.status(503).body(Map.of(
-                        "error", "Email verification is unavailable because email delivery is not configured"));
+                        "error", "Email verification is unavailable right now. Try again in a moment or continue with this email later."));
             }
 
             return ResponseEntity.ok(Map.of(
@@ -232,7 +252,7 @@ public class AuthController {
     public ResponseEntity<?> login(@RequestBody Map<String, Object> payload, HttpServletResponse response) {
         try {
 
-            String email = (String) payload.get("email");
+            String email = payload.get("email") != null ? payload.get("email").toString().trim().toLowerCase() : null;
             String password = (String) payload.get("password");
 
             if (email == null || password == null) {
