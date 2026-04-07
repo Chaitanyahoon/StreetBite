@@ -311,6 +311,7 @@ export default function SignUpPage() {
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value.toLowerCase() })}
                     required
+                    autoComplete="username"
                     className="w-full px-4 py-4 border-4 border-black rounded-xl text-lg font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400 bg-gray-50 transition-all placeholder:text-gray-300 lowercase"
                   />
                 </div>
