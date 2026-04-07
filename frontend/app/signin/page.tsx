@@ -24,6 +24,7 @@ function SignInContent() {
   const [showForgotPassword, setShowForgotPassword] = useState(false)
   const [resetEmail, setResetEmail] = useState('')
   const [resetStatus, setResetStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
+  const [resetError, setResetError] = useState<string | null>(null)
 
   const performLogin = async (emailInput: string, passwordInput: string) => {
     setIsLoading(true)
@@ -61,11 +62,13 @@ function SignInContent() {
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault()
     setResetStatus('sending')
+    setResetError(null)
     try {
       await authApi.forgotPassword(resetEmail)
       setResetStatus('sent')
-    } catch (err) {
+    } catch (err: any) {
       console.error('Forgot password error:', err)
+      setResetError(err?.response?.data?.error || 'Failed to send. Try again!')
       setResetStatus('error')
     }
   }
@@ -167,6 +170,7 @@ function SignInContent() {
                       setShowForgotPassword(false)
                       setResetStatus('idle')
                       setResetEmail('')
+                      setResetError(null)
                     }}
                   >
                     BACK TO LOGIN
@@ -177,7 +181,7 @@ function SignInContent() {
                   {resetStatus === 'error' && (
                     <div className="bg-red-100 border-4 border-black text-black px-4 py-3 rounded-xl font-bold flex items-center gap-2 mb-4">
                       <div className="w-3 h-3 bg-red-500 rounded-full border border-black" />
-                      Failed to send. Try again!
+                      {resetError || 'Failed to send. Try again!'}
                     </div>
                   )}
 
@@ -206,7 +210,10 @@ function SignInContent() {
 
                   <button
                     type="button"
-                    onClick={() => setShowForgotPassword(false)}
+                    onClick={() => {
+                      setShowForgotPassword(false)
+                      setResetError(null)
+                    }}
                     className="w-full mt-4 text-sm font-bold text-gray-500 hover:text-black hover:underline transition-colors uppercase tracking-wide"
                   >
                     Cancel

@@ -34,6 +34,21 @@ public class EmailService {
     @Value("${spring.mail.host:}")
     private String mailHost;
 
+    @Value("${EMAILJS_SERVICE_ID:}")
+    private String emailJsServiceId;
+
+    @Value("${EMAILJS_PUBLIC_KEY:}")
+    private String emailJsPublicKey;
+
+    @Value("${EMAILJS_PRIVATE_KEY:}")
+    private String emailJsPrivateKey;
+
+    @Value("${EMAILJS_TEMPLATE_ID_AUTH:}")
+    private String emailJsAuthTemplateId;
+
+    @Value("${EMAILJS_TEMPLATE_ID_PASSWORD_RESET:}")
+    private String emailJsPasswordResetTemplateId;
+
     @Value("${RESEND_API_KEY:}")
     private String resendApiKey;
 
@@ -62,11 +77,71 @@ public class EmailService {
         return resendApiKey != null && !resendApiKey.trim().isBlank();
     }
 
+    private boolean canSendWithEmailJs() {
+        return emailJsServiceId != null
+                && !emailJsServiceId.trim().isBlank()
+                && emailJsPublicKey != null
+                && !emailJsPublicKey.trim().isBlank();
+    }
+
     private boolean sendEmail(String to, String subject, String htmlContent, String label) {
+        if (canSendWithEmailJs()) {
+            String templateId = label.toLowerCase().contains("password reset")
+                    ? emailJsPasswordResetTemplateId
+                    : emailJsAuthTemplateId;
+            if (templateId != null && !templateId.trim().isBlank()) {
+                return sendWithEmailJs(to, subject, htmlContent, templateId, label);
+            }
+        }
         if (canSendWithResend()) {
             return sendWithResend(to, subject, htmlContent, label);
         }
         return sendWithSmtp(to, subject, htmlContent, label);
+    }
+
+    private boolean sendWithEmailJs(String to, String subject, String htmlContent, String templateId, String label) {
+        try {
+            java.util.Map<String, Object> payload = new java.util.HashMap<>();
+            payload.put("service_id", emailJsServiceId.trim());
+            payload.put("template_id", templateId.trim());
+            payload.put("user_id", emailJsPublicKey.trim());
+
+            if (emailJsPrivateKey != null && !emailJsPrivateKey.trim().isBlank()) {
+                payload.put("accessToken", emailJsPrivateKey.trim());
+            }
+
+            payload.put("template_params", Map.of(
+                    "to_email", to,
+                    "to_name", to,
+                    "subject", subject,
+                    "message", htmlContent,
+                    "html_message", htmlContent,
+                    "from_name", "StreetBite",
+                    "reply_to", fromEmail
+            ));
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://api.emailjs.com/api/v1.0/email/send"))
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(payload)))
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() >= 200 && response.statusCode() < 300) {
+                System.out.println(label + " sent successfully via EmailJS to " + to);
+                setLastErrorMessage("OK");
+                return true;
+            }
+
+            setLastErrorMessage("EmailJS API error " + response.statusCode() + ": " + response.body());
+            System.err.println("Failed to send " + label + " via EmailJS to " + to + ": " + response.body());
+            return false;
+        } catch (Exception e) {
+            setLastErrorMessage(e.getClass().getSimpleName() + ": " + e.getMessage());
+            System.err.println("Failed to send " + label + " via EmailJS to " + to + ": " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
     }
 
     private boolean sendWithResend(String to, String subject, String htmlContent, String label) {
