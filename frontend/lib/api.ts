@@ -94,7 +94,6 @@ export interface AuthResponse {
 
 export interface ForgotPasswordResponse {
   message?: string
-  resetLink?: string
   email?: string
 }
 

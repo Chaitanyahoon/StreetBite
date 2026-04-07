@@ -7,7 +7,6 @@ import { Logo } from '@/components/logo'
 import { Button } from '@/components/ui/button'
 import { Mail, Lock, ArrowLeft, Eye, EyeOff } from 'lucide-react'
 import { authApi } from '@/lib/api'
-import emailjs from '@emailjs/browser'
 import { useAuth } from '@/context/AuthContext'
 import { motion } from 'framer-motion'
 
@@ -69,22 +68,7 @@ function SignInContent() {
     e.preventDefault()
     setResetStatus('sending')
     try {
-      // Get reset link from backend
-      const response = await authApi.forgotPassword(resetEmail)
-
-      // If we got a reset link, send email via EmailJS
-      if (response.resetLink) {
-        await emailjs.send(
-          'service_midq5w9',  // Service ID
-          'template_9kjapde', // Template ID
-          {
-            to_email: resetEmail,      // EmailJS built-in recipient param
-            reset_link: response.resetLink,
-          },
-          'Eg29JibQYRJQr591a' // Public Key
-        )
-      }
-
+      await authApi.forgotPassword(resetEmail)
       setResetStatus('sent')
     } catch (err) {
       console.error('Forgot password error:', err)

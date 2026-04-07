@@ -422,8 +422,7 @@ public class AuthController {
         if (userOpt.isEmpty()) {
             // Don't reveal that user doesn't exist - return same response
             return ResponseEntity.ok(Map.of(
-                    "message", "If an account exists, a reset link has been sent.",
-                    "resetLink", "" // Empty link for non-existent users
+                    "message", "If an account exists, a reset link has been sent."
             ));
         }
 
@@ -433,19 +432,14 @@ public class AuthController {
         user.setResetPasswordTokenExpiry(java.time.LocalDateTime.now().plusMinutes(15));
         userService.saveUser(user);
 
-        // Build reset link - frontend will send email via EmailJS
-        String frontendUrl = System.getenv("FRONTEND_URL") != null
-                ? System.getenv("FRONTEND_URL")
-                : "http://localhost:3000";
-        String resetLink = frontendUrl + "/reset-password?token=" + token;
-
-        // Log for debugging
-        System.out.println("Password reset link generated for " + email + ": " + resetLink);
+        boolean emailSent = emailService.sendPasswordResetEmail(email, token);
+        if (!emailSent) {
+            return ResponseEntity.status(503).body(Map.of(
+                    "error", "Password reset email is unavailable because email delivery is not configured"));
+        }
 
         return ResponseEntity.ok(Map.of(
-                "message", "If an account exists, a reset link has been sent.",
-                "resetLink", resetLink,
-                "email", email));
+                "message", "If an account exists, a reset link has been sent."));
     }
 
     /**

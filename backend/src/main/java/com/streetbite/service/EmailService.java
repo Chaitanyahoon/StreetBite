@@ -113,7 +113,7 @@ public class EmailService {
         }
     }
 
-    public void sendPasswordResetEmail(String to, String token) {
+    public boolean sendPasswordResetEmail(String to, String token) {
         String resetLink = frontendUrl + "/reset-password?token=" + token;
 
         // ALWAYS log the link so it can be retrieved from Render logs
@@ -123,9 +123,9 @@ public class EmailService {
         System.out.println("==================================================");
 
         // If mail sender is not configured, just log and return
-        if (mailSender == null) {
+        if (!canSendEmail()) {
             System.err.println("JavaMailSender not configured - email not sent. Check mail properties.");
-            return;
+            return false;
         }
 
         try {
@@ -158,11 +158,12 @@ public class EmailService {
             mailSender.send(message);
 
             System.out.println("Password reset email sent successfully to " + to);
+            return true;
         } catch (Exception e) {
             // Catch ALL exceptions - don't let email failure crash the request
             System.err.println("Failed to send email to " + to + ": " + e.getMessage());
             e.printStackTrace();
-            // Don't rethrow - the reset link is in the logs anyway
+            return false;
         }
     }
 }
