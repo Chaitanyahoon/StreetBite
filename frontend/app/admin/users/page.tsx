@@ -94,7 +94,10 @@ export default function UserManagementPage() {
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-4">
-                        {filteredUsers.map((user) => (
+                        {filteredUsers.map((user) => {
+                            const isActive = user.active ?? true
+
+                            return (
                             <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors">
                                 <div className="flex items-center gap-4">
                                     <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
@@ -114,7 +117,7 @@ export default function UserManagementPage() {
                                                 }`}>
                                                 {user.role}
                                             </span>
-                                            {!user.active && (
+                                            {!isActive && (
                                                 <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 flex items-center gap-1">
                                                     <ShieldAlert className="w-3 h-3" /> Banned
                                                 </span>
@@ -127,23 +130,24 @@ export default function UserManagementPage() {
                                     <div className="text-right mr-4 hidden md:block">
                                         <p className="text-sm font-medium">Joined</p>
                                         <p className="text-xs text-muted-foreground">
-                                            {new Date(user.createdAt).toLocaleDateString()}
+                                            {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Unknown'}
                                         </p>
                                     </div>
 
                                     {user.role !== 'ADMIN' && (
                                         <Button
-                                            variant={user.active ? "outline" : "destructive"}
+                                            variant={isActive ? "outline" : "destructive"}
                                             size="sm"
-                                            onClick={() => handleStatusToggle(user.id, user.active)}
-                                            className={user.active ? "text-red-600 hover:text-red-700 hover:bg-red-50" : ""}
+                                            onClick={() => handleStatusToggle(user.id, isActive)}
+                                            className={isActive ? "text-red-600 hover:text-red-700 hover:bg-red-50" : ""}
                                         >
-                                            {user.active ? 'Ban User' : 'Unban User'}
+                                            {isActive ? 'Ban User' : 'Unban User'}
                                         </Button>
                                     )}
                                 </div>
                             </div>
-                        ))}
+                            )
+                        })}
                     </div>
                 </CardContent>
             </Card>
