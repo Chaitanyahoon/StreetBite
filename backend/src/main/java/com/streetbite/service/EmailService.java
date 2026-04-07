@@ -1,12 +1,15 @@
 package com.streetbite.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.HashMap;
 import java.util.Map;
 
 @Service
@@ -37,6 +40,15 @@ public class EmailService {
     @Value("${EMAILJS_TEMPLATE_ID_PASSWORD_RESET:}")
     private String emailJsPasswordResetTemplateId;
 
+    @PostConstruct
+    void logEmailJsConfig() {
+        System.out.println("EmailJS config: service=" + sanitize(emailJsServiceId)
+                + ", authTemplate=" + sanitize(emailJsAuthTemplateId)
+                + ", resetTemplate=" + sanitize(emailJsPasswordResetTemplateId)
+                + ", publicKeyPresent=" + !sanitize(emailJsPublicKey).isBlank()
+                + ", privateKeyPresent=" + !sanitize(emailJsPrivateKey).isBlank());
+    }
+
     public boolean canSendEmail() {
         return canSendWithEmailJs();
     }
@@ -56,18 +68,28 @@ public class EmailService {
     }
 
     private boolean canSendWithEmailJs() {
-        return emailJsServiceId != null
-                && !emailJsServiceId.trim().isBlank()
-                && emailJsPublicKey != null
-                && !emailJsPublicKey.trim().isBlank();
+        return !sanitize(emailJsServiceId).isBlank() && !sanitize(emailJsPublicKey).isBlank();
+    }
+
+    private String sanitize(String value) {
+        if (value == null) {
+            return "";
+        }
+
+        String normalized = value.trim();
+        if ((normalized.startsWith("\"") && normalized.endsWith("\""))
+                || (normalized.startsWith("'") && normalized.endsWith("'"))) {
+            normalized = normalized.substring(1, normalized.length() - 1).trim();
+        }
+        return normalized;
     }
 
     private boolean sendEmail(String to, String subject, String htmlContent, String label) {
         if (canSendWithEmailJs()) {
             String templateId = label.toLowerCase().contains("password reset")
-                    ? emailJsPasswordResetTemplateId
-                    : emailJsAuthTemplateId;
-            if (templateId != null && !templateId.trim().isBlank()) {
+                    ? sanitize(emailJsPasswordResetTemplateId)
+                    : sanitize(emailJsAuthTemplateId);
+            if (!templateId.isBlank()) {
                 return sendWithEmailJs(to, subject, htmlContent, templateId, label);
             }
         }
@@ -77,36 +99,21 @@ public class EmailService {
 
     private boolean sendWithEmailJs(String to, String subject, String htmlContent, String templateId, String label) {
         try {
-            java.util.Map<String, Object> payload = new java.util.HashMap<>();
-            payload.put("service_id", emailJsServiceId.trim());
-            payload.put("template_id", templateId.trim());
-            payload.put("user_id", emailJsPublicKey.trim());
-
-            if (emailJsPrivateKey != null && !emailJsPrivateKey.trim().isBlank()) {
-                payload.put("accessToken", emailJsPrivateKey.trim());
-            }
-
-            payload.put("template_params", Map.of(
-                    "to_email", to,
-                    "to_name", to,
-                    "subject", subject,
-                    "message", htmlContent,
-                    "html_message", htmlContent,
-                    "from_name", "StreetBite",
-                    "reply_to", fromEmail
-            ));
-
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("https://api.emailjs.com/api/v1.0/email/send"))
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(payload)))
-                    .build();
-
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = sendWithEmailJsAttempt(to, subject, htmlContent, templateId, true);
             if (response.statusCode() >= 200 && response.statusCode() < 300) {
                 System.out.println(label + " sent successfully via EmailJS to " + to);
                 setLastErrorMessage("OK");
                 return true;
+            }
+
+            if (shouldRetryWithoutPrivateKey(response)) {
+                System.out.println("Retrying " + label + " via EmailJS without private key");
+                response = sendWithEmailJsAttempt(to, subject, htmlContent, templateId, false);
+                if (response.statusCode() >= 200 && response.statusCode() < 300) {
+                    System.out.println(label + " sent successfully via EmailJS retry to " + to);
+                    setLastErrorMessage("OK");
+                    return true;
+                }
             }
 
             setLastErrorMessage("EmailJS API error " + response.statusCode() + ": " + response.body());
@@ -118,6 +125,53 @@ public class EmailService {
             e.printStackTrace();
             return false;
         }
+    }
+
+    private HttpResponse<String> sendWithEmailJsAttempt(
+            String to,
+            String subject,
+            String htmlContent,
+            String templateId,
+            boolean includePrivateKey) throws Exception {
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("service_id", sanitize(emailJsServiceId));
+        payload.put("template_id", sanitize(templateId));
+        payload.put("user_id", sanitize(emailJsPublicKey));
+
+        String privateKey = sanitize(emailJsPrivateKey);
+        if (includePrivateKey && !privateKey.isBlank()) {
+            payload.put("accessToken", privateKey);
+        }
+
+        payload.put("template_params", Map.of(
+                "to_email", to,
+                "to_name", to,
+                "subject", subject,
+                "message", htmlContent,
+                "html_message", htmlContent,
+                "from_name", "StreetBite",
+                "reply_to", sanitize(fromEmail)
+        ));
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("https://api.emailjs.com/api/v1.0/email/send"))
+                .header("Content-Type", "application/json")
+                .header("Accept", "text/plain, application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(payload)))
+                .build();
+
+        return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+    }
+
+    private boolean shouldRetryWithoutPrivateKey(HttpResponse<String> response) {
+        String privateKey = sanitize(emailJsPrivateKey);
+        if (privateKey.isBlank()) {
+            return false;
+        }
+
+        int status = response.statusCode();
+        String body = response.body() != null ? response.body().toLowerCase() : "";
+        return status == 401 || status == 403 || status == 404 || body.contains("account not found");
     }
 
     public boolean sendVerificationCodeEmail(String to, String code) {
