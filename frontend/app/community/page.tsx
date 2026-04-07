@@ -5,10 +5,12 @@ import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
-import { MessageSquare, Award, Gamepad2, Camera, CalendarDays, TrendingUp, Heart, Send, X, ThumbsUp, Search, Sparkles, Flame, MapPin, ShieldCheck, Star } from 'lucide-react'
+import { MessageSquare, Award, Gamepad2, Camera, CalendarDays, Heart, Send, X, Search, Flame, MapPin, ShieldCheck, Star, Loader2 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { toast } from 'sonner'
 import { useAuth } from '@/context/AuthContext'
 
@@ -17,7 +19,6 @@ const ZodiacCard = dynamic(() => import('@/components/ZodiacCard').then(m => m.Z
 const DailyPoll = dynamic(() => import('@/components/DailyPoll').then(m => m.DailyPoll), { ssr: false, loading: () => <WidgetSkeleton /> })
 const VendorBattle = dynamic(() => import('@/components/VendorBattle').then(m => m.VendorBattle), { ssr: false, loading: () => <WidgetSkeleton /> })
 const StreakTracker = dynamic(() => import('@/components/StreakTracker').then(m => m.StreakTracker), { ssr: false, loading: () => <WidgetSkeleton /> })
-const FoodBingo = dynamic(() => import('@/components/FoodBingo').then(m => m.FoodBingo), { ssr: false, loading: () => <WidgetSkeleton /> })
 const PhotoWall = dynamic(() => import('@/components/PhotoWall').then(m => m.PhotoWall), { ssr: false, loading: () => <WidgetSkeleton /> })
 const EventsCalendar = dynamic(() => import('@/components/EventsCalendar').then(m => m.EventsCalendar), { ssr: false, loading: () => <WidgetSkeleton /> })
 const Leaderboard = dynamic(() => import('@/components/Leaderboard').then(m => m.Leaderboard), { ssr: false, loading: () => <WidgetSkeleton /> })
@@ -33,14 +34,6 @@ function WidgetSkeleton({ h = 'h-48' }: { h?: string }) {
     )
 }
 
-const VENDORS = [
-    { name: "Raghu's Vada Pav", location: "Mumbai", rating: "4.8★" },
-    { name: "Sharma Ji's Chaat", location: "Delhi", rating: "4.9★" },
-    { name: "Mohan's Misal", location: "Pune", rating: "4.7★" },
-    { name: "Lakshmi's Dosa", location: "Bangalore", rating: "4.6★" },
-    { name: "Arjun's Momos", location: "Kolkata", rating: "4.8★" }
-];
-
 import { useGamification } from '@/context/GamificationContext'
 import { hotTopicApi, vendorApi, announcementApi } from '@/lib/api';
 import { BreadcrumbListSchema } from '@/components/seo/breadcrumb-schema'
@@ -54,11 +47,20 @@ export default function CommunityPage() {
     const [vendor, setVendor] = useState<any>(null);
     const [discussions, setDiscussions] = useState<any[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
+    const [topicSort, setTopicSort] = useState<'newest' | 'most_liked' | 'most_active'>('newest');
     const [activeTab, setActiveTab] = useState('games');
     const [selectedDiscussion, setSelectedDiscussion] = useState<any | null>(null);
     const [newComment, setNewComment] = useState('');
     const [hasLiked, setHasLiked] = useState(false);
     const [hotAnnouncements, setHotAnnouncements] = useState<any[]>([]);
+    const [activeNowCount, setActiveNowCount] = useState(0);
+    const [isTopicDialogOpen, setIsTopicDialogOpen] = useState(false);
+    const [isSubmittingTopic, setIsSubmittingTopic] = useState(false);
+    const [topicForm, setTopicForm] = useState({
+        title: '',
+        content: '',
+        imageUrl: ''
+    });
 
     useEffect(() => {
         fetchRandomVendor();
@@ -70,6 +72,16 @@ export default function CommunityPage() {
         try {
             const data = await hotTopicApi.getAllActive();
             setDiscussions(data);
+            const twentyFourHoursAgo = Date.now() - 24 * 60 * 60 * 1000;
+            const activeCount = data.filter((topic: any) => {
+                const createdAt = topic.createdAt ? new Date(topic.createdAt).getTime() : 0;
+                const recentComment = topic.comments?.some((c: any) => {
+                    const created = c.createdAt ? new Date(c.createdAt).getTime() : 0;
+                    return created >= twentyFourHoursAgo;
+                });
+                return createdAt >= twentyFourHoursAgo || recentComment;
+            }).length;
+            setActiveNowCount(activeCount);
         } catch (error) {
             console.error('Failed to fetch hot topics:', error);
             // toast.error('Failed to load hot topics');
@@ -214,6 +226,57 @@ export default function CommunityPage() {
         router.push(`/vendors/${target}`);
     };
 
+    const openTopicDialog = () => {
+        if (!authIsLoggedIn) {
+            toast('Please sign in to start a topic', {
+                description: 'Community topics are tied to your account',
+            });
+            setTimeout(() => window.location.href = '/signin', 1500);
+            return;
+        }
+        setIsTopicDialogOpen(true);
+    };
+
+    const handleSubmitTopic = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!authIsLoggedIn) {
+            toast('Please sign in to start a topic');
+            return;
+        }
+
+        try {
+            setIsSubmittingTopic(true);
+            await hotTopicApi.createCommunity({
+                title: topicForm.title.trim(),
+                content: topicForm.content.trim(),
+                imageUrl: topicForm.imageUrl.trim() || undefined
+            });
+            setIsTopicDialogOpen(false);
+            setTopicForm({ title: '', content: '', imageUrl: '' });
+            toast.success('Topic submitted for review', {
+                description: 'Our team will approve it shortly.',
+            });
+        } catch (error: any) {
+            const status = error?.response?.status;
+            const errorMsg = error?.response?.data?.error || 'Failed to submit topic';
+            if (status === 401) {
+                toast.error('Session expired. Please log in again.');
+                await logout();
+                setTimeout(() => window.location.href = '/signin', 1500);
+                return;
+            }
+            if (status === 429) {
+                toast.error('You have reached the daily topic limit', {
+                    description: 'Please try again after some time.',
+                });
+                return;
+            }
+            toast.error(errorMsg);
+        } finally {
+            setIsSubmittingTopic(false);
+        }
+    };
+
     const scrollToSection = (id: string) => {
         const element = document.getElementById(id);
         if (element) {
@@ -232,8 +295,44 @@ export default function CommunityPage() {
         { id: 'events', label: 'Events', icon: CalendarDays }
     ];
 
+    const getLastActivity = (discussion: any) => {
+        const commentDates = discussion.comments?.map((c: any) => new Date(c.createdAt).getTime()).filter((d: number) => !Number.isNaN(d)) || [];
+        const latestComment = commentDates.length ? Math.max(...commentDates) : 0;
+        const createdAt = discussion.createdAt ? new Date(discussion.createdAt).getTime() : 0;
+        const lastActivity = Math.max(latestComment, createdAt);
+        if (!lastActivity) return 'No activity yet';
+        return new Date(lastActivity).toLocaleDateString();
+    };
+
+    const getParticipantCount = (discussion: any) => {
+        const ids = new Set<string>();
+        discussion.likes?.forEach((like: any) => {
+            if (like.user?.id) ids.add(String(like.user.id));
+        });
+        discussion.comments?.forEach((comment: any) => {
+            if (comment.user?.id) ids.add(String(comment.user.id));
+        });
+        return ids.size;
+    };
+
+    const filteredDiscussions = discussions.filter((d) =>
+        d.title.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    const sortedDiscussions = [...filteredDiscussions].sort((a, b) => {
+        if (topicSort === 'most_liked') {
+            return (b.likes?.length || 0) - (a.likes?.length || 0);
+        }
+        if (topicSort === 'most_active') {
+            return (b.comments?.length || 0) - (a.comments?.length || 0);
+        }
+        const aDate = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const bDate = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return bDate - aDate;
+    });
+
     return (
-        <div className="min-h-screen bg-[#FFFBF0] bg-[radial-gradient(#E5E7EB_1px,transparent_1px)] [background-size:24px_24px]">
+        <div className="min-h-screen">
             <BreadcrumbListSchema items={[
                 { name: 'Home', item: 'https://streetbitego.vercel.app' },
                 { name: 'Community', item: 'https://streetbitego.vercel.app/community' }
@@ -248,17 +347,20 @@ export default function CommunityPage() {
                 <div className="absolute -bottom-8 left-20 w-[400px] h-[400px] bg-pink-200/40 rounded-full mix-blend-multiply filter blur-[80px] opacity-70 animate-blob animation-delay-4000"></div>
 
                 <div className="max-w-6xl mx-auto px-6 relative z-10 text-center">
-                    <div className="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-black text-white border-2 border-black text-sm font-black uppercase tracking-wider mb-8 shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] transform -rotate-1">
+                    <div className="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-black text-white border-2 border-black text-sm font-black uppercase tracking-wider mb-4 shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] -rotate-1">
                         <Flame className="w-4 h-4 text-orange-500 animate-pulse" />
-                        500+ Foodies Active Now
+                        {activeNowCount} Hot Topics Active
                     </div>
+                    <p className="text-xs font-black uppercase tracking-[0.22em] text-black/60 mb-6">
+                        Live in the last 24 hours
+                    </p>
 
                     <h1 className="text-6xl md:text-8xl font-black mb-6 tracking-tighter leading-[0.9] text-black">
                         THE <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-red-600 drop-shadow-[4px_4px_0px_rgba(0,0,0,1)]">FOODIE</span> SOCIAL
                     </h1>
 
                     <p className="text-2xl text-black font-bold max-w-2xl mx-auto mb-10 border-b-4 border-black pb-8 inline-block transform rotate-1">
-                        Connect, compete, and discover hidden gems.
+                        Yap about the best bites, then jump into games to earn XP.
                     </p>
 
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
@@ -285,6 +387,23 @@ export default function CommunityPage() {
 
             {/* Main Content */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
+                <div className="mb-10 flex flex-wrap items-center gap-3">
+                    <button
+                        onClick={() => scrollToSection('discussions')}
+                        className="rounded-full border-2 border-black bg-black px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                    >
+                        Jump to Yaps
+                    </button>
+                    <button
+                        onClick={() => scrollToSection('games')}
+                        className="rounded-full border-2 border-black bg-white px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                    >
+                        Jump to Games
+                    </button>
+                    <span className="rounded-full border-2 border-black bg-yellow-300 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                        Both live now
+                    </span>
+                </div>
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
                     {/* Left Column - Main Feed (8 cols) */}
@@ -307,48 +426,6 @@ export default function CommunityPage() {
                             </div>
                         )}
 
-                        {/* Featured Challenges Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <div className="transform hover:-translate-y-2 transition-transform duration-300">
-                                <VendorBattle />
-                            </div>
-                            <div className="transform hover:-translate-y-2 transition-transform duration-300">
-                                {authIsLoggedIn ? (
-                                    <StreakTracker />
-                                ) : (
-                                    <Card className="h-full border-4 border-black rounded-[2rem] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-orange-500 text-white flex flex-col items-center justify-center p-8 text-center relative overflow-hidden group">
-                                        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
-
-                                        <div className="relative z-10 flex flex-col items-center">
-                                            <div className="p-4 bg-black rounded-full mb-6 shadow-xl group-hover:scale-110 transition-transform duration-300 border-4 border-white">
-                                                <Flame className="w-10 h-10 text-orange-500 fill-orange-500 animate-pulse" />
-                                            </div>
-                                            <h3 className="font-black text-3xl mb-2 tracking-tight uppercase">Ignite Your Streak! 🔥</h3>
-                                            <p className="text-black font-bold mb-8 text-lg leading-relaxed max-w-[200px]">
-                                                Log in daily to build your flame and earn spicy rewards.
-                                            </p>
-                                            <Button
-                                                className="bg-white text-black hover:bg-black hover:text-white font-black border-4 border-black text-lg py-6 px-8 rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all transform hover:-translate-y-1"
-                                                onClick={() => window.location.href = '/signin'}
-                                            >
-                                                Start Streak
-                                            </Button>
-                                        </div>
-                                    </Card>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Interactive Map */}
-                        <div className="border-4 border-black rounded-3xl overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-                            <CommunityMap />
-                        </div>
-
-                        {/* Daily Activity */}
-                        <div className="border-4 border-black rounded-3xl overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white">
-                            <ZodiacCard />
-                        </div>
-
                         {/* Hot Discussions */}
                         <Card id="discussions" className="border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white rounded-[2rem] overflow-hidden">
                             <CardHeader className="pb-6 border-b-4 border-black bg-yellow-300 p-6">
@@ -361,6 +438,22 @@ export default function CommunityPage() {
                                             Hot Topics
                                         </h2>
                                     </div>
+                                    {authUser?.role === 'ADMIN' ? (
+                                        <Button
+                                            className="border-4 border-black bg-black text-white font-black uppercase tracking-wider"
+                                            onClick={() => router.push('/admin/hot-topics')}
+                                        >
+                                            Start a topic
+                                        </Button>
+                                    ) : (
+                                        <Button
+                                            variant="outline"
+                                            className="border-4 border-black font-black uppercase tracking-wider"
+                                            onClick={openTopicDialog}
+                                        >
+                                            Start a topic
+                                        </Button>
+                                    )}
                                     <div className="relative w-full sm:w-72">
                                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-black" />
                                         <Input
@@ -372,13 +465,30 @@ export default function CommunityPage() {
                                         />
                                     </div>
                                 </div>
+                                <div className="mt-4 flex flex-wrap items-center gap-3">
+                                    <span className="rounded-full border-2 border-black bg-black px-3 py-1 text-[0.65rem] font-black uppercase tracking-[0.2em] text-yellow-300">
+                                        Sort by
+                                    </span>
+                                    {(['newest', 'most_active', 'most_liked'] as const).map((option) => (
+                                        <button
+                                            key={option}
+                                            type="button"
+                                            onClick={() => setTopicSort(option)}
+                                            className={`rounded-full border-2 px-3 py-1 text-[0.65rem] font-black uppercase tracking-[0.18em] ${
+                                                topicSort === option
+                                                    ? 'border-black bg-yellow-300 text-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]'
+                                                    : 'border-black bg-white text-black/70'
+                                            }`}
+                                        >
+                                            {option === 'newest' ? 'Newest' : option === 'most_active' ? 'Most active' : 'Most liked'}
+                                        </button>
+                                    ))}
+                                </div>
                             </CardHeader>
                             <CardContent className="p-6 bg-white">
                                 <div className="grid grid-cols-1 gap-4">
-                                    {discussions
-                                        .filter(d => d.title.toLowerCase().includes(searchQuery.toLowerCase()))
-                                        .map((discussion, index) => (
-                                            <button
+                                    {sortedDiscussions.map((discussion, index) => (
+                                        <button
                                                 key={discussion.id}
                                                 onClick={() => handleDiscussionClick(discussion)}
                                                 className="group p-5 bg-white hover:bg-orange-50 rounded-2xl border-4 border-black transition-all text-left shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 active:translate-y-0 active:shadow-none animate-slide-up"
@@ -394,7 +504,12 @@ export default function CommunityPage() {
                                                             FEATURED
                                                         </span>
                                                     </div>
-                                                    <span className="text-xs text-gray-500 font-black uppercase tracking-wide">{new Date(discussion.createdAt).toLocaleDateString()}</span>
+                                                    <span className="text-xs text-gray-500 font-black uppercase tracking-wide">
+                                                        Last activity {getLastActivity(discussion)}
+                                                    </span>
+                                                </div>
+                                                <div className="mb-2 text-xs font-black uppercase tracking-widest text-black/60">
+                                                    {discussion.createdByDisplayName ? `By ${discussion.createdByDisplayName}` : 'Community'}
                                                 </div>
                                                 <h3 className="font-black text-xl text-black mb-4 group-hover:text-orange-600 transition-colors line-clamp-2">
                                                     {discussion.title}
@@ -409,6 +524,10 @@ export default function CommunityPage() {
                                                         <Heart className="w-4 h-4" />
                                                         {discussion.likes?.length || 0}
                                                     </span>
+                                                    <span className="flex items-center gap-2">
+                                                        <Star className="w-4 h-4" />
+                                                        {getParticipantCount(discussion)} participants
+                                                    </span>
                                                     <span className="flex items-center gap-2 ml-auto text-black">
                                                         by @StreetBiteTeam
                                                     </span>
@@ -416,7 +535,7 @@ export default function CommunityPage() {
                                             </button>
                                         ))}
                                 </div>
-                                {searchQuery && discussions.filter(d => d.title.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && (
+                                {searchQuery && sortedDiscussions.length === 0 && (
                                     <div className="text-center py-16">
                                         <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-black border-dashed">
                                             <Search className="w-8 h-8 text-gray-400" />
@@ -428,8 +547,67 @@ export default function CommunityPage() {
                             </CardContent>
                         </Card>
 
-                        {/* Content Tabs */}
+                        {/* Games Hub */}
                         <Card id="games" className="border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white rounded-[2rem] overflow-hidden">
+                            <CardHeader className="border-b-4 border-black bg-[#fff3d2] p-6">
+                                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-3 bg-black rounded-xl -rotate-2 shadow-md">
+                                            <Gamepad2 className="w-6 h-6 text-white" />
+                                        </div>
+                                        <div>
+                                            <h2 className="text-3xl font-black uppercase tracking-tight text-black">
+                                                Games & Challenges
+                                            </h2>
+                                            <p className="text-sm font-bold text-black/70">Earn XP, unlock streaks, and compete.</p>
+                                        </div>
+                                    </div>
+                                    <span className="rounded-full border-2 border-black bg-white px-3 py-1 text-xs font-black uppercase tracking-[0.2em] text-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
+                                        Fresh each day
+                                    </span>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="p-6 space-y-8">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div className="transform hover:-translate-y-2 transition-transform duration-300">
+                                        <VendorBattle />
+                                    </div>
+                                    <div className="transform hover:-translate-y-2 transition-transform duration-300">
+                                        {authIsLoggedIn ? (
+                                            <StreakTracker />
+                                        ) : (
+                                            <Card className="h-full border-4 border-black rounded-[2rem] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-orange-500 text-white flex flex-col items-center justify-center p-8 text-center relative overflow-hidden group">
+                                                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+
+                                                <div className="relative z-10 flex flex-col items-center">
+                                                    <div className="p-4 bg-black rounded-full mb-6 shadow-xl group-hover:scale-110 transition-transform duration-300 border-4 border-white">
+                                                        <Flame className="w-10 h-10 text-orange-500 fill-orange-500 animate-pulse" />
+                                                    </div>
+                                                    <h3 className="font-black text-3xl mb-2 tracking-tight uppercase">Ignite Your Streak</h3>
+                                                    <p className="text-black font-bold mb-8 text-lg leading-relaxed max-w-[200px]">
+                                                        Log in daily to build your flame and earn spicy rewards.
+                                                    </p>
+                                                    <Button
+                                                        className="bg-white text-black hover:bg-black hover:text-white font-black border-4 border-black text-lg py-6 px-8 rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all transform hover:-translate-y-1"
+                                                        onClick={() => window.location.href = '/signin'}
+                                                    >
+                                                        Start Streak
+                                                    </Button>
+                                                </div>
+                                            </Card>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="border-4 border-black rounded-3xl overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+                                    <CommunityMap />
+                                </div>
+
+                                <div className="border-4 border-black rounded-3xl overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white">
+                                    <ZodiacCard />
+                                </div>
+                            </CardContent>
+
                             <div className="border-b-4 border-black bg-black p-4">
                                 <div className="flex gap-4 overflow-x-auto no-scrollbar justify-center">
                                     {tabs.map(tab => {
@@ -453,7 +631,28 @@ export default function CommunityPage() {
                             </div>
                             <CardContent className="p-6 min-h-[400px]">
                                 <div key={activeTab} className="animate-fade-in">
-                                    {activeTab === 'games' && <FoodBingo />}
+                                    {activeTab === 'games' && (
+                                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                            <DailyPoll />
+                                            <FoodPersonalityQuiz />
+                                            <Card className="border-4 border-black rounded-2xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] bg-white">
+                                                <CardContent className="p-6 space-y-4">
+                                                    <div className="inline-flex items-center gap-2 rounded-full border-2 border-black bg-yellow-300 px-3 py-1 text-xs font-black uppercase tracking-[0.2em] text-black">
+                                                        Challenge deck
+                                                    </div>
+                                                    <h3 className="text-2xl font-black text-black">Daily XP boosters</h3>
+                                                    <p className="text-sm font-bold text-black/60">
+                                                        Vote in battles, keep streaks alive, and finish a poll to stack XP faster.
+                                                    </p>
+                                                    <div className="flex flex-wrap gap-2">
+                                                        <span className="rounded-full border-2 border-black bg-white px-3 py-1 text-xs font-black uppercase tracking-[0.16em] text-black">Battle</span>
+                                                        <span className="rounded-full border-2 border-black bg-white px-3 py-1 text-xs font-black uppercase tracking-[0.16em] text-black">Streak</span>
+                                                        <span className="rounded-full border-2 border-black bg-white px-3 py-1 text-xs font-black uppercase tracking-[0.16em] text-black">Poll</span>
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+                                        </div>
+                                    )}
                                     {activeTab === 'photos' && <PhotoWall />}
                                     {activeTab === 'events' && <EventsCalendar />}
                                 </div>
@@ -464,7 +663,89 @@ export default function CommunityPage() {
 
                     {/* Right Sidebar - Sticky (4 cols) */}
                     <div className="lg:col-span-4 space-y-8">
-                        <div className="sticky top-24 space-y-8">
+                        <details className="lg:hidden border-4 border-black rounded-3xl overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white">
+                            <summary className="cursor-pointer list-none px-6 py-4 border-b-4 border-black bg-yellow-200 font-black uppercase tracking-wider">
+                                Community toolbox
+                            </summary>
+                            <div className="p-6 space-y-6">
+                                {authIsLoggedIn ? (
+                                    <>
+                                        <div className="border-4 border-black rounded-3xl overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white">
+                                            <UserStats />
+                                        </div>
+                                        <div className="border-4 border-black rounded-3xl overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white">
+                                            <Leaderboard />
+                                        </div>
+                                    </>
+                                ) : (
+                                    <Card className="border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white p-8 text-center relative overflow-hidden group rounded-[2rem]">
+                                        <div className="absolute top-0 left-0 w-full h-4 bg-gradient-to-r from-orange-400 to-red-500 border-b-4 border-black"></div>
+                                        <div className="w-20 h-20 bg-yellow-100 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:rotate-6 transition-transform duration-300 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                                            <Award className="w-10 h-10 text-black" />
+                                        </div>
+                                        <h3 className="font-black text-2xl mb-2 text-black leading-none">JOIN THE <br /> HALL OF FAME</h3>
+                                        <p className="text-gray-600 mb-6 text-sm font-bold leading-relaxed px-4">
+                                            Compete with top foodies, earn XP, and unlock exclusive badges!
+                                        </p>
+                                        <Button
+                                            className="w-full bg-black text-white hover:bg-orange-500 font-black border-4 border-black shadow-[4px_4px_0px_0px_#9ca3af] hover:shadow-[4px_4px_0px_0px_#000000] rounded-xl h-12 uppercase"
+                                            onClick={() => window.location.href = '/signin'}
+                                        >
+                                            Sign In to Play
+                                        </Button>
+                                    </Card>
+                                )}
+
+                                <Card className="border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-[#000] text-white overflow-hidden relative rounded-[2rem]">
+                                    <div className="absolute top-0 right-0 w-32 h-32 bg-gray-800 rounded-full opacity-50 -mr-16 -mt-16"></div>
+                                    <div className="absolute bottom-0 left-0 w-24 h-24 bg-gray-800 rounded-full opacity-50 -ml-12 -mb-12"></div>
+
+                                    <CardHeader className="pb-4 relative z-10 border-b-2 border-gray-800">
+                                        <CardTitle className="text-lg font-black uppercase tracking-wider flex items-center gap-2 text-yellow-400">
+                                            <Award className="w-5 h-5" />
+                                            Vendor Spotlight
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="relative z-10 p-6">
+                                        <div className="space-y-6">
+                                            <div className="w-full aspect-video bg-white rounded-xl flex items-center justify-center border-4 border-white overflow-hidden relative group">
+                                                {vendor?.displayImageUrl ? (
+                                                    <img
+                                                        src={vendor.displayImageUrl}
+                                                        alt={vendor.name}
+                                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                                    />
+                                                ) : (
+                                                    <>
+                                                        <div className="absolute inset-0 bg-yellow-400 opacity-20 group-hover:opacity-0 transition-opacity"></div>
+                                                        <span className="text-7xl animate-bounce drop-shadow-lg">🍛</span>
+                                                    </>
+                                                )}
+                                            </div>
+                                            <div>
+                                                <h4 className="font-black text-2xl mb-2">{vendor?.name || "Loading..."}</h4>
+                                                <div className="flex items-center gap-3 text-gray-300 text-sm font-bold">
+                                                    <div className="flex items-center gap-1 shrink-0">
+                                                        <MapPin className="w-4 h-4 text-orange-500" />
+                                                        <span className="line-clamp-1">{vendor?.address || "Unknown Location"}</span>
+                                                    </div>
+                                                    <span className="w-1.5 h-1.5 bg-gray-600 rounded-full shrink-0"></span>
+                                                    <span className="text-yellow-400 shrink-0">{vendor?.rating ? vendor.rating.toFixed(1) : "New"}★</span>
+                                                </div>
+                                            </div>
+                                            <Button
+                                                className="w-full font-black bg-white text-black hover:bg-yellow-400 border-none h-12 rounded-xl text-lg uppercase tracking-wide"
+                                                onClick={handleVendorClick}
+                                            >
+                                                View Profile
+                                            </Button>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </div>
+                        </details>
+
+                        <div className="sticky top-24 space-y-8 hidden lg:block">
                             {authIsLoggedIn ? (
                                 <>
                                     <div className="border-4 border-black rounded-3xl overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white">
@@ -492,14 +773,6 @@ export default function CommunityPage() {
                                     </Button>
                                 </Card>
                             )}
-
-                            <div className="border-4 border-black rounded-3xl overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white">
-                                <DailyPoll />
-                            </div>
-
-                            <div className="border-4 border-black rounded-3xl overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white">
-                                <FoodPersonalityQuiz />
-                            </div>
 
                             <Card className="border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-[#000] text-white overflow-hidden relative rounded-[2rem]">
                                 <div className="absolute top-0 right-0 w-32 h-32 bg-gray-800 rounded-full opacity-50 -mr-16 -mt-16"></div>
@@ -553,6 +826,78 @@ export default function CommunityPage() {
                 </div>
             </div>
 
+            <Dialog open={isTopicDialogOpen} onOpenChange={setIsTopicDialogOpen}>
+                <DialogContent className="max-w-xl border-4 border-black rounded-[2rem] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+                    <form onSubmit={handleSubmitTopic} className="space-y-6">
+                        <DialogHeader>
+                            <DialogTitle className="text-2xl font-black uppercase tracking-tight">Start a Topic</DialogTitle>
+                            <DialogDescription className="font-bold text-gray-600">
+                                Topics are reviewed before going live. You can post up to 3 topics every 24 hours.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-5">
+                            <div className="space-y-2">
+                                <label className="text-xs font-black uppercase tracking-widest text-black">Topic Title</label>
+                                <Input
+                                    value={topicForm.title}
+                                    onChange={(e) => setTopicForm({ ...topicForm, title: e.target.value })}
+                                    placeholder="Ask the community your boldest food question"
+                                    className="border-4 border-black rounded-xl h-12 font-bold focus-visible:ring-0 focus-visible:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                                    minLength={8}
+                                    maxLength={140}
+                                    required
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-xs font-black uppercase tracking-widest text-black">Details</label>
+                                <Textarea
+                                    value={topicForm.content}
+                                    onChange={(e) => setTopicForm({ ...topicForm, content: e.target.value })}
+                                    placeholder="Share context, the location, or why this matters."
+                                    className="min-h-[140px] border-4 border-black rounded-xl font-bold focus-visible:ring-0 focus-visible:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                                    minLength={20}
+                                    maxLength={800}
+                                    required
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-xs font-black uppercase tracking-widest text-black">Image URL (Optional)</label>
+                                <Input
+                                    value={topicForm.imageUrl}
+                                    onChange={(e) => setTopicForm({ ...topicForm, imageUrl: e.target.value })}
+                                    placeholder="https://images.unsplash.com/..."
+                                    className="border-4 border-black rounded-xl h-12 font-bold focus-visible:ring-0 focus-visible:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                                />
+                            </div>
+                        </div>
+                        <DialogFooter className="gap-2 sm:gap-0">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => setIsTopicDialogOpen(false)}
+                                className="border-4 border-black rounded-xl font-black uppercase h-12"
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                type="submit"
+                                disabled={isSubmittingTopic}
+                                className="bg-orange-500 hover:bg-black text-white font-black uppercase border-4 border-black h-12 rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none transition-all"
+                            >
+                                {isSubmittingTopic ? (
+                                    <span className="flex items-center gap-2">
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                        Submitting
+                                    </span>
+                                ) : (
+                                    'Submit for Review'
+                                )}
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
+
             {/* Discussion Modal */}
             {selectedDiscussion && (
                 <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setSelectedDiscussion(null)}>
@@ -570,7 +915,9 @@ export default function CommunityPage() {
                                 </div>
                                 <div className="flex-1">
                                     <div className="flex items-center gap-2 mb-2 text-sm font-bold text-black/80">
-                                        <span className="bg-white px-3 py-1 rounded-lg border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">@StreetBiteTeam</span>
+                                        <span className="bg-white px-3 py-1 rounded-lg border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                                            @{selectedDiscussion.createdByDisplayName || 'StreetBiteTeam'}
+                                        </span>
                                         <span className="text-white">• {new Date(selectedDiscussion.createdAt).toLocaleDateString()}</span>
                                     </div>
                                     <h3 className="text-3xl font-black leading-tight drop-shadow-md mb-2">{selectedDiscussion.title}</h3>

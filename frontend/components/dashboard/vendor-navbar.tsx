@@ -4,6 +4,7 @@ import { Bell, User, Search, Menu } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 
 interface VendorNavbarProps {
   onMenuClick?: () => void
@@ -38,7 +39,7 @@ export function VendorNavbar({ onMenuClick }: VendorNavbarProps) {
           variant="ghost" 
           size="icon" 
           className="rounded-xl hover:bg-white/60 hover:text-orange-600 transition-colors relative"
-          onClick={() => alert('Notifications feature coming soon!')}
+          onClick={() => toast.info('Notifications feature coming soon')}
         >
           <Bell className="w-5 h-5" />
           <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>

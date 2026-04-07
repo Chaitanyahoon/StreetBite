@@ -3,6 +3,16 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
@@ -10,6 +20,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Copy, Edit2, Plus, Trash2 } from 'lucide-react'
 import { promotionApi } from '@/lib/api'
 import { useAuth } from '@/context/AuthContext'
+import { toast } from 'sonner'
 
 interface Promotion {
   id: string
@@ -101,6 +112,7 @@ export default function Promotions() {
   const [formData, setFormData] = useState<PromotionFormData>(EMPTY_FORM)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingPromo, setEditingPromo] = useState<Promotion | null>(null)
+  const [promotionToDelete, setPromotionToDelete] = useState<Promotion | null>(null)
 
   const activePromotionCount = useMemo(
     () => promotions.filter((promotion) => promotion.active).length,
@@ -153,7 +165,7 @@ export default function Promotions() {
 
   const handleSavePromotion = async () => {
     if (!formData.code || !formData.description || !formData.discount || !vendorId) {
-      alert('Please fill in all required fields')
+      toast.error('Please fill in all required fields')
       return
     }
 
@@ -171,10 +183,11 @@ export default function Promotions() {
       resetDialogState()
       setIsDialogOpen(false)
       setError(null)
+      toast.success(editingPromo ? 'Promotion updated' : 'Promotion created')
     } catch (saveError) {
       const message = saveError instanceof Error ? saveError.message : 'Failed to save promotion'
       setError(message)
-      alert(message)
+      toast.error(message)
     } finally {
       setLoading(false)
     }
@@ -194,26 +207,28 @@ export default function Promotions() {
     setIsDialogOpen(true)
   }
 
-  const handleDeletePromotion = async (id: string) => {
-    if (!vendorId || !confirm('Are you sure you want to delete this promotion?')) return
+  const handleDeletePromotion = async () => {
+    if (!vendorId || !promotionToDelete) return
 
     try {
       setLoading(true)
-      await promotionApi.delete(id)
+      await promotionApi.delete(promotionToDelete.id)
       await refreshPromotions(vendorId)
       setError(null)
+      toast.success('Promotion deleted')
     } catch (deleteError) {
       const message = deleteError instanceof Error ? deleteError.message : 'Failed to delete promotion'
       setError(message)
-      alert(message)
+      toast.error(message)
     } finally {
+      setPromotionToDelete(null)
       setLoading(false)
     }
   }
 
   const copyToClipboard = async (code: string) => {
     await navigator.clipboard.writeText(code)
-    alert(`Copied "${code}" to clipboard!`)
+    toast.success(`Copied "${code}" to clipboard`)
   }
 
   if (loading && promotions.length === 0) {
@@ -419,7 +434,7 @@ export default function Promotions() {
                           variant="ghost"
                           size="sm"
                           className="text-red-600 hover:text-red-700"
-                          onClick={() => handleDeletePromotion(promotion.id)}
+                          onClick={() => setPromotionToDelete(promotion)}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -432,6 +447,33 @@ export default function Promotions() {
           </div>
         </CardContent>
       </Card>
+
+      <AlertDialog
+        open={Boolean(promotionToDelete)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setPromotionToDelete(null)
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete promotion?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently remove {promotionToDelete?.code || 'this promotion'} from your offers list.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeletePromotion}
+              className="bg-destructive text-white hover:bg-destructive/90"
+            >
+              Delete promotion
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

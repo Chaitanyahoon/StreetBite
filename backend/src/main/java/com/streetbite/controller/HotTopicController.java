@@ -39,8 +39,8 @@ public class HotTopicController {
     }
 
     @PutMapping("/{id}")
-    public HotTopic update(@PathVariable Long id, @RequestBody HotTopic hotTopic) {
-        return hotTopicService.updateHotTopic(id, hotTopic);
+    public HotTopic update(@PathVariable Long id, @RequestBody Map<String, Object> updates) {
+        return hotTopicService.updateHotTopic(id, updates);
     }
 
     @DeleteMapping("/{id}")
@@ -87,6 +87,32 @@ public class HotTopicController {
         } catch (Exception e) {
             System.err.println("Failed to toggle like: " + e.getMessage());
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/community")
+    public ResponseEntity<?> createCommunityTopic(@RequestBody Map<String, String> payload,
+            Authentication authentication) {
+        try {
+            User user = authenticatedUserService.findAuthenticatedUser(authentication).orElse(null);
+            if (user == null) {
+                return ResponseEntity.status(401).body(Map.of("error", "Invalid session. Please log in again"));
+            }
+
+            String title = payload.get("title");
+            String content = payload.get("content");
+            String imageUrl = payload.get("imageUrl");
+
+            HotTopic created = hotTopicService.createCommunityHotTopic(user, title, content, imageUrl);
+            return ResponseEntity.ok(Map.of(
+                    "message", "Topic submitted for review",
+                    "topicId", created.getId()));
+        } catch (Exception e) {
+            String message = e.getMessage() != null ? e.getMessage() : "Unable to submit topic";
+            if (message.toLowerCase().contains("limit")) {
+                return ResponseEntity.status(429).body(Map.of("error", message));
+            }
+            return ResponseEntity.badRequest().body(Map.of("error", message));
         }
     }
 }

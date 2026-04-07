@@ -2,6 +2,16 @@
 
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -32,6 +42,7 @@ export default function MenuManagement() {
   const [vendorId, setVendorId] = useState<string | null>(null)
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [itemToDelete, setItemToDelete] = useState<MenuItem | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('All')
@@ -142,19 +153,19 @@ export default function MenuManagement() {
     setIsDialogOpen(true)
   }
 
-  const handleDelete = async (itemId: number) => {
-    // In a real app, use a custom dialog. For now, confirm is okay but we'll wrap it nicely later if needed.
-    // Ideally, use a toast with undo action or a proper alert dialog component.
-    if (!confirm('Are you sure you want to delete this menu item?')) return
+  const handleDelete = async () => {
+    if (!itemToDelete?.id) return
 
     try {
-      await menuApi.delete(itemId)
+      await menuApi.delete(itemToDelete.id)
       toast.success('Item deleted')
       if (vendorId) {
         await loadMenu(vendorId)
       }
     } catch (err: any) {
       toast.error(err.message || 'Failed to delete item')
+    } finally {
+      setItemToDelete(null)
     }
   }
 
@@ -409,12 +420,39 @@ export default function MenuManagement() {
                 item={item}
                 onToggle={handleToggleAvailability}
                 onEdit={handleEdit}
-                onDelete={handleDelete}
+                onDelete={(item) => setItemToDelete(item)}
               />
             ))}
           </div>
         )}
       </div>
+
+      <AlertDialog
+        open={Boolean(itemToDelete)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setItemToDelete(null)
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete menu item?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {itemToDelete?.name || 'This item'} will be removed from your menu and live availability feed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive text-white hover:bg-destructive/90"
+            >
+              Delete item
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
@@ -428,7 +466,7 @@ function MenuItemCard({
   item: MenuItem
   onToggle: (itemId: number, currentAvailability: boolean) => void
   onEdit: (item: MenuItem) => void
-  onDelete: (id: number) => void
+  onDelete: (item: MenuItem) => void
 }) {
   const isAvailable = useLiveMenuItem(item.id, item.isAvailable ?? true)
 
@@ -455,7 +493,7 @@ function MenuItemCard({
             <Edit2 className="w-4 h-4" />
           </button>
           <button
-            onClick={() => item.id && onDelete(item.id)}
+            onClick={() => onDelete(item)}
             className="p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-sm hover:bg-red-50 text-red-600 transition-colors"
           >
             <Trash2 className="w-4 h-4" />

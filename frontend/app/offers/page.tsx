@@ -27,27 +27,27 @@ import { BreadcrumbListSchema } from '@/components/seo/breadcrumb-schema'
 import { CollectionPageSchema } from '@/components/seo/collection-page-schema'
 
 interface Vendor {
-  id: number
+  id: number | string
   slug?: string
   name: string
-  rating: number
+  rating?: number
   displayImageUrl?: string
   address?: string
   cuisine?: string
 }
 
 interface Promotion {
-  id: number
-  vendor: Vendor
+  id: number | string
+  vendor?: Vendor
   title: string
-  description: string
+  description?: string
   discountType: string
   discountValue: number
   promoCode: string
   startDate?: string
-  endDate: string
-  isActive: boolean
-  maxUses: number
+  endDate?: string
+  isActive?: boolean
+  maxUses?: number
   currentUses?: number
   minOrderValue?: number
 }
@@ -174,8 +174,8 @@ function PromotionCard({
   onCopy,
 }: {
   promo: PromotionCardModel
-  copiedCode: number | null
-  onCopy: (code: string, id: number) => void
+  copiedCode: string | number | null
+  onCopy: (code: string, id: string | number) => void
 }) {
   const urgencyStyles =
     promo.urgencyTone === 'critical'
@@ -320,7 +320,7 @@ function PromotionCard({
 
 export default function OffersPage() {
   const { cityName, loading: loadingCity } = useCityName()
-  const [copiedCode, setCopiedCode] = useState<number | null>(null)
+  const [copiedCode, setCopiedCode] = useState<string | number | null>(null)
   const [promotions, setPromotions] = useState<Promotion[]>([])
   const [loading, setLoading] = useState(true)
   const [filterType, setFilterType] = useState<'all' | 'percentage' | 'fixed'>('all')
@@ -407,7 +407,7 @@ export default function OffersPage() {
       } else if (sortBy === 'ending_soon') {
         if (a.expirySortValue !== b.expirySortValue) return a.expirySortValue - b.expirySortValue
       } else if (sortBy === 'newest') {
-        if (b.id !== a.id) return b.id - a.id
+        if (b.id !== a.id) return Number(b.id) - Number(a.id)
       } else {
         if (a.isNearCity !== b.isNearCity) return a.isNearCity ? -1 : 1
         if (a.expirySortValue !== b.expirySortValue) return a.expirySortValue - b.expirySortValue
@@ -417,7 +417,7 @@ export default function OffersPage() {
       if (a.isNearCity !== b.isNearCity) return a.isNearCity ? -1 : 1
       if (a.expirySortValue !== b.expirySortValue) return a.expirySortValue - b.expirySortValue
       if (b.discountValue !== a.discountValue) return b.discountValue - a.discountValue
-      return b.id - a.id
+      return Number(b.id) - Number(a.id)
     })
 
     return items
@@ -444,7 +444,7 @@ export default function OffersPage() {
     (promo) => promo.urgencyTone === 'critical' || promo.urgencyTone === 'warning'
   ).length
 
-  const copyToClipboard = async (code: string, id: number) => {
+  const copyToClipboard = async (code: string, id: string | number) => {
     try {
       await navigator.clipboard.writeText(code)
       setCopiedCode(id)
@@ -468,7 +468,7 @@ export default function OffersPage() {
   )
 
   return (
-    <div className="min-h-screen bg-[#FADFA1] bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px]">
+    <div className="min-h-screen">
       <BreadcrumbListSchema
         items={[
           { name: 'Home', item: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://streetbitego.vercel.app'}` },

@@ -8,14 +8,10 @@ import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { useGamification } from "@/context/GamificationContext";
-import { vendorApi } from "@/lib/api";
+import { vendorApi, type ApiVendor } from "@/lib/api";
 
-interface Vendor {
-    id: number;
+interface Vendor extends Pick<ApiVendor, 'id' | 'name' | 'description' | 'rating' | 'image'> {
     name: string;
-    description?: string;
-    rating?: number;
-    image?: string;
     votes?: number;
 }
 
@@ -100,36 +96,36 @@ export function VendorBattle() {
 
     return (
         <Card className="overflow-hidden border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white relative group h-full flex flex-col rounded-[2rem]">
-            {/* Background Pattern */}
-            <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] opacity-50" />
+            <div className="absolute inset-0 bg-[radial-gradient(#f3f4f6_1px,transparent_1px)] [background-size:18px_18px] opacity-60" />
 
             <CardContent className="p-6 relative z-10 flex flex-col h-full">
-                <div className="flex justify-between items-start mb-6">
+                <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
                     <div className="flex items-center gap-3">
-                        <div className="p-3 bg-black rounded-xl border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] transform -rotate-3">
+                        <div className="p-3 bg-black rounded-xl border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] -rotate-2">
                             <Swords className="w-6 h-6 text-white" />
                         </div>
                         <div>
                             <h3 className="font-black text-2xl tracking-tight text-black uppercase">Food Face-off</h3>
-                            <p className="text-sm text-gray-600 font-bold flex items-center gap-1">
-                                <Sparkles className="w-4 h-4 text-orange-500" /> Vote & Earn XP
+                            <p className="text-xs text-black/60 font-black uppercase tracking-[0.18em] flex items-center gap-2">
+                                <Sparkles className="w-3.5 h-3.5 text-orange-500" />
+                                Vote to earn XP
                             </p>
                         </div>
                     </div>
                     <Button
-                        variant="ghost"
+                        variant="outline"
                         size="sm"
                         onClick={handleSkip}
-                        className="text-black font-bold hover:bg-gray-100 h-10 px-4 rounded-xl border-2 border-transparent hover:border-black transition-all"
+                        className="h-10 px-4 rounded-full border-2 border-black bg-white font-black uppercase tracking-[0.14em] text-xs"
                     >
                         Skip <X className="w-4 h-4 ml-1" />
                     </Button>
                 </div>
 
-                <div className="flex-1 flex items-center justify-between gap-4 relative min-h-[200px]">
+                <div className="flex-1 flex items-center justify-between gap-4 relative min-h-[220px]">
                     {/* VS Badge */}
                     <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-none">
-                        <div className="w-16 h-16 rounded-full bg-black text-white font-black flex items-center justify-center border-4 border-white shadow-[0_0_0_4px_black] text-xl transform rotate-12">
+                        <div className="w-16 h-16 rounded-full bg-black text-white font-black flex items-center justify-center border-4 border-white shadow-[0_0_0_4px_black] text-xl rotate-12">
                             VS
                         </div>
                     </div>
@@ -154,6 +150,11 @@ export function VendorBattle() {
                                     <h3 className="font-black text-lg leading-tight text-black w-full line-clamp-2 min-h-[3rem] flex items-center justify-center uppercase">
                                         {vendor.name}
                                     </h3>
+                                    {!hasVoted && (
+                                        <span className="rounded-full border-2 border-black bg-black px-3 py-1 text-[0.65rem] font-black uppercase tracking-[0.2em] text-white">
+                                            Tap to vote
+                                        </span>
+                                    )}
 
                                     <AnimatePresence>
                                         {hasVoted && (

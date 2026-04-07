@@ -1,6 +1,16 @@
 'use client'
 
 import { Navbar } from '@/components/navbar'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { MapPin, Clock, Star, Phone, Share2, Navigation, ChevronLeft, Utensils, Heart, Send, CreditCard, ShieldCheck, Edit2, Trash2 } from 'lucide-react'
 import { useState, useEffect } from 'react'
@@ -96,6 +106,7 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
     const [editingReviewId, setEditingReviewId] = useState<number | null>(null)
     const [editRating, setEditRating] = useState(5)
     const [editComment, setEditComment] = useState('')
+    const [reviewToDelete, setReviewToDelete] = useState<number | null>(null)
 
     // Directions State
     const [showDirections, setShowDirections] = useState(false)
@@ -233,7 +244,10 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
                 await navigator.share(shareData)
             } else {
                 await navigator.clipboard.writeText(window.location.href)
-                alert('Link copied to clipboard!')
+                toast({
+                    title: 'Link copied',
+                    description: 'Vendor link copied to your clipboard.',
+                })
             }
         } catch (err) {
             console.error('Error sharing:', err)
@@ -271,7 +285,11 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
 
     const handleSubmitReview = async () => {
         if (!resolvedVendorId || !reviewComment.trim()) {
-            alert('Please write a comment for your review')
+            toast({
+                title: 'Comment required',
+                description: 'Please write a comment for your review.',
+                variant: 'destructive',
+            })
             return
         }
 
@@ -303,10 +321,17 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
             setReviewComment('')
             setReviewRating(5)
             setShowReviewForm(false)
-            alert('Review submitted successfully!')
+            toast({
+                title: 'Review submitted',
+                description: 'Your review was posted successfully.',
+            })
         } catch (error) {
             console.error('Error submitting review:', error)
-            alert('Failed to submit review. Please try again.')
+            toast({
+                title: 'Review failed',
+                description: 'Failed to submit review. Please try again.',
+                variant: 'destructive',
+            })
         } finally {
             setSubmittingReview(false)
         }
@@ -348,8 +373,6 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
     }
 
     const handleDeleteReview = async (reviewId: number) => {
-        if (!confirm('Are you sure you want to delete this review?')) return
-
         if (!isLoggedIn || !authUser) {
             toast({
                 title: 'Please sign in',
@@ -376,6 +399,8 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
                 description: error.response?.data?.error || 'Failed to delete review',
                 variant: 'destructive'
             })
+        } finally {
+            setReviewToDelete(null)
         }
     }
 
@@ -987,7 +1012,10 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
                                     }).catch(() => { })
                                 } else {
                                     navigator.clipboard.writeText(shareText)
-                                    alert('Offer details copied to clipboard!')
+                                    toast({
+                                        title: 'Offer copied',
+                                        description: 'Offer details copied to your clipboard.',
+                                    })
                                 }
                             }
 
@@ -1026,7 +1054,10 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
                                                         <button
                                                             onClick={() => {
                                                                 navigator.clipboard.writeText(promo.promoCode)
-                                                                alert('Code copied!')
+                                                                toast({
+                                                                    title: 'Code copied',
+                                                                    description: `${promo.promoCode} copied to your clipboard.`,
+                                                                })
                                                             }}
                                                             className="text-xs text-primary font-bold hover:underline"
                                                         >
@@ -1468,7 +1499,7 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
                                                                         <Edit2 size={16} />
                                                                     </button>
                                                                     <button
-                                                                        onClick={() => handleDeleteReview(review.id)}
+                                                                        onClick={() => setReviewToDelete(review.id)}
                                                                         className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                                                         title="Delete review"
                                                                     >
@@ -1530,6 +1561,37 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
                     )}
                 </div>
             </div>
+
+            <AlertDialog
+                open={reviewToDelete !== null}
+                onOpenChange={(open) => {
+                    if (!open) {
+                        setReviewToDelete(null)
+                    }
+                }}
+            >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Delete review?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This will permanently remove your review from this vendor page.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={() => {
+                                if (reviewToDelete !== null) {
+                                    void handleDeleteReview(reviewToDelete)
+                                }
+                            }}
+                            className="bg-destructive text-white hover:bg-destructive/90"
+                        >
+                            Delete review
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
 
             <Footer />
         </div >

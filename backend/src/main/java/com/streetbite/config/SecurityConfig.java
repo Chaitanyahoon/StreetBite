@@ -84,6 +84,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/reports/**").authenticated()
                         .requestMatchers("/api/hottopics/*/comment").authenticated()
                         .requestMatchers("/api/hottopics/*/like").authenticated()
+                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/hottopics/community").authenticated()
 
                         // Default — require authentication for everything else (admin, writes, etc.)
                         .anyRequest().authenticated()

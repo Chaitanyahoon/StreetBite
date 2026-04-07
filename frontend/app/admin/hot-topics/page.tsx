@@ -2,6 +2,16 @@
 
 import { useState, useEffect } from 'react'
 import { hotTopicApi } from '@/lib/api'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -9,7 +19,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { MessageSquare, Heart, Trash2, Edit, Plus, Eye, EyeOff, Loader2 } from 'lucide-react'
+import { MessageSquare, Heart, Trash2, Edit, Plus, Eye, EyeOff, Loader2, CheckCircle2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface HotTopic {
@@ -18,6 +28,8 @@ interface HotTopic {
   content: string
   imageUrl?: string
   isActive: boolean
+  isApproved: boolean
+  createdByDisplayName?: string
   createdAt: string
   likesCount?: number
   commentsCount?: number
@@ -28,6 +40,7 @@ export default function HotTopicManagement() {
   const [loading, setLoading] = useState(true)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingTopic, setEditingTopic] = useState<HotTopic | null>(null)
+  const [topicToDelete, setTopicToDelete] = useState<HotTopic | null>(null)
   
   // Form State
   const [formData, setFormData] = useState({
@@ -94,24 +107,36 @@ export default function HotTopicManagement() {
     }
   }
 
-  const handleDelete = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this topic? All comments and likes will be lost.')) return
+  const handleDelete = async () => {
+    if (!topicToDelete) return
     try {
-      await hotTopicApi.delete(id)
+      await hotTopicApi.delete(topicToDelete.id)
       toast.success('Topic deleted')
       fetchTopics()
     } catch (err) {
       toast.error('Failed to delete topic')
+    } finally {
+      setTopicToDelete(null)
     }
   }
 
   const toggleStatus = async (topic: HotTopic) => {
     try {
-      await hotTopicApi.update(topic.id, { ...topic, isActive: !topic.isActive })
+      await hotTopicApi.update(topic.id, { isActive: !topic.isActive })
       toast.success(`Topic is now ${!topic.isActive ? 'Visible' : 'Hidden'}`)
       fetchTopics()
     } catch (err) {
       toast.error('Failed to update status')
+    }
+  }
+
+  const approveTopic = async (topic: HotTopic) => {
+    try {
+      await hotTopicApi.update(topic.id, { isApproved: true, isActive: true })
+      toast.success('Topic approved and now visible')
+      fetchTopics()
+    } catch (err) {
+      toast.error('Failed to approve topic')
     }
   }
 
@@ -150,6 +175,7 @@ export default function HotTopicManagement() {
               <TableHeader>
                 <TableRow className="bg-muted/50">
                   <TableHead className="font-bold text-black uppercase text-xs">Topic Name</TableHead>
+                  <TableHead className="font-bold text-black uppercase text-xs">Author</TableHead>
                   <TableHead className="font-bold text-black uppercase text-xs">Created</TableHead>
                   <TableHead className="font-bold text-black uppercase text-xs">Stats</TableHead>
                   <TableHead className="font-bold text-black uppercase text-xs">Status</TableHead>
@@ -164,6 +190,9 @@ export default function HotTopicManagement() {
                         <span className="text-lg font-bold">{topic.title}</span>
                         <span className="text-xs text-muted-foreground line-clamp-1">{topic.content}</span>
                       </div>
+                    </TableCell>
+                    <TableCell className="text-sm font-semibold text-muted-foreground">
+                      {topic.createdByDisplayName || 'StreetBite Team'}
                     </TableCell>
                     <TableCell className="text-muted-foreground text-sm">
                       {new Date(topic.createdAt).toLocaleDateString()}
@@ -181,24 +210,35 @@ export default function HotTopicManagement() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <button 
-                        onClick={() => toggleStatus(topic)}
-                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-black uppercase tracking-wider border-2 transition-all ${
-                          topic.isActive 
-                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' 
-                            : 'bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-200'
-                        }`}
-                      >
-                        {topic.isActive ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
-                        {topic.isActive ? 'Visible' : 'Hidden'}
-                      </button>
+                      {!topic.isApproved ? (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-black uppercase tracking-wider border-2 border-amber-200 bg-amber-50 text-amber-700">
+                          Pending
+                        </span>
+                      ) : (
+                        <button 
+                          onClick={() => toggleStatus(topic)}
+                          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-black uppercase tracking-wider border-2 transition-all ${
+                            topic.isActive 
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' 
+                              : 'bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-200'
+                          }`}
+                        >
+                          {topic.isActive ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+                          {topic.isActive ? 'Visible' : 'Hidden'}
+                        </button>
+                      )}
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
+                        {!topic.isApproved && (
+                          <Button variant="outline" size="icon" onClick={() => approveTopic(topic)} className="hover:bg-emerald-50 hover:text-emerald-600 border-2 rounded-xl">
+                            <CheckCircle2 className="w-4 h-4" />
+                          </Button>
+                        )}
                         <Button variant="outline" size="icon" onClick={() => handleOpenEdit(topic)} className="hover:bg-orange-50 hover:text-orange-600 border-2 rounded-xl">
                           <Edit className="w-4 h-4" />
                         </Button>
-                        <Button variant="outline" size="icon" onClick={() => handleDelete(topic.id)} className="hover:bg-red-50 hover:text-red-600 hover:border-red-600 border-2 rounded-xl">
+                        <Button variant="outline" size="icon" onClick={() => setTopicToDelete(topic)} className="hover:bg-red-50 hover:text-red-600 hover:border-red-600 border-2 rounded-xl">
                           <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>
@@ -265,6 +305,33 @@ export default function HotTopicManagement() {
           </form>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog
+        open={Boolean(topicToDelete)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setTopicToDelete(null)
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete discussion?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently remove "{topicToDelete?.title}" and all of its comments and likes.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive text-white hover:bg-destructive/90"
+            >
+              Delete discussion
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

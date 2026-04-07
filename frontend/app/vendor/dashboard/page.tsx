@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { vendorApi } from '@/lib/api'
+import { vendorApi, type ApiVendor, type VendorStatus } from '@/lib/api'
 import { toast } from 'sonner'
 import Link from 'next/link'
 import { TrendingUp, Settings } from 'lucide-react'
@@ -13,7 +13,7 @@ import { useAuth } from '@/context/AuthContext'
 interface Vendor {
     id: string | number
     name: string
-    status?: 'AVAILABLE' | 'BUSY' | 'UNAVAILABLE'
+    status?: VendorStatus
 }
 
 export default function VendorDashboardPage() {
@@ -45,7 +45,7 @@ export default function VendorDashboardPage() {
 
         const fetchVendor = async () => {
             try {
-                const vendorData: Vendor = await vendorApi.getById(vendorId)
+                const vendorData: ApiVendor = await vendorApi.getById(vendorId)
                 setVendor(vendorData)
             } catch (error) {
                 console.error('Error fetching vendor:', error)

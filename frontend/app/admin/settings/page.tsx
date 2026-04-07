@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { User, Lock, Bell, Shield } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
+import { toast } from 'sonner'
 
 export default function AdminSettingsPage() {
     const { user, refreshUser } = useAuth()
@@ -73,10 +74,10 @@ export default function AdminSettingsPage() {
                                         const { userApi } = await import('@/lib/api')
                                         await userApi.update(adminProfile.id, { displayName: adminProfile.displayName })
                                         await refreshUser()
-                                        alert('Profile updated successfully!')
+                                        toast.success('Profile updated successfully')
                                     } catch (err) {
                                         console.error(err)
-                                        alert('Failed to update profile')
+                                        toast.error('Failed to update profile')
                                     }
                                 }}>Save Changes</Button>
                             </div>
@@ -99,7 +100,7 @@ export default function AdminSettingsPage() {
                                 const confirmPassword = (form.elements.namedItem('confirmPassword') as HTMLInputElement).value
 
                                 if (newPassword !== confirmPassword) {
-                                    alert('Passwords do not match')
+                                    toast.error('Passwords do not match')
                                     return
                                 }
 
@@ -109,11 +110,11 @@ export default function AdminSettingsPage() {
                                     // For now using resetPassword as a proxy if available, or just mocking success if no endpoint
                                     // Note: Real implementation needs a proper change-password endpoint
                                     await authApi.resetPassword({ email: adminProfile.email, newPassword, token: 'admin-override' })
-                                    alert('Password updated successfully!')
+                                    toast.success('Password updated successfully')
                                     form.reset()
                                 } catch (err) {
                                     console.error(err)
-                                    alert('Failed to update password (Backend endpoint might be missing)')
+                                    toast.error('Failed to update password')
                                 }
                             }}>
                                 <div className="space-y-2">

@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { Logo } from '@/components/logo'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, ChevronRight, Sparkles, Eye, EyeOff } from 'lucide-react'
-import { authApi } from '@/lib/api'
+import { authApi, type RegisterRequest } from '@/lib/api'
 import { useUserLocation } from '@/lib/useUserLocation'
 import { useAuth } from '@/context/AuthContext'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -44,7 +44,7 @@ export default function SignUpPage() {
 
     try {
       // Direct backend registration (no Firebase)
-      const registerData = {
+      const registerData: RegisterRequest = {
         email: formData.email,
         password: formData.password,
         displayName: `${formData.firstName} ${formData.lastName}`.trim(),

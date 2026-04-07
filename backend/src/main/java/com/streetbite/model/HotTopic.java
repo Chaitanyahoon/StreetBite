@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "hot_topics")
@@ -24,6 +25,17 @@ public class HotTopic {
 
     @Column(name = "is_active")
     private boolean isActive = true;
+
+    @Column(name = "is_approved")
+    private boolean isApproved = false;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by_id")
+    @JsonIgnore
+    private User createdBy;
+
+    @Column(name = "created_by_display_name")
+    private String createdByDisplayName;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -88,6 +100,30 @@ public class HotTopic {
 
     public void setActive(boolean active) {
         isActive = active;
+    }
+
+    public boolean isApproved() {
+        return isApproved;
+    }
+
+    public void setApproved(boolean approved) {
+        isApproved = approved;
+    }
+
+    public User getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(User createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public String getCreatedByDisplayName() {
+        return createdByDisplayName;
+    }
+
+    public void setCreatedByDisplayName(String createdByDisplayName) {
+        this.createdByDisplayName = createdByDisplayName;
     }
 
     public LocalDateTime getCreatedAt() {

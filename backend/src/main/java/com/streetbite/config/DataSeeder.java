@@ -253,24 +253,32 @@ public class DataSeeder implements CommandLineRunner {
         t1.setTitle("Best Vada Pav in Mumbai? 🌶️");
         t1.setContent("Everyone has a favorite! Is it the one at Juhu, or the small stall near CST? Let's settle this once and for all. What's your go-to spot for the perfect spice level?");
         t1.setActive(true);
+        t1.setApproved(true);
+        t1.setCreatedByDisplayName("StreetBite Team");
         hotTopicRepository.save(t1);
 
         HotTopic t2 = new HotTopic();
         t2.setTitle("Late Night Street Food Safest Spots 🌙");
         t2.setContent("Looking for recommendations for late-night cravings after midnight. Which areas are well-lit and have the best crowd even at 2 AM? Safety first, food second!");
         t2.setActive(true);
+        t2.setApproved(true);
+        t2.setCreatedByDisplayName("StreetBite Team");
         hotTopicRepository.save(t2);
 
         HotTopic t3 = new HotTopic();
         t3.setTitle("Hygiene Check: Your Top 3 'Clean' Vendors 🧼");
         t3.setContent("Street food doesn't have to be 'dirty'! Who are the vendors you've seen following the best hygiene practices? Let's highlight the ones who care about our health.");
         t3.setActive(true);
+        t3.setApproved(true);
+        t3.setCreatedByDisplayName("StreetBite Team");
         hotTopicRepository.save(t3);
 
         HotTopic t4 = new HotTopic();
         t4.setTitle("Hidden Gem Alert: The Momo King of North 🥟");
         t4.setContent("I found a tiny stall in the corner of Sarojini Nagar that serves the thinnest crust momos I've ever had. No name, just a blue cart. Has anyone else tried it?");
         t4.setActive(true);
+        t4.setApproved(true);
+        t4.setCreatedByDisplayName("StreetBite Team");
         hotTopicRepository.save(t4);
     }
 

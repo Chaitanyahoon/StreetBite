@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { TrendingUp, Users, Heart, AlertCircle, ShieldCheck, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { analyticsApi, vendorApi, announcementApi } from '@/lib/api'
+import { toast } from 'sonner'
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState<any>({
@@ -418,9 +419,10 @@ export default function AdminDashboard() {
                     form.reset()
                     const updated = await announcementApi.getAll()
                     setAnnouncements(updated)
+                    toast.success('Announcement posted')
                   } catch (err) {
                     console.error(err)
-                    alert('Failed to post announcement')
+                    toast.error('Failed to post announcement')
                   }
                 }} className="space-y-4">
                   <textarea

@@ -4,6 +4,7 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { Bell, MapPin } from 'lucide-react'
 import { useNotifications } from '@/hooks/use-notifications'
 import { useUserLocation } from '@/lib/useUserLocation'
+import { toast } from 'sonner'
 
 export function NotificationProvider({ children }: { children: ReactNode }) {
   const { requestPermission, isSupported, permission } = useNotifications()
@@ -29,7 +30,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
             onClick={async () => {
               const error = await requestGeolocation()
               if (error === 'Location permission denied') {
-                alert('Location access is blocked. Please enable it in your browser settings to find street food near you.')
+                toast.error('Location access is blocked. Enable it in your browser settings to find street food near you.')
               }
             }}
             className="group relative flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-emerald-400 to-teal-600 text-white shadow-lg shadow-emerald-500/30 transition-all duration-300 hover:scale-110 hover:shadow-emerald-500/50"
@@ -52,7 +53,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
             onClick={async () => {
               const result = await requestPermission()
               if (result === 'denied') {
-                alert('Notifications are blocked. Please enable them in your browser settings to receive updates.')
+                toast.error('Notifications are blocked. Enable them in your browser settings to receive updates.')
               }
             }}
             className="group relative flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-lg shadow-amber-500/30 transition-all duration-300 hover:scale-110 hover:shadow-amber-500/50"

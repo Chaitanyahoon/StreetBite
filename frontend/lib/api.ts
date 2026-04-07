@@ -42,8 +42,9 @@ api.interceptors.response.use((res) => res.data, (error: any) => {
 
 export interface RegisterRequest {
   email: string
+  password: string
   displayName: string
-  role: 'CUSTOMER' | 'VENDOR' | 'ADMIN'
+  role: 'USER' | 'VENDOR' | 'ADMIN'
   businessName?: string
   location?: {
     latitude: number
@@ -51,16 +52,116 @@ export interface RegisterRequest {
   }
 }
 
+export interface LoginRequest {
+  email: string
+  password: string
+}
+
+export type VendorStatus =
+  | 'AVAILABLE'
+  | 'BUSY'
+  | 'UNAVAILABLE'
+  | 'PENDING'
+  | 'APPROVED'
+  | 'REJECTED'
+  | 'SUSPENDED'
+  | 'BANNED'
+
+export interface AuthUser {
+  id: number
+  email: string
+  displayName: string
+  phoneNumber?: string
+  profilePicture?: string
+  role: 'USER' | 'VENDOR' | 'ADMIN' | string
+  vendorId?: number
+  isActive?: boolean
+}
+
+export interface AuthResponse {
+  success?: boolean
+  user: AuthUser
+  message?: string
+}
+
+export interface ForgotPasswordResponse {
+  message?: string
+  resetLink?: string
+  email?: string
+}
+
+export interface ValidateResetTokenResponse {
+  valid: boolean
+  message?: string
+  error?: string
+  remainingSeconds?: number
+}
+
+export interface PasswordResetRequest {
+  token: string
+  newPassword: string
+  email?: string
+}
+
+export interface VendorLocation {
+  latitude: number
+  longitude: number
+}
+
+export interface ApiVendor {
+  id: number | string
+  slug?: string
+  name: string
+  address?: string
+  cuisine?: string
+  rating?: number
+  reviews?: number
+  image?: string
+  displayImageUrl?: string
+  latitude?: number | string
+  longitude?: number | string
+  description?: string
+  phone?: string
+  hours?: string
+  bannerImageUrl?: string
+  status?: VendorStatus
+  tags?: string[]
+  location?: VendorLocation
+  reviewCount?: number
+  averageRating?: number
+  createdAt?: string
+  updatedAt?: string
+}
+
+export interface ApiPromotion {
+  id: number | string
+  promotionId?: number | string
+  vendor?: ApiVendor
+  vendorId?: number | string
+  title: string
+  description?: string
+  discountType: string
+  discountValue: number
+  promoCode: string
+  startDate?: string
+  endDate?: string
+  isActive?: boolean
+  active?: boolean
+  maxUses?: number
+  currentUses?: number
+  minOrderValue?: number
+}
+
 export const authApi = {
-  register: (data: any) => api.post('/auth/register', data) as Promise<any>,
-  login: (data: any) => api.post('/auth/login', data) as Promise<any>,
-  me: () => api.get('/auth/me') as Promise<any>,
-  logout: () => api.post('/auth/logout') as Promise<any>,
-  getUser: (id: string) => api.get(`/auth/user/${id}`) as Promise<any>,
-  getUserByUid: (uid: string) => api.get(`/auth/user/uid/${uid}`) as Promise<any>,
-  forgotPassword: (email: string) => api.post('/auth/forgot-password', { email }) as Promise<any>,
-  validateResetToken: (token: string) => api.get(`/auth/validate-reset-token?token=${token}`) as Promise<any>,
-  resetPassword: (data: any) => api.post('/auth/reset-password', data) as Promise<any>,
+  register: (data: RegisterRequest) => api.post('/auth/register', data) as Promise<AuthResponse>,
+  login: (data: LoginRequest) => api.post('/auth/login', data) as Promise<AuthResponse>,
+  me: () => api.get('/auth/me') as Promise<AuthUser>,
+  logout: () => api.post('/auth/logout') as Promise<{ message?: string }>,
+  getUser: (id: string) => api.get(`/auth/user/${id}`) as Promise<AuthUser>,
+  getUserByUid: (uid: string) => api.get(`/auth/user/uid/${uid}`) as Promise<AuthUser>,
+  forgotPassword: (email: string) => api.post('/auth/forgot-password', { email }) as Promise<ForgotPasswordResponse>,
+  validateResetToken: (token: string) => api.get(`/auth/validate-reset-token?token=${token}`) as Promise<ValidateResetTokenResponse>,
+  resetPassword: (data: PasswordResetRequest) => api.post('/auth/reset-password', data) as Promise<{ message?: string }>,
 };
 
 export const userApi = {
@@ -72,16 +173,16 @@ export const userApi = {
 };
 
 export const vendorApi = {
-  getAll: () => api.get('/vendors') as Promise<any>,
+  getAll: () => api.get('/vendors') as Promise<ApiVendor[]>,
   getAllAdmin: () => api.get('/vendors/admin/all') as Promise<any>,
-  getById: (id: string) => api.get(`/vendors/${id}`) as Promise<any>,
-  getBySlug: (slug: string) => api.get(`/vendors/slug/${slug}`) as Promise<any>,
+  getById: (id: string) => api.get(`/vendors/${id}`) as Promise<ApiVendor>,
+  getBySlug: (slug: string) => api.get(`/vendors/slug/${slug}`) as Promise<ApiVendor>,
   create: (data: any) => api.post('/vendors', data) as Promise<any>,
   update: (id: string, data: any) => api.put(`/vendors/${id}`, data) as Promise<any>,
   updateStatus: (id: string | number, status: string) => api.put(`/vendors/${id}/status`, { status }) as Promise<any>,
   delete: (id: string | number) => api.delete(`/vendors/${id}`) as Promise<any>,
   search: (lat: number, lng: number, radius: number = 2000) =>
-    api.get(`/vendors/search`, { params: { lat, lng, radius } }) as Promise<any>,
+    api.get(`/vendors/search`, { params: { lat, lng, radius } }) as Promise<ApiVendor[]>,
 };
 
 export const menuApi = {
@@ -109,10 +210,10 @@ export const orderApi = {
 };
 
 export const promotionApi = {
-  getAll: () => api.get('/promotions/all') as Promise<any>,
-  getAllActive: () => api.get('/promotions/active') as Promise<any>,
-  getByVendor: (vendorId: string) => api.get(`/promotions/vendor/${vendorId}`) as Promise<any>,
-  getActiveByVendor: (vendorId: string) => api.get(`/promotions/vendor/${vendorId}/active`) as Promise<any>,
+  getAll: () => api.get('/promotions/all') as Promise<ApiPromotion[]>,
+  getAllActive: () => api.get('/promotions/active') as Promise<ApiPromotion[]>,
+  getByVendor: (vendorId: string) => api.get(`/promotions/vendor/${vendorId}`) as Promise<ApiPromotion[]>,
+  getActiveByVendor: (vendorId: string) => api.get(`/promotions/vendor/${vendorId}/active`) as Promise<ApiPromotion[]>,
   create: (data: any) => api.post('/promotions', data) as Promise<any>,
   update: (id: string, data: any) => api.put(`/promotions/${id}`, data) as Promise<any>,
   delete: (id: string) => api.delete(`/promotions/${id}`) as Promise<any>,
@@ -126,7 +227,7 @@ export const analyticsApi = {
 };
 
 export const favoriteApi = {
-  getUserFavorites: () => api.get('/favorites') as Promise<any>,
+  getUserFavorites: () => api.get('/favorites') as Promise<ApiVendor[]>,
   checkFavorite: (vendorId: string) => api.get(`/favorites/check/${vendorId}`) as Promise<{ isFavorite: boolean }>,
   addFavorite: (vendorId: string) => api.post(`/favorites/${vendorId}`) as Promise<any>,
   removeFavorite: (vendorId: string) => api.delete(`/favorites/${vendorId}`) as Promise<any>,
@@ -158,6 +259,8 @@ export const hotTopicApi = {
   getAllActive: () => api.get('/hottopics') as Promise<any>,
   getAll: () => api.get('/hottopics/admin/all') as Promise<any>,
   create: (data: any) => api.post('/hottopics', data) as Promise<any>,
+  createCommunity: (data: { title: string; content: string; imageUrl?: string }) =>
+    api.post('/hottopics/community', data) as Promise<{ message?: string; topicId?: number | string }>,
   update: (id: string | number, data: any) => api.put(`/hottopics/${id}`, data) as Promise<any>,
   delete: (id: string | number) => api.delete(`/hottopics/${id}`) as Promise<any>,
   addComment: (id: string | number, text: string) => api.post(`/hottopics/${id}/comment`, { text }) as Promise<any>,

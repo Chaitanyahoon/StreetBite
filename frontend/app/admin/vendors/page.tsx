@@ -2,6 +2,16 @@
 
 import { useState, useEffect } from 'react'
 import { vendorApi } from '@/lib/api'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -9,6 +19,7 @@ import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Eye, Trash2, CheckCircle, XCircle } from 'lucide-react'
+import { toast } from 'sonner'
 
 interface Vendor {
   id: number
@@ -28,6 +39,10 @@ export default function VendorManagement() {
   const [vendors, setVendors] = useState<Vendor[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [pendingAction, setPendingAction] = useState<{
+    vendor: Vendor
+    type: 'ban' | 'unban' | 'delete'
+  } | null>(null)
 
   const fetchVendors = async () => {
     try {
@@ -48,9 +63,11 @@ export default function VendorManagement() {
         orders: 0, // Placeholder
       }))
       setVendors(mappedVendors)
+      setError(null)
     } catch (err) {
       console.error('Failed to fetch vendors', err)
       setError('Failed to load vendors')
+      toast.error('Failed to load vendors')
     } finally {
       setLoading(false)
     }
@@ -84,6 +101,30 @@ export default function VendorManagement() {
         return 'bg-red-200 text-red-900 font-black'
       default:
         return 'bg-gray-100 text-gray-700'
+    }
+  }
+
+  const confirmPendingAction = async () => {
+    if (!pendingAction) return
+
+    try {
+      if (pendingAction.type === 'delete') {
+        await vendorApi.delete(pendingAction.vendor.id)
+        toast.success('Vendor deleted')
+      } else if (pendingAction.type === 'ban') {
+        await vendorApi.updateStatus(pendingAction.vendor.id.toString(), 'BANNED')
+        toast.success('Vendor banned and account locked')
+      } else {
+        await vendorApi.updateStatus(pendingAction.vendor.id.toString(), 'APPROVED')
+        toast.success('Vendor account reactivated')
+      }
+
+      await fetchVendors()
+    } catch (err) {
+      console.error('Vendor action failed', err)
+      toast.error('Failed to update vendor')
+    } finally {
+      setPendingAction(null)
     }
   }
 
@@ -247,12 +288,7 @@ export default function VendorManagement() {
                                 </Button>
                                 <Button
                                   className="flex-1 bg-red-900 hover:bg-red-950 text-white gap-2"
-                                  onClick={async () => {
-                                    if (confirm('⚠️ PERMANENT BAN: This will ban the vendor AND lock their account. Are you sure?')) {
-                                      await vendorApi.updateStatus(vendor.id.toString(), 'BANNED')
-                                      fetchVendors()
-                                    }
-                                  }}
+                                  onClick={() => setPendingAction({ vendor, type: 'ban' })}
                                 >
                                   <XCircle className="w-4 h-4" />
                                   Ban Vendor
@@ -277,12 +313,7 @@ export default function VendorManagement() {
                               <div className="flex gap-2 pt-4 border-t">
                                 <Button
                                   className="flex-1 bg-blue-600 hover:bg-blue-700 gap-2"
-                                  onClick={async () => {
-                                    if (confirm('This will unban the vendor and reactivate their account. Continue?')) {
-                                      await vendorApi.updateStatus(vendor.id.toString(), 'APPROVED')
-                                      fetchVendors()
-                                    }
-                                  }}
+                                  onClick={() => setPendingAction({ vendor, type: 'unban' })}
                                 >
                                   <CheckCircle className="w-4 h-4" />
                                   Unban Vendor
@@ -296,12 +327,7 @@ export default function VendorManagement() {
                           variant="ghost"
                           size="sm"
                           className="text-red-600 hover:text-red-700"
-                          onClick={async () => {
-                            if (confirm('Are you sure you want to delete this vendor? This action cannot be undone.')) {
-                              await vendorApi.delete(vendor.id)
-                              fetchVendors()
-                            }
-                          }}
+                          onClick={() => setPendingAction({ vendor, type: 'delete' })}
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
@@ -314,6 +340,47 @@ export default function VendorManagement() {
           </div>
         </CardContent>
       </Card>
+
+      <AlertDialog
+        open={Boolean(pendingAction)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setPendingAction(null)
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {pendingAction?.type === 'ban'
+                ? 'Ban vendor account?'
+                : pendingAction?.type === 'unban'
+                  ? 'Reactivate vendor account?'
+                  : 'Delete vendor?'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {pendingAction?.type === 'ban'
+                ? `This will ban ${pendingAction.vendor.name} and deactivate the owner's account.`
+                : pendingAction?.type === 'unban'
+                  ? `This will restore ${pendingAction.vendor.name} and reactivate the owner's account.`
+                  : `This will permanently remove ${pendingAction?.vendor.name}. This action cannot be undone.`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmPendingAction}
+              className={pendingAction?.type === 'unban' ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-destructive text-white hover:bg-destructive/90'}
+            >
+              {pendingAction?.type === 'ban'
+                ? 'Ban vendor'
+                : pendingAction?.type === 'unban'
+                  ? 'Reactivate vendor'
+                  : 'Delete vendor'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

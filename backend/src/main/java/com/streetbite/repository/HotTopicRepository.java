@@ -8,5 +8,6 @@ import java.util.List;
 
 @Repository
 public interface HotTopicRepository extends JpaRepository<HotTopic, Long> {
-    List<HotTopic> findByIsActiveTrueOrderByCreatedAtDesc();
+    List<HotTopic> findByIsActiveTrueAndIsApprovedTrueOrderByCreatedAtDesc();
+    long countByCreatedByIdAndCreatedAtAfter(Long createdById, java.time.LocalDateTime after);
 }

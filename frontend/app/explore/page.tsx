@@ -13,7 +13,7 @@ import { BreadcrumbListSchema } from '@/components/seo/breadcrumb-schema'
 import { CollectionPageSchema } from '@/components/seo/collection-page-schema'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { favoriteApi, vendorApi } from '@/lib/api'
+import { favoriteApi, vendorApi, type ApiVendor } from '@/lib/api'
 import { useUserLocation } from '@/lib/useUserLocation'
 import { useAuth } from '@/context/AuthContext'
 import {
@@ -102,7 +102,7 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
   return R * c
 }
 
-function normalizeVendor(vendor: any, location?: { lat: number; lng: number } | null): ExploreVendor {
+function normalizeVendor(vendor: ApiVendor, location?: { lat: number; lng: number } | null): ExploreVendor {
   const latitude = typeof vendor.latitude === 'number' ? vendor.latitude : Number(vendor.latitude)
   const longitude = typeof vendor.longitude === 'number' ? vendor.longitude : Number(vendor.longitude)
   const hasCoordinates = Number.isFinite(latitude) && Number.isFinite(longitude)
@@ -125,7 +125,7 @@ function normalizeVendor(vendor: any, location?: { lat: number; lng: number } | 
     longitude: hasCoordinates ? longitude : undefined,
     description: vendor.description,
     status: vendor.status,
-    isOnline: OPEN_VENDOR_STATUSES.has(vendor.status),
+    isOnline: OPEN_VENDOR_STATUSES.has(vendor.status || ''),
     isAcceptingOrders: vendor.status === 'AVAILABLE',
   }
 }
@@ -206,11 +206,11 @@ function ExplorePageContent() {
       setLoadingVendors(true)
       try {
         const data = await vendorApi.getAll()
-        const vendorList = Array.isArray(data) ? data : (data?.vendors || data || [])
+        const vendorList = Array.isArray(data) ? data : []
 
         const publicVendors = vendorList
-          .filter((vendor: any) => PUBLIC_VENDOR_STATUSES.has(vendor.status))
-          .map((vendor: any) => normalizeVendor(vendor, location))
+          .filter((vendor) => PUBLIC_VENDOR_STATUSES.has(vendor.status || ''))
+          .map((vendor) => normalizeVendor(vendor, location))
 
         if (mounted) {
           setVendors(publicVendors)
@@ -339,7 +339,7 @@ function ExplorePageContent() {
     viewMode === 'list'
 
   return (
-    <div className="min-h-screen bg-[#FFFBF0]">
+    <div className="min-h-screen">
       <BreadcrumbListSchema
         items={[
           { name: 'Home', item: 'https://streetbitego.vercel.app' },
@@ -686,7 +686,7 @@ export default function ExplorePage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-[#FFFBF0]">
+        <div className="min-h-screen">
           <Navbar />
           <main className="px-4 py-28 md:px-6">
             <div className="mx-auto max-w-7xl animate-pulse space-y-6">
