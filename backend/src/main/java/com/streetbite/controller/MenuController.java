@@ -1,20 +1,46 @@
 package com.streetbite.controller;
 
+import com.streetbite.dto.menu.MenuItemCreateRequest;
+import com.streetbite.dto.menu.MenuItemUpdateRequest;
 import com.streetbite.model.MenuItem;
+import com.streetbite.model.User;
+import com.streetbite.model.Vendor;
+import com.streetbite.security.AuthenticatedUserService;
 import com.streetbite.service.MenuService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.streetbite.service.VendorService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/menu")
 public class MenuController {
 
-    @Autowired
-    private MenuService menuService;
+    private final MenuService menuService;
+    private final VendorService vendorService;
+    private final AuthenticatedUserService authenticatedUserService;
+
+    public MenuController(
+            MenuService menuService,
+            VendorService vendorService,
+            AuthenticatedUserService authenticatedUserService) {
+        this.menuService = menuService;
+        this.vendorService = vendorService;
+        this.authenticatedUserService = authenticatedUserService;
+    }
 
     @GetMapping("/vendor/{vendorId}")
     public ResponseEntity<List<MenuItem>> getMenuByVendor(@PathVariable Long vendorId) {
@@ -29,133 +55,124 @@ public class MenuController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createMenuItem(@RequestBody MenuItemRequest request) {
-        try {
-            MenuItem menuItem = new MenuItem();
-            menuItem.setName(request.getName());
-            menuItem.setDescription(request.getDescription());
-            menuItem.setPrice(request.getPrice());
-            menuItem.setCategory(request.getCategory());
-            menuItem.setImageUrl(request.getImageUrl());
-            menuItem.setAvailable(request.isAvailable());
-            menuItem.setPreparationTime(request.getPreparationTime());
+    public ResponseEntity<?> createMenuItem(@RequestBody MenuItemCreateRequest request, Authentication authentication) {
+        User currentUser = resolveAuthenticatedUser(authentication);
+        if (currentUser == null) {
+            return unauthorized("Invalid session. Please log in again");
+        }
 
-            MenuItem savedItem = menuService.saveMenuItem(menuItem, request.getVendorId());
+        try {
+            if (request.getVendorId() == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Vendor ID is required"));
+            }
+            Vendor vendor = vendorService.getVendorById(request.getVendorId()).orElse(null);
+            if (vendor == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Vendor not found"));
+            }
+            if (!canManageVendorMenu(currentUser, vendor)) {
+                return forbidden("You do not have permission to manage this menu");
+            }
+            validateImageUrl(request.getImageUrl());
+
+            MenuItem savedItem = menuService.createMenuItem(request);
             return ResponseEntity.ok(savedItem);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
         }
     }
 
-    public static class MenuItemRequest {
-        private String name;
-        private String description;
-        private java.math.BigDecimal price;
-        private String category;
-        private String imageUrl;
-        private boolean isAvailable;
-        private Long vendorId;
-        private Integer preparationTime;
-
-        // Getters and Setters
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public String getDescription() {
-            return description;
-        }
-
-        public void setDescription(String description) {
-            this.description = description;
-        }
-
-        public java.math.BigDecimal getPrice() {
-            return price;
-        }
-
-        public void setPrice(java.math.BigDecimal price) {
-            this.price = price;
-        }
-
-        public String getCategory() {
-            return category;
-        }
-
-        public void setCategory(String category) {
-            this.category = category;
-        }
-
-        public String getImageUrl() {
-            return imageUrl;
-        }
-
-        public void setImageUrl(String imageUrl) {
-            this.imageUrl = imageUrl;
-        }
-
-        public boolean isAvailable() {
-            return isAvailable;
-        }
-
-        public void setAvailable(boolean available) {
-            isAvailable = available;
-        }
-
-        public Long getVendorId() {
-            return vendorId;
-        }
-
-        public void setVendorId(Long vendorId) {
-            this.vendorId = vendorId;
-        }
-
-        public Integer getPreparationTime() {
-            return preparationTime;
-        }
-
-        public void setPreparationTime(Integer preparationTime) {
-            this.preparationTime = preparationTime;
-        }
-    }
-
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateMenuItem(@PathVariable Long id, @RequestBody Map<String, Object> updates) {
+    public ResponseEntity<?> updateMenuItem(
+            @PathVariable Long id,
+            @RequestBody MenuItemUpdateRequest updates,
+            Authentication authentication) {
+        User currentUser = resolveAuthenticatedUser(authentication);
+        if (currentUser == null) {
+            return unauthorized("Invalid session. Please log in again");
+        }
+
         return menuService.getMenuItemById(id)
                 .map(existingItem -> {
-                    if (updates.containsKey("name"))
-                        existingItem.setName((String) updates.get("name"));
-                    if (updates.containsKey("description"))
-                        existingItem.setDescription((String) updates.get("description"));
-                    if (updates.containsKey("category"))
-                        existingItem.setCategory((String) updates.get("category"));
-                    if (updates.containsKey("price")) {
-                        Object priceObj = updates.get("price");
-                        existingItem.setPrice(new java.math.BigDecimal(priceObj.toString()));
-                    }
-                    if (updates.containsKey("imageUrl"))
-                        existingItem.setImageUrl((String) updates.get("imageUrl"));
-                    if (updates.containsKey("isAvailable")) {
-                        Boolean isAvailable = (Boolean) updates.get("isAvailable");
-                        existingItem.setAvailable(isAvailable);
+                    if (!canManageMenuItem(currentUser, existingItem)) {
+                        return forbidden("You do not have permission to manage this menu");
                     }
 
-                    return ResponseEntity.ok(menuService.saveMenuItem(existingItem));
+                    try {
+                        validateImageUrl(updates.getImageUrl());
+                        return ResponseEntity.ok(menuService.updateMenuItem(existingItem, updates));
+                    } catch (IllegalArgumentException e) {
+                        return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+                    }
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteMenuItem(@PathVariable Long id) {
-        try {
-            menuService.deleteMenuItem(id);
-            return ResponseEntity.ok(Map.of("success", true));
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
+    public ResponseEntity<?> deleteMenuItem(@PathVariable Long id, Authentication authentication) {
+        User currentUser = resolveAuthenticatedUser(authentication);
+        if (currentUser == null) {
+            return unauthorized("Invalid session. Please log in again");
         }
+
+        return menuService.getMenuItemById(id)
+                .map(menuItem -> {
+                    if (!canManageMenuItem(currentUser, menuItem)) {
+                        return forbidden("You do not have permission to manage this menu");
+                    }
+
+                    try {
+                        menuService.deleteMenuItem(id);
+                        return ResponseEntity.ok(Map.of("success", true));
+                    } catch (Exception e) {
+                        return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
+                    }
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    private User resolveAuthenticatedUser(Authentication authentication) {
+        return authenticatedUserService.findAuthenticatedUser(authentication).orElse(null);
+    }
+
+    private boolean canManageVendorMenu(User currentUser, Vendor vendor) {
+        if (currentUser == null || vendor == null) {
+            return false;
+        }
+        if (authenticatedUserService.isAdmin(currentUser)) {
+            return true;
+        }
+        return vendor.getOwner() != null && Objects.equals(vendor.getOwner().getId(), currentUser.getId());
+    }
+
+    private boolean canManageMenuItem(User currentUser, MenuItem menuItem) {
+        return menuItem != null && canManageVendorMenu(currentUser, menuItem.getVendor());
+    }
+
+    private void validateImageUrl(String imageUrl) {
+        if (imageUrl == null || imageUrl.isBlank()) {
+            return;
+        }
+        if (imageUrl.startsWith("data:image/")) {
+            return;
+        }
+        try {
+            URI uri = new URI(imageUrl);
+            String scheme = uri.getScheme();
+            if (!"http".equals(scheme) && !"https".equals(scheme)) {
+                throw new IllegalArgumentException("Invalid image URL");
+            }
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException("Invalid image URL");
+        }
+    }
+
+    private ResponseEntity<Map<String, String>> unauthorized(String message) {
+        return ResponseEntity.status(401).body(Map.of("error", message));
+    }
+
+    private ResponseEntity<Map<String, String>> forbidden(String message) {
+        return ResponseEntity.status(403).body(Map.of("error", message));
     }
 }
