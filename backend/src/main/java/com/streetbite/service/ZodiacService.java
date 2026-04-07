@@ -1,8 +1,10 @@
 package com.streetbite.service;
 
+import com.streetbite.dto.zodiac.ZodiacChallengeResponse;
+import com.streetbite.dto.zodiac.ZodiacHoroscopeResponse;
+import com.streetbite.dto.zodiac.ZodiacSignResponse;
 import com.streetbite.model.User;
 import com.streetbite.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -13,8 +15,11 @@ import java.util.Map;
 @Service
 public class ZodiacService {
 
-        @Autowired
-        private UserRepository userRepository;
+        private final UserRepository userRepository;
+
+        public ZodiacService(UserRepository userRepository) {
+                this.userRepository = userRepository;
+        }
 
         private static final Map<String, List<String>> PREDICTIONS = new HashMap<>();
         private static final Map<String, List<String>> LUCKY_DISHES = new HashMap<>();
@@ -31,7 +36,6 @@ public class ZodiacService {
                         "Take a photo of your food before eating");
 
         static {
-                // Initialize Foodtaar content
                 PREDICTIONS.put("Aries", List.of(
                                 "Your plate will look better than everyone else’s.",
                                 "Spicy food is your best friend today.",
@@ -95,7 +99,7 @@ public class ZodiacService {
                 LUCKY_DISHES.put("Pisces", List.of("Cold Coffee", "Fish Fry", "Donut"));
         }
 
-        public Map<String, Object> getDailyHoroscope(String zodiacSign) {
+        public ZodiacHoroscopeResponse getDailyHoroscope(String zodiacSign) {
                 if (zodiacSign == null || !PREDICTIONS.containsKey(zodiacSign)) {
                         return null;
                 }
@@ -103,7 +107,6 @@ public class ZodiacService {
                 int dayOfYear = LocalDate.now().getDayOfYear();
                 int signIndex = Math.abs(zodiacSign.hashCode());
 
-                // Deterministic selection based on day and sign
                 List<String> signPredictions = PREDICTIONS.get(zodiacSign);
                 String prediction = signPredictions.get((dayOfYear + signIndex) % signPredictions.size());
 
@@ -112,31 +115,31 @@ public class ZodiacService {
 
                 String challenge = CHALLENGES.get((dayOfYear + signIndex) % CHALLENGES.size());
 
-                // Generate a "lucky time"
                 int hour = (dayOfYear + signIndex) % 12 + 1;
                 int minute = (dayOfYear * signIndex) % 60;
                 String ampm = ((dayOfYear + signIndex) % 24) >= 12 ? "PM" : "AM";
                 String luckyTime = String.format("%d:%02d %s", hour, minute, ampm);
 
-                Map<String, Object> result = new HashMap<>();
-                result.put("zodiacSign", zodiacSign);
-                result.put("prediction", prediction);
-                result.put("luckyDish", luckyDish);
-                result.put("luckyTime", luckyTime);
-                result.put("challenge", challenge);
-
+                ZodiacHoroscopeResponse result = new ZodiacHoroscopeResponse();
+                result.setZodiacSign(zodiacSign);
+                result.setPrediction(prediction);
+                result.setLuckyDish(luckyDish);
+                result.setLuckyTime(luckyTime);
+                result.setChallenge(challenge);
                 return result;
         }
 
-        public User updateUserZodiac(Long userId, String zodiacSign) {
+        public ZodiacSignResponse updateUserZodiac(Long userId, String zodiacSign) {
                 User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
                 user.setZodiacSign(zodiacSign);
-                return userRepository.save(user);
+                User updated = userRepository.save(user);
+                return new ZodiacSignResponse(updated.getId(), updated.getZodiacSign());
         }
 
-        public User completeChallenge(Long userId) {
+        public ZodiacChallengeResponse completeChallenge(Long userId) {
                 User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
                 user.setXp((user.getXp() == null ? 0 : user.getXp()) + 10);
-                return userRepository.save(user);
+                User updated = userRepository.save(user);
+                return new ZodiacChallengeResponse("Challenge completed", updated.getXp());
         }
 }

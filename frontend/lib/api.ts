@@ -239,6 +239,14 @@ export interface GamificationActionResponse {
   level: number
 }
 
+export interface ZodiacHoroscopeResponse {
+  zodiacSign: string
+  prediction: string
+  luckyDish: string
+  luckyTime: string
+  challenge: string
+}
+
 export const authApi = {
   register: (data: RegisterRequest) => api.post('/auth/register', data) as Promise<AuthResponse>,
   login: (data: LoginRequest) => api.post('/auth/login', data) as Promise<AuthResponse>,
@@ -358,7 +366,7 @@ export const hotTopicApi = {
 };
 
 export const zodiacApi = {
-  getHoroscope: (sign: string) => api.get(`/zodiac/sign/${sign}`) as Promise<any>,
+  getHoroscope: (sign: string) => api.get(`/zodiac/sign/${sign}`) as Promise<ZodiacHoroscopeResponse>,
 };
 
 export default api;

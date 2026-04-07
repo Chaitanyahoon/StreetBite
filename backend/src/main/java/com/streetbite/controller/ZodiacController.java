@@ -1,12 +1,18 @@
 package com.streetbite.controller;
 
+import com.streetbite.dto.zodiac.ZodiacNotSetResponse;
+import com.streetbite.dto.zodiac.ZodiacSignRequest;
 import com.streetbite.model.User;
-import com.streetbite.repository.UserRepository;
+import com.streetbite.security.AuthenticatedUserService;
 import com.streetbite.service.ZodiacService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
@@ -14,71 +20,59 @@ import java.util.Map;
 @RequestMapping("/api/zodiac")
 public class ZodiacController {
 
-    @Autowired
-    private ZodiacService zodiacService;
+    private final ZodiacService zodiacService;
+    private final AuthenticatedUserService authenticatedUserService;
 
-    @Autowired
-    private UserRepository userRepository;
+    public ZodiacController(ZodiacService zodiacService, AuthenticatedUserService authenticatedUserService) {
+        this.zodiacService = zodiacService;
+        this.authenticatedUserService = authenticatedUserService;
+    }
 
-    // Get horoscope for any sign (no auth required for exploration)
     @GetMapping("/sign/{signName}")
     public ResponseEntity<?> getHoroscopeBySign(@PathVariable String signName) {
-        return ResponseEntity.ok(zodiacService.getDailyHoroscope(signName));
+        var horoscope = zodiacService.getDailyHoroscope(signName);
+        if (horoscope == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Invalid zodiac sign"));
+        }
+        return ResponseEntity.ok(horoscope);
     }
 
     @GetMapping("/today")
     public ResponseEntity<?> getDailyHoroscope(Authentication authentication) {
-        if (authentication == null) {
-            return ResponseEntity.status(401).body("Unauthorized");
-        }
-        String email = authentication.getName();
-        User user = userRepository.findByEmail(email).orElse(null);
-
+        User user = authenticatedUserService.findAuthenticatedUser(authentication).orElse(null);
         if (user == null) {
-            return ResponseEntity.status(404).body("User not found");
+            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
         }
 
         if (user.getZodiacSign() == null) {
-            return ResponseEntity.ok(Map.of("zodiacSign", "NOT_SET"));
+            return ResponseEntity.ok(new ZodiacNotSetResponse("NOT_SET"));
         }
 
         return ResponseEntity.ok(zodiacService.getDailyHoroscope(user.getZodiacSign()));
     }
 
     @PostMapping("/sign")
-    public ResponseEntity<?> setZodiacSign(@RequestBody Map<String, String> payload, Authentication authentication) {
-        if (authentication == null) {
-            return ResponseEntity.status(401).body("Unauthorized");
-        }
-        String email = authentication.getName();
-        User user = userRepository.findByEmail(email).orElse(null);
-
+    public ResponseEntity<?> setZodiacSign(@RequestBody ZodiacSignRequest payload, Authentication authentication) {
+        User user = authenticatedUserService.findAuthenticatedUser(authentication).orElse(null);
         if (user == null) {
-            return ResponseEntity.status(404).body("User not found");
+            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
         }
 
-        String sign = payload.get("sign");
+        String sign = payload.getSign();
         if (sign == null || sign.isEmpty()) {
-            return ResponseEntity.badRequest().body("Sign is required");
+            return ResponseEntity.badRequest().body(Map.of("error", "Sign is required"));
         }
 
-        User updatedUser = zodiacService.updateUserZodiac(user.getId(), sign);
-        return ResponseEntity.ok(updatedUser);
+        return ResponseEntity.ok(zodiacService.updateUserZodiac(user.getId(), sign));
     }
 
     @PostMapping("/challenge/complete")
     public ResponseEntity<?> completeChallenge(Authentication authentication) {
-        if (authentication == null) {
-            return ResponseEntity.status(401).body("Unauthorized");
-        }
-        String email = authentication.getName();
-        User user = userRepository.findByEmail(email).orElse(null);
-
+        User user = authenticatedUserService.findAuthenticatedUser(authentication).orElse(null);
         if (user == null) {
-            return ResponseEntity.status(404).body("User not found");
+            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
         }
 
-        User updatedUser = zodiacService.completeChallenge(user.getId());
-        return ResponseEntity.ok(Map.of("message", "Challenge completed", "xp", updatedUser.getXp()));
+        return ResponseEntity.ok(zodiacService.completeChallenge(user.getId()));
     }
 }
