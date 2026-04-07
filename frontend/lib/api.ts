@@ -209,6 +209,11 @@ export interface ApiReview {
   images?: ApiReviewImage[]
 }
 
+export interface FavoriteStatusResponse {
+  isFavorite: boolean
+  message?: string | null
+}
+
 export const authApi = {
   register: (data: RegisterRequest) => api.post('/auth/register', data) as Promise<AuthResponse>,
   login: (data: LoginRequest) => api.post('/auth/login', data) as Promise<AuthResponse>,
@@ -288,9 +293,9 @@ export const analyticsApi = {
 
 export const favoriteApi = {
   getUserFavorites: () => api.get('/favorites') as Promise<ApiVendor[]>,
-  checkFavorite: (vendorId: string) => api.get(`/favorites/check/${vendorId}`) as Promise<{ isFavorite: boolean }>,
-  addFavorite: (vendorId: string) => api.post(`/favorites/${vendorId}`) as Promise<any>,
-  removeFavorite: (vendorId: string) => api.delete(`/favorites/${vendorId}`) as Promise<any>,
+  checkFavorite: (vendorId: string) => api.get(`/favorites/check/${vendorId}`) as Promise<FavoriteStatusResponse>,
+  addFavorite: (vendorId: string | number) => api.post(`/favorites/${vendorId}`) as Promise<FavoriteStatusResponse>,
+  removeFavorite: (vendorId: string | number) => api.delete(`/favorites/${vendorId}`) as Promise<FavoriteStatusResponse>,
 };
 
 export const gamificationApi = {

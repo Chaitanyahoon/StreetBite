@@ -1,16 +1,18 @@
 package com.streetbite.controller;
 
-import com.streetbite.model.Favorite;
+import com.streetbite.dto.favorite.FavoriteStatusResponse;
+import com.streetbite.dto.vendor.VendorResponse;
 import com.streetbite.model.User;
-import com.streetbite.model.Vendor;
-import com.streetbite.repository.FavoriteRepository;
-import com.streetbite.repository.VendorRepository;
 import com.streetbite.security.AuthenticatedUserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.streetbite.service.FavoriteService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.Map;
@@ -19,81 +21,66 @@ import java.util.Map;
 @RequestMapping("/api/favorites")
 public class FavoriteController {
 
-    @Autowired
-    private FavoriteRepository favoriteRepository;
+    private final FavoriteService favoriteService;
+    private final AuthenticatedUserService authenticatedUserService;
 
-    @Autowired
-    private AuthenticatedUserService authenticatedUserService;
+    public FavoriteController(
+            FavoriteService favoriteService,
+            AuthenticatedUserService authenticatedUserService) {
+        this.favoriteService = favoriteService;
+        this.authenticatedUserService = authenticatedUserService;
+    }
 
-    @Autowired
-    private VendorRepository vendorRepository;
-
-    /**
-     * Get all favorite vendors for the authenticated user
-     */
     @GetMapping
     public ResponseEntity<?> getUserFavorites(Authentication authentication) {
-        User user = authenticatedUserService.findAuthenticatedUser(authentication).orElse(null);
+        User user = resolveAuthenticatedUser(authentication);
         if (user == null) {
-            return ResponseEntity.status(401).body(Map.of("error", "User not authenticated"));
+            return unauthorized("User not authenticated");
         }
 
-        List<Vendor> favoriteVendors = favoriteRepository.findFavoriteVendorsByUserId(user.getId());
+        List<VendorResponse> favoriteVendors = favoriteService.getFavoriteVendors(user);
         return ResponseEntity.ok(favoriteVendors);
     }
 
-    /**
-     * Check if a vendor is favorited by the user
-     */
     @GetMapping("/check/{vendorId}")
-    public ResponseEntity<?> checkFavorite(@PathVariable Long vendorId, Authentication authentication) {
-        User user = authenticatedUserService.findAuthenticatedUser(authentication).orElse(null);
+    public ResponseEntity<FavoriteStatusResponse> checkFavorite(@PathVariable Long vendorId, Authentication authentication) {
+        User user = resolveAuthenticatedUser(authentication);
         if (user == null) {
-            return ResponseEntity.ok(Map.of("isFavorite", false));
+            return ResponseEntity.ok(new FavoriteStatusResponse(false, null));
         }
 
-        boolean isFavorite = favoriteRepository.existsByUserIdAndVendorId(user.getId(), vendorId);
-        return ResponseEntity.ok(Map.of("isFavorite", isFavorite));
+        return ResponseEntity.ok(favoriteService.getFavoriteStatus(user, vendorId));
     }
 
-    /**
-     * Add a vendor to favorites
-     */
     @PostMapping("/{vendorId}")
     public ResponseEntity<?> addFavorite(@PathVariable Long vendorId, Authentication authentication) {
-        User user = authenticatedUserService.findAuthenticatedUser(authentication).orElse(null);
+        User user = resolveAuthenticatedUser(authentication);
         if (user == null) {
-            return ResponseEntity.status(401).body(Map.of("error", "User not authenticated"));
+            return unauthorized("User not authenticated");
         }
 
-        Vendor vendor = vendorRepository.findById(vendorId).orElse(null);
-        if (vendor == null) {
-            return ResponseEntity.status(404).body(Map.of("error", "Vendor not found"));
+        try {
+            return ResponseEntity.ok(favoriteService.addFavorite(user, vendorId));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(404).body(Map.of("error", e.getMessage()));
         }
-
-        // Check if already favorited
-        if (favoriteRepository.existsByUserIdAndVendorId(user.getId(), vendorId)) {
-            return ResponseEntity.ok(Map.of("message", "Already favorited", "isFavorite", true));
-        }
-
-        Favorite favorite = new Favorite(user, vendor);
-        favoriteRepository.save(favorite);
-
-        return ResponseEntity.ok(Map.of("message", "Added to favorites", "isFavorite", true));
     }
 
-    /**
-     * Remove a vendor from favorites
-     */
     @DeleteMapping("/{vendorId}")
-    @Transactional
     public ResponseEntity<?> removeFavorite(@PathVariable Long vendorId, Authentication authentication) {
-        User user = authenticatedUserService.findAuthenticatedUser(authentication).orElse(null);
+        User user = resolveAuthenticatedUser(authentication);
         if (user == null) {
-            return ResponseEntity.status(401).body(Map.of("error", "User not authenticated"));
+            return unauthorized("User not authenticated");
         }
 
-        favoriteRepository.deleteByUserIdAndVendorId(user.getId(), vendorId);
-        return ResponseEntity.ok(Map.of("message", "Removed from favorites", "isFavorite", false));
+        return ResponseEntity.ok(favoriteService.removeFavorite(user, vendorId));
+    }
+
+    private User resolveAuthenticatedUser(Authentication authentication) {
+        return authenticatedUserService.findAuthenticatedUser(authentication).orElse(null);
+    }
+
+    private ResponseEntity<Map<String, String>> unauthorized(String message) {
+        return ResponseEntity.status(401).body(Map.of("error", message));
     }
 }
