@@ -190,7 +190,6 @@ public class AuthController {
                 existingUser.setRole(User.Role.valueOf(roleStr.toUpperCase()));
                 existingUser.setActive(true);
                 existingUser.setEmailVerified(false);
-                existingUser.setTwoFactorEnabled(false);
                 clearEmailVerification(existingUser);
                 savedUser = userService.saveUser(existingUser);
                 upsertPendingVendorProfile(savedUser, payload, displayName, phoneNumber);
@@ -205,14 +204,6 @@ public class AuthController {
                 user.setPhoneNumber(phoneNumber);
                 user.setRole(User.Role.valueOf(roleStr.toUpperCase()));
                 user.setEmailVerified(false);
-                user.setTwoFactorEnabled(false);
-
-                // Generate firebase_uid if not provided
-                String firebaseUid = (String) payload.get("firebaseUid");
-                if (firebaseUid == null || firebaseUid.isEmpty()) {
-                    firebaseUid = java.util.UUID.randomUUID().toString();
-                }
-                user.setFirebaseUid(firebaseUid);
 
                 savedUser = userService.saveUser(user);
                 upsertPendingVendorProfile(savedUser, payload, displayName, phoneNumber);
@@ -510,10 +501,5 @@ public class AuthController {
         return userService.getUserById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
-    }
-
-    @GetMapping("/debug/users")
-    public ResponseEntity<?> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
     }
 }

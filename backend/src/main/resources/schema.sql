@@ -5,7 +5,6 @@
 CREATE TABLE IF NOT EXISTS users (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     email VARCHAR(255) NOT NULL UNIQUE,
-    firebase_uid VARCHAR(255) UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     display_name VARCHAR(255),
     phone_number VARCHAR(50),
@@ -15,10 +14,6 @@ CREATE TABLE IF NOT EXISTS users (
     email_verified BOOLEAN DEFAULT FALSE,
     email_verification_code_hash VARCHAR(255),
     email_verification_code_expiry DATETIME,
-    two_factor_enabled BOOLEAN DEFAULT TRUE,
-    two_factor_code_hash VARCHAR(255),
-    two_factor_code_expiry DATETIME,
-    two_factor_challenge_token VARCHAR(255),
     role ENUM('USER', 'VENDOR', 'ADMIN') NOT NULL DEFAULT 'USER',
     zodiac_sign VARCHAR(50),
     xp INT DEFAULT 0,
@@ -28,8 +23,7 @@ CREATE TABLE IF NOT EXISTS users (
     is_active BOOLEAN DEFAULT TRUE,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    INDEX idx_email (email),
-    INDEX idx_firebase (firebase_uid)
+    INDEX idx_email (email)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- 2. VENDORS TABLE

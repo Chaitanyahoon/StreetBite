@@ -34,8 +34,4 @@ public class UserService {
     public Optional<User> getUserByResetPasswordToken(String token) {
         return userRepository.findByResetPasswordToken(token);
     }
-
-    public Optional<User> getUserByTwoFactorChallengeToken(String token) {
-        return userRepository.findByTwoFactorChallengeToken(token);
-    }
 }

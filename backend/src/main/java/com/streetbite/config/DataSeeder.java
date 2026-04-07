@@ -114,7 +114,6 @@ public class DataSeeder implements CommandLineRunner {
                     System.out.println("Seeding new user: " + email);
                     User user = new User();
                     user.setEmail(email);
-                    user.setFirebaseUid(java.util.UUID.randomUUID().toString());
                     user.setPasswordHash(passwordEncoder.encode(password));
                     user.setDisplayName(displayName);
                     user.setRole(role);

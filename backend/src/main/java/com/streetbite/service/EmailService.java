@@ -193,29 +193,6 @@ public class EmailService {
         return sendEmail(to, "StreetBite - Verify Your Email", templateParams, "Verification email");
     }
 
-    public boolean sendTwoFactorCodeEmail(String to, String code) {
-        System.out.println("==================================================");
-        System.out.println("TWO-FACTOR LOGIN CODE FOR: " + to);
-        System.out.println(code);
-        System.out.println("==================================================");
-
-        if (!canSendEmail()) {
-            System.err.println("EmailJS not configured - 2FA email not sent.");
-            setLastErrorMessage("EmailJS is not configured correctly");
-            return false;
-        }
-
-        Map<String, Object> templateParams = new HashMap<>();
-        templateParams.put("subject", "StreetBite - Your Login Verification Code");
-        templateParams.put("message", code);
-        templateParams.put("verification_code", code);
-        templateParams.put("intro_text", "Use this one-time code to complete your sign in.");
-        templateParams.put("expiry_text", "This code expires in 10 minutes.");
-        templateParams.put("html_message", "Use this one-time code to complete your sign in.");
-
-        return sendEmail(to, "StreetBite - Your Login Verification Code", templateParams, "2FA email");
-    }
-
     public boolean sendPasswordResetEmail(String to, String token) {
         String resetLink = frontendUrl + "/reset-password?token=" + token;
 

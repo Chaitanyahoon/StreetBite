@@ -167,7 +167,6 @@ export const authApi = {
   me: () => api.get('/auth/me') as Promise<AuthUser>,
   logout: () => api.post('/auth/logout') as Promise<{ message?: string }>,
   getUser: (id: string) => api.get(`/auth/user/${id}`) as Promise<AuthUser>,
-  getUserByUid: (uid: string) => api.get(`/auth/user/uid/${uid}`) as Promise<AuthUser>,
   forgotPassword: (email: string) => api.post('/auth/forgot-password', { email }) as Promise<ForgotPasswordResponse>,
   validateResetToken: (token: string) => api.get(`/auth/validate-reset-token?token=${token}`) as Promise<ValidateResetTokenResponse>,
   resetPassword: (data: PasswordResetRequest) => api.post('/auth/reset-password', data) as Promise<{ message?: string }>,

@@ -16,9 +16,6 @@ public class User {
     @Column(unique = true, nullable = false)
     private String email;
 
-    @Column(name = "firebase_uid", unique = true)
-    private String firebaseUid;
-
     @Column(name = "password_hash", nullable = false)
     @com.fasterxml.jackson.annotation.JsonIgnore
     private String passwordHash;
@@ -47,20 +44,6 @@ public class User {
 
     @Column(name = "email_verification_code_expiry")
     private LocalDateTime emailVerificationCodeExpiry;
-
-    @Column(name = "two_factor_enabled")
-    private Boolean twoFactorEnabled = true;
-
-    @Column(name = "two_factor_code_hash")
-    @com.fasterxml.jackson.annotation.JsonIgnore
-    private String twoFactorCodeHash;
-
-    @Column(name = "two_factor_code_expiry")
-    private LocalDateTime twoFactorCodeExpiry;
-
-    @Column(name = "two_factor_challenge_token")
-    @com.fasterxml.jackson.annotation.JsonIgnore
-    private String twoFactorChallengeToken;
 
     @Enumerated(EnumType.STRING)
     private Role role;
@@ -124,14 +107,6 @@ public class User {
 
     public void setEmail(String email) {
         this.email = email;
-    }
-
-    public String getFirebaseUid() {
-        return firebaseUid;
-    }
-
-    public void setFirebaseUid(String firebaseUid) {
-        this.firebaseUid = firebaseUid;
     }
 
     public String getPasswordHash() {
@@ -212,38 +187,6 @@ public class User {
 
     public void setEmailVerificationCodeExpiry(LocalDateTime emailVerificationCodeExpiry) {
         this.emailVerificationCodeExpiry = emailVerificationCodeExpiry;
-    }
-
-    public Boolean getTwoFactorEnabled() {
-        return twoFactorEnabled != null ? twoFactorEnabled : true;
-    }
-
-    public void setTwoFactorEnabled(Boolean twoFactorEnabled) {
-        this.twoFactorEnabled = twoFactorEnabled;
-    }
-
-    public String getTwoFactorCodeHash() {
-        return twoFactorCodeHash;
-    }
-
-    public void setTwoFactorCodeHash(String twoFactorCodeHash) {
-        this.twoFactorCodeHash = twoFactorCodeHash;
-    }
-
-    public LocalDateTime getTwoFactorCodeExpiry() {
-        return twoFactorCodeExpiry;
-    }
-
-    public void setTwoFactorCodeExpiry(LocalDateTime twoFactorCodeExpiry) {
-        this.twoFactorCodeExpiry = twoFactorCodeExpiry;
-    }
-
-    public String getTwoFactorChallengeToken() {
-        return twoFactorChallengeToken;
-    }
-
-    public void setTwoFactorChallengeToken(String twoFactorChallengeToken) {
-        this.twoFactorChallengeToken = twoFactorChallengeToken;
     }
 
     public LocalDateTime getCreatedAt() {
