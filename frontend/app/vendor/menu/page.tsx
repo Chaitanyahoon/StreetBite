@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   AlertDialog,
@@ -234,7 +235,14 @@ export default function MenuManagement() {
                     <div className={`aspect-square rounded-xl border-2 border-dashed flex flex-col items-center justify-center text-center p-4 overflow-hidden relative transition-colors ${imagePreview ? 'border-primary/50 bg-primary/5' : 'border-gray-200 hover:border-primary/50 hover:bg-gray-50'}`}>
                       {imagePreview ? (
                         <>
-                          <img src={imagePreview} alt="Preview" className="w-full h-full object-cover absolute inset-0" />
+                          <Image
+                            src={imagePreview}
+                            alt="Preview"
+                            fill
+                            unoptimized
+                            sizes="(min-width: 768px) 320px, 100vw"
+                            className="absolute inset-0 object-cover"
+                          />
                           <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                             <ImageIcon className="w-8 h-8 text-white mb-2" />
                             <span className="text-white font-medium text-sm">Change Image</span>
@@ -451,10 +459,13 @@ function MenuItemCard({
     <Card className="overflow-hidden border-none shadow-sm hover:shadow-md transition-all duration-200 group">
       <div className="aspect-[4/3] relative overflow-hidden bg-gray-100">
         {item.imageUrl ? (
-          <img
+          <Image
             src={item.imageUrl}
             alt={item.name}
-            className={`w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 ${!isAvailable ? 'grayscale' : ''}`}
+            fill
+            unoptimized
+            sizes="(min-width: 1280px) 25vw, (min-width: 768px) 33vw, 100vw"
+            className={`object-cover transition-transform duration-300 group-hover:scale-105 ${!isAvailable ? 'grayscale' : ''}`}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-gray-300">

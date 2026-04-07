@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import {
   ArrowRight,
@@ -52,10 +53,13 @@ export function PromotionCard({
           <div className="flex items-start gap-4">
             <div className="h-16 w-16 shrink-0 overflow-hidden rounded-[1.1rem] border-4 border-black bg-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
               {promo.vendor?.displayImageUrl ? (
-                <img
+                <Image
                   src={promo.vendor.displayImageUrl}
                   alt={promo.vendor.name}
+                  width={64}
+                  height={64}
                   className="h-full w-full object-cover"
+                  unoptimized
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center">
@@ -332,10 +336,13 @@ export function FeaturedDealSection({
 
           <div className="relative min-h-[260px] border-t-4 border-black lg:border-l-4 lg:border-t-0">
             {featuredDeal.vendor?.displayImageUrl ? (
-              <img
+              <Image
                 src={featuredDeal.vendor.displayImageUrl}
                 alt={featuredDeal.vendor.name}
+                fill
+                sizes="(max-width: 1024px) 100vw, 40vw"
                 className="absolute inset-0 h-full w-full object-cover"
+                unoptimized
               />
             ) : (
               <div className="flex h-full min-h-[260px] items-center justify-center bg-black/10">

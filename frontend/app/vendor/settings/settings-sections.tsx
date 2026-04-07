@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { type ChangeEvent } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -118,7 +119,7 @@ function ImageUploadField({
           <div className={emptyStateClassName}>
             {preview ? (
               <>
-                <img src={preview} alt={label} className="w-full h-full object-cover absolute inset-0" />
+                <Image src={preview} alt={label} fill sizes="(max-width: 768px) 100vw, 384px" className="object-cover absolute inset-0" unoptimized />
                 <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                   <Upload className={overlayIconClassName} />
                   <span className={overlayLabelClassName}>{changeLabel}</span>

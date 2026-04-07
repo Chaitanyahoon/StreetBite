@@ -8,6 +8,16 @@ const nextConfig = {
   turbopack: { root: '.' },
   images: {
     unoptimized: true,
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+      {
+        protocol: 'http',
+        hostname: '**',
+      },
+    ],
   },
   async rewrites() {
     return [

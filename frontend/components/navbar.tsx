@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
@@ -147,10 +148,13 @@ export function Navbar({ forceSolid = false }: { forceSolid?: boolean }) {
                     <button className="flex items-center gap-3 px-2 py-1 rounded-xl hover:bg-orange-50 transition-all duration-200 group">
                       <div className="w-10 h-10 rounded-lg bg-black flex items-center justify-center text-white font-black text-sm border-2 border-black group-hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-shadow overflow-hidden">
                         {userProfilePic ? (
-                          <img
+                          <Image
                             src={getImageUrl(userProfilePic)}
                             alt={userName}
+                            width={40}
+                            height={40}
                             className="w-full h-full object-cover"
+                            unoptimized
                             onError={(e) => {
                               (e.target as HTMLImageElement).style.display = 'none';
                               (e.target as HTMLImageElement).parentElement!.innerText = userName.charAt(0).toUpperCase();
@@ -229,10 +233,13 @@ export function Navbar({ forceSolid = false }: { forceSolid?: boolean }) {
                         <button className="flex min-h-14 w-full items-center justify-center gap-3 rounded-2xl border-2 border-black bg-black px-4 py-4 font-black text-white shadow-[4px_4px_0px_0px_#9ca3af] transition-all active:translate-y-[2px]">
                           <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-white text-sm font-black text-black">
                             {userProfilePic ? (
-                              <img
+                              <Image
                                 src={getImageUrl(userProfilePic)}
                                 alt={userName}
+                                width={36}
+                                height={36}
                                 className="h-full w-full object-cover"
+                                unoptimized
                                 onError={(e) => {
                                   (e.target as HTMLImageElement).style.display = 'none'
                                   const parent = (e.target as HTMLImageElement).parentElement

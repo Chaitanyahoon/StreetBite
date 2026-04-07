@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import {
     Sheet,
     SheetContent,
@@ -130,10 +131,13 @@ export function VendorDetailsSheet({ vendor, open, onOpenChange, onFavoriteToggl
 
                 {/* Cover Image */}
                 <div className="relative h-64 w-full bg-muted">
-                    <img
+                    <Image
                         src={vendor.displayImageUrl || vendor.image || "/placeholder.svg?height=300&width=500&query=street+food"}
                         alt={vendor.name}
-                        className="w-full h-full object-cover"
+                        fill
+                        sizes="(max-width: 768px) 100vw, 448px"
+                        className="object-cover"
+                        unoptimized
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 

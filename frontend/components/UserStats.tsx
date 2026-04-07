@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Trophy, Flame, Star, TrendingUp, UtensilsCrossed } from "lucide-react";
 import { RESULTS } from "./FoodPersonalityQuiz";
@@ -57,15 +58,9 @@ export function UserStats() {
                 <div className="text-center mb-6">
                     <div className="w-24 h-24 mx-auto rounded-full bg-yellow-300 flex items-center justify-center text-5xl mb-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] relative border-4 border-black overflow-hidden group">
                         {profilePicture ? (
-                            <img
+                            <StatsProfileImage
+                                key={profilePicture}
                                 src={profilePicture.startsWith('http') || profilePicture.startsWith('/') ? profilePicture : `/avatars/${profilePicture}`}
-                                alt="Profile"
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                    (e.target as HTMLImageElement).src = '';
-                                    (e.target as HTMLImageElement).style.display = 'none';
-                                    (e.target as HTMLImageElement).nextElementSibling?.remove();
-                                }}
                             />
                         ) : (
                             <span className="group-hover:scale-110 transition-transform block">👤</span>
@@ -121,5 +116,25 @@ export function UserStats() {
                 </div>
             </CardContent>
         </Card>
+    );
+}
+
+function StatsProfileImage({ src }: { src: string }) {
+    const [failed, setFailed] = useState(false);
+
+    if (failed) {
+        return null;
+    }
+
+    return (
+        <Image
+            src={src}
+            alt="Profile"
+            fill
+            unoptimized
+            sizes="96px"
+            className="object-cover"
+            onError={() => setFailed(true)}
+        />
     );
 }

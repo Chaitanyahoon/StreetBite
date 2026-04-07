@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -279,10 +280,13 @@ export function PhotoWall() {
                                         onClick={() => openLightbox(photo)}
                                         className="relative aspect-square rounded-lg overflow-hidden cursor-pointer group"
                                     >
-                                        <img
+                                        <Image
                                             src={photo.imageUrl}
                                             alt={photo.foodName}
-                                            className="w-full h-full object-cover transition-transform group-hover:scale-110"
+                                            fill
+                                            unoptimized
+                                            sizes="(min-width: 768px) 33vw, 50vw"
+                                            className="object-cover transition-transform group-hover:scale-110"
                                         />
 
                                         {photo.isPhotoOfWeek && (
@@ -340,11 +344,14 @@ export function PhotoWall() {
                         </Button>
 
                         {/* Image Section */}
-                        <div className="w-full md:w-1/2 bg-black flex items-center justify-center">
-                            <img
+                        <div className="relative w-full md:w-1/2 bg-black flex items-center justify-center min-h-[320px]">
+                            <Image
                                 src={selectedPhoto.imageUrl}
                                 alt={selectedPhoto.foodName}
-                                className="w-full h-full object-contain max-h-[50vh] md:max-h-full"
+                                fill
+                                unoptimized
+                                sizes="(min-width: 768px) 50vw, 100vw"
+                                className="object-contain"
                             />
                         </div>
 

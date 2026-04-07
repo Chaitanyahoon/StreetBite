@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -41,6 +42,7 @@ export default function ProfilePage() {
   // File Upload State
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
+  const [profileImageFailed, setProfileImageFailed] = useState(false)
 
   const [userData, setUserData] = useState({
     userId: '',
@@ -68,6 +70,10 @@ export default function ProfilePage() {
     setResetEmail(authUser.email || '')
     setLoading(false)
   }, [authUser, isLoggedIn, router])
+
+  useEffect(() => {
+    setProfileImageFailed(false)
+  }, [userData.profilePicture])
 
   const handleSave = async () => {
     if (!userData.userId) {
@@ -147,6 +153,16 @@ export default function ProfilePage() {
     )
   }
 
+  const resolvedProfileImageSrc = (() => {
+    const path = userData.profilePicture
+    if (!path) return null
+    if (path.startsWith('http')) return path
+    if (path.startsWith('/avatars/')) return path
+    return `${BACKEND_ASSET_URL}${path.startsWith('/') ? '' : '/'}${path}`
+  })()
+
+  const displayProfileImageSrc = profileImageFailed ? '/avatars/avatar_1.png' : resolvedProfileImageSrc
+
   return (
     <div className="min-h-screen bg-stone-100 pb-20">
       <Navbar />
@@ -199,18 +215,18 @@ export default function ProfilePage() {
               <div className="relative group">
                 <div className="absolute -inset-1 bg-black rounded-full shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"></div>
                 <div className="relative w-44 h-44 rounded-full overflow-hidden border-4 border-black bg-white transform transition-transform duration-300">
-                  {userData.profilePicture ? (
-                    <img
-                      src={(() => {
-                        const path = userData.profilePicture;
-                        if (path.startsWith('http')) return path;
-                        if (path.startsWith('/avatars/')) return path;
-                        return `${BACKEND_ASSET_URL}${path.startsWith('/') ? '' : '/'}${path}`;
-                      })()}
+                  {displayProfileImageSrc ? (
+                    <Image
+                      src={displayProfileImageSrc}
                       alt="Profile"
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = '/avatars/avatar_1.png'
+                      fill
+                      unoptimized
+                      sizes="176px"
+                      className="object-cover"
+                      onError={() => {
+                        if (!profileImageFailed) {
+                          setProfileImageFailed(true)
+                        }
                       }}
                     />
                   ) : (
@@ -284,10 +300,12 @@ export default function ProfilePage() {
                         : 'border-transparent hover:border-black hover:scale-110 hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] opacity-70 hover:opacity-100 hover:z-10'
                         }`}
                     >
-                      <img
+                      <Image
                         src={`/avatars/avatar_${num}.png`}
                         alt={`Avatar ${num}`}
-                        className="w-full h-full object-cover"
+                        fill
+                        sizes="(min-width: 768px) 88px, 22vw"
+                        className="object-cover"
                       />
                     </button>
                   ))}

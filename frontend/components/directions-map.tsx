@@ -17,7 +17,9 @@ export function DirectionsMap({ origin, destination }: DirectionsMapProps) {
     const originMarker = useRef<any>(null)
     const destinationMarker = useRef<any>(null)
 
-    const [loaded, setLoaded] = useState(false)
+    const [loaded, setLoaded] = useState(() =>
+        Boolean(typeof window !== 'undefined' && (window as any).google?.maps)
+    )
     const [error, setError] = useState<string | null>(() =>
         GOOGLE_MAPS_API_KEY ? null : 'Google Maps API key not configured'
     )
@@ -31,22 +33,34 @@ export function DirectionsMap({ origin, destination }: DirectionsMapProps) {
         }
 
         if ((window as any).google && (window as any).google.maps) {
-            setLoaded(true)
             return
         }
 
         const id = 'gmaps-sdk'
-        if (!document.getElementById(id)) {
+        const existingScript = document.getElementById(id) as HTMLScriptElement | null
+        const handleLoad = () => {
+            setLoaded(true)
+            setError(null)
+        }
+        const handleError = () => setError('Failed to load Google Maps')
+
+        if (!existingScript) {
             const script = document.createElement('script')
             script.id = id
             script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(key)}`
             script.async = true
             script.defer = true
-            script.onload = () => setLoaded(true)
-            script.onerror = () => setError('Failed to load Google Maps')
+            script.onload = handleLoad
+            script.onerror = handleError
             document.head.appendChild(script)
         } else {
-            setLoaded(true)
+            existingScript.addEventListener('load', handleLoad)
+            existingScript.addEventListener('error', handleError)
+
+            return () => {
+                existingScript.removeEventListener('load', handleLoad)
+                existingScript.removeEventListener('error', handleError)
+            }
         }
     }, [])
 

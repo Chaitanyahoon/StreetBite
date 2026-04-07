@@ -13,17 +13,12 @@ interface VendorStatus {
  * @returns {Object} Status string ('AVAILABLE' | 'BUSY' | 'UNAVAILABLE') and loading state.
  */
 export function useLiveVendorStatus(vendorId: string | number) {
+    const hasRealtimeSource = Boolean(vendorId && realtimeDb)
     const [status, setStatus] = useState<'AVAILABLE' | 'BUSY' | 'UNAVAILABLE' | null>(null)
-    const [loading, setLoading] = useState(() => Boolean(vendorId && realtimeDb))
+    const [loading, setLoading] = useState(() => hasRealtimeSource)
 
     useEffect(() => {
-        if (!vendorId) {
-            setLoading(false)
-            return
-        }
-
-        if (!realtimeDb) {
-            setLoading(false)
+        if (!vendorId || !realtimeDb) {
             return
         }
 
@@ -50,5 +45,5 @@ export function useLiveVendorStatus(vendorId: string | number) {
         return () => unsubscribe()
     }, [vendorId])
 
-    return { status, loading }
+    return { status: vendorId ? status : null, loading: hasRealtimeSource ? loading : false }
 }

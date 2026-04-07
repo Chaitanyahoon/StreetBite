@@ -88,7 +88,11 @@ export function GamificationProvider({ children }: { children: React.ReactNode }
 
     useEffect(() => {
         if (isLoggedIn) {
-            fetchStats()
+            const timer = window.setTimeout(() => {
+                void fetchStats()
+            }, 0)
+
+            return () => window.clearTimeout(timer)
         }
     }, [isLoggedIn, fetchStats])
 

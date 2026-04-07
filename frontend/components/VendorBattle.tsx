@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Trophy, Swords, Sparkles, X } from "lucide-react";
@@ -145,7 +146,14 @@ export function VendorBattle() {
                                 <div className="text-center flex flex-col items-center justify-center h-full gap-4">
                                     <div className={`w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center text-4xl border-4 ${hasVoted && index === selectedIndex ? "border-green-500 bg-green-50" : "border-black"} overflow-hidden`}>
                                         {vendor.image ? (
-                                            <img src={vendor.image} alt={vendor.name} className="w-full h-full object-cover" />
+                                            <Image
+                                                src={vendor.image}
+                                                alt={vendor.name}
+                                                fill
+                                                unoptimized
+                                                sizes="96px"
+                                                className="object-cover"
+                                            />
                                         ) : (
                                             <span className="transform group-hover/card:scale-110 transition-transform duration-300 text-xl font-black text-black">SB</span>
                                         )}

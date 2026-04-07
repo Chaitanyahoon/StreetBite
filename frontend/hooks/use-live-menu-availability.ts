@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { doc, onSnapshot } from 'firebase/firestore'
 import { realtimeDb, REALTIME_COLLECTIONS } from '@/lib/realtime'
 
@@ -20,29 +20,22 @@ interface LiveMenuItem {
  * @returns {Object} Availability map and lookup function.
  */
 export function useLiveMenuAvailability(menuItems: LiveMenuItem[]) {
-    const [availability, setAvailability] = useState<MenuAvailability>(() => {
-        const initialAvailability: MenuAvailability = {}
+    const baselineAvailability = useMemo(() => {
+        const nextAvailability: MenuAvailability = {}
         menuItems.forEach(item => {
             const id = item.id ?? item.itemId
             if (id != null) {
-                initialAvailability[String(id)] = item.isAvailable ?? true
+                nextAvailability[String(id)] = item.isAvailable ?? true
             }
         })
-        return initialAvailability
-    })
+        return nextAvailability
+    }, [menuItems])
+
+    const [availability, setAvailability] = useState<MenuAvailability>(baselineAvailability)
 
     useEffect(() => {
         if (!realtimeDb || !menuItems || menuItems.length === 0) return
         const firestore = realtimeDb
-
-        const initialAvailability: MenuAvailability = {}
-        menuItems.forEach(item => {
-            const id = item.id ?? item.itemId
-            if (id != null) {
-                initialAvailability[String(id)] = item.isAvailable ?? true
-            }
-        })
-        setAvailability(initialAvailability)
 
         const itemIds = menuItems
             .map(item => item.id ?? item.itemId)
@@ -82,8 +75,8 @@ export function useLiveMenuAvailability(menuItems: LiveMenuItem[]) {
     }, [menuItems])
 
     const getAvailability = (itemId: string | number): boolean => {
-        return availability[String(itemId)] ?? true
+        return availability[String(itemId)] ?? baselineAvailability[String(itemId)] ?? true
     }
 
-    return { availability, getAvailability }
+    return { availability: { ...baselineAvailability, ...availability }, getAvailability }
 }

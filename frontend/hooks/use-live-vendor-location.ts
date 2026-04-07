@@ -15,18 +15,13 @@ interface VendorLocation {
  * @returns {Object} Location object containing latitude, longitude, address, and loading state.
  */
 export function useLiveVendorLocation(vendorId: string | number) {
+    const hasRealtimeSource = Boolean(vendorId && realtimeDb)
     const [location, setLocation] = useState<VendorLocation | null>(null)
-    const [loading, setLoading] = useState(() => Boolean(vendorId && realtimeDb))
+    const [loading, setLoading] = useState(() => hasRealtimeSource)
 
     useEffect(() => {
-        if (!vendorId) {
-            setLoading(false)
-            return
-        }
-
-        if (!realtimeDb) {
+        if (!vendorId || !realtimeDb) {
             console.warn(`useLiveVendorLocation: realtimeDb not configured for vendorId=${vendorId}`)
-            setLoading(false)
             return
         }
 
@@ -60,5 +55,5 @@ export function useLiveVendorLocation(vendorId: string | number) {
         return () => unsubscribe()
     }, [vendorId])
 
-    return { location, loading }
+    return { location: vendorId ? location : null, loading: hasRealtimeSource ? loading : false }
 }

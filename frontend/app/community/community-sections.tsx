@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { Award, Flame, Heart, Loader2, MapPin, MessageSquare, Search, Send, ShieldCheck, Star, UtensilsCrossed, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -119,10 +120,13 @@ function VendorSpotlightCard({ vendor, onViewProfile }: { vendor: any; onViewPro
         <div className="space-y-6">
           <div className="w-full aspect-video bg-white rounded-xl flex items-center justify-center border-4 border-white overflow-hidden relative group">
             {vendor?.displayImageUrl ? (
-              <img
+              <Image
                 src={vendor.displayImageUrl}
                 alt={vendor.name}
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                fill
+                sizes="(max-width: 1024px) 100vw, 320px"
+                className="object-cover group-hover:scale-110 transition-transform duration-500"
+                unoptimized
               />
             ) : (
               <>

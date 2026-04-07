@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -98,7 +99,7 @@ export default function UserManagementPage() {
                                 <div className="flex items-center gap-4">
                                     <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
                                         {user.profilePicture ? (
-                                            <img src={user.profilePicture} alt={user.displayName} className="h-10 w-10 rounded-full object-cover" />
+                                            <Image src={user.profilePicture} alt={user.displayName} width={40} height={40} className="h-10 w-10 rounded-full object-cover" unoptimized />
                                         ) : (
                                             <UserIcon className="h-5 w-5 text-primary" />
                                         )}

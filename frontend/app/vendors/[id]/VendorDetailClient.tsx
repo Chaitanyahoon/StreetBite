@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { Navbar } from '@/components/navbar'
 import {
   AlertDialog,
@@ -571,13 +572,13 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
             <div className="relative overflow-hidden bg-[#120f0d]">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(251,146,60,0.45),_transparent_25%),radial-gradient(circle_at_left,_rgba(249,115,22,0.22),_transparent_30%)]" />
                 <div className="absolute inset-0 z-10 bg-gradient-to-t from-[#120f0d] via-black/60 to-black/20" />
-                <img
+                <VendorMediaImage
+                    key={displayVendor?.bannerImageUrl || displayVendor?.imageUrl || "/placeholder-vendor.jpg"}
                     src={displayVendor?.bannerImageUrl || displayVendor?.imageUrl || "/placeholder-vendor.jpg"}
+                    fallbackSrc="https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=2070&auto=format&fit=crop"
                     alt={displayVendor?.name}
                     className="h-[480px] w-full object-cover opacity-65 md:h-[560px]"
-                    onError={(e) => {
-                        (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=2070&auto=format&fit=crop'
-                    }}
+                    sizes="100vw"
                 />
 
                 <div className="absolute inset-x-0 top-0 z-20">
@@ -757,13 +758,13 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
                                         {items.map((item: any) => (
                                             <div key={item.id || item.itemId} className="group bg-white border-2 border-gray-100 rounded-2xl overflow-hidden hover:border-primary/40 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
                                                 <div className="relative h-48 bg-gray-100 overflow-hidden">
-                                                    <img
+                                                    <VendorMediaImage
+                                                        key={item.imageUrl || "/placeholder-food.jpg"}
                                                         src={item.imageUrl || "/placeholder-food.jpg"}
+                                                        fallbackSrc="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=2080&auto=format&fit=crop"
                                                         alt={item.name}
                                                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                                                        onError={(e) => {
-                                                            (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=2080&auto=format&fit=crop'
-                                                        }}
+                                                        sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
                                                     />
                                                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                                                     {/* Availability Badge - uses real-time data */}
@@ -1033,13 +1034,13 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
                                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                                         {vendor.galleryImages.map((imgUrl, i) => (
                                             <div key={i} className="aspect-square bg-gray-100 rounded-2xl overflow-hidden group cursor-pointer shadow-sm hover:shadow-md transition-all">
-                                                <img
+                                                <VendorMediaImage
+                                                    key={imgUrl}
                                                     src={imgUrl}
+                                                    fallbackSrc="/placeholder-food.jpg"
                                                     alt={`Gallery ${i + 1}`}
                                                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                                                    onError={(e) => {
-                                                        (e.target as HTMLImageElement).src = '/placeholder-food.jpg'
-                                                    }}
+                                                    sizes="(min-width: 768px) 33vw, 50vw"
                                                 />
                                             </div>
                                         ))}
@@ -1452,5 +1453,38 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
 
             <Footer />
         </div >
+    )
+}
+
+function VendorMediaImage({
+    src,
+    fallbackSrc,
+    alt,
+    className,
+    sizes,
+}: {
+    src: string
+    fallbackSrc: string
+    alt?: string
+    className?: string
+    sizes?: string
+}) {
+    const [hasError, setHasError] = useState(false)
+    const imageSrc = hasError ? fallbackSrc : (src || fallbackSrc)
+
+    return (
+        <Image
+            src={imageSrc}
+            alt={alt || 'Vendor image'}
+            fill
+            unoptimized
+            sizes={sizes || '100vw'}
+            className={className}
+            onError={() => {
+                if (!hasError) {
+                    setHasError(true)
+                }
+            }}
+        />
     )
 }

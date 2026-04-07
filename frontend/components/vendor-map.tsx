@@ -21,7 +21,9 @@ export function VendorMap({ vendors = [], onVendorSelect }: { vendors: Vendor[],
   const mapInstance = useRef<any>(null)
   const markersRef = useRef<any[]>([])
   const infoWindowRef = useRef<any>(null)
-  const [loaded, setLoaded] = useState(false)
+  const [loaded, setLoaded] = useState(() =>
+    Boolean(typeof window !== 'undefined' && (window as any).google?.maps)
+  )
   const [error, setError] = useState<string | null>(() =>
     GOOGLE_MAPS_API_KEY ? null : 'Google Maps API key not configured'
   )
@@ -35,36 +37,38 @@ export function VendorMap({ vendors = [], onVendorSelect }: { vendors: Vendor[],
       return
     }
 
-    // If already loaded
     if ((window as any).google && (window as any).google.maps) {
-      setLoaded(true)
       return
     }
 
-    // Add script
     const id = 'gmaps-sdk'
-    if (!document.getElementById(id)) {
+    const existingScript = document.getElementById(id) as HTMLScriptElement | null
+    const handleLoad = () => {
+      setLoaded(true)
+      setError(null)
+    }
+    const handleError = () => {
+      setError('Failed to load Google Maps. Please check your API key.')
+      console.error('Failed to load Google Maps script - API key may be invalid or expired')
+    }
+
+    if (!existingScript) {
       const script = document.createElement('script')
       script.id = id
       script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(key)}`
       script.async = true
       script.defer = true
-      script.onload = () => {
-        setLoaded(true)
-        setError(null)
-      }
-      script.onerror = () => {
-        setError('Failed to load Google Maps. Please check your API key.')
-        console.error('Failed to load Google Maps script - API key may be invalid or expired')
-      }
+      script.onload = handleLoad
+      script.onerror = handleError
       document.head.appendChild(script)
     } else {
-      // script exists but may not be loaded yet
-      setTimeout(() => {
-        if ((window as any).google && (window as any).google.maps) {
-          setLoaded(true)
-        }
-      }, 500)
+      existingScript.addEventListener('load', handleLoad)
+      existingScript.addEventListener('error', handleError)
+
+      return () => {
+        existingScript.removeEventListener('load', handleLoad)
+        existingScript.removeEventListener('error', handleError)
+      }
     }
   }, [])
 
