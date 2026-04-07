@@ -13,7 +13,7 @@ import { BreadcrumbListSchema } from '@/components/seo/breadcrumb-schema'
 import { CollectionPageSchema } from '@/components/seo/collection-page-schema'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { favoriteApi, vendorApi, type ApiVendor } from '@/lib/api'
+import { favoriteApi, vendorApi } from '@/lib/api'
 import { useUserLocation } from '@/lib/useUserLocation'
 import { useAuth } from '@/context/AuthContext'
 import {
@@ -27,6 +27,21 @@ import {
   Star,
   X,
 } from 'lucide-react'
+import {
+  OPEN_VENDOR_STATUSES,
+  PUBLIC_VENDOR_STATUSES,
+  QUICK_FILTERS,
+  SORT_OPTIONS,
+  filterVendors,
+  getCuisineFilters,
+  getLocationSummary,
+  normalizeVendor,
+  sortVendors,
+  type ExploreVendor,
+  type QuickFilter,
+  type SortMode,
+  type ViewMode,
+} from './explore-helpers'
 
 const VendorMap = dynamic(
   () => import('@/components/vendor-map').then((m) => m.VendorMap),
@@ -47,88 +62,6 @@ const VendorDetailsSheet = dynamic(
   () => import('@/components/vendor-details-sheet').then((m) => m.VendorDetailsSheet),
   { ssr: false },
 )
-
-type ViewMode = 'list' | 'map'
-type QuickFilter = 'all' | 'open-now' | 'nearby' | 'favorites'
-type SortMode = 'recommended' | 'nearest' | 'top-rated' | 'most-reviewed'
-
-interface ExploreVendor {
-  id: string | number
-  slug?: string
-  name: string
-  cuisine?: string
-  rating?: number
-  distance?: number
-  image?: string
-  displayImageUrl?: string
-  reviews?: number
-  tags?: string[]
-  latitude?: number
-  longitude?: number
-  description?: string
-  status?: string
-  isOnline?: boolean
-  isAcceptingOrders?: boolean
-}
-
-const QUICK_FILTERS: Array<{ id: QuickFilter; label: string }> = [
-  { id: 'all', label: 'All spots' },
-  { id: 'open-now', label: 'Open now' },
-  { id: 'nearby', label: 'Nearby' },
-  { id: 'favorites', label: 'Favorites' },
-]
-
-const SORT_OPTIONS: Array<{ id: SortMode; label: string }> = [
-  { id: 'recommended', label: 'Recommended' },
-  { id: 'nearest', label: 'Nearest' },
-  { id: 'top-rated', label: 'Top rated' },
-  { id: 'most-reviewed', label: 'Most reviewed' },
-]
-
-const PUBLIC_VENDOR_STATUSES = new Set(['APPROVED', 'AVAILABLE', 'BUSY'])
-const OPEN_VENDOR_STATUSES = new Set(['AVAILABLE', 'BUSY'])
-
-function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
-  const R = 6371
-  const dLat = (lat2 - lat1) * (Math.PI / 180)
-  const dLon = (lon2 - lon1) * (Math.PI / 180)
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(lat1 * (Math.PI / 180)) *
-      Math.cos(lat2 * (Math.PI / 180)) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2)
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-  return R * c
-}
-
-function normalizeVendor(vendor: ApiVendor, location?: { lat: number; lng: number } | null): ExploreVendor {
-  const latitude = typeof vendor.latitude === 'number' ? vendor.latitude : Number(vendor.latitude)
-  const longitude = typeof vendor.longitude === 'number' ? vendor.longitude : Number(vendor.longitude)
-  const hasCoordinates = Number.isFinite(latitude) && Number.isFinite(longitude)
-  const distance = location && hasCoordinates
-    ? calculateDistance(location.lat, location.lng, latitude, longitude)
-    : undefined
-
-  return {
-    id: vendor.id,
-    slug: vendor.slug,
-    name: vendor.name ?? 'Street food vendor',
-    cuisine: vendor.cuisine ?? 'Street Food',
-    rating: typeof vendor.rating === 'number' ? vendor.rating : Number(vendor.rating) || 0,
-    distance,
-    image: vendor.image,
-    displayImageUrl: vendor.displayImageUrl,
-    reviews: typeof vendor.reviews === 'number' ? vendor.reviews : Number(vendor.reviews) || 0,
-    tags: Array.isArray(vendor.tags) ? vendor.tags : [],
-    latitude: hasCoordinates ? latitude : undefined,
-    longitude: hasCoordinates ? longitude : undefined,
-    description: vendor.description,
-    status: vendor.status,
-    isOnline: OPEN_VENDOR_STATUSES.has(vendor.status || ''),
-    isAcceptingOrders: vendor.status === 'AVAILABLE',
-  }
-}
 
 function ExplorePageContent() {
   const { isLoggedIn } = useAuth()
@@ -236,62 +169,17 @@ function ExplorePageContent() {
 
   const favoriteIds = new Set(favorites.map((vendor) => String(vendor.id)))
 
-  const cuisineFilters = ['all', ...Array.from(new Set(
-    vendors
-      .map((vendor) => vendor.cuisine?.trim())
-      .filter((cuisine): cuisine is string => Boolean(cuisine)),
-  )).slice(0, 8)]
+  const cuisineFilters = getCuisineFilters(vendors)
 
-  const filteredVendors = vendors.filter((vendor) => {
-    const query = deferredSearchTerm.toLowerCase().trim()
-    const matchesSearch =
-      query.length === 0 ||
-      vendor.name.toLowerCase().includes(query) ||
-      (vendor.cuisine || '').toLowerCase().includes(query) ||
-      (vendor.tags || []).some((tag) => tag.toLowerCase().includes(query))
+  const filteredVendors = filterVendors(
+    vendors,
+    deferredSearchTerm,
+    selectedCuisine,
+    selectedQuickFilter,
+    favoriteIds
+  )
 
-    const matchesCuisine =
-      selectedCuisine === 'all' ||
-      (vendor.cuisine || '').toLowerCase() === selectedCuisine.toLowerCase()
-
-    const matchesQuickFilter =
-      selectedQuickFilter === 'all' ||
-      (selectedQuickFilter === 'open-now' && OPEN_VENDOR_STATUSES.has(vendor.status || '')) ||
-      (selectedQuickFilter === 'nearby' &&
-        typeof vendor.distance === 'number' &&
-        Number.isFinite(vendor.distance) &&
-        vendor.distance <= 3.5) ||
-      (selectedQuickFilter === 'favorites' && favoriteIds.has(String(vendor.id)))
-
-    return matchesSearch && matchesCuisine && matchesQuickFilter
-  })
-
-  const sortedVendors = [...filteredVendors].sort((a, b) => {
-    if (selectedSort === 'nearest') {
-      return (a.distance ?? Number.POSITIVE_INFINITY) - (b.distance ?? Number.POSITIVE_INFINITY)
-    }
-
-    if (selectedSort === 'top-rated') {
-      return (b.rating ?? 0) - (a.rating ?? 0)
-    }
-
-    if (selectedSort === 'most-reviewed') {
-      return (b.reviews ?? 0) - (a.reviews ?? 0)
-    }
-
-    const favoriteScoreA = favoriteIds.has(String(a.id)) ? 1 : 0
-    const favoriteScoreB = favoriteIds.has(String(b.id)) ? 1 : 0
-    const openScoreA = OPEN_VENDOR_STATUSES.has(a.status || '') ? 1 : 0
-    const openScoreB = OPEN_VENDOR_STATUSES.has(b.status || '') ? 1 : 0
-
-    return (
-      favoriteScoreB - favoriteScoreA ||
-      openScoreB - openScoreA ||
-      (b.rating ?? 0) - (a.rating ?? 0) ||
-      (b.reviews ?? 0) - (a.reviews ?? 0) ||
-      (a.distance ?? Number.POSITIVE_INFINITY) - (b.distance ?? Number.POSITIVE_INFINITY)
-    )
-  })
+  const sortedVendors = sortVendors(filteredVendors, selectedSort, favoriteIds)
 
   const favoritesPreview = favorites
     .filter((vendor) => PUBLIC_VENDOR_STATUSES.has(vendor.status || 'APPROVED'))
@@ -300,13 +188,7 @@ function ExplorePageContent() {
   const hasActiveFilters =
     searchTerm.length > 0 || selectedCuisine !== 'all' || selectedQuickFilter !== 'all' || selectedSort !== 'recommended'
 
-  const locationSummary = loadingLocation
-    ? 'Checking your location'
-    : location
-      ? 'Using your location for nearby sorting'
-      : locationError
-        ? 'Location unavailable, showing all public vendors'
-        : 'Location not shared, showing all public vendors'
+  const locationSummary = getLocationSummary(loadingLocation, location, locationError)
 
   const replaceExploreQuery = (updates: Record<string, string | undefined>) => {
     const nextParams = new URLSearchParams(searchParams.toString())
