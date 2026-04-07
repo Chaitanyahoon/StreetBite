@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
-import { MessageSquare, Gamepad2, Search, Flame, Loader2 } from 'lucide-react'
+import { MessageSquare, Gamepad2, Search, Flame, Loader2, Heart, Star } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -166,6 +166,7 @@ export default function CommunityPage() {
 
     const handlePostComment = async () => {
         if (!newComment.trim()) return;
+        if (!selectedDiscussion) return;
 
         if (!authIsLoggedIn) {
             toast('Please sign in to comment', {

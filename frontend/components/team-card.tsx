@@ -13,7 +13,7 @@ export interface TeamMember {
     image?: string
     imageStyle?: React.CSSProperties
     stats: {
-        spiceLevel: 'Low' | 'Mild' | 'Medium' | 'Hot' | 'Extreme'
+        spiceLevel: 'Low' | 'Lowkey' | 'Mild' | 'Medium' | 'Hot' | 'Extreme'
         reviews: number
         badge: string
     }
@@ -103,7 +103,7 @@ export function TeamCard({ member }: { member: TeamMember }) {
                                 <div
                                     className={`h-full rounded-full ${member.stats.spiceLevel === 'Extreme' ? 'bg-red-600' : 'bg-primary'}`}
                                     style={{
-                                        width: member.stats.spiceLevel === 'Low' ? '30%' :
+                                        width: member.stats.spiceLevel === 'Low' || member.stats.spiceLevel === 'Lowkey' ? '30%' :
                                             member.stats.spiceLevel === 'Mild' ? '50%' :
                                                 member.stats.spiceLevel === 'Medium' ? '75%' : '100%'
                                     }}

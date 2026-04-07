@@ -36,60 +36,68 @@ const revivePhotos = (rawPhotos: unknown): Photo[] => {
     }
 
     return rawPhotos
-        .map((photo) => {
+        .flatMap((photo): Photo[] => {
             if (!photo || typeof photo !== "object") {
-                return null;
+                return [];
             }
 
             const candidate = photo as Partial<Photo> & { comments?: Array<Partial<Comment>> };
             if (!candidate.id || !candidate.imageUrl || !candidate.foodName || !candidate.location || !candidate.username) {
-                return null;
+                return [];
             }
 
-            return {
+            const comments: Comment[] = Array.isArray(candidate.comments)
+                ? candidate.comments.flatMap((comment): Comment[] => {
+                    if (!comment || typeof comment !== "object" || !comment.id || !comment.username || !comment.text) {
+                        return [];
+                    }
+
+                    return [{
+                        id: Number(comment.id),
+                        username: String(comment.username),
+                        text: String(comment.text),
+                        timestamp: comment.timestamp ? new Date(comment.timestamp) : new Date()
+                    }];
+                })
+                : [];
+
+            return [{
                 id: candidate.id,
                 imageUrl: candidate.imageUrl,
                 username: candidate.username,
                 foodName: candidate.foodName,
                 location: candidate.location,
                 likes: typeof candidate.likes === "number" ? candidate.likes : 0,
-                comments: Array.isArray(candidate.comments)
-                    ? candidate.comments
-                        .filter((comment): comment is Partial<Comment> => Boolean(comment && comment.id && comment.username && comment.text))
-                        .map((comment) => ({
-                            id: comment.id as number,
-                            username: comment.username as string,
-                            text: comment.text as string,
-                            timestamp: comment.timestamp ? new Date(comment.timestamp) : new Date()
-                        }))
-                    : [],
+                comments,
                 isLiked: Boolean(candidate.isLiked),
-                isPhotoOfWeek: Boolean(candidate.isPhotoOfWeek)
-            };
-        })
-        .filter((photo): photo is Photo => Boolean(photo));
+                isPhotoOfWeek: candidate.isPhotoOfWeek ? Boolean(candidate.isPhotoOfWeek) : undefined
+            }];
+        });
 };
 
 export function PhotoWall() {
     const { performAction } = useGamification();
-    const [photos, setPhotos] = useState<Photo[]>([]);
+    const [photos, setPhotos] = useState<Photo[]>(() => {
+        if (typeof window === "undefined") {
+            return [];
+        }
+
+        const savedPhotos = window.localStorage.getItem(PHOTO_STORAGE_KEY);
+        if (!savedPhotos) {
+            return [];
+        }
+
+        try {
+            return revivePhotos(JSON.parse(savedPhotos));
+        } catch {
+            window.localStorage.removeItem(PHOTO_STORAGE_KEY);
+            return [];
+        }
+    });
     const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
     const [isUploadOpen, setIsUploadOpen] = useState(false);
     const [newPhoto, setNewPhoto] = useState({ foodName: "", location: "", imageUrl: "" });
     const [newComment, setNewComment] = useState("");
-
-    useEffect(() => {
-        const savedPhotos = localStorage.getItem(PHOTO_STORAGE_KEY);
-        if (!savedPhotos) {
-            return;
-        }
-
-        try {
-            setPhotos(revivePhotos(JSON.parse(savedPhotos)));
-        } catch {
-            localStorage.removeItem(PHOTO_STORAGE_KEY);
-        }
-    }, []);
 
     useEffect(() => {
         localStorage.setItem(PHOTO_STORAGE_KEY, JSON.stringify(photos));

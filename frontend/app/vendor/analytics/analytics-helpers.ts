@@ -7,6 +7,7 @@ export interface AnalyticsMetricCard {
 }
 
 export interface CategoryChartItem {
+  [key: string]: string | number
   name: string
   value: number
   color: string

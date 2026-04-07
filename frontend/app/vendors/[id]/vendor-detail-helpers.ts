@@ -42,7 +42,7 @@ export interface Review {
 }
 
 export interface VendorPromotion {
-  id: number
+  id: number | string
   title: string
   description?: string
   promoCode: string
@@ -52,6 +52,23 @@ export interface VendorPromotion {
   maxUses: number
   currentUses?: number
   endDate?: string
+}
+
+export function normalizeVendorPromotion(
+  promotion: Partial<VendorPromotion> & { id: number | string; title: string; promoCode: string; discountType: string; discountValue: number },
+): VendorPromotion {
+  return {
+    id: promotion.id,
+    title: promotion.title,
+    description: promotion.description,
+    promoCode: promotion.promoCode,
+    discountType: promotion.discountType,
+    discountValue: promotion.discountValue,
+    minOrderValue: promotion.minOrderValue ?? 0,
+    maxUses: promotion.maxUses ?? 0,
+    currentUses: promotion.currentUses ?? 0,
+    endDate: promotion.endDate,
+  }
 }
 
 export type OfferFilter = 'all' | 'percentage' | 'fixed'
@@ -145,7 +162,7 @@ export function filterAndSortPromotions(
       if (!b.endDate) return -1
       return new Date(a.endDate).getTime() - new Date(b.endDate).getTime()
     }
-    return b.id - a.id
+    return Number(b.id) - Number(a.id)
   })
 }
 

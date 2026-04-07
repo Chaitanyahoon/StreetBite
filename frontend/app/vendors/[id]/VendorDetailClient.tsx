@@ -38,6 +38,7 @@ import {
     OfferSort,
     Review,
     statusMeta,
+    normalizeVendorPromotion,
     VENDOR_DETAIL_TABS,
     Vendor,
     VendorPromotion,
@@ -148,7 +149,7 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
                 // Fetch active promotions
                 try {
                     const promos = await promotionApi.getActiveByVendor(vendorIdStr)
-                    setPromotions(promos)
+                    setPromotions((promos || []).map((promo) => normalizeVendorPromotion(promo)))
                 } catch (err) {
                     console.error('Failed to fetch promotions:', err)
                 }

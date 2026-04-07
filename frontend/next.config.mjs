@@ -6,9 +6,6 @@ const nextConfig = {
   // to avoid Next inferring the wrong workspace root when
   // multiple lockfiles exist on the machine.
   turbopack: { root: '.' },
-  typescript: {
-    ignoreBuildErrors: true,
-  },
   images: {
     unoptimized: true,
   },

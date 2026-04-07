@@ -445,7 +445,7 @@ function MenuItemCard({
   onEdit: (item: MenuItem) => void
   onDelete: (item: MenuItem) => void
 }) {
-  const isAvailable = useLiveMenuItem(item.id, item.isAvailable ?? true)
+  const isAvailable = useLiveMenuItem(item.id, item.isAvailable ?? true) ?? true
 
   return (
     <Card className="overflow-hidden border-none shadow-sm hover:shadow-md transition-all duration-200 group">
