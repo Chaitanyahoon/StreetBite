@@ -18,6 +18,7 @@ const spaceGrotesk = Space_Grotesk({
 })
 
 import { OrganizationSchema } from '@/components/seo/organization-schema'
+import { CookieConsentBanner } from '@/components/cookie-consent-banner'
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://streetbitego.vercel.app'),
@@ -74,6 +75,7 @@ export default function RootLayout({
           <GamificationProvider>
             <NotificationProvider>
               {children}
+              <CookieConsentBanner />
               <Toaster position="top-center" />
             </NotificationProvider>
           </GamificationProvider>
