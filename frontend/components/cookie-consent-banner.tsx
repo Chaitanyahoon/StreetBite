@@ -32,13 +32,13 @@ export function CookieConsentBanner() {
 
   return (
     <div className="fixed inset-x-0 bottom-4 z-[70] px-4 sm:bottom-6 sm:px-6">
-      <div className="mx-auto max-w-5xl overflow-hidden rounded-[2rem] border-4 border-black bg-[#111111] text-white shadow-[10px_10px_0px_0px_rgba(0,0,0,1)]">
-        <div className="border-b-4 border-black/70 bg-[#1a1a1a] px-5 py-4 sm:px-7">
-          <p className="text-xs font-black uppercase tracking-[0.3em] text-[#fbbf24]">Cookie Consent</p>
+      <div className="mx-auto max-w-5xl overflow-hidden rounded-[2rem] border-4 border-black bg-[#fffaf0] text-black shadow-[10px_10px_0px_0px_rgba(0,0,0,1)]">
+        <div className="border-b-4 border-black bg-[#ff6b35] px-5 py-4 sm:px-7">
+          <p className="text-xs font-black uppercase tracking-[0.3em] text-black">Cookie Consent</p>
         </div>
 
         <div className="px-5 py-5 sm:px-7 sm:py-6">
-          <p className="text-base font-bold leading-7 text-white/90 sm:text-lg">
+          <p className="text-base font-bold leading-7 text-black/85 sm:text-lg">
             StreetBite uses cookies to keep your session active, remember preferences, and improve the overall experience.
             You can review the details or accept and continue.
           </p>
@@ -47,14 +47,14 @@ export function CookieConsentBanner() {
             <button
               type="button"
               onClick={acceptCookies}
-              className="inline-flex min-h-12 items-center justify-center rounded-xl border-4 border-[#8b5cf6] bg-[#7c3aed] px-6 text-base font-black text-white transition-all hover:-translate-y-1 hover:bg-[#6d28d9]"
+              className="inline-flex min-h-12 items-center justify-center rounded-xl border-4 border-black bg-[#ff6b35] px-6 text-base font-black text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:-translate-y-1 hover:bg-[#f25a22]"
             >
               Accept
             </button>
 
             <Link
               href="/cookies"
-              className="inline-flex min-h-12 items-center justify-center rounded-xl border-4 border-[#8b5cf6] bg-transparent px-6 text-base font-black text-[#a855f7] transition-all hover:-translate-y-1 hover:bg-white/5"
+              className="inline-flex min-h-12 items-center justify-center rounded-xl border-4 border-black bg-white px-6 text-base font-black text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:-translate-y-1 hover:bg-[#fff3d9]"
             >
               Manage Settings
             </Link>
