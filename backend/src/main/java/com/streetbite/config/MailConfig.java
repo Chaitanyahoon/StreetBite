@@ -12,6 +12,30 @@ import java.util.Properties;
 @Configuration
 public class MailConfig {
 
+    private String normalizeHost(String host, String username) {
+        String normalizedHost = host != null ? host.trim() : "";
+        String normalizedUsername = username != null ? username.trim() : "";
+
+        if (normalizedHost.isBlank() || normalizedHost.contains("@")) {
+            if (normalizedUsername.endsWith("@gmail.com")) {
+                return "smtp.gmail.com";
+            }
+        }
+
+        return normalizedHost;
+    }
+
+    private String normalizePassword(String password, String username) {
+        String normalizedPassword = password != null ? password.trim() : "";
+        String normalizedUsername = username != null ? username.trim() : "";
+
+        if (normalizedUsername.endsWith("@gmail.com")) {
+            return normalizedPassword.replace(" ", "");
+        }
+
+        return normalizedPassword;
+    }
+
     @Bean
     @ConditionalOnMissingBean(JavaMailSender.class)
     public JavaMailSender javaMailSender(
@@ -27,11 +51,16 @@ public class MailConfig {
             @Value("${spring.mail.properties.mail.smtp.writetimeout:10000}") int writeTimeout,
             @Value("${spring.mail.properties.mail.smtp.ssl.trust:smtp.gmail.com}") String sslTrust) {
 
+        String normalizedUsername = username != null ? username.trim() : "";
+        String normalizedHost = normalizeHost(host, normalizedUsername);
+        String normalizedPassword = normalizePassword(password, normalizedUsername);
+        String normalizedSslTrust = sslTrust != null && !sslTrust.isBlank() ? sslTrust.trim() : normalizedHost;
+
         JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
-        mailSender.setHost(host);
+        mailSender.setHost(normalizedHost);
         mailSender.setPort(port);
-        mailSender.setUsername(username);
-        mailSender.setPassword(password);
+        mailSender.setUsername(normalizedUsername);
+        mailSender.setPassword(normalizedPassword);
 
         Properties props = mailSender.getJavaMailProperties();
         props.put("mail.transport.protocol", "smtp");
@@ -41,9 +70,13 @@ public class MailConfig {
         props.put("mail.smtp.connectiontimeout", connectionTimeout);
         props.put("mail.smtp.timeout", timeout);
         props.put("mail.smtp.writetimeout", writeTimeout);
-        if (sslTrust != null && !sslTrust.isBlank()) {
-            props.put("mail.smtp.ssl.trust", sslTrust);
+        if (normalizedSslTrust != null && !normalizedSslTrust.isBlank()) {
+            props.put("mail.smtp.ssl.trust", normalizedSslTrust);
         }
+
+        System.out.println("MailConfig initialized with host=" + normalizedHost
+                + ", port=" + port
+                + ", username=" + (normalizedUsername.isBlank() ? "<blank>" : normalizedUsername));
 
         return mailSender;
     }
