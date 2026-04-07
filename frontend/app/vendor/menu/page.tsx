@@ -21,19 +21,20 @@ import { Edit2, Trash2, Plus, Image as ImageIcon, Search, Filter } from 'lucide-
 import { menuApi } from '@/lib/api'
 import { useLiveMenuItem } from '@/hooks/use-live-menu'
 import { toast } from 'sonner'
-import { Navbar } from '@/components/navbar'
 import { useAuth } from '@/context/AuthContext'
-
-interface MenuItem {
-  id?: number
-  name: string
-  category: string
-  price: number
-  description?: string
-  preparationTime?: number
-  imageUrl?: string
-  isAvailable?: boolean
-}
+import {
+  buildMenuFormState,
+  EMPTY_MENU_FORM,
+  filterMenuItems,
+  getMenuAvailabilityBadgeClassName,
+  getMenuAvailabilityTextClassName,
+  getMenuAvailabilityThumbClassName,
+  getMenuAvailabilityToggleClassName,
+  getMenuCategories,
+  MENU_CATEGORY_OPTIONS,
+  type MenuFormState,
+  type MenuItem,
+} from './menu-helpers'
 
 export default function MenuManagement() {
   const { user } = useAuth()
@@ -47,15 +48,7 @@ export default function MenuManagement() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('All')
 
-  const [formData, setFormData] = useState({
-    name: '',
-    category: 'Main Course',
-    price: '',
-    description: '',
-    preparationTime: '',
-    imageUrl: '',
-    isAvailable: true,
-  })
+  const [formData, setFormData] = useState<MenuFormState>(EMPTY_MENU_FORM)
 
   useEffect(() => {
     if (!user) {
@@ -133,22 +126,14 @@ export default function MenuManagement() {
   }
 
   const resetForm = () => {
-    setFormData({ name: '', category: 'Main Course', price: '', description: '', preparationTime: '', imageUrl: '', isAvailable: true })
+    setFormData(EMPTY_MENU_FORM)
     setImagePreview(null)
     setEditingItem(null)
   }
 
   const handleEdit = (item: MenuItem) => {
     setEditingItem(item)
-    setFormData({
-      name: item.name,
-      category: item.category,
-      price: item.price?.toString() || '',
-      description: item.description || '',
-      preparationTime: item.preparationTime?.toString() || '',
-      imageUrl: item.imageUrl || '',
-      isAvailable: item.isAvailable ?? true,
-    })
+    setFormData(buildMenuFormState(item))
     setImagePreview(item.imageUrl || null)
     setIsDialogOpen(true)
   }
@@ -202,14 +187,9 @@ export default function MenuManagement() {
     }
   }
 
-  const filteredItems = menuItems.filter(item => {
-    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.description?.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesCategory = selectedCategory === 'All' || item.category === selectedCategory
-    return matchesSearch && matchesCategory
-  })
+  const filteredItems = filterMenuItems(menuItems, searchQuery, selectedCategory)
 
-  const categories = ['All', ...Array.from(new Set(menuItems.map(item => item.category)))]
+  const categories = getMenuCategories(menuItems)
 
   if (loading) {
     return (
@@ -327,12 +307,9 @@ export default function MenuManagement() {
                       value={formData.category}
                       onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                     >
-                      <option>Main Course</option>
-                      <option>Appetizers</option>
-                      <option>Breads</option>
-                      <option>Desserts</option>
-                      <option>Beverages</option>
-                      <option>Snacks</option>
+                      {MENU_CATEGORY_OPTIONS.map((category) => (
+                        <option key={category}>{category}</option>
+                      ))}
                     </select>
                   </div>
 
@@ -502,8 +479,8 @@ function MenuItemCard({
 
         <div className="absolute bottom-3 left-3">
           <span className={`px-2.5 py-1 rounded-full text-xs font-bold backdrop-blur-md shadow-sm ${isAvailable
-            ? 'bg-green-500/90 text-white'
-            : 'bg-gray-900/80 text-white'
+            ? getMenuAvailabilityBadgeClassName(true)
+            : getMenuAvailabilityBadgeClassName(false)
             }`}>
             {isAvailable ? 'In Stock' : 'Sold Out'}
           </span>
@@ -524,19 +501,15 @@ function MenuItemCard({
         </p>
 
         <div className="flex items-center justify-between">
-          <span className={`text-xs font-semibold ${isAvailable ? 'text-green-600' : 'text-red-600'}`}>
+          <span className={`text-xs font-semibold ${getMenuAvailabilityTextClassName(isAvailable)}`}>
             {isAvailable ? 'In Stock' : 'Sold Out'}
           </span>
           <button
             onClick={() => item.id && onToggle(item.id, isAvailable ?? true)}
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${isAvailable
-              ? 'bg-green-500 focus:ring-green-500'
-              : 'bg-gray-300 focus:ring-gray-400'
-              }`}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${getMenuAvailabilityToggleClassName(isAvailable)}`}
           >
             <span
-              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-sm ${isAvailable ? 'translate-x-6' : 'translate-x-1'
-                }`}
+              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-sm ${getMenuAvailabilityThumbClassName(isAvailable)}`}
             />
           </button>
         </div>
