@@ -1,6 +1,13 @@
 package com.streetbite.controller;
 
 import com.streetbite.config.CookieSettings;
+import com.streetbite.dto.auth.AuthSuccessResponse;
+import com.streetbite.dto.auth.AuthUserResponse;
+import com.streetbite.dto.auth.EmailRequest;
+import com.streetbite.dto.auth.LoginRequest;
+import com.streetbite.dto.auth.RegisterRequest;
+import com.streetbite.dto.auth.ResetPasswordRequest;
+import com.streetbite.dto.auth.VerifyEmailRequest;
 import com.streetbite.model.User;
 import com.streetbite.model.Vendor;
 import com.streetbite.service.UserService;
@@ -47,20 +54,12 @@ public class AuthController {
     /**
      * Helper: build the user data map (without password hash).
      */
-    private Map<String, Object> buildUserData(User user) {
-        java.util.Map<String, Object> userData = new java.util.HashMap<>();
-        userData.put("id", user.getId());
-        userData.put("email", user.getEmail());
-        userData.put("displayName", user.getDisplayName());
-        userData.put("phoneNumber", user.getPhoneNumber());
-        userData.put("profilePicture", user.getProfilePicture());
-        userData.put("role", user.getRole().name());
-        userData.put("emailVerified", user.getEmailVerified());
-
+    private AuthUserResponse buildUserData(User user) {
+        AuthUserResponse userData = AuthUserResponse.from(user);
         if (user.getRole() == User.Role.VENDOR) {
             java.util.List<Vendor> vendors = vendorService.getVendorsByOwner(user.getId());
             if (!vendors.isEmpty()) {
-                userData.put("vendorId", vendors.get(0).getId());
+                userData.setVendorId(vendors.get(0).getId());
             }
         }
         return userData;
@@ -133,7 +132,7 @@ public class AuthController {
         user.setEmailVerificationCodeExpiry(null);
     }
 
-    private void upsertPendingVendorProfile(User user, Map<String, Object> payload, String displayName, String phoneNumber) {
+    private void upsertPendingVendorProfile(User user, RegisterRequest payload, String displayName, String phoneNumber) {
         if (user.getRole() != User.Role.VENDOR) {
             return;
         }
@@ -141,21 +140,18 @@ public class AuthController {
         java.util.List<Vendor> existingVendors = vendorService.getVendorsByOwner(user.getId());
         Vendor vendor = existingVendors.isEmpty() ? new Vendor() : existingVendors.get(0);
         vendor.setOwner(user);
-        vendor.setName((String) payload.getOrDefault("businessName", displayName + "'s Stall"));
+        vendor.setName(payload.getBusinessName() != null ? payload.getBusinessName() : displayName + "'s Stall");
         vendor.setPhone(phoneNumber);
         vendor.setDescription(vendor.getDescription() != null ? vendor.getDescription() : "New vendor");
         vendor.setCuisine(vendor.getCuisine() != null ? vendor.getCuisine() : "Street Food");
 
-        @SuppressWarnings("unchecked")
-        Map<String, Object> location = (Map<String, Object>) payload.get("location");
+        RegisterRequest.LocationRequest location = payload.getLocation();
         if (location != null) {
-            Object lat = location.get("latitude");
-            Object lng = location.get("longitude");
-            if (lat instanceof Number) {
-                vendor.setLatitude(((Number) lat).doubleValue());
+            if (location.getLatitude() != null) {
+                vendor.setLatitude(location.getLatitude());
             }
-            if (lng instanceof Number) {
-                vendor.setLongitude(((Number) lng).doubleValue());
+            if (location.getLongitude() != null) {
+                vendor.setLongitude(location.getLongitude());
             }
         }
 
@@ -163,14 +159,14 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody Map<String, Object> payload) {
+    public ResponseEntity<?> register(@RequestBody RegisterRequest payload) {
         try {
 
-            String email = payload.get("email") != null ? payload.get("email").toString().trim().toLowerCase() : null;
-            String password = (String) payload.get("password");
-            String displayName = (String) payload.get("displayName");
-            String phoneNumber = (String) payload.get("phoneNumber");
-            String roleStr = (String) payload.getOrDefault("role", "USER");
+            String email = payload.getEmail() != null ? payload.getEmail().trim().toLowerCase() : null;
+            String password = payload.getPassword();
+            String displayName = payload.getDisplayName();
+            String phoneNumber = payload.getPhoneNumber();
+            String roleStr = payload.getRole() != null ? payload.getRole() : "USER";
 
             if (email == null || password == null) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Email and password are required"));
@@ -228,11 +224,11 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Map<String, Object> payload, HttpServletResponse response) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest payload, HttpServletResponse response) {
         try {
 
-            String email = payload.get("email") != null ? payload.get("email").toString().trim().toLowerCase() : null;
-            String password = (String) payload.get("password");
+            String email = payload.getEmail() != null ? payload.getEmail().trim().toLowerCase() : null;
+            String password = payload.getPassword();
 
             if (email == null || password == null) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Email and password are required"));
@@ -276,12 +272,10 @@ public class AuthController {
             String token = jwtUtil.generateToken(user.getEmail(), user.getId(), user.getRole().name());
             setTokenCookie(response, token);
 
-            Map<String, Object> userData = buildUserData(user);
+            AuthUserResponse userData = buildUserData(user);
 
             // Token is issued via HttpOnly cookie.
-            return ResponseEntity.ok(Map.of(
-                    "success", true,
-                    "user", userData));
+            return ResponseEntity.ok(new AuthSuccessResponse(true, userData));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
@@ -289,10 +283,10 @@ public class AuthController {
     }
 
     @PostMapping("/verify-email")
-    public ResponseEntity<?> verifyEmail(@RequestBody Map<String, Object> payload, HttpServletResponse response) {
+    public ResponseEntity<?> verifyEmail(@RequestBody VerifyEmailRequest payload, HttpServletResponse response) {
         try {
-            String email = payload.get("email") != null ? payload.get("email").toString().trim().toLowerCase() : null;
-            String code = payload.get("code") != null ? payload.get("code").toString().trim() : null;
+            String email = payload.getEmail() != null ? payload.getEmail().trim().toLowerCase() : null;
+            String code = payload.getCode() != null ? payload.getCode().trim() : null;
 
             if (email == null || email.isBlank() || code == null || code.isBlank()) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Email and code are required"));
@@ -327,10 +321,8 @@ public class AuthController {
             String token = jwtUtil.generateToken(user.getEmail(), user.getId(), user.getRole().name());
             setTokenCookie(response, token);
 
-            Map<String, Object> userData = buildUserData(user);
-            return ResponseEntity.ok(Map.of(
-                    "success", true,
-                    "user", userData));
+            AuthUserResponse userData = buildUserData(user);
+            return ResponseEntity.ok(new AuthSuccessResponse(true, userData));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
@@ -338,9 +330,9 @@ public class AuthController {
     }
 
     @PostMapping("/resend-verification")
-    public ResponseEntity<?> resendVerification(@RequestBody Map<String, Object> payload) {
+    public ResponseEntity<?> resendVerification(@RequestBody EmailRequest payload) {
         try {
-            String email = payload.get("email") != null ? payload.get("email").toString().trim().toLowerCase() : null;
+            String email = payload.getEmail() != null ? payload.getEmail().trim().toLowerCase() : null;
             if (email == null || email.isBlank()) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Email is required"));
             }
@@ -394,7 +386,7 @@ public class AuthController {
                 return ResponseEntity.status(401).body(Map.of("error", "Token expired"));
             }
 
-            Map<String, Object> userData = buildUserData(userOpt.get());
+            AuthUserResponse userData = buildUserData(userOpt.get());
             return ResponseEntity.ok(userData);
         } catch (Exception e) {
             return ResponseEntity.status(401).body(Map.of("error", "Invalid token"));
@@ -411,8 +403,8 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> payload) {
-        String email = payload.get("email");
+    public ResponseEntity<?> forgotPassword(@RequestBody EmailRequest payload) {
+        String email = payload.getEmail();
         if (email == null) {
             return ResponseEntity.badRequest().body(Map.of("error", "Email is required"));
         }
@@ -471,9 +463,9 @@ public class AuthController {
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> payload) {
-        String token = payload.get("token");
-        String newPassword = payload.get("newPassword");
+    public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequest payload) {
+        String token = payload.getToken();
+        String newPassword = payload.getNewPassword();
 
         if (token == null || newPassword == null) {
             return ResponseEntity.badRequest().body(Map.of("error", "Token and new password are required"));
