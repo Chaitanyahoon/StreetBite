@@ -28,63 +28,100 @@ interface Photo {
     isPhotoOfWeek?: boolean;
 }
 
-const SAMPLE_PHOTOS: Photo[] = [
-    {
-        id: 1,
-        imageUrl: "https://images.unsplash.com/photo-1601050690117-94f5f6fa8bd7?w=400&h=400&fit=crop",
-        username: "foodie_raj",
-        foodName: "Vada Pav",
-        location: "Mumbai",
-        likes: 234,
-        comments: [
-            { id: 1, username: "spicy_lover", text: "Best vada pav in town!", timestamp: new Date() },
-            { id: 2, username: "mumbai_eats", text: "Iconic!", timestamp: new Date() }
-        ],
-        isLiked: false,
-        isPhotoOfWeek: true
-    },
-    // ... other sample photos kept for initial state ...
-];
+const PHOTO_STORAGE_KEY = "community_photos";
+
+const revivePhotos = (rawPhotos: unknown): Photo[] => {
+    if (!Array.isArray(rawPhotos)) {
+        return [];
+    }
+
+    return rawPhotos
+        .map((photo) => {
+            if (!photo || typeof photo !== "object") {
+                return null;
+            }
+
+            const candidate = photo as Partial<Photo> & { comments?: Array<Partial<Comment>> };
+            if (!candidate.id || !candidate.imageUrl || !candidate.foodName || !candidate.location || !candidate.username) {
+                return null;
+            }
+
+            return {
+                id: candidate.id,
+                imageUrl: candidate.imageUrl,
+                username: candidate.username,
+                foodName: candidate.foodName,
+                location: candidate.location,
+                likes: typeof candidate.likes === "number" ? candidate.likes : 0,
+                comments: Array.isArray(candidate.comments)
+                    ? candidate.comments
+                        .filter((comment): comment is Partial<Comment> => Boolean(comment && comment.id && comment.username && comment.text))
+                        .map((comment) => ({
+                            id: comment.id as number,
+                            username: comment.username as string,
+                            text: comment.text as string,
+                            timestamp: comment.timestamp ? new Date(comment.timestamp) : new Date()
+                        }))
+                    : [],
+                isLiked: Boolean(candidate.isLiked),
+                isPhotoOfWeek: Boolean(candidate.isPhotoOfWeek)
+            };
+        })
+        .filter((photo): photo is Photo => Boolean(photo));
+};
 
 export function PhotoWall() {
     const { performAction } = useGamification();
-    const [photos, setPhotos] = useState<Photo[]>(SAMPLE_PHOTOS);
+    const [photos, setPhotos] = useState<Photo[]>([]);
     const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
     const [isUploadOpen, setIsUploadOpen] = useState(false);
     const [newPhoto, setNewPhoto] = useState({ foodName: "", location: "", imageUrl: "" });
     const [newComment, setNewComment] = useState("");
 
-    // Load photos from local storage on mount
     useEffect(() => {
-        const savedPhotos = localStorage.getItem("community_photos");
-        if (savedPhotos) {
-            const parsed = JSON.parse(savedPhotos);
-            // Merge with sample photos if needed, or just use parsed
-            // For now, let's prepend parsed photos to sample
-            // Actually, let's just use parsed if available, else sample
-            // But sample photos are good for demo. Let's merge.
-            // Simplified: just use state, but in real app we'd fetch.
-            // We will stick to state for this session as requested.
+        const savedPhotos = localStorage.getItem(PHOTO_STORAGE_KEY);
+        if (!savedPhotos) {
+            return;
+        }
+
+        try {
+            setPhotos(revivePhotos(JSON.parse(savedPhotos)));
+        } catch {
+            localStorage.removeItem(PHOTO_STORAGE_KEY);
         }
     }, []);
 
+    useEffect(() => {
+        localStorage.setItem(PHOTO_STORAGE_KEY, JSON.stringify(photos));
+    }, [photos]);
+
     const handleLike = (photoId: number, e?: React.MouseEvent) => {
         e?.stopPropagation();
-        setPhotos(photos.map(photo => {
-            if (photo.id === photoId) {
-                const newIsLiked = !photo.isLiked;
-                return {
-                    ...photo,
-                    isLiked: newIsLiked,
-                    likes: newIsLiked ? photo.likes + 1 : photo.likes - 1
-                };
+        setPhotos((currentPhotos) => {
+            const updatedPhotos = currentPhotos.map((photo) => {
+                if (photo.id === photoId) {
+                    const newIsLiked = !photo.isLiked;
+                    return {
+                        ...photo,
+                        isLiked: newIsLiked,
+                        likes: newIsLiked ? photo.likes + 1 : Math.max(photo.likes - 1, 0)
+                    };
+                }
+
+                return photo;
+            });
+
+            if (selectedPhoto) {
+                const updatedSelectedPhoto = updatedPhotos.find((photo) => photo.id === selectedPhoto.id) ?? null;
+                setSelectedPhoto(updatedSelectedPhoto);
             }
-            return photo;
-        }));
+
+            return updatedPhotos;
+        });
 
         const photo = photos.find(p => p.id === photoId);
         if (photo && !photo.isLiked) {
-            toast.success(`Liked ${photo.foodName}! ❤️`);
+            toast.success(`Liked ${photo.foodName}`);
         }
     };
 
@@ -98,38 +135,38 @@ export function PhotoWall() {
             timestamp: new Date()
         };
 
-        setPhotos(photos.map(photo => {
-            if (photo.id === photoId) {
-                return {
-                    ...photo,
-                    comments: [...photo.comments, comment]
-                };
-            }
-            return photo;
-        }));
+        setPhotos((currentPhotos) => {
+            const updatedPhotos = currentPhotos.map((photo) => (
+                photo.id === photoId
+                    ? {
+                        ...photo,
+                        comments: [...photo.comments, comment]
+                    }
+                    : photo
+            ));
 
-        // Update selected photo as well to show new comment immediately
-        if (selectedPhoto && selectedPhoto.id === photoId) {
-            setSelectedPhoto(prev => prev ? {
-                ...prev,
-                comments: [...prev.comments, comment]
-            } : null);
-        }
+            if (selectedPhoto) {
+                const updatedSelectedPhoto = updatedPhotos.find((photo) => photo.id === selectedPhoto.id) ?? null;
+                setSelectedPhoto(updatedSelectedPhoto);
+            }
+
+            return updatedPhotos;
+        });
 
         setNewComment("");
         performAction('complete_challenge'); // XP for commenting
-        toast.success("Comment added! +XP 💬");
+        toast.success("Comment added");
     };
 
     const handleUploadSubmit = () => {
-        if (!newPhoto.foodName || !newPhoto.location) {
-            toast.error("Please fill in all details");
+        if (!newPhoto.foodName || !newPhoto.location || !newPhoto.imageUrl) {
+            toast.error("Add the food name, location, and image URL");
             return;
         }
 
         const photo: Photo = {
             id: Date.now(),
-            imageUrl: newPhoto.imageUrl || "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=400&fit=crop", // Default if empty
+            imageUrl: newPhoto.imageUrl,
             username: "you",
             foodName: newPhoto.foodName,
             location: newPhoto.location,
@@ -138,12 +175,12 @@ export function PhotoWall() {
             isLiked: false
         };
 
-        setPhotos([photo, ...photos]);
+        setPhotos((currentPhotos) => [photo, ...currentPhotos]);
         setIsUploadOpen(false);
         setNewPhoto({ foodName: "", location: "", imageUrl: "" });
 
         performAction('complete_challenge'); // XP for uploading
-        toast.success("Photo uploaded! +XP 📸");
+        toast.success("Photo saved on this device");
     };
 
     const openLightbox = (photo: Photo) => {
@@ -178,7 +215,7 @@ export function PhotoWall() {
                             </DialogTrigger>
                             <DialogContent>
                                 <DialogHeader>
-                                    <DialogTitle>Share your Food Find 📸</DialogTitle>
+                                    <DialogTitle>Share a food photo</DialogTitle>
                                 </DialogHeader>
                                 <div className="space-y-4 py-4">
                                     <div className="space-y-2">
@@ -198,13 +235,13 @@ export function PhotoWall() {
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium">Image URL (Optional)</label>
+                                        <label className="text-sm font-medium">Image URL</label>
                                         <Input
                                             placeholder="https://..."
                                             value={newPhoto.imageUrl}
                                             onChange={e => setNewPhoto({ ...newPhoto, imageUrl: e.target.value })}
                                         />
-                                        <p className="text-xs text-muted-foreground">Leave empty for a random food image</p>
+                                        <p className="text-xs text-muted-foreground">Photos are stored in this browser until live uploads are connected.</p>
                                     </div>
                                     <Button className="w-full" onClick={handleUploadSubmit}>
                                         <Upload className="w-4 h-4 mr-2" />
@@ -217,52 +254,61 @@ export function PhotoWall() {
                 </CardHeader>
 
                 <CardContent className="pt-6">
-                    {/* Photo Grid */}
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                        {photos.map((photo) => (
-                            <div
-                                key={photo.id}
-                                onClick={() => openLightbox(photo)}
-                                className="relative aspect-square rounded-lg overflow-hidden cursor-pointer group"
-                            >
-                                <img
-                                    src={photo.imageUrl}
-                                    alt={photo.foodName}
-                                    className="w-full h-full object-cover transition-transform group-hover:scale-110"
-                                />
+                    {photos.length === 0 ? (
+                        <div className="rounded-2xl border border-dashed border-pink-200 bg-pink-50/70 px-5 py-8 text-center">
+                            <Camera className="mx-auto mb-3 h-10 w-10 text-pink-500" />
+                            <h4 className="text-sm font-semibold text-gray-900">No community photos yet</h4>
+                            <p className="mt-2 text-sm text-muted-foreground">
+                                This wall stays empty until users add photos from this browser.
+                            </p>
+                        </div>
+                    ) : (
+                        <>
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                {photos.map((photo) => (
+                                    <div
+                                        key={photo.id}
+                                        onClick={() => openLightbox(photo)}
+                                        className="relative aspect-square rounded-lg overflow-hidden cursor-pointer group"
+                                    >
+                                        <img
+                                            src={photo.imageUrl}
+                                            alt={photo.foodName}
+                                            className="w-full h-full object-cover transition-transform group-hover:scale-110"
+                                        />
 
-                                {/* Photo of the Week Badge */}
-                                {photo.isPhotoOfWeek && (
-                                    <div className="absolute top-2 left-2 bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1 shadow-lg">
-                                        <Award className="w-3 h-3" />
-                                        POTW
-                                    </div>
-                                )}
+                                        {photo.isPhotoOfWeek && (
+                                            <div className="absolute top-2 left-2 bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1 shadow-lg">
+                                                <Award className="w-3 h-3" />
+                                                POTW
+                                            </div>
+                                        )}
 
-                                {/* Overlay */}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
-                                        <h4 className="font-bold text-sm">{photo.foodName}</h4>
-                                        <p className="text-xs opacity-90">by {photo.username}</p>
-                                        <div className="flex gap-3 mt-2 text-xs">
-                                            <span className="flex items-center gap-1">
-                                                <Heart className="w-3 h-3" />
-                                                {photo.likes}
-                                            </span>
-                                            <span className="flex items-center gap-1">
-                                                <MessageCircle className="w-3 h-3" />
-                                                {photo.comments.length}
-                                            </span>
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
+                                                <h4 className="font-bold text-sm">{photo.foodName}</h4>
+                                                <p className="text-xs opacity-90">by {photo.username}</p>
+                                                <div className="flex gap-3 mt-2 text-xs">
+                                                    <span className="flex items-center gap-1">
+                                                        <Heart className="w-3 h-3" />
+                                                        {photo.likes}
+                                                    </span>
+                                                    <span className="flex items-center gap-1">
+                                                        <MessageCircle className="w-3 h-3" />
+                                                        {photo.comments.length}
+                                                    </span>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
+                                ))}
                             </div>
-                        ))}
-                    </div>
 
-                    <p className="text-xs text-center text-muted-foreground mt-4 bg-pink-50 p-2 rounded-lg">
-                        📸 Click on photos to view details • Share your food moments!
-                    </p>
+                            <p className="text-xs text-center text-muted-foreground mt-4 bg-pink-50 p-2 rounded-lg">
+                                Click on a photo to view details or add a comment.
+                            </p>
+                        </>
+                    )}
                 </CardContent>
             </Card>
 
@@ -300,7 +346,7 @@ export function PhotoWall() {
                                 <div className="flex items-start justify-between">
                                     <div>
                                         <h3 className="text-2xl font-bold">{selectedPhoto.foodName}</h3>
-                                        <p className="text-sm text-muted-foreground">📍 {selectedPhoto.location}</p>
+                                        <p className="text-sm text-muted-foreground">{selectedPhoto.location}</p>
                                         <p className="text-sm text-muted-foreground">by @{selectedPhoto.username}</p>
                                     </div>
                                     <Button

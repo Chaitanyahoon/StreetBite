@@ -10,16 +10,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useGamification } from "@/context/GamificationContext";
 import { vendorApi, type ApiVendor } from "@/lib/api";
 
-interface Vendor extends Pick<ApiVendor, 'id' | 'name' | 'description' | 'rating' | 'image'> {
-    name: string;
-    votes?: number;
-}
+interface Vendor extends Pick<ApiVendor, 'id' | 'name' | 'description' | 'rating' | 'image'> {}
 
 export function VendorBattle() {
     const { performAction } = useGamification();
     const [pair, setPair] = useState<[Vendor, Vendor] | null>(null);
     const [hasVoted, setHasVoted] = useState(false);
-    const [votes, setVotes] = useState<[number, number]>([0, 0]);
+    const [selectedIndex, setSelectedIndex] = useState<0 | 1 | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -33,34 +30,32 @@ export function VendorBattle() {
             if (vendors && vendors.length >= 2) {
                 const shuffled = [...vendors].sort(() => Math.random() - 0.5);
                 setPair([
-                    { ...shuffled[0], votes: Math.floor(Math.random() * 50) + 20 },
-                    { ...shuffled[1], votes: Math.floor(Math.random() * 50) + 20 }
+                    { ...shuffled[0] },
+                    { ...shuffled[1] }
                 ]);
+            } else {
+                setPair(null);
             }
         } catch (error) {
             console.error("Failed to fetch vendors for battle", error);
+            setPair(null);
         } finally {
             setLoading(false);
         }
 
-        // Reset vote state for new battle
         setHasVoted(false);
-        setVotes([0, 0]);
+        setSelectedIndex(null);
     };
 
     const handleVote = (index: 0 | 1) => {
         if (hasVoted || !pair) return;
 
-        const newVotes: [number, number] = [...votes];
-        newVotes[index] += 1;
-        setVotes(newVotes);
+        setSelectedIndex(index);
         setHasVoted(true);
-
-        // Award XP via backend
         performAction('complete_challenge');
 
         toast.success(`Voted for ${pair[index].name}!`, {
-            description: "You earned 50 XP! 🌟",
+            description: "Saved for this round.",
             style: {
                 background: '#10B981',
                 color: 'white',
@@ -86,13 +81,21 @@ export function VendorBattle() {
         );
     }
 
-    if (!pair) return null;
-
-    const totalVotes = (pair[0].votes || 0) + votes[0] + (pair[1].votes || 0) + votes[1];
-    const percentages = [
-        Math.round(((pair[0].votes || 0) + votes[0]) / totalVotes * 100) || 50,
-        Math.round(((pair[1].votes || 0) + votes[1]) / totalVotes * 100) || 50
-    ];
+    if (!pair) {
+        return (
+            <Card className="overflow-hidden border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white relative group h-full flex flex-col rounded-[2rem]">
+                <CardContent className="p-6 flex min-h-[300px] items-center justify-center text-center">
+                    <div>
+                        <Swords className="mx-auto mb-4 h-10 w-10 text-orange-500" />
+                        <h3 className="text-xl font-black uppercase text-black">No live vendor battle yet</h3>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                            This card only runs when live vendor data is available from the backend.
+                        </p>
+                    </div>
+                </CardContent>
+            </Card>
+        );
+    }
 
     return (
         <Card className="overflow-hidden border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white relative group h-full flex flex-col rounded-[2rem]">
@@ -133,18 +136,18 @@ export function VendorBattle() {
                     {pair.map((vendor, index) => (
                         <motion.div
                             key={vendor.id}
-                            className={`flex-1 relative cursor-pointer group/card h-full ${hasVoted && index !== (votes[0] > votes[1] ? 0 : 1) ? "opacity-50 grayscale" : ""}`}
+                            className={`flex-1 relative cursor-pointer group/card h-full ${hasVoted && index !== selectedIndex ? "opacity-50 grayscale" : ""}`}
                             whileHover={{ scale: hasVoted ? 1 : 1.02, y: hasVoted ? 0 : -4 }}
                             whileTap={{ scale: hasVoted ? 1 : 0.96 }}
                             onClick={() => handleVote(index as 0 | 1)}
                         >
                             <div className={`h-full bg-white rounded-2xl p-4 border-4 border-black transition-all duration-300 ${!hasVoted ? "hover:bg-yellow-50 hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]" : "shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"}`}>
                                 <div className="text-center flex flex-col items-center justify-center h-full gap-4">
-                                    <div className={`w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center text-4xl border-4 ${hasVoted && index === (votes[0] > votes[1] ? 0 : 1) ? "border-green-500 bg-green-50" : "border-black"} overflow-hidden`}>
+                                    <div className={`w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center text-4xl border-4 ${hasVoted && index === selectedIndex ? "border-green-500 bg-green-50" : "border-black"} overflow-hidden`}>
                                         {vendor.image ? (
                                             <img src={vendor.image} alt={vendor.name} className="w-full h-full object-cover" />
                                         ) : (
-                                            <span className="transform group-hover/card:scale-110 transition-transform duration-300">🏪</span>
+                                            <span className="transform group-hover/card:scale-110 transition-transform duration-300 text-xl font-black text-black">SB</span>
                                         )}
                                     </div>
                                     <h3 className="font-black text-lg leading-tight text-black w-full line-clamp-2 min-h-[3rem] flex items-center justify-center uppercase">
@@ -163,13 +166,14 @@ export function VendorBattle() {
                                                 animate={{ opacity: 1, height: "auto", scale: 1 }}
                                                 className="mt-2"
                                             >
-                                                <div className="text-3xl font-black text-black">
-                                                    {percentages[index]}%
-                                                </div>
-                                                {percentages[index] > percentages[index === 0 ? 1 : 0] && (
+                                                {index === selectedIndex ? (
                                                     <div className="flex items-center justify-center gap-1 text-xs text-white font-bold mt-1 bg-green-500 px-3 py-1 rounded-full border-2 border-black shadow-sm">
                                                         <Trophy className="w-3 h-3" />
-                                                        WINNER
+                                                        YOUR PICK
+                                                    </div>
+                                                ) : (
+                                                    <div className="rounded-full border-2 border-black bg-white px-3 py-1 text-[0.65rem] font-black uppercase tracking-[0.2em] text-black">
+                                                        Next round
                                                     </div>
                                                 )}
                                             </motion.div>
@@ -181,19 +185,9 @@ export function VendorBattle() {
                     ))}
                 </div>
 
-                {/* Voting Bars */}
                 {hasVoted && (
-                    <div className="mt-8 flex gap-2 h-4 rounded-full overflow-hidden bg-white border-4 border-black p-0.5">
-                        <motion.div
-                            initial={{ width: "50%" }}
-                            animate={{ width: `${percentages[0]}%` }}
-                            className="h-full bg-orange-500 rounded-l-sm"
-                        />
-                        <motion.div
-                            initial={{ width: "50%" }}
-                            animate={{ width: `${percentages[1]}%` }}
-                            className="h-full bg-blue-500 rounded-r-sm"
-                        />
+                    <div className="mt-8 rounded-2xl border-2 border-black bg-orange-50 px-4 py-3 text-center text-sm font-medium text-black">
+                        Battle results are local to this round until live voting is connected.
                     </div>
                 )}
             </CardContent>

@@ -6,35 +6,45 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart2, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 
+interface PollOption {
+    id: number;
+    text: string;
+}
+
 const POLL_POOL = [
     {
         question: "Best Street Food Companion?",
         options: [
-            { id: 1, text: "Masala Chai ☕", votes: 45 },
-            { id: 2, text: "Thums Up 🥤", votes: 32 },
-            { id: 3, text: "Filter Coffee 🥯", votes: 28 },
-            { id: 4, text: "Sugarcane Juice 🎋", votes: 15 }
+            { id: 1, text: "Masala Chai" },
+            { id: 2, text: "Thums Up" },
+            { id: 3, text: "Filter Coffee" },
+            { id: 4, text: "Sugarcane Juice" }
         ]
     },
     {
         question: "Spiciest Dish Challenge?",
         options: [
-            { id: 1, text: "Misal Pav 🌶️", votes: 62 },
-            { id: 2, text: "Schezwan Vada Pav 🔥", votes: 41 },
-            { id: 3, text: "Kolhapuri Thali 🥵", votes: 35 },
-            { id: 4, text: "Thecha Bhakri 🌋", votes: 22 }
+            { id: 1, text: "Misal Pav" },
+            { id: 2, text: "Schezwan Vada Pav" },
+            { id: 3, text: "Kolhapuri Thali" },
+            { id: 4, text: "Thecha Bhakri" }
         ]
     },
     {
         question: "Late Night Craving?",
         options: [
-            { id: 1, text: "Maggi 🍜", votes: 89 },
-            { id: 2, text: "Egg Burji 🥚", votes: 54 },
-            { id: 3, text: "Momos 🥟", votes: 47 },
-            { id: 4, text: "Shawarma 🌯", votes: 63 }
+            { id: 1, text: "Maggi" },
+            { id: 2, text: "Egg Burji" },
+            { id: 3, text: "Momos" },
+            { id: 4, text: "Shawarma" }
         ]
     }
 ];
+
+const getPollStorageKey = (suffix: string) => {
+    const today = new Date().toISOString().slice(0, 10);
+    return `dailyPoll:${today}:${suffix}`;
+};
 
 // Get a poll based on the day of the year to rotate content daily
 const getDailyPoll = () => {
@@ -53,15 +63,25 @@ const POLL_DATA = getDailyPoll();
 export function DailyPoll() {
     const [hasVoted, setHasVoted] = useState(false);
     const [selectedOption, setSelectedOption] = useState<number | null>(null);
-    const [votes, setVotes] = useState<number[]>(POLL_DATA.options.map(o => o.votes));
+    const [votes, setVotes] = useState<number[]>(POLL_DATA.options.map(() => 0));
 
-    // Load voting state
     useEffect(() => {
         if (typeof window !== 'undefined') {
-            const savedVote = localStorage.getItem("dailyPollVote");
+            const savedVote = localStorage.getItem(getPollStorageKey("selection"));
+            const savedVotes = localStorage.getItem(getPollStorageKey("counts"));
             if (savedVote) {
                 setSelectedOption(parseInt(savedVote));
                 setHasVoted(true);
+            }
+            if (savedVotes) {
+                try {
+                    const parsedVotes = JSON.parse(savedVotes);
+                    if (Array.isArray(parsedVotes) && parsedVotes.length === POLL_DATA.options.length) {
+                        setVotes(parsedVotes.map((vote) => typeof vote === "number" ? vote : 0));
+                    }
+                } catch {
+                    localStorage.removeItem(getPollStorageKey("counts"));
+                }
             }
         }
     }, []);
@@ -75,8 +95,9 @@ export function DailyPoll() {
         setSelectedOption(index);
         setHasVoted(true);
 
-        localStorage.setItem("dailyPollVote", index.toString());
-        toast.success("Vote recorded! +5 XP");
+        localStorage.setItem(getPollStorageKey("selection"), index.toString());
+        localStorage.setItem(getPollStorageKey("counts"), JSON.stringify(newVotes));
+        toast.success("Vote saved on this device");
     };
 
     const currentPoll = POLL_DATA;
@@ -98,7 +119,7 @@ export function DailyPoll() {
                     {currentPoll.question}
                 </h3>
                 <div className="space-y-3">
-                    {options.map((option, index) => {
+                    {options.map((option: PollOption, index) => {
                         const isSelected = selectedOption === index;
                         const percentage = totalVotes > 0 ? Math.round((votes[index] / totalVotes) * 100) : 0;
 
@@ -139,8 +160,8 @@ export function DailyPoll() {
                     })}
                 </div>
                 <div className="mt-6 flex justify-between items-center text-xs font-bold text-gray-500 uppercase tracking-wide">
-                    <span>{totalVotes} votes</span>
-                    <span>Resets in 12h</span>
+                    <span>{totalVotes} local votes</span>
+                    <span>Stored on this device</span>
                 </div>
             </CardContent>
         </Card>
