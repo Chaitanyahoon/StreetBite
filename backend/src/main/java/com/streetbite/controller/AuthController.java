@@ -175,7 +175,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody Map<String, Object> payload) {
+    public ResponseEntity<?> register(@RequestBody Map<String, Object> payload, HttpServletResponse response) {
         try {
 
             String email = payload.get("email") != null ? payload.get("email").toString().trim().toLowerCase() : null;
@@ -202,7 +202,7 @@ public class AuthController {
                 existingUser.setPhoneNumber(phoneNumber);
                 existingUser.setRole(User.Role.valueOf(roleStr.toUpperCase()));
                 existingUser.setActive(true);
-                existingUser.setEmailVerified(false);
+                existingUser.setEmailVerified(true);
                 existingUser.setTwoFactorEnabled(false);
                 clearEmailVerification(existingUser);
                 savedUser = userService.saveUser(existingUser);
@@ -217,7 +217,7 @@ public class AuthController {
                 user.setDisplayName(displayName);
                 user.setPhoneNumber(phoneNumber);
                 user.setRole(User.Role.valueOf(roleStr.toUpperCase()));
-                user.setEmailVerified(false);
+                user.setEmailVerified(true);
                 user.setTwoFactorEnabled(false);
 
                 // Generate firebase_uid if not provided
@@ -231,17 +231,12 @@ public class AuthController {
                 upsertPendingVendorProfile(savedUser, payload, displayName, phoneNumber);
             }
 
-            boolean emailSent = prepareAndSendEmailVerification(savedUser);
-            if (!emailSent) {
-                return ResponseEntity.status(503).body(Map.of(
-                        "error", "Email verification is unavailable right now: " + emailService.getLastErrorMessage()));
-            }
+            String token = jwtUtil.generateToken(savedUser.getEmail(), savedUser.getId(), savedUser.getRole().name());
+            setTokenCookie(response, token);
 
             return ResponseEntity.ok(Map.of(
                     "success", true,
-                    "requiresEmailVerification", true,
-                    "email", savedUser.getEmail(),
-                    "message", "Verification code sent"));
+                    "user", buildUserData(savedUser)));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
@@ -275,22 +270,6 @@ public class AuthController {
 
             if (!user.getActive()) {
                 return ResponseEntity.status(403).body(Map.of("error", "Account is banned or inactive"));
-            }
-
-            if (!user.getEmailVerified()) {
-                if (user.getEmailVerificationCodeExpiry() == null
-                        || user.getEmailVerificationCodeExpiry().isBefore(java.time.LocalDateTime.now())) {
-                    boolean emailSent = prepareAndSendEmailVerification(user);
-                    if (!emailSent) {
-                        return ResponseEntity.status(503).body(Map.of(
-                                "error", "Email verification is unavailable right now: " + emailService.getLastErrorMessage()));
-                    }
-                }
-
-                return ResponseEntity.status(403).body(Map.of(
-                        "error", "Please verify your email before signing in.",
-                        "requiresEmailVerification", true,
-                        "email", user.getEmail()));
             }
 
             // Generate JWT token and set as HttpOnly cookie

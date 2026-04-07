@@ -31,12 +31,6 @@ function SignInContent() {
 
     const result = await login(emailInput, passwordInput)
 
-    if (result.success && result.requiresEmailVerification) {
-      router.push(`/signup?verify=${encodeURIComponent(result.email || emailInput)}`)
-      setIsLoading(false)
-      return
-    }
-
     if (result.success && result.user) {
       const nextPath = searchParams.get('next')
       if (nextPath && nextPath.startsWith('/')) {

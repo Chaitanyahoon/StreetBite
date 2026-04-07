@@ -88,8 +88,6 @@ export interface AuthResponse {
   success?: boolean
   user?: AuthUser
   message?: string
-  requiresEmailVerification?: boolean
-  email?: string
 }
 
 export interface ForgotPasswordResponse {
