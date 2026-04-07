@@ -1,19 +1,22 @@
 package com.streetbite.service;
 
+import com.streetbite.dto.gamification.GamificationActionResponse;
+import com.streetbite.dto.gamification.LeaderboardUserResponse;
+import com.streetbite.dto.gamification.UserStatsResponse;
 import com.streetbite.model.User;
 import com.streetbite.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class GamificationService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+
+    public GamificationService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     // XP rewards for different actions
     private static final int XP_DAILY_LOGIN = 50;
@@ -89,14 +92,16 @@ public class GamificationService {
     /**
      * Get leaderboard (top 10 users by XP) - excludes banned users
      */
-    public List<User> getLeaderboard() {
-        return userRepository.findTop10ByRoleAndIsActiveTrueOrderByXpDesc(User.Role.USER);
+    public List<LeaderboardUserResponse> getLeaderboard() {
+        return userRepository.findTop10ByRoleAndIsActiveTrueOrderByXpDesc(User.Role.USER).stream()
+                .map(user -> LeaderboardUserResponse.from(user, calculateLevel(user.getXp() != null ? user.getXp() : 0)))
+                .toList();
     }
 
     /**
      * Get user stats including rank
      */
-    public Map<String, Object> getUserStats(Long userId) {
+    public UserStatsResponse getUserStats(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -104,15 +109,14 @@ public class GamificationService {
         int level = calculateLevel(xp);
         int rank = calculateUserRank(userId);
 
-        Map<String, Object> stats = new HashMap<>();
-        stats.put("xp", xp);
-        stats.put("level", user.getLevel() != null ? user.getLevel() : level);
-        stats.put("streak", user.getStreak() != null ? user.getStreak() : 0);
-        stats.put("rank", rank);
-        stats.put("displayName", user.getDisplayName());
-        stats.put("email", user.getEmail());
-        stats.put("lastCheckIn", user.getLastCheckIn());
-
+        UserStatsResponse stats = new UserStatsResponse();
+        stats.setXp(xp);
+        stats.setLevel(user.getLevel() != null ? user.getLevel() : level);
+        stats.setStreak(user.getStreak() != null ? user.getStreak() : 0);
+        stats.setRank(rank);
+        stats.setDisplayName(user.getDisplayName());
+        stats.setEmail(user.getEmail());
+        stats.setLastCheckIn(user.getLastCheckIn());
         return stats;
     }
 
@@ -135,5 +139,14 @@ public class GamificationService {
     public User getUserByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+    }
+
+    public GamificationActionResponse buildActionResponse(User updatedUser, String actionType) {
+        GamificationActionResponse response = new GamificationActionResponse();
+        response.setSuccess(true);
+        response.setActionType(actionType);
+        response.setNewXp(updatedUser.getXp() != null ? updatedUser.getXp() : 0);
+        response.setLevel(calculateLevel(updatedUser.getXp() != null ? updatedUser.getXp() : 0));
+        return response;
     }
 }

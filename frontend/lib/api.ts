@@ -214,6 +214,31 @@ export interface FavoriteStatusResponse {
   message?: string | null
 }
 
+export interface LeaderboardUserResponse {
+  id: number
+  displayName: string
+  xp: number
+  level: number
+  profilePicture?: string
+}
+
+export interface UserStatsResponse {
+  xp: number
+  level: number
+  streak: number
+  rank: number
+  displayName: string
+  email?: string
+  lastCheckIn: string | null
+}
+
+export interface GamificationActionResponse {
+  success: boolean
+  actionType: string
+  newXp: number
+  level: number
+}
+
 export const authApi = {
   register: (data: RegisterRequest) => api.post('/auth/register', data) as Promise<AuthResponse>,
   login: (data: LoginRequest) => api.post('/auth/login', data) as Promise<AuthResponse>,
@@ -299,9 +324,9 @@ export const favoriteApi = {
 };
 
 export const gamificationApi = {
-  getLeaderboard: () => api.get('/gamification/leaderboard') as Promise<any>,
-  getUserStats: () => api.get('/gamification/stats') as Promise<any>,
-  performAction: (actionType: string) => api.post(`/gamification/action/${actionType}`) as Promise<any>,
+  getLeaderboard: () => api.get('/gamification/leaderboard') as Promise<LeaderboardUserResponse[]>,
+  getUserStats: () => api.get('/gamification/stats') as Promise<UserStatsResponse>,
+  performAction: (actionType: string) => api.post(`/gamification/action/${actionType}`) as Promise<GamificationActionResponse>,
 };
 
 export const announcementApi = {
