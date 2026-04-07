@@ -25,148 +25,19 @@ import { Footer } from '@/components/footer'
 import { Button } from '@/components/ui/button'
 import { BreadcrumbListSchema } from '@/components/seo/breadcrumb-schema'
 import { CollectionPageSchema } from '@/components/seo/collection-page-schema'
-
-interface Vendor {
-  id: number | string
-  slug?: string
-  name: string
-  rating?: number
-  displayImageUrl?: string
-  address?: string
-  cuisine?: string
-}
-
-interface Promotion {
-  id: number | string
-  vendor?: Vendor
-  title: string
-  description?: string
-  discountType: string
-  discountValue: number
-  promoCode: string
-  startDate?: string
-  endDate?: string
-  isActive?: boolean
-  maxUses?: number
-  currentUses?: number
-  minOrderValue?: number
-}
-
-type PromotionCardModel = Promotion & {
-  isNearCity: boolean
-  expiryLabel: string
-  urgencyLabel: string
-  urgencyTone: 'critical' | 'warning' | 'calm' | 'expired'
-  expirySortValue: number
-  locationLabel: string
-}
-
-function normalizeText(value?: string | null) {
-  return value?.trim().toLowerCase() ?? ''
-}
-
-function getDiscountText(promo: Promotion) {
-  if (promo.discountType === 'PERCENTAGE') {
-    return `${promo.discountValue}% OFF`
-  }
-
-  if (promo.discountType === 'FIXED_AMOUNT' || promo.discountType === 'FIXED') {
-    return `₹${promo.discountValue} OFF`
-  }
-
-  return 'SPECIAL OFFER'
-}
-
-function getLocationLabel(address?: string) {
-  if (!address?.trim()) {
-    return 'Street food pickup'
-  }
-
-  const parts = address
-    .split(',')
-    .map((part) => part.trim())
-    .filter(Boolean)
-
-  if (parts.length >= 2) {
-    return parts.slice(-2).join(', ')
-  }
-
-  return parts[0]
-}
-
-function getExpiryMeta(endDate?: string) {
-  if (!endDate) {
-    return {
-      expiryLabel: 'No expiry',
-      urgencyLabel: 'Ongoing deal',
-      urgencyTone: 'calm' as const,
-      expirySortValue: Number.MAX_SAFE_INTEGER,
-    }
-  }
-
-  const expiryTime = new Date(endDate).getTime()
-  if (Number.isNaN(expiryTime)) {
-    return {
-      expiryLabel: 'Date unavailable',
-      urgencyLabel: 'Check vendor details',
-      urgencyTone: 'calm' as const,
-      expirySortValue: Number.MAX_SAFE_INTEGER,
-    }
-  }
-
-  const diffMs = expiryTime - Date.now()
-  const diffHours = Math.ceil(diffMs / (1000 * 60 * 60))
-  const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24))
-
-  if (diffMs <= 0) {
-    return {
-      expiryLabel: 'Expired',
-      urgencyLabel: 'Offer ended',
-      urgencyTone: 'expired' as const,
-      expirySortValue: Number.MAX_SAFE_INTEGER - 1,
-    }
-  }
-
-  if (diffHours <= 6) {
-    return {
-      expiryLabel: `${diffHours}h left`,
-      urgencyLabel: 'Use this soon',
-      urgencyTone: 'critical' as const,
-      expirySortValue: diffMs,
-    }
-  }
-
-  if (diffHours <= 24) {
-    return {
-      expiryLabel: 'Ends today',
-      urgencyLabel: 'Best redeemed today',
-      urgencyTone: 'critical' as const,
-      expirySortValue: diffMs,
-    }
-  }
-
-  if (diffDays <= 3) {
-    return {
-      expiryLabel: `${diffDays} day${diffDays > 1 ? 's' : ''} left`,
-      urgencyLabel: 'Limited-time offer',
-      urgencyTone: 'warning' as const,
-      expirySortValue: diffMs,
-    }
-  }
-
-  return {
-    expiryLabel: `Ends in ${diffDays} days`,
-    urgencyLabel: 'Still active',
-    urgencyTone: 'calm' as const,
-    expirySortValue: diffMs,
-  }
-}
-
-function matchesSelectedType(promo: Promotion, filterType: 'all' | 'percentage' | 'fixed') {
-  if (filterType === 'all') return true
-  if (filterType === 'percentage') return promo.discountType === 'PERCENTAGE'
-  return promo.discountType === 'FIXED_AMOUNT' || promo.discountType === 'FIXED'
-}
+import {
+  PROMOTION_SORT_OPTIONS,
+  PROMOTION_TYPE_OPTIONS,
+  buildPromotionCards,
+  filterPromotions,
+  getCuisineOptions,
+  getDiscountText,
+  sortPromotions,
+  type Promotion,
+  type PromotionCardModel,
+  type PromotionFilterType,
+  type PromotionSort,
+} from './offers-helpers'
 
 function PromotionCard({
   promo,
@@ -323,8 +194,8 @@ export default function OffersPage() {
   const [copiedCode, setCopiedCode] = useState<string | number | null>(null)
   const [promotions, setPromotions] = useState<Promotion[]>([])
   const [loading, setLoading] = useState(true)
-  const [filterType, setFilterType] = useState<'all' | 'percentage' | 'fixed'>('all')
-  const [sortBy, setSortBy] = useState<'best_match' | 'newest' | 'ending_soon' | 'highest_discount'>('best_match')
+  const [filterType, setFilterType] = useState<PromotionFilterType>('all')
+  const [sortBy, setSortBy] = useState<PromotionSort>('best_match')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCuisine, setSelectedCuisine] = useState('All')
   const [nearbyOnly, setNearbyOnly] = useState(false)
@@ -354,73 +225,17 @@ export default function OffersPage() {
   const activeCity = cityName.trim()
 
   const promotionCards = useMemo<PromotionCardModel[]>(() => {
-    return promotions.map((promo) => {
-      const expiryMeta = getExpiryMeta(promo.endDate)
-      const isNearCity = activeCity
-        ? normalizeText(promo.vendor?.address).includes(normalizeText(activeCity))
-        : false
-
-      return {
-        ...promo,
-        isNearCity,
-        locationLabel: getLocationLabel(promo.vendor?.address),
-        ...expiryMeta,
-      }
-    })
+    return buildPromotionCards(promotions, activeCity)
   }, [activeCity, promotions])
 
-  const cuisines = useMemo(
-    () =>
-      ['All', ...Array.from(new Set(promotionCards.map((promo) => promo.vendor?.cuisine).filter(Boolean)))] as string[],
-    [promotionCards]
-  )
+  const cuisines = useMemo(() => getCuisineOptions(promotionCards), [promotionCards])
 
   const filteredPromotions = useMemo(() => {
-    const query = searchQuery.trim().toLowerCase()
-
-    return promotionCards.filter((promo) => {
-      if (!matchesSelectedType(promo, filterType)) return false
-      if (selectedCuisine !== 'All' && promo.vendor?.cuisine !== selectedCuisine) return false
-      if (nearbyOnly && !promo.isNearCity) return false
-
-      if (!query) return true
-
-      return [
-        promo.title,
-        promo.description,
-        promo.vendor?.name,
-        promo.promoCode,
-        promo.vendor?.address,
-        promo.vendor?.cuisine,
-      ]
-        .filter(Boolean)
-        .some((value) => value?.toLowerCase().includes(query))
-    })
+    return filterPromotions(promotionCards, filterType, selectedCuisine, nearbyOnly, searchQuery)
   }, [filterType, nearbyOnly, promotionCards, searchQuery, selectedCuisine])
 
   const sortedPromotions = useMemo(() => {
-    const items = [...filteredPromotions]
-
-    items.sort((a, b) => {
-      if (sortBy === 'highest_discount') {
-        if (b.discountValue !== a.discountValue) return b.discountValue - a.discountValue
-      } else if (sortBy === 'ending_soon') {
-        if (a.expirySortValue !== b.expirySortValue) return a.expirySortValue - b.expirySortValue
-      } else if (sortBy === 'newest') {
-        if (b.id !== a.id) return Number(b.id) - Number(a.id)
-      } else {
-        if (a.isNearCity !== b.isNearCity) return a.isNearCity ? -1 : 1
-        if (a.expirySortValue !== b.expirySortValue) return a.expirySortValue - b.expirySortValue
-        if (b.discountValue !== a.discountValue) return b.discountValue - a.discountValue
-      }
-
-      if (a.isNearCity !== b.isNearCity) return a.isNearCity ? -1 : 1
-      if (a.expirySortValue !== b.expirySortValue) return a.expirySortValue - b.expirySortValue
-      if (b.discountValue !== a.discountValue) return b.discountValue - a.discountValue
-      return Number(b.id) - Number(a.id)
-    })
-
-    return items
+    return sortPromotions(filteredPromotions, sortBy)
   }, [filteredPromotions, sortBy])
 
   const featuredDeal =
@@ -659,10 +474,11 @@ export default function OffersPage() {
                   onChange={(event) => setSortBy(event.target.value as typeof sortBy)}
                   className="h-14 w-full cursor-pointer bg-transparent text-base font-black text-black focus:outline-none"
                 >
-                  <option value="best_match">Best match</option>
-                  <option value="ending_soon">Ending soon</option>
-                  <option value="highest_discount">Highest discount</option>
-                  <option value="newest">Newest added</option>
+                  {PROMOTION_SORT_OPTIONS.map((option) => (
+                    <option key={option.id} value={option.id}>
+                      {option.label}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
@@ -671,18 +487,18 @@ export default function OffersPage() {
               <span className="rounded-full border-2 border-black bg-black px-3 py-1 text-[0.68rem] font-black uppercase tracking-[0.2em] text-yellow-300">
                 Offer type
               </span>
-              {(['all', 'percentage', 'fixed'] as const).map((type) => (
+              {PROMOTION_TYPE_OPTIONS.map((type) => (
                 <button
-                  key={type}
+                  key={type.id}
                   type="button"
-                  onClick={() => setFilterType(type)}
+                  onClick={() => setFilterType(type.id)}
                   className={`rounded-full border-3 px-4 py-2 text-sm font-black uppercase tracking-[0.14em] transition-transform hover:-translate-y-0.5 ${
-                    filterType === type
+                    filterType === type.id
                       ? 'border-black bg-orange-500 text-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]'
                       : 'border-black bg-white text-black'
                   }`}
                 >
-                  {type === 'all' ? 'All offers' : type === 'percentage' ? 'Percent deals' : 'Flat savings'}
+                  {type.label}
                 </button>
               ))}
 
