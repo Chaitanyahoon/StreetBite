@@ -5,6 +5,7 @@ import com.streetbite.model.User;
 import com.streetbite.model.Vendor;
 import com.streetbite.service.UserService;
 import com.streetbite.service.VendorService;
+import com.streetbite.service.EmailService;
 import com.streetbite.util.JwtUtil;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,6 +24,7 @@ public class AuthController {
 
     private static final String COOKIE_NAME = "sb_token";
     private static final int COOKIE_MAX_AGE = 24 * 60 * 60; // 24 hours
+    private static final int TWO_FACTOR_EXPIRY_MINUTES = 10;
 
     @Autowired
     private UserService userService;
@@ -39,6 +41,9 @@ public class AuthController {
     @Autowired
     private CookieSettings cookieSettings;
 
+    @Autowired
+    private EmailService emailService;
+
     /**
      * Helper: build the user data map (without password hash).
      */
@@ -50,6 +55,7 @@ public class AuthController {
         userData.put("phoneNumber", user.getPhoneNumber());
         userData.put("profilePicture", user.getProfilePicture());
         userData.put("role", user.getRole().name());
+        userData.put("twoFactorEnabled", user.getTwoFactorEnabled());
 
         if (user.getRole() == User.Role.VENDOR) {
             java.util.List<Vendor> vendors = vendorService.getVendorsByOwner(user.getId());
@@ -226,6 +232,30 @@ public class AuthController {
                 return ResponseEntity.status(403).body(Map.of("error", "Account is banned or inactive"));
             }
 
+            if (user.getTwoFactorEnabled()) {
+                String code = String.format("%06d", new java.security.SecureRandom().nextInt(1_000_000));
+                String challengeToken = java.util.UUID.randomUUID().toString();
+
+                user.setTwoFactorCodeHash(passwordEncoder.encode(code));
+                user.setTwoFactorCodeExpiry(java.time.LocalDateTime.now().plusMinutes(TWO_FACTOR_EXPIRY_MINUTES));
+                user.setTwoFactorChallengeToken(challengeToken);
+                userService.saveUser(user);
+                boolean emailSent = emailService.sendTwoFactorCodeEmail(user.getEmail(), code);
+                if (!emailSent) {
+                    clearTwoFactorChallenge(user);
+                    userService.saveUser(user);
+                    return ResponseEntity.status(503).body(Map.of(
+                            "error", "Two-factor login is unavailable because email delivery is not configured"));
+                }
+
+                return ResponseEntity.ok(Map.of(
+                        "success", true,
+                        "requiresTwoFactor", true,
+                        "challengeToken", challengeToken,
+                        "email", user.getEmail(),
+                        "message", "Verification code sent"));
+            }
+
             // Generate JWT token and set as HttpOnly cookie
             String token = jwtUtil.generateToken(user.getEmail(), user.getId(), user.getRole().name());
             setTokenCookie(response, token);
@@ -240,6 +270,59 @@ public class AuthController {
             e.printStackTrace();
             return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
         }
+    }
+
+    @PostMapping("/verify-2fa")
+    public ResponseEntity<?> verifyTwoFactor(@RequestBody Map<String, Object> payload, HttpServletResponse response) {
+        try {
+            String challengeToken = (String) payload.get("challengeToken");
+            String code = payload.get("code") != null ? payload.get("code").toString().trim() : null;
+
+            if (challengeToken == null || challengeToken.isBlank() || code == null || code.isBlank()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Challenge token and code are required"));
+            }
+
+            Optional<User> userOpt = userService.getUserByTwoFactorChallengeToken(challengeToken);
+            if (userOpt.isEmpty()) {
+                return ResponseEntity.status(401).body(Map.of("error", "Invalid or expired verification session"));
+            }
+
+            User user = userOpt.get();
+            if (!user.getActive()) {
+                return ResponseEntity.status(403).body(Map.of("error", "Account is banned or inactive"));
+            }
+
+            if (user.getTwoFactorCodeExpiry() == null
+                    || user.getTwoFactorCodeExpiry().isBefore(java.time.LocalDateTime.now())) {
+                clearTwoFactorChallenge(user);
+                userService.saveUser(user);
+                return ResponseEntity.status(401).body(Map.of("error", "Verification code expired"));
+            }
+
+            if (user.getTwoFactorCodeHash() == null || !passwordEncoder.matches(code, user.getTwoFactorCodeHash())) {
+                return ResponseEntity.status(401).body(Map.of("error", "Invalid verification code"));
+            }
+
+            clearTwoFactorChallenge(user);
+            userService.saveUser(user);
+
+            String token = jwtUtil.generateToken(user.getEmail(), user.getId(), user.getRole().name());
+            setTokenCookie(response, token);
+
+            Map<String, Object> userData = buildUserData(user);
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "user", userData));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    private void clearTwoFactorChallenge(User user) {
+        user.setTwoFactorCodeHash(null);
+        user.setTwoFactorCodeExpiry(null);
+        user.setTwoFactorChallengeToken(null);
     }
 
     /**

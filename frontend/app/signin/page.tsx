@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Logo } from '@/components/logo'
@@ -11,12 +11,15 @@ import emailjs from '@emailjs/browser'
 import { useAuth } from '@/context/AuthContext'
 import { motion } from 'framer-motion'
 
-export default function SignInPage() {
+function SignInContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { login } = useAuth()
+  const { login, verifyTwoFactor } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [verificationCode, setVerificationCode] = useState('')
+  const [challengeToken, setChallengeToken] = useState<string | null>(null)
+  const [challengeEmail, setChallengeEmail] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showPassword, setShowPassword] = useState(false)
@@ -31,6 +34,14 @@ export default function SignInPage() {
     setError(null)
 
     const result = await login(emailInput, passwordInput)
+
+    if (result.success && result.requiresTwoFactor && result.challengeToken) {
+      setChallengeToken(result.challengeToken)
+      setChallengeEmail(result.email || emailInput)
+      setVerificationCode('')
+      setIsLoading(false)
+      return
+    }
 
     if (result.success && result.user) {
       const nextPath = searchParams.get('next')
@@ -52,6 +63,36 @@ export default function SignInPage() {
       setError(result.error || 'Login failed.')
       setIsLoading(false)
     }
+  }
+
+  const handleVerifyTwoFactor = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!challengeToken) return
+
+    setIsLoading(true)
+    setError(null)
+
+    const result = await verifyTwoFactor(challengeToken, verificationCode)
+    if (result.success && result.user) {
+      const nextPath = searchParams.get('next')
+      if (nextPath && nextPath.startsWith('/')) {
+        router.push(nextPath)
+        return
+      }
+
+      const role = result.user.role?.toUpperCase()
+      if (role === 'VENDOR') {
+        router.push('/vendor')
+      } else if (role === 'ADMIN') {
+        router.push('/admin')
+      } else {
+        router.push('/community')
+      }
+      return
+    }
+
+    setError(result.error || 'Verification failed.')
+    setIsLoading(false)
   }
 
   const handleSignIn = async (e: React.FormEvent) => {
@@ -218,6 +259,79 @@ export default function SignInPage() {
                 </>
               )}
             </motion.form>
+          ) : challengeToken ? (
+            <motion.form
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              onSubmit={handleVerifyTwoFactor}
+              className="bg-white rounded-[2rem] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-8 border-4 border-black relative overflow-hidden"
+            >
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-red-100 border-4 border-black text-black px-4 py-3 rounded-xl font-bold flex items-center gap-3 mb-6 animate-shake"
+                >
+                  <div className="w-4 h-4 bg-red-500 rounded-full border border-black flex-shrink-0" />
+                  {error}
+                </motion.div>
+              )}
+
+              <motion.div variants={itemVariants} className="mb-6 rounded-xl border-4 border-black bg-yellow-100 px-4 py-4 text-sm font-bold text-black">
+                Enter the 6-digit login code sent to <span className="underline">{challengeEmail}</span>.
+              </motion.div>
+
+              <motion.div variants={itemVariants} className="space-y-4 mb-8">
+                <label className="block text-sm font-black text-black uppercase tracking-wider ml-1">Verification Code</label>
+                <div className="relative group">
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-black transition-colors size-6" strokeWidth={2.5} />
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={6}
+                    value={verificationCode}
+                    onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    placeholder="123456"
+                    className="w-full pl-14 pr-4 py-4 border-4 border-black rounded-xl text-lg font-bold tracking-[0.4em] focus:outline-none focus:ring-4 focus:ring-yellow-400 bg-gray-50 transition-all placeholder:text-gray-400"
+                    required
+                  />
+                </div>
+              </motion.div>
+
+              <motion.div variants={itemVariants} className="space-y-3">
+                <Button
+                  type="submit"
+                  disabled={isLoading || verificationCode.length !== 6}
+                  className="w-full h-16 bg-orange-500 hover:bg-orange-600 text-white rounded-xl border-4 border-black font-black text-2xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all disabled:opacity-70 disabled:hover:translate-y-0"
+                >
+                  {isLoading ? (
+                    <span className="flex items-center gap-3">
+                      <span className="animate-spin rounded-full h-6 w-6 border-4 border-white border-t-transparent" />
+                      VERIFYING...
+                    </span>
+                  ) : (
+                    'VERIFY LOGIN'
+                  )}
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full h-12 rounded-xl border-4 border-black font-black"
+                  onClick={() => {
+                    setChallengeToken(null)
+                    setChallengeEmail(null)
+                    setVerificationCode('')
+                    setError(null)
+                    setIsLoading(false)
+                  }}
+                >
+                  USE DIFFERENT ACCOUNT
+                </Button>
+              </motion.div>
+            </motion.form>
           ) : (
             /* Login Form */
             <motion.form
@@ -333,5 +447,13 @@ export default function SignInPage() {
         </motion.div>
       </div>
     </div>
+  )
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#FFFBF0]" />}>
+      <SignInContent />
+    </Suspense>
   )
 }

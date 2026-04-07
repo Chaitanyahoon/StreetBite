@@ -1,10 +1,13 @@
 package com.streetbite.controller;
 
 import com.streetbite.model.UserDevice;
+import com.streetbite.model.User;
+import com.streetbite.security.AuthenticatedUserService;
 import com.streetbite.service.NotificationService;
 import com.streetbite.service.UserDeviceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,17 +23,24 @@ public class NotificationController {
     @Autowired
     private NotificationService notificationService;
 
+    @Autowired
+    private AuthenticatedUserService authenticatedUserService;
+
     /**
      * Save FCM token for a user
      */
     @PostMapping("/token")
-    public ResponseEntity<?> saveToken(@RequestBody Map<String, Object> payload) {
+    public ResponseEntity<?> saveToken(@RequestBody Map<String, Object> payload, Authentication authentication) {
         try {
-            Long userId = Long.valueOf(payload.get("userId").toString());
+            User user = authenticatedUserService.findAuthenticatedUser(authentication).orElse(null);
+            if (user == null) {
+                return ResponseEntity.status(401).body(Map.of("error", "Login required"));
+            }
+
             String fcmToken = (String) payload.get("fcmToken");
             String deviceType = (String) payload.getOrDefault("deviceType", "web");
 
-            UserDevice device = userDeviceService.saveToken(userId, fcmToken, deviceType);
+            UserDevice device = userDeviceService.saveToken(user.getId(), fcmToken, deviceType);
             return ResponseEntity.ok(Map.of(
                     "message", "Token saved successfully",
                     "deviceId", device.getId()));
@@ -43,9 +53,14 @@ public class NotificationController {
     /**
      * Get all tokens for a user
      */
-    @GetMapping("/tokens/{userId}")
-    public ResponseEntity<?> getUserTokens(@PathVariable Long userId) {
-        List<String> tokens = userDeviceService.getUserTokens(userId);
+    @GetMapping("/tokens")
+    public ResponseEntity<?> getUserTokens(Authentication authentication) {
+        User user = authenticatedUserService.findAuthenticatedUser(authentication).orElse(null);
+        if (user == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "Login required"));
+        }
+
+        List<String> tokens = userDeviceService.getUserTokens(user.getId());
         return ResponseEntity.ok(Map.of("tokens", tokens));
     }
 

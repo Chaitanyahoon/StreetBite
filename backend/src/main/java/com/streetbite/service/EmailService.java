@@ -20,6 +20,54 @@ public class EmailService {
     @Value("${spring.mail.username:noreply@streetbite.com}")
     private String fromEmail;
 
+    @Value("${spring.mail.host:}")
+    private String mailHost;
+
+    public boolean sendTwoFactorCodeEmail(String to, String code) {
+        System.out.println("==================================================");
+        System.out.println("TWO-FACTOR LOGIN CODE FOR: " + to);
+        System.out.println(code);
+        System.out.println("==================================================");
+
+        if (mailSender == null || mailHost == null || mailHost.isBlank()) {
+            System.err.println("JavaMailSender not configured - 2FA email not sent. Check mail properties.");
+            return false;
+        }
+
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(fromEmail);
+            helper.setTo(to);
+            helper.setSubject("StreetBite - Your Login Verification Code");
+
+            String htmlContent = """
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                        <h2 style="color: #ff6b35;">StreetBite Login Verification</h2>
+                        <p>Use this one-time code to complete your sign in:</p>
+                        <div style="margin: 24px 0; font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #111;">
+                            %s
+                        </div>
+                        <p style="color: #666;">This code expires in 10 minutes.</p>
+                        <p style="color: #999; font-size: 12px; margin-top: 30px;">
+                            If you did not try to sign in, you can ignore this email.
+                        </p>
+                    </div>
+                    """
+                    .formatted(code);
+
+            helper.setText(htmlContent, true);
+            mailSender.send(message);
+            System.out.println("2FA email sent successfully to " + to);
+            return true;
+        } catch (Exception e) {
+            System.err.println("Failed to send 2FA email to " + to + ": " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     public void sendPasswordResetEmail(String to, String token) {
         String resetLink = frontendUrl + "/reset-password?token=" + token;
 

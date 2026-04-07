@@ -56,7 +56,7 @@ export default function SignUpPage() {
         } : undefined,
       }
 
-      const response = await authApi.register(registerData)
+      await authApi.register(registerData)
 
       // Backend sets HttpOnly cookie automatically
       // Refresh user context from the cookie

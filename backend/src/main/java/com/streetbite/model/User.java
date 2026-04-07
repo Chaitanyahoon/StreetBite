@@ -38,6 +38,20 @@ public class User {
     @Column(name = "reset_password_token_expiry")
     private LocalDateTime resetPasswordTokenExpiry;
 
+    @Column(name = "two_factor_enabled")
+    private Boolean twoFactorEnabled = true;
+
+    @Column(name = "two_factor_code_hash")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    private String twoFactorCodeHash;
+
+    @Column(name = "two_factor_code_expiry")
+    private LocalDateTime twoFactorCodeExpiry;
+
+    @Column(name = "two_factor_challenge_token")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    private String twoFactorChallengeToken;
+
     @Enumerated(EnumType.STRING)
     private Role role;
 
@@ -164,6 +178,38 @@ public class User {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+
+    public Boolean getTwoFactorEnabled() {
+        return twoFactorEnabled != null ? twoFactorEnabled : true;
+    }
+
+    public void setTwoFactorEnabled(Boolean twoFactorEnabled) {
+        this.twoFactorEnabled = twoFactorEnabled;
+    }
+
+    public String getTwoFactorCodeHash() {
+        return twoFactorCodeHash;
+    }
+
+    public void setTwoFactorCodeHash(String twoFactorCodeHash) {
+        this.twoFactorCodeHash = twoFactorCodeHash;
+    }
+
+    public LocalDateTime getTwoFactorCodeExpiry() {
+        return twoFactorCodeExpiry;
+    }
+
+    public void setTwoFactorCodeExpiry(LocalDateTime twoFactorCodeExpiry) {
+        this.twoFactorCodeExpiry = twoFactorCodeExpiry;
+    }
+
+    public String getTwoFactorChallengeToken() {
+        return twoFactorChallengeToken;
+    }
+
+    public void setTwoFactorChallengeToken(String twoFactorChallengeToken) {
+        this.twoFactorChallengeToken = twoFactorChallengeToken;
     }
 
     public LocalDateTime getCreatedAt() {

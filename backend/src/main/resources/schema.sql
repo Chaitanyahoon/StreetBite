@@ -12,6 +12,10 @@ CREATE TABLE IF NOT EXISTS users (
     profile_picture VARCHAR(500),
     reset_password_token VARCHAR(255),
     reset_password_token_expiry DATETIME,
+    two_factor_enabled BOOLEAN DEFAULT TRUE,
+    two_factor_code_hash VARCHAR(255),
+    two_factor_code_expiry DATETIME,
+    two_factor_challenge_token VARCHAR(255),
     role ENUM('USER', 'VENDOR', 'ADMIN') NOT NULL DEFAULT 'USER',
     zodiac_sign VARCHAR(50),
     xp INT DEFAULT 0,
@@ -125,6 +129,64 @@ CREATE TABLE IF NOT EXISTS user_favorites (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (vendor_id) REFERENCES vendors(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+SET @dbname = DATABASE();
+
+SET @preparedStatement = (SELECT IF(
+  (
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = @dbname
+      AND TABLE_NAME = 'users'
+      AND COLUMN_NAME = 'two_factor_enabled'
+  ) > 0,
+  'SELECT 1',
+  'ALTER TABLE users ADD COLUMN two_factor_enabled BOOLEAN DEFAULT TRUE'
+));
+PREPARE alterIfNotExists FROM @preparedStatement;
+EXECUTE alterIfNotExists;
+DEALLOCATE PREPARE alterIfNotExists;
+
+SET @preparedStatement = (SELECT IF(
+  (
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = @dbname
+      AND TABLE_NAME = 'users'
+      AND COLUMN_NAME = 'two_factor_code_hash'
+  ) > 0,
+  'SELECT 1',
+  'ALTER TABLE users ADD COLUMN two_factor_code_hash VARCHAR(255) NULL'
+));
+PREPARE alterIfNotExists FROM @preparedStatement;
+EXECUTE alterIfNotExists;
+DEALLOCATE PREPARE alterIfNotExists;
+
+SET @preparedStatement = (SELECT IF(
+  (
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = @dbname
+      AND TABLE_NAME = 'users'
+      AND COLUMN_NAME = 'two_factor_code_expiry'
+  ) > 0,
+  'SELECT 1',
+  'ALTER TABLE users ADD COLUMN two_factor_code_expiry DATETIME NULL'
+));
+PREPARE alterIfNotExists FROM @preparedStatement;
+EXECUTE alterIfNotExists;
+DEALLOCATE PREPARE alterIfNotExists;
+
+SET @preparedStatement = (SELECT IF(
+  (
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = @dbname
+      AND TABLE_NAME = 'users'
+      AND COLUMN_NAME = 'two_factor_challenge_token'
+  ) > 0,
+  'SELECT 1',
+  'ALTER TABLE users ADD COLUMN two_factor_challenge_token VARCHAR(255) NULL'
+));
+PREPARE alterIfNotExists FROM @preparedStatement;
+EXECUTE alterIfNotExists;
+DEALLOCATE PREPARE alterIfNotExists;
 
 CREATE TABLE IF NOT EXISTS favorites (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,

@@ -5,10 +5,9 @@ import { isPushMessagingEnabled, pushMessaging } from '@/lib/realtime'
 /**
  * Custom hook to manage Firebase Cloud Messaging (FCM) notifications.
  * Handles permission requests and token retrieval.
- * @param {number} [userId] - Optional User ID to associate with the FCM token.
  * @returns {Object} Notification permission, token, and utility functions.
  */
-export function useNotifications(userId?: number) {
+export function useNotifications() {
     const [permission, setPermission] = useState<NotificationPermission>('default')
     const [token, setToken] = useState<string | null>(null)
     const [loading, setLoading] = useState(true)
@@ -54,8 +53,8 @@ export function useNotifications(userId?: number) {
                         headers: {
                             'Content-Type': 'application/json',
                         },
+                        credentials: 'include',
                         body: JSON.stringify({
-                            userId,
                             fcmToken: currentToken,
                             deviceType: 'web'
                         })

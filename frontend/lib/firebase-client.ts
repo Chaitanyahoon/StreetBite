@@ -37,7 +37,7 @@ if (!firebaseConfig.apiKey) {
         app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0]
         db = getFirestore(app)
 
-        if (typeof window !== 'undefined') {
+        if (typeof window !== 'undefined' && firebaseConfig.measurementId) {
             analytics = getAnalytics(app);
         }
     } catch (error) {
@@ -49,7 +49,7 @@ if (!firebaseConfig.apiKey) {
 let messaging: ReturnType<typeof getMessaging> | null = null
 if (typeof window !== 'undefined') {
     isSupported().then(supported => {
-        if (supported) {
+        if (supported && app) {
             messaging = getMessaging(app)
         }
     }).catch(err => console.error('FCM not supported:', err))

@@ -57,6 +57,11 @@ export interface LoginRequest {
   password: string
 }
 
+export interface VerifyTwoFactorRequest {
+  challengeToken: string
+  code: string
+}
+
 export type VendorStatus =
   | 'AVAILABLE'
   | 'BUSY'
@@ -76,12 +81,16 @@ export interface AuthUser {
   role: 'USER' | 'VENDOR' | 'ADMIN' | string
   vendorId?: number
   isActive?: boolean
+  twoFactorEnabled?: boolean
 }
 
 export interface AuthResponse {
   success?: boolean
-  user: AuthUser
+  user?: AuthUser
   message?: string
+  requiresTwoFactor?: boolean
+  challengeToken?: string
+  email?: string
 }
 
 export interface ForgotPasswordResponse {
@@ -155,6 +164,7 @@ export interface ApiPromotion {
 export const authApi = {
   register: (data: RegisterRequest) => api.post('/auth/register', data) as Promise<AuthResponse>,
   login: (data: LoginRequest) => api.post('/auth/login', data) as Promise<AuthResponse>,
+  verifyTwoFactor: (data: VerifyTwoFactorRequest) => api.post('/auth/verify-2fa', data) as Promise<AuthResponse>,
   me: () => api.get('/auth/me') as Promise<AuthUser>,
   logout: () => api.post('/auth/logout') as Promise<{ message?: string }>,
   getUser: (id: string) => api.get(`/auth/user/${id}`) as Promise<AuthUser>,
@@ -169,7 +179,6 @@ export const userApi = {
   getById: (id: string) => api.get(`/users/${id}`) as Promise<any>,
   update: (id: string, data: any) => api.put(`/users/${id}`, data) as Promise<any>,
   updateStatus: (id: string | number, isActive: boolean) => api.put(`/users/${id}/status`, { isActive }) as Promise<any>,
-  getByFirebaseUid: (uid: string) => api.get(`/users/firebase/${uid}`) as Promise<any>,
 };
 
 export const vendorApi = {
