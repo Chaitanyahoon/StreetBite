@@ -234,7 +234,7 @@ public class AuthController {
             boolean emailSent = prepareAndSendEmailVerification(savedUser);
             if (!emailSent) {
                 return ResponseEntity.status(503).body(Map.of(
-                        "error", "Email verification is unavailable right now. Try again in a moment or continue with this email later."));
+                        "error", "Email verification is unavailable right now: " + emailService.getLastErrorMessage()));
             }
 
             return ResponseEntity.ok(Map.of(
@@ -283,7 +283,7 @@ public class AuthController {
                     boolean emailSent = prepareAndSendEmailVerification(user);
                     if (!emailSent) {
                         return ResponseEntity.status(503).body(Map.of(
-                                "error", "Email verification is unavailable because email delivery is not configured"));
+                                "error", "Email verification is unavailable right now: " + emailService.getLastErrorMessage()));
                     }
                 }
 
@@ -379,7 +379,7 @@ public class AuthController {
             boolean emailSent = prepareAndSendEmailVerification(user);
             if (!emailSent) {
                 return ResponseEntity.status(503).body(Map.of(
-                        "error", "Email verification is unavailable because email delivery is not configured"));
+                        "error", "Email verification is unavailable right now: " + emailService.getLastErrorMessage()));
             }
 
             return ResponseEntity.ok(Map.of("success", true, "message", "Verification code sent."));
@@ -455,7 +455,7 @@ public class AuthController {
         boolean emailSent = emailService.sendPasswordResetEmail(email, token);
         if (!emailSent) {
             return ResponseEntity.status(503).body(Map.of(
-                    "error", "Password reset email is unavailable because email delivery is not configured"));
+                    "error", "Password reset email is unavailable right now: " + emailService.getLastErrorMessage()));
         }
 
         return ResponseEntity.ok(Map.of(

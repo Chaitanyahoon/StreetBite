@@ -11,6 +11,8 @@ import jakarta.mail.internet.MimeMessage;
 @Service
 public class EmailService {
 
+    private volatile String lastErrorMessage = "Email delivery is unavailable";
+
     @Autowired(required = false)
     private JavaMailSender mailSender;
 
@@ -27,6 +29,20 @@ public class EmailService {
         return mailSender != null && mailHost != null && !mailHost.isBlank();
     }
 
+    public String getLastErrorMessage() {
+        return lastErrorMessage;
+    }
+
+    private void setLastErrorMessage(String message) {
+        if (message == null || message.isBlank()) {
+            this.lastErrorMessage = "Email delivery is unavailable";
+            return;
+        }
+
+        String normalized = message.replaceAll("\\s+", " ").trim();
+        this.lastErrorMessage = normalized;
+    }
+
     public boolean sendVerificationCodeEmail(String to, String code) {
         System.out.println("==================================================");
         System.out.println("EMAIL VERIFICATION CODE FOR: " + to);
@@ -35,6 +51,7 @@ public class EmailService {
 
         if (!canSendEmail()) {
             System.err.println("JavaMailSender not configured - verification email not sent. Check mail properties.");
+            setLastErrorMessage("Mail sender is not configured correctly");
             return false;
         }
 
@@ -60,10 +77,12 @@ public class EmailService {
             helper.setText(htmlContent, true);
             mailSender.send(message);
             System.out.println("Verification email sent successfully to " + to);
+            setLastErrorMessage("OK");
             return true;
         } catch (Exception e) {
             System.err.println("Failed to send verification email to " + to + ": " + e.getMessage());
             e.printStackTrace();
+            setLastErrorMessage(e.getClass().getSimpleName() + ": " + e.getMessage());
             return false;
         }
     }
@@ -76,6 +95,7 @@ public class EmailService {
 
         if (!canSendEmail()) {
             System.err.println("JavaMailSender not configured - 2FA email not sent. Check mail properties.");
+            setLastErrorMessage("Mail sender is not configured correctly");
             return false;
         }
 
@@ -105,10 +125,12 @@ public class EmailService {
             helper.setText(htmlContent, true);
             mailSender.send(message);
             System.out.println("2FA email sent successfully to " + to);
+            setLastErrorMessage("OK");
             return true;
         } catch (Exception e) {
             System.err.println("Failed to send 2FA email to " + to + ": " + e.getMessage());
             e.printStackTrace();
+            setLastErrorMessage(e.getClass().getSimpleName() + ": " + e.getMessage());
             return false;
         }
     }
@@ -125,6 +147,7 @@ public class EmailService {
         // If mail sender is not configured, just log and return
         if (!canSendEmail()) {
             System.err.println("JavaMailSender not configured - email not sent. Check mail properties.");
+            setLastErrorMessage("Mail sender is not configured correctly");
             return false;
         }
 
@@ -158,11 +181,13 @@ public class EmailService {
             mailSender.send(message);
 
             System.out.println("Password reset email sent successfully to " + to);
+            setLastErrorMessage("OK");
             return true;
         } catch (Exception e) {
             // Catch ALL exceptions - don't let email failure crash the request
             System.err.println("Failed to send email to " + to + ": " + e.getMessage());
             e.printStackTrace();
+            setLastErrorMessage(e.getClass().getSimpleName() + ": " + e.getMessage());
             return false;
         }
     }
