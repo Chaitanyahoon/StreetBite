@@ -4,12 +4,12 @@ import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { userApi } from '@/lib/api'
+import { userApi, type ApiUser } from '@/lib/api'
 import { Search, Shield, ShieldAlert, ShieldCheck, User as UserIcon } from 'lucide-react'
 import Link from 'next/link'
 
 export default function UserManagementPage() {
-    const [users, setUsers] = useState<any[]>([])
+    const [users, setUsers] = useState<ApiUser[]>([])
     const [loading, setLoading] = useState(true)
     const [searchTerm, setSearchTerm] = useState('')
 
@@ -99,7 +99,7 @@ export default function UserManagementPage() {
                                 <div className="flex items-center gap-4">
                                     <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
                                         {user.profilePicture ? (
-                                            <Image src={user.profilePicture} alt={user.displayName} width={40} height={40} className="h-10 w-10 rounded-full object-cover" unoptimized />
+                                            <Image src={user.profilePicture} alt={user.displayName || user.email} width={40} height={40} className="h-10 w-10 rounded-full object-cover" unoptimized />
                                         ) : (
                                             <UserIcon className="h-5 w-5 text-primary" />
                                         )}

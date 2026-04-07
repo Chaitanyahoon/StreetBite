@@ -1,5 +1,6 @@
 package com.streetbite.service;
 
+import com.streetbite.dto.user.UserUpdateRequest;
 import com.streetbite.model.User;
 import com.streetbite.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,5 +34,28 @@ public class UserService {
 
     public Optional<User> getUserByResetPasswordToken(String token) {
         return userRepository.findByResetPasswordToken(token);
+    }
+
+    @Transactional
+    public User updateProfile(User user, UserUpdateRequest updateRequest) {
+        if (updateRequest.getDisplayName() != null) {
+            user.setDisplayName(updateRequest.getDisplayName().trim());
+        }
+
+        if (updateRequest.getPhoneNumber() != null) {
+            user.setPhoneNumber(updateRequest.getPhoneNumber().trim());
+        }
+
+        if (updateRequest.getProfilePicture() != null) {
+            user.setProfilePicture(updateRequest.getProfilePicture().trim());
+        }
+
+        return userRepository.save(user);
+    }
+
+    @Transactional
+    public User updateActiveStatus(User user, boolean isActive) {
+        user.setActive(isActive);
+        return userRepository.save(user);
     }
 }

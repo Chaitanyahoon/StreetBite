@@ -92,6 +92,23 @@ export interface AuthResponse {
   email?: string
 }
 
+export interface ApiUser {
+  id: number
+  email: string
+  displayName?: string
+  phoneNumber?: string
+  profilePicture?: string
+  role: 'USER' | 'VENDOR' | 'ADMIN' | string
+  active?: boolean
+  emailVerified?: boolean
+  xp?: number
+  level?: number
+  streak?: number
+  lastCheckIn?: string | null
+  createdAt?: string
+  updatedAt?: string
+}
+
 export interface ForgotPasswordResponse {
   message?: string
   email?: string
@@ -173,10 +190,12 @@ export const authApi = {
 };
 
 export const userApi = {
-  getAll: () => api.get('/users') as Promise<any>,
-  getById: (id: string) => api.get(`/users/${id}`) as Promise<any>,
-  update: (id: string, data: any) => api.put(`/users/${id}`, data) as Promise<any>,
-  updateStatus: (id: string | number, isActive: boolean) => api.put(`/users/${id}/status`, { isActive }) as Promise<any>,
+  getAll: () => api.get('/users') as Promise<ApiUser[]>,
+  getById: (id: string) => api.get(`/users/${id}`) as Promise<ApiUser>,
+  update: (id: string, data: { displayName?: string; phoneNumber?: string; profilePicture?: string }) =>
+    api.put(`/users/${id}`, data) as Promise<ApiUser>,
+  updateStatus: (id: string | number, isActive: boolean) =>
+    api.put(`/users/${id}/status`, { isActive }) as Promise<ApiUser>,
 };
 
 export const vendorApi = {
