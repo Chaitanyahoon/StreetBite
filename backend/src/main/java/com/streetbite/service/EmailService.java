@@ -23,13 +23,58 @@ public class EmailService {
     @Value("${spring.mail.host:}")
     private String mailHost;
 
+    public boolean canSendEmail() {
+        return mailSender != null && mailHost != null && !mailHost.isBlank();
+    }
+
+    public boolean sendVerificationCodeEmail(String to, String code) {
+        System.out.println("==================================================");
+        System.out.println("EMAIL VERIFICATION CODE FOR: " + to);
+        System.out.println(code);
+        System.out.println("==================================================");
+
+        if (!canSendEmail()) {
+            System.err.println("JavaMailSender not configured - verification email not sent. Check mail properties.");
+            return false;
+        }
+
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(fromEmail);
+            helper.setTo(to);
+            helper.setSubject("StreetBite - Verify Your Email");
+
+            String htmlContent = """
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                        <h2 style="color: #ff6b35;">Verify your StreetBite account</h2>
+                        <p>Use this 6-digit code to finish creating your account:</p>
+                        <div style="margin: 24px 0; font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #111;">
+                            %s
+                        </div>
+                        <p style="color: #666;">This code expires in 10 minutes.</p>
+                    </div>
+                    """.formatted(code);
+
+            helper.setText(htmlContent, true);
+            mailSender.send(message);
+            System.out.println("Verification email sent successfully to " + to);
+            return true;
+        } catch (Exception e) {
+            System.err.println("Failed to send verification email to " + to + ": " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     public boolean sendTwoFactorCodeEmail(String to, String code) {
         System.out.println("==================================================");
         System.out.println("TWO-FACTOR LOGIN CODE FOR: " + to);
         System.out.println(code);
         System.out.println("==================================================");
 
-        if (mailSender == null || mailHost == null || mailHost.isBlank()) {
+        if (!canSendEmail()) {
             System.err.println("JavaMailSender not configured - 2FA email not sent. Check mail properties.");
             return false;
         }

@@ -57,8 +57,8 @@ export interface LoginRequest {
   password: string
 }
 
-export interface VerifyTwoFactorRequest {
-  challengeToken: string
+export interface VerifyEmailRequest {
+  email: string
   code: string
 }
 
@@ -81,15 +81,14 @@ export interface AuthUser {
   role: 'USER' | 'VENDOR' | 'ADMIN' | string
   vendorId?: number
   isActive?: boolean
-  twoFactorEnabled?: boolean
+  emailVerified?: boolean
 }
 
 export interface AuthResponse {
   success?: boolean
   user?: AuthUser
   message?: string
-  requiresTwoFactor?: boolean
-  challengeToken?: string
+  requiresEmailVerification?: boolean
   email?: string
 }
 
@@ -164,7 +163,8 @@ export interface ApiPromotion {
 export const authApi = {
   register: (data: RegisterRequest) => api.post('/auth/register', data) as Promise<AuthResponse>,
   login: (data: LoginRequest) => api.post('/auth/login', data) as Promise<AuthResponse>,
-  verifyTwoFactor: (data: VerifyTwoFactorRequest) => api.post('/auth/verify-2fa', data) as Promise<AuthResponse>,
+  verifyEmail: (data: VerifyEmailRequest) => api.post('/auth/verify-email', data) as Promise<AuthResponse>,
+  resendVerification: (email: string) => api.post('/auth/resend-verification', { email }) as Promise<AuthResponse>,
   me: () => api.get('/auth/me') as Promise<AuthUser>,
   logout: () => api.post('/auth/logout') as Promise<{ message?: string }>,
   getUser: (id: string) => api.get(`/auth/user/${id}`) as Promise<AuthUser>,

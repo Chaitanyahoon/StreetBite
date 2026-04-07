@@ -24,7 +24,7 @@ public class AuthController {
 
     private static final String COOKIE_NAME = "sb_token";
     private static final int COOKIE_MAX_AGE = 24 * 60 * 60; // 24 hours
-    private static final int TWO_FACTOR_EXPIRY_MINUTES = 10;
+    private static final int VERIFICATION_EXPIRY_MINUTES = 10;
 
     @Autowired
     private UserService userService;
@@ -55,7 +55,7 @@ public class AuthController {
         userData.put("phoneNumber", user.getPhoneNumber());
         userData.put("profilePicture", user.getProfilePicture());
         userData.put("role", user.getRole().name());
-        userData.put("twoFactorEnabled", user.getTwoFactorEnabled());
+        userData.put("emailVerified", user.getEmailVerified());
 
         if (user.getRole() == User.Role.VENDOR) {
             java.util.List<Vendor> vendors = vendorService.getVendorsByOwner(user.getId());
@@ -123,8 +123,30 @@ public class AuthController {
         return null;
     }
 
+    private String generateSixDigitCode() {
+        return String.format("%06d", new java.security.SecureRandom().nextInt(1_000_000));
+    }
+
+    private boolean prepareAndSendEmailVerification(User user) {
+        String code = generateSixDigitCode();
+        user.setEmailVerificationCodeHash(passwordEncoder.encode(code));
+        user.setEmailVerificationCodeExpiry(java.time.LocalDateTime.now().plusMinutes(VERIFICATION_EXPIRY_MINUTES));
+        userService.saveUser(user);
+        boolean emailSent = emailService.sendVerificationCodeEmail(user.getEmail(), code);
+        if (!emailSent) {
+            clearEmailVerification(user);
+            userService.saveUser(user);
+        }
+        return emailSent;
+    }
+
+    private void clearEmailVerification(User user) {
+        user.setEmailVerificationCodeHash(null);
+        user.setEmailVerificationCodeExpiry(null);
+    }
+
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody Map<String, Object> payload, HttpServletResponse response) {
+    public ResponseEntity<?> register(@RequestBody Map<String, Object> payload) {
         try {
 
             String email = (String) payload.get("email");
@@ -151,6 +173,8 @@ public class AuthController {
             user.setDisplayName(displayName);
             user.setPhoneNumber(phoneNumber);
             user.setRole(User.Role.valueOf(roleStr.toUpperCase()));
+            user.setEmailVerified(false);
+            user.setTwoFactorEnabled(false);
 
             // Generate firebase_uid if not provided
             String firebaseUid = (String) payload.get("firebaseUid");
@@ -187,16 +211,17 @@ public class AuthController {
 
             }
 
-            // Generate JWT token and set as HttpOnly cookie
-            String token = jwtUtil.generateToken(savedUser.getEmail(), savedUser.getId(), savedUser.getRole().name());
-            setTokenCookie(response, token);
+            boolean emailSent = prepareAndSendEmailVerification(savedUser);
+            if (!emailSent) {
+                return ResponseEntity.status(503).body(Map.of(
+                        "error", "Email verification is unavailable because email delivery is not configured"));
+            }
 
-            Map<String, Object> userData = buildUserData(savedUser);
-
-            // Token is issued via HttpOnly cookie.
             return ResponseEntity.ok(Map.of(
                     "success", true,
-                    "user", userData));
+                    "requiresEmailVerification", true,
+                    "email", savedUser.getEmail(),
+                    "message", "Verification code sent"));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
@@ -232,28 +257,20 @@ public class AuthController {
                 return ResponseEntity.status(403).body(Map.of("error", "Account is banned or inactive"));
             }
 
-            if (user.getTwoFactorEnabled()) {
-                String code = String.format("%06d", new java.security.SecureRandom().nextInt(1_000_000));
-                String challengeToken = java.util.UUID.randomUUID().toString();
-
-                user.setTwoFactorCodeHash(passwordEncoder.encode(code));
-                user.setTwoFactorCodeExpiry(java.time.LocalDateTime.now().plusMinutes(TWO_FACTOR_EXPIRY_MINUTES));
-                user.setTwoFactorChallengeToken(challengeToken);
-                userService.saveUser(user);
-                boolean emailSent = emailService.sendTwoFactorCodeEmail(user.getEmail(), code);
-                if (!emailSent) {
-                    clearTwoFactorChallenge(user);
-                    userService.saveUser(user);
-                    return ResponseEntity.status(503).body(Map.of(
-                            "error", "Two-factor login is unavailable because email delivery is not configured"));
+            if (!user.getEmailVerified()) {
+                if (user.getEmailVerificationCodeExpiry() == null
+                        || user.getEmailVerificationCodeExpiry().isBefore(java.time.LocalDateTime.now())) {
+                    boolean emailSent = prepareAndSendEmailVerification(user);
+                    if (!emailSent) {
+                        return ResponseEntity.status(503).body(Map.of(
+                                "error", "Email verification is unavailable because email delivery is not configured"));
+                    }
                 }
 
-                return ResponseEntity.ok(Map.of(
-                        "success", true,
-                        "requiresTwoFactor", true,
-                        "challengeToken", challengeToken,
-                        "email", user.getEmail(),
-                        "message", "Verification code sent"));
+                return ResponseEntity.status(403).body(Map.of(
+                        "error", "Please verify your email before signing in.",
+                        "requiresEmailVerification", true,
+                        "email", user.getEmail()));
             }
 
             // Generate JWT token and set as HttpOnly cookie
@@ -272,19 +289,19 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/verify-2fa")
-    public ResponseEntity<?> verifyTwoFactor(@RequestBody Map<String, Object> payload, HttpServletResponse response) {
+    @PostMapping("/verify-email")
+    public ResponseEntity<?> verifyEmail(@RequestBody Map<String, Object> payload, HttpServletResponse response) {
         try {
-            String challengeToken = (String) payload.get("challengeToken");
+            String email = payload.get("email") != null ? payload.get("email").toString().trim().toLowerCase() : null;
             String code = payload.get("code") != null ? payload.get("code").toString().trim() : null;
 
-            if (challengeToken == null || challengeToken.isBlank() || code == null || code.isBlank()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Challenge token and code are required"));
+            if (email == null || email.isBlank() || code == null || code.isBlank()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Email and code are required"));
             }
 
-            Optional<User> userOpt = userService.getUserByTwoFactorChallengeToken(challengeToken);
+            Optional<User> userOpt = userService.getUserByEmail(email);
             if (userOpt.isEmpty()) {
-                return ResponseEntity.status(401).body(Map.of("error", "Invalid or expired verification session"));
+                return ResponseEntity.status(401).body(Map.of("error", "Invalid verification request"));
             }
 
             User user = userOpt.get();
@@ -292,18 +309,20 @@ public class AuthController {
                 return ResponseEntity.status(403).body(Map.of("error", "Account is banned or inactive"));
             }
 
-            if (user.getTwoFactorCodeExpiry() == null
-                    || user.getTwoFactorCodeExpiry().isBefore(java.time.LocalDateTime.now())) {
-                clearTwoFactorChallenge(user);
+            if (user.getEmailVerificationCodeExpiry() == null
+                    || user.getEmailVerificationCodeExpiry().isBefore(java.time.LocalDateTime.now())) {
+                clearEmailVerification(user);
                 userService.saveUser(user);
                 return ResponseEntity.status(401).body(Map.of("error", "Verification code expired"));
             }
 
-            if (user.getTwoFactorCodeHash() == null || !passwordEncoder.matches(code, user.getTwoFactorCodeHash())) {
+            if (user.getEmailVerificationCodeHash() == null
+                    || !passwordEncoder.matches(code, user.getEmailVerificationCodeHash())) {
                 return ResponseEntity.status(401).body(Map.of("error", "Invalid verification code"));
             }
 
-            clearTwoFactorChallenge(user);
+            user.setEmailVerified(true);
+            clearEmailVerification(user);
             userService.saveUser(user);
 
             String token = jwtUtil.generateToken(user.getEmail(), user.getId(), user.getRole().name());
@@ -319,10 +338,35 @@ public class AuthController {
         }
     }
 
-    private void clearTwoFactorChallenge(User user) {
-        user.setTwoFactorCodeHash(null);
-        user.setTwoFactorCodeExpiry(null);
-        user.setTwoFactorChallengeToken(null);
+    @PostMapping("/resend-verification")
+    public ResponseEntity<?> resendVerification(@RequestBody Map<String, Object> payload) {
+        try {
+            String email = payload.get("email") != null ? payload.get("email").toString().trim().toLowerCase() : null;
+            if (email == null || email.isBlank()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Email is required"));
+            }
+
+            Optional<User> userOpt = userService.getUserByEmail(email);
+            if (userOpt.isEmpty()) {
+                return ResponseEntity.ok(Map.of("success", true, "message", "If the account exists, a code was sent."));
+            }
+
+            User user = userOpt.get();
+            if (user.getEmailVerified()) {
+                return ResponseEntity.ok(Map.of("success", true, "message", "Email is already verified."));
+            }
+
+            boolean emailSent = prepareAndSendEmailVerification(user);
+            if (!emailSent) {
+                return ResponseEntity.status(503).body(Map.of(
+                        "error", "Email verification is unavailable because email delivery is not configured"));
+            }
+
+            return ResponseEntity.ok(Map.of("success", true, "message", "Verification code sent."));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
+        }
     }
 
     /**

@@ -38,6 +38,16 @@ public class User {
     @Column(name = "reset_password_token_expiry")
     private LocalDateTime resetPasswordTokenExpiry;
 
+    @Column(name = "email_verified")
+    private Boolean emailVerified = false;
+
+    @Column(name = "email_verification_code_hash")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    private String emailVerificationCodeHash;
+
+    @Column(name = "email_verification_code_expiry")
+    private LocalDateTime emailVerificationCodeExpiry;
+
     @Column(name = "two_factor_enabled")
     private Boolean twoFactorEnabled = true;
 
@@ -178,6 +188,30 @@ public class User {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+
+    public Boolean getEmailVerified() {
+        return emailVerified != null ? emailVerified : false;
+    }
+
+    public void setEmailVerified(Boolean emailVerified) {
+        this.emailVerified = emailVerified;
+    }
+
+    public String getEmailVerificationCodeHash() {
+        return emailVerificationCodeHash;
+    }
+
+    public void setEmailVerificationCodeHash(String emailVerificationCodeHash) {
+        this.emailVerificationCodeHash = emailVerificationCodeHash;
+    }
+
+    public LocalDateTime getEmailVerificationCodeExpiry() {
+        return emailVerificationCodeExpiry;
+    }
+
+    public void setEmailVerificationCodeExpiry(LocalDateTime emailVerificationCodeExpiry) {
+        this.emailVerificationCodeExpiry = emailVerificationCodeExpiry;
     }
 
     public Boolean getTwoFactorEnabled() {

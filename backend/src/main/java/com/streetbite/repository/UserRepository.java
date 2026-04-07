@@ -11,7 +11,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByResetPasswordToken(String token);
 
     Optional<User> findByTwoFactorChallengeToken(String token);
-
+    
     List<User> findTop10ByOrderByXpDesc();
 
     List<User> findTop10ByRoleOrderByXpDesc(User.Role role);

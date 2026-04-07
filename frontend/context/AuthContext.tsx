@@ -7,8 +7,7 @@ interface LoginResult {
   success: boolean
   error?: string
   user?: AuthUser
-  requiresTwoFactor?: boolean
-  challengeToken?: string
+  requiresEmailVerification?: boolean
   email?: string
 }
 
@@ -17,7 +16,6 @@ interface AuthContextType {
   isLoading: boolean
   isLoggedIn: boolean
   login: (email: string, password: string) => Promise<LoginResult>
-  verifyTwoFactor: (challengeToken: string, code: string) => Promise<LoginResult>
   logout: () => Promise<void>
   refreshUser: () => Promise<void>
   updateLocalUser: (updated: Partial<AuthUser>) => void
@@ -48,11 +46,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = useCallback(async (email: string, password: string) => {
     try {
       const response = await authApi.login({ email, password })
-      if (response.requiresTwoFactor) {
+      if (response.requiresEmailVerification) {
         return {
           success: true,
-          requiresTwoFactor: true,
-          challengeToken: response.challengeToken,
+          requiresEmailVerification: true,
           email: response.email,
         }
       }
@@ -90,36 +87,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const verifyTwoFactor = useCallback(async (challengeToken: string, code: string) => {
-    try {
-      const response = await authApi.verifyTwoFactor({ challengeToken, code })
-      let userData = response.user as AuthUser
-
-      try {
-        const me = await authApi.me()
-        userData = me as AuthUser
-      } catch (meError: any) {
-        setUser(null)
-        const sessionError =
-          meError?.response?.status === 401
-            ? 'Verification succeeded, but your browser is blocking the session cookie. Allow cookies for StreetBite and try again.'
-            : 'Verification succeeded, but the session could not be verified. Please allow cookies and try again.'
-
-        return { success: false, error: sessionError }
-      }
-
-      setUser(userData)
-      window.dispatchEvent(new Event('user-updated'))
-      return { success: true, user: userData }
-    } catch (err: any) {
-      let errorMessage = 'Verification failed. Please try again.'
-      if (err.response?.data?.error) {
-        errorMessage = err.response.data.error
-      }
-      return { success: false, error: errorMessage }
-    }
-  }, [])
-
   const logout = useCallback(async () => {
     try {
       await authApi.logout()
@@ -146,7 +113,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isLoading,
       isLoggedIn: !!user,
       login,
-      verifyTwoFactor,
       logout,
       refreshUser,
       updateLocalUser,

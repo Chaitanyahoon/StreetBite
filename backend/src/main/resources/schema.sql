@@ -12,6 +12,9 @@ CREATE TABLE IF NOT EXISTS users (
     profile_picture VARCHAR(500),
     reset_password_token VARCHAR(255),
     reset_password_token_expiry DATETIME,
+    email_verified BOOLEAN DEFAULT FALSE,
+    email_verification_code_hash VARCHAR(255),
+    email_verification_code_expiry DATETIME,
     two_factor_enabled BOOLEAN DEFAULT TRUE,
     two_factor_code_hash VARCHAR(255),
     two_factor_code_expiry DATETIME,
@@ -131,6 +134,48 @@ CREATE TABLE IF NOT EXISTS user_favorites (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 SET @dbname = DATABASE();
+
+SET @preparedStatement = (SELECT IF(
+  (
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = @dbname
+      AND TABLE_NAME = 'users'
+      AND COLUMN_NAME = 'email_verified'
+  ) > 0,
+  'SELECT 1',
+  'ALTER TABLE users ADD COLUMN email_verified BOOLEAN DEFAULT FALSE'
+));
+PREPARE alterIfNotExists FROM @preparedStatement;
+EXECUTE alterIfNotExists;
+DEALLOCATE PREPARE alterIfNotExists;
+
+SET @preparedStatement = (SELECT IF(
+  (
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = @dbname
+      AND TABLE_NAME = 'users'
+      AND COLUMN_NAME = 'email_verification_code_hash'
+  ) > 0,
+  'SELECT 1',
+  'ALTER TABLE users ADD COLUMN email_verification_code_hash VARCHAR(255) NULL'
+));
+PREPARE alterIfNotExists FROM @preparedStatement;
+EXECUTE alterIfNotExists;
+DEALLOCATE PREPARE alterIfNotExists;
+
+SET @preparedStatement = (SELECT IF(
+  (
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = @dbname
+      AND TABLE_NAME = 'users'
+      AND COLUMN_NAME = 'email_verification_code_expiry'
+  ) > 0,
+  'SELECT 1',
+  'ALTER TABLE users ADD COLUMN email_verification_code_expiry DATETIME NULL'
+));
+PREPARE alterIfNotExists FROM @preparedStatement;
+EXECUTE alterIfNotExists;
+DEALLOCATE PREPARE alterIfNotExists;
 
 SET @preparedStatement = (SELECT IF(
   (
