@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.stereotype.Service;
 
 import jakarta.mail.internet.MimeMessage;
@@ -123,7 +124,65 @@ public class EmailService {
         } catch (Exception e) {
             System.err.println("Failed to send " + label + " via SMTP to " + to + ": " + e.getMessage());
             e.printStackTrace();
+            if (shouldRetryWithGmailSsl(e)) {
+                System.out.println("Retrying " + label + " via Gmail SSL on port 465");
+                boolean retrySuccess = sendWithGmailSslFallback(to, subject, htmlContent, label);
+                if (retrySuccess) {
+                    return true;
+                }
+            }
             setLastErrorMessage(e.getClass().getSimpleName() + ": " + e.getMessage());
+            return false;
+        }
+    }
+
+    private boolean shouldRetryWithGmailSsl(Exception exception) {
+        String normalizedHost = mailHost != null ? mailHost.trim().toLowerCase() : "";
+        String message = exception.getMessage() != null ? exception.getMessage().toLowerCase() : "";
+        return normalizedHost.contains("gmail")
+                && (message.contains("timeout") || message.contains("couldn't connect to host"));
+    }
+
+    private boolean sendWithGmailSslFallback(String to, String subject, String htmlContent, String label) {
+        if (!(mailSender instanceof JavaMailSenderImpl primarySender)) {
+            setLastErrorMessage("Gmail SSL fallback unavailable");
+            return false;
+        }
+
+        try {
+            JavaMailSenderImpl fallbackSender = new JavaMailSenderImpl();
+            fallbackSender.setHost("smtp.gmail.com");
+            fallbackSender.setPort(465);
+            fallbackSender.setUsername(primarySender.getUsername());
+            fallbackSender.setPassword(primarySender.getPassword());
+
+            java.util.Properties primaryProps = primarySender.getJavaMailProperties();
+            java.util.Properties fallbackProps = fallbackSender.getJavaMailProperties();
+            fallbackProps.put("mail.transport.protocol", "smtp");
+            fallbackProps.put("mail.smtp.auth", primaryProps.getProperty("mail.smtp.auth", "true"));
+            fallbackProps.put("mail.smtp.ssl.enable", "true");
+            fallbackProps.put("mail.smtp.starttls.enable", "false");
+            fallbackProps.put("mail.smtp.starttls.required", "false");
+            fallbackProps.put("mail.smtp.connectiontimeout", primaryProps.getProperty("mail.smtp.connectiontimeout", "10000"));
+            fallbackProps.put("mail.smtp.timeout", primaryProps.getProperty("mail.smtp.timeout", "10000"));
+            fallbackProps.put("mail.smtp.writetimeout", primaryProps.getProperty("mail.smtp.writetimeout", "10000"));
+            fallbackProps.put("mail.smtp.ssl.trust", "smtp.gmail.com");
+
+            MimeMessage message = fallbackSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setFrom(fromEmail);
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setText(htmlContent, true);
+            fallbackSender.send(message);
+
+            System.out.println(label + " sent successfully via Gmail SSL fallback to " + to);
+            setLastErrorMessage("OK");
+            return true;
+        } catch (Exception fallbackException) {
+            System.err.println("Failed Gmail SSL fallback for " + label + " to " + to + ": " + fallbackException.getMessage());
+            fallbackException.printStackTrace();
+            setLastErrorMessage(fallbackException.getClass().getSimpleName() + ": " + fallbackException.getMessage());
             return false;
         }
     }
