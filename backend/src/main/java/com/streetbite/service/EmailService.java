@@ -84,22 +84,22 @@ public class EmailService {
         return normalized;
     }
 
-    private boolean sendEmail(String to, String subject, String htmlContent, String label) {
+    private boolean sendEmail(String to, String subject, Map<String, Object> templateParams, String label) {
         if (canSendWithEmailJs()) {
             String templateId = label.toLowerCase().contains("password reset")
                     ? sanitize(emailJsPasswordResetTemplateId)
                     : sanitize(emailJsAuthTemplateId);
             if (!templateId.isBlank()) {
-                return sendWithEmailJs(to, subject, htmlContent, templateId, label);
+                return sendWithEmailJs(to, templateId, templateParams, label);
             }
         }
         setLastErrorMessage("EmailJS is not configured correctly");
         return false;
     }
 
-    private boolean sendWithEmailJs(String to, String subject, String htmlContent, String templateId, String label) {
+    private boolean sendWithEmailJs(String to, String templateId, Map<String, Object> templateParams, String label) {
         try {
-            HttpResponse<String> response = sendWithEmailJsAttempt(to, subject, htmlContent, templateId, true);
+            HttpResponse<String> response = sendWithEmailJsAttempt(to, templateId, templateParams, true);
             if (response.statusCode() >= 200 && response.statusCode() < 300) {
                 System.out.println(label + " sent successfully via EmailJS to " + to);
                 setLastErrorMessage("OK");
@@ -108,7 +108,7 @@ public class EmailService {
 
             if (shouldRetryWithoutPrivateKey(response)) {
                 System.out.println("Retrying " + label + " via EmailJS without private key");
-                response = sendWithEmailJsAttempt(to, subject, htmlContent, templateId, false);
+                response = sendWithEmailJsAttempt(to, templateId, templateParams, false);
                 if (response.statusCode() >= 200 && response.statusCode() < 300) {
                     System.out.println(label + " sent successfully via EmailJS retry to " + to);
                     setLastErrorMessage("OK");
@@ -129,9 +129,8 @@ public class EmailService {
 
     private HttpResponse<String> sendWithEmailJsAttempt(
             String to,
-            String subject,
-            String htmlContent,
             String templateId,
+            Map<String, Object> templateParams,
             boolean includePrivateKey) throws Exception {
         Map<String, Object> payload = new HashMap<>();
         payload.put("service_id", sanitize(emailJsServiceId));
@@ -143,15 +142,12 @@ public class EmailService {
             payload.put("accessToken", privateKey);
         }
 
-        payload.put("template_params", Map.of(
-                "to_email", to,
-                "to_name", to,
-                "subject", subject,
-                "message", htmlContent,
-                "html_message", htmlContent,
-                "from_name", "StreetBite",
-                "reply_to", sanitize(fromEmail)
-        ));
+        Map<String, Object> resolvedTemplateParams = new HashMap<>(templateParams);
+        resolvedTemplateParams.putIfAbsent("to_email", to);
+        resolvedTemplateParams.putIfAbsent("to_name", to);
+        resolvedTemplateParams.putIfAbsent("from_name", "StreetBite");
+        resolvedTemplateParams.putIfAbsent("reply_to", sanitize(fromEmail));
+        payload.put("template_params", resolvedTemplateParams);
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("https://api.emailjs.com/api/v1.0/email/send"))
@@ -186,18 +182,15 @@ public class EmailService {
             return false;
         }
 
-        String htmlContent = """
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                    <h2 style="color: #ff6b35;">Verify your StreetBite account</h2>
-                    <p>Use this 6-digit code to finish creating your account:</p>
-                    <div style="margin: 24px 0; font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #111;">
-                        %s
-                    </div>
-                    <p style="color: #666;">This code expires in 10 minutes.</p>
-                </div>
-                """.formatted(code);
+        Map<String, Object> templateParams = new HashMap<>();
+        templateParams.put("subject", "StreetBite - Verify Your Email");
+        templateParams.put("message", code);
+        templateParams.put("verification_code", code);
+        templateParams.put("intro_text", "Use this 6-digit code to finish creating your account.");
+        templateParams.put("expiry_text", "This code expires in 10 minutes.");
+        templateParams.put("html_message", "Use this 6-digit code to finish creating your account.");
 
-        return sendEmail(to, "StreetBite - Verify Your Email", htmlContent, "Verification email");
+        return sendEmail(to, "StreetBite - Verify Your Email", templateParams, "Verification email");
     }
 
     public boolean sendTwoFactorCodeEmail(String to, String code) {
@@ -212,21 +205,15 @@ public class EmailService {
             return false;
         }
 
-        String htmlContent = """
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                    <h2 style="color: #ff6b35;">StreetBite Login Verification</h2>
-                    <p>Use this one-time code to complete your sign in:</p>
-                    <div style="margin: 24px 0; font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #111;">
-                        %s
-                    </div>
-                    <p style="color: #666;">This code expires in 10 minutes.</p>
-                    <p style="color: #999; font-size: 12px; margin-top: 30px;">
-                        If you did not try to sign in, you can ignore this email.
-                    </p>
-                </div>
-                """.formatted(code);
+        Map<String, Object> templateParams = new HashMap<>();
+        templateParams.put("subject", "StreetBite - Your Login Verification Code");
+        templateParams.put("message", code);
+        templateParams.put("verification_code", code);
+        templateParams.put("intro_text", "Use this one-time code to complete your sign in.");
+        templateParams.put("expiry_text", "This code expires in 10 minutes.");
+        templateParams.put("html_message", "Use this one-time code to complete your sign in.");
 
-        return sendEmail(to, "StreetBite - Your Login Verification Code", htmlContent, "2FA email");
+        return sendEmail(to, "StreetBite - Your Login Verification Code", templateParams, "2FA email");
     }
 
     public boolean sendPasswordResetEmail(String to, String token) {
@@ -244,23 +231,14 @@ public class EmailService {
             return false;
         }
 
-        String htmlContent = """
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                    <h2 style="color: #ff6b35;">StreetBite Password Reset</h2>
-                    <p>You requested to reset your password. Click the button below to proceed:</p>
-                    <p style="margin: 30px 0;">
-                        <a href="%s" style="background-color: #ff6b35; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">
-                            Reset Password
-                        </a>
-                    </p>
-                    <p>Or copy and paste this link in your browser:</p>
-                    <p style="word-break: break-all; color: #666;">%s</p>
-                    <p style="color: #999; font-size: 12px; margin-top: 30px;">
-                        This link expires in 15 minutes. If you didn't request this, please ignore this email.
-                    </p>
-                </div>
-                """.formatted(resetLink, resetLink);
+        Map<String, Object> templateParams = new HashMap<>();
+        templateParams.put("subject", "StreetBite - Password Reset Request");
+        templateParams.put("message", resetLink);
+        templateParams.put("reset_link", resetLink);
+        templateParams.put("intro_text", "We received a request to reset your password.");
+        templateParams.put("expiry_text", "This reset link expires in 15 minutes.");
+        templateParams.put("html_message", "Use the reset button or the link below.");
 
-        return sendEmail(to, "StreetBite - Password Reset Request", htmlContent, "Password reset email");
+        return sendEmail(to, "StreetBite - Password Reset Request", templateParams, "Password reset email");
     }
 }
