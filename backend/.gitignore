@@ -5,7 +5,6 @@ firebase-key.json
 
 # Maven
 target/
-.mvn/wrapper/maven-wrapper.jar
 
 # IDE
 .idea/
