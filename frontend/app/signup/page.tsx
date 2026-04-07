@@ -13,7 +13,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 
 export default function SignUpPage() {
   const router = useRouter()
-  const { login } = useAuth()
+  const { refreshUser } = useAuth()
   const [step, setStep] = useState(1)
   const [userType, setUserType] = useState<'customer' | 'vendor' | null>(null)
   const [formData, setFormData] = useState({
@@ -107,15 +107,11 @@ export default function SignUpPage() {
     setVerificationMessage(null)
 
     try {
-      await authApi.verifyEmail({ email: verificationEmail, code: verificationCode })
-      const result = await login(verificationEmail, formData.password)
-      if (result.success && result.user) {
-        const role = result.user.role?.toUpperCase()
-        router.push(role === 'VENDOR' ? '/vendor' : role === 'ADMIN' ? '/admin' : '/explore')
-        return
-      }
+      const response = await authApi.verifyEmail({ email: verificationEmail, code: verificationCode })
+      await refreshUser()
 
-      router.push('/signin')
+      const role = response.user?.role?.toUpperCase()
+      router.push(role === 'VENDOR' ? '/vendor' : role === 'ADMIN' ? '/admin' : '/community')
     } catch (err: any) {
       setError(err.response?.data?.error || 'Verification failed. Please try again.')
       setIsLoading(false)
