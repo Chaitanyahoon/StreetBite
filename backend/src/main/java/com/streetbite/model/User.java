@@ -2,8 +2,6 @@ package com.streetbite.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -71,11 +69,6 @@ public class User {
 
     @Column(name = "is_active")
     private Boolean isActive = true;
-
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "user_favorites", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "vendor_id"))
-    @com.fasterxml.jackson.annotation.JsonIgnore
-    private List<Vendor> favorites = new ArrayList<>();
 
     public enum Role {
         USER, VENDOR, ADMIN
@@ -203,14 +196,6 @@ public class User {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
-    }
-
-    public List<Vendor> getFavorites() {
-        return favorites;
-    }
-
-    public void setFavorites(List<Vendor> favorites) {
-        this.favorites = favorites;
     }
 
     public String getZodiacSign() {

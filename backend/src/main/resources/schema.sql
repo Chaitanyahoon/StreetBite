@@ -118,15 +118,6 @@ CREATE TABLE IF NOT EXISTS order_items (
     FOREIGN KEY (menu_item_id) REFERENCES menu_items(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 9. USER FAVORITES
-CREATE TABLE IF NOT EXISTS user_favorites (
-    user_id BIGINT NOT NULL,
-    vendor_id BIGINT NOT NULL,
-    PRIMARY KEY (user_id, vendor_id),
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (vendor_id) REFERENCES vendors(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
 SET @dbname = DATABASE();
 
 SET @preparedStatement = (SELECT IF(
@@ -171,62 +162,6 @@ PREPARE alterIfNotExists FROM @preparedStatement;
 EXECUTE alterIfNotExists;
 DEALLOCATE PREPARE alterIfNotExists;
 
-SET @preparedStatement = (SELECT IF(
-  (
-    SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
-    WHERE TABLE_SCHEMA = @dbname
-      AND TABLE_NAME = 'users'
-      AND COLUMN_NAME = 'two_factor_enabled'
-  ) > 0,
-  'SELECT 1',
-  'ALTER TABLE users ADD COLUMN two_factor_enabled BOOLEAN DEFAULT TRUE'
-));
-PREPARE alterIfNotExists FROM @preparedStatement;
-EXECUTE alterIfNotExists;
-DEALLOCATE PREPARE alterIfNotExists;
-
-SET @preparedStatement = (SELECT IF(
-  (
-    SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
-    WHERE TABLE_SCHEMA = @dbname
-      AND TABLE_NAME = 'users'
-      AND COLUMN_NAME = 'two_factor_code_hash'
-  ) > 0,
-  'SELECT 1',
-  'ALTER TABLE users ADD COLUMN two_factor_code_hash VARCHAR(255) NULL'
-));
-PREPARE alterIfNotExists FROM @preparedStatement;
-EXECUTE alterIfNotExists;
-DEALLOCATE PREPARE alterIfNotExists;
-
-SET @preparedStatement = (SELECT IF(
-  (
-    SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
-    WHERE TABLE_SCHEMA = @dbname
-      AND TABLE_NAME = 'users'
-      AND COLUMN_NAME = 'two_factor_code_expiry'
-  ) > 0,
-  'SELECT 1',
-  'ALTER TABLE users ADD COLUMN two_factor_code_expiry DATETIME NULL'
-));
-PREPARE alterIfNotExists FROM @preparedStatement;
-EXECUTE alterIfNotExists;
-DEALLOCATE PREPARE alterIfNotExists;
-
-SET @preparedStatement = (SELECT IF(
-  (
-    SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
-    WHERE TABLE_SCHEMA = @dbname
-      AND TABLE_NAME = 'users'
-      AND COLUMN_NAME = 'two_factor_challenge_token'
-  ) > 0,
-  'SELECT 1',
-  'ALTER TABLE users ADD COLUMN two_factor_challenge_token VARCHAR(255) NULL'
-));
-PREPARE alterIfNotExists FROM @preparedStatement;
-EXECUTE alterIfNotExists;
-DEALLOCATE PREPARE alterIfNotExists;
-
 CREATE TABLE IF NOT EXISTS favorites (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT NOT NULL,
@@ -236,6 +171,22 @@ CREATE TABLE IF NOT EXISTS favorites (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (vendor_id) REFERENCES vendors(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+SET @preparedStatement = (
+  SELECT IF(
+    EXISTS(
+      SELECT 1
+      FROM INFORMATION_SCHEMA.TABLES
+      WHERE TABLE_SCHEMA = @dbname
+        AND TABLE_NAME = 'user_favorites'
+    ),
+    'INSERT IGNORE INTO favorites (user_id, vendor_id, created_at) SELECT user_id, vendor_id, CURRENT_TIMESTAMP FROM user_favorites',
+    'SELECT 1'
+  )
+);
+PREPARE copyLegacyFavorites FROM @preparedStatement;
+EXECUTE copyLegacyFavorites;
+DEALLOCATE PREPARE copyLegacyFavorites;
 
 -- 10. PROMOTIONS
 CREATE TABLE IF NOT EXISTS promotions (
