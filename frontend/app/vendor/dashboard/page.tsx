@@ -6,20 +6,20 @@ import { useRouter } from 'next/navigation'
 import { vendorApi, type ApiVendor, type VendorStatus } from '@/lib/api'
 import { toast } from 'sonner'
 import Link from 'next/link'
-import { TrendingUp, Settings } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
-
-// Vendor interface for type safety
-interface Vendor {
-    id: string | number
-    name: string
-    status?: VendorStatus
-}
+import {
+    getQuickActionClasses,
+    getVendorStatusPillClassName,
+    SETTINGS_ACTION,
+    VENDOR_QUICK_ACTIONS,
+    VENDOR_TIPS,
+    type VendorSummary,
+} from './dashboard-helpers'
 
 export default function VendorDashboardPage() {
     const router = useRouter()
     const { user, isLoading: authLoading } = useAuth()
-    const [vendor, setVendor] = useState<Vendor | null>(null)
+    const [vendor, setVendor] = useState<VendorSummary | null>(null)
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
@@ -82,17 +82,14 @@ export default function VendorDashboardPage() {
                     </div>
                     <div className="flex items-center gap-3">
                         {vendor?.status && (
-                            <div className={`px-4 py-2 rounded-full font-semibold ${vendor.status === 'AVAILABLE' ? 'bg-green-100 text-green-700' :
-                                    vendor.status === 'BUSY' ? 'bg-orange-100 text-orange-700' :
-                                        'bg-red-100 text-red-700'
-                                }`}>
+                            <div className={`px-4 py-2 rounded-full font-semibold ${getVendorStatusPillClassName(vendor.status)}`}>
                                 {vendor.status}
                             </div>
                         )}
-                        <Link href="/vendor/settings">
+                        <Link href={SETTINGS_ACTION.href}>
                             <Button variant="outline" className="gap-2">
-                                <Settings size={18} />
-                                Settings
+                                <SETTINGS_ACTION.icon size={18} />
+                                {SETTINGS_ACTION.label}
                             </Button>
                         </Link>
                     </div>
@@ -101,51 +98,26 @@ export default function VendorDashboardPage() {
 
             {/* Quick Actions */}
             <div className="grid md:grid-cols-3 gap-4">
-                <Link href="/vendor/menu" className="block">
-                    <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 hover:border-orange-500 hover:shadow-md transition-all cursor-pointer group">
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center group-hover:bg-orange-500 transition-colors">
-                                <svg className="w-6 h-6 text-orange-600 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                                </svg>
-                            </div>
-                            <div>
-                                <h3 className="font-semibold text-gray-900">Menu</h3>
-                                <p className="text-sm text-gray-600">Manage items</p>
-                            </div>
-                        </div>
-                    </div>
-                </Link>
+                {VENDOR_QUICK_ACTIONS.map((action) => {
+                    const Icon = action.icon
+                    const classes = getQuickActionClasses(action.accentClassName)
 
-                <Link href="/vendor/analytics" className="block">
-                    <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 hover:border-blue-500 hover:shadow-md transition-all cursor-pointer group">
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center group-hover:bg-blue-500 transition-colors">
-                                <TrendingUp className="w-6 h-6 text-blue-600 group-hover:text-white" />
+                    return (
+                        <Link key={action.href} href={action.href} className="block">
+                            <div className={`bg-white rounded-2xl p-6 shadow-sm border border-gray-200 transition-all cursor-pointer group ${classes.card}`}>
+                                <div className="flex items-center gap-4">
+                                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${classes.iconWrap}`}>
+                                        <Icon className={`w-6 h-6 transition-colors ${classes.icon}`} />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-semibold text-gray-900">{action.title}</h3>
+                                        <p className="text-sm text-gray-600">{action.description}</p>
+                                    </div>
+                                </div>
                             </div>
-                            <div>
-                                <h3 className="font-semibold text-gray-900">Analytics</h3>
-                                <p className="text-sm text-gray-600">View insights</p>
-                            </div>
-                        </div>
-                    </div>
-                </Link>
-
-                <Link href="/vendor/promotions" className="block">
-                    <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 hover:border-emerald-500 hover:shadow-md transition-all cursor-pointer group">
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center group-hover:bg-emerald-500 transition-colors">
-                                <svg className="w-6 h-6 text-emerald-600 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                                </svg>
-                            </div>
-                            <div>
-                                <h3 className="font-semibold text-gray-900">Promotions</h3>
-                                <p className="text-sm text-gray-600">Create offers</p>
-                            </div>
-                        </div>
-                    </div>
-                </Link>
+                        </Link>
+                    )
+                })}
             </div>
 
             {/* Getting Started Guide */}
@@ -155,50 +127,19 @@ export default function VendorDashboardPage() {
                     Quick Tips
                 </h2>
                 <div className="grid md:grid-cols-2 gap-4">
-                    <div className="flex items-start gap-3 p-4 bg-orange-50 rounded-lg">
-                        <div className="w-8 h-8 bg-orange-600 text-white rounded-full flex items-center justify-center font-bold flex-shrink-0 mt-0.5">
-                            1
+                    {VENDOR_TIPS.map((tip) => (
+                        <div key={tip.step} className={`flex items-start gap-3 p-4 rounded-lg ${tip.cardClassName}`}>
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold flex-shrink-0 mt-0.5 ${tip.badgeClassName}`}>
+                                {tip.step}
+                            </div>
+                            <div>
+                                <h3 className="font-semibold mb-1">{tip.title}</h3>
+                                <p className="text-sm text-gray-600">
+                                    {tip.description}
+                                </p>
+                            </div>
                         </div>
-                        <div>
-                            <h3 className="font-semibold mb-1">Update Your Status</h3>
-                            <p className="text-sm text-gray-600">
-                                Let customers know if you're Available, Busy, or Unavailable in Settings
-                            </p>
-                        </div>
-                    </div>
-                    <div className="flex items-start gap-3 p-4 bg-blue-50 rounded-lg">
-                        <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold flex-shrink-0 mt-0.5">
-                            2
-                        </div>
-                        <div>
-                            <h3 className="font-semibold mb-1">Keep Menu Fresh</h3>
-                            <p className="text-sm text-gray-600">
-                                Toggle item availability as your stock changes throughout the day
-                            </p>
-                        </div>
-                    </div>
-                    <div className="flex items-start gap-3 p-4 bg-emerald-50 rounded-lg">
-                        <div className="w-8 h-8 bg-emerald-600 text-white rounded-full flex items-center justify-center font-bold flex-shrink-0 mt-0.5">
-                            3
-                        </div>
-                        <div>
-                            <h3 className="font-semibold mb-1">Complete Your Profile</h3>
-                            <p className="text-sm text-gray-600">
-                                Add banner and logo images to make your stall stand out
-                            </p>
-                        </div>
-                    </div>
-                    <div className="flex items-start gap-3 p-4 bg-green-50 rounded-lg">
-                        <div className="w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center font-bold flex-shrink-0 mt-0.5">
-                            4
-                        </div>
-                        <div>
-                            <h3 className="font-semibold mb-1">Run Promotions</h3>
-                            <p className="text-sm text-gray-600">
-                                Attract more customers with limited-time offers and discounts
-                            </p>
-                        </div>
-                    </div>
+                    ))}
                 </div>
             </div>
         </div>
