@@ -13,7 +13,7 @@ interface Announcement {
   type?: 'WARNING' | 'ALERT' | 'INFO'
 }
 
-export function Navbar() {
+export function Navbar({ forceSolid = false }: { forceSolid?: boolean }) {
   const router = useRouter()
   const pathname = usePathname()
   const { user, isLoggedIn, logout } = useAuth()
@@ -106,10 +106,11 @@ export function Navbar() {
           {announcement.message}
         </div>
       )}
-      <nav className={`sticky top-0 z-50 transition-all duration-300 ${scrolled
-        ? 'bg-white border-b-4 border-black shadow-[0px_4px_0px_0px_rgba(0,0,0,0.1)]'
-        : (pathname === '/' ? 'bg-transparent border-b-transparent' : 'bg-white border-b-4 border-black')
-        } ${announcement ? '' : ''}`}>
+      <nav className={`sticky top-0 z-50 transition-all duration-300 ${
+        scrolled || forceSolid
+          ? 'bg-white border-b-4 border-black shadow-[0px_4px_0px_0px_rgba(0,0,0,0.1)]'
+          : (pathname === '/' ? 'bg-transparent border-b-transparent' : 'bg-white border-b-4 border-black')
+      } ${announcement ? '' : ''}`}>
         <div className="max-w-screen-2xl mx-auto px-4 md:px-6">
           <div className="flex justify-between items-center h-16 md:h-20">
             {/* Logo */}
