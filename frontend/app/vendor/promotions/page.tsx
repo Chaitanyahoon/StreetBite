@@ -21,87 +21,17 @@ import { Copy, Edit2, Plus, Trash2 } from 'lucide-react'
 import { promotionApi } from '@/lib/api'
 import { useAuth } from '@/context/AuthContext'
 import { toast } from 'sonner'
-
-interface Promotion {
-  id: string
-  code: string
-  description: string
-  discount: string
-  minSpend: number
-  expiryDate: string
-  usageCount: number
-  maxUsage: number
-  active: boolean
-}
-
-interface PromotionFormData {
-  code: string
-  description: string
-  discount: string
-  minSpend: string
-  maxUsage: string
-  expiryDate: string
-  active: boolean
-}
-
-interface ApiPromotion {
-  id?: string
-  promotionId?: string
-  promoCode: string
-  title: string
-  discountValue: number
-  discountType: string
-  minOrderValue?: number
-  endDate: string
-  currentUses?: number
-  maxUses?: number
-  active?: boolean
-  isActive?: boolean
-}
-
-const EMPTY_FORM: PromotionFormData = {
-  code: '',
-  description: '',
-  discount: '',
-  minSpend: '',
-  maxUsage: '100',
-  expiryDate: '',
-  active: true,
-}
-
-function normalizePromotion(promotion: ApiPromotion): Promotion {
-  const isPercentage = promotion.discountType === 'PERCENTAGE'
-  const active = promotion.active !== undefined ? promotion.active : Boolean(promotion.isActive)
-
-  return {
-    id: promotion.id || promotion.promotionId || '',
-    code: promotion.promoCode,
-    description: promotion.title,
-    discount: `${promotion.discountValue}${isPercentage ? '%' : '₹'}`,
-    minSpend: promotion.minOrderValue || 0,
-    expiryDate: promotion.endDate,
-    usageCount: promotion.currentUses || 0,
-    maxUsage: promotion.maxUses || 100,
-    active,
-  }
-}
-
-function buildPromotionPayload(formData: PromotionFormData) {
-  const isPercentage = formData.discount.includes('%')
-  const discountValue = parseFloat(formData.discount.replace(/[%₹]/g, ''))
-
-  return {
-    title: formData.description,
-    description: formData.description,
-    discountType: isPercentage ? 'PERCENTAGE' : 'FIXED',
-    discountValue,
-    minOrderValue: formData.minSpend ? parseFloat(formData.minSpend) : 0,
-    promoCode: formData.code,
-    endDate: formData.expiryDate || null,
-    isActive: formData.active,
-    maxUses: formData.maxUsage ? parseInt(formData.maxUsage, 10) : 100,
-  }
-}
+import {
+  buildPromotionFormData,
+  buildPromotionPayload,
+  EMPTY_PROMOTION_FORM,
+  getPromotionStatusClassName,
+  getPromotionUsagePercent,
+  normalizePromotion,
+  type ApiPromotion,
+  type Promotion,
+  type PromotionFormData,
+} from './promotions-helpers'
 
 export default function Promotions() {
   const { user } = useAuth()
@@ -109,7 +39,7 @@ export default function Promotions() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [vendorId, setVendorId] = useState<string | null>(null)
-  const [formData, setFormData] = useState<PromotionFormData>(EMPTY_FORM)
+  const [formData, setFormData] = useState<PromotionFormData>(EMPTY_PROMOTION_FORM)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingPromo, setEditingPromo] = useState<Promotion | null>(null)
   const [promotionToDelete, setPromotionToDelete] = useState<Promotion | null>(null)
@@ -160,7 +90,7 @@ export default function Promotions() {
 
   const resetDialogState = () => {
     setEditingPromo(null)
-    setFormData(EMPTY_FORM)
+    setFormData(EMPTY_PROMOTION_FORM)
   }
 
   const handleSavePromotion = async () => {
@@ -195,15 +125,7 @@ export default function Promotions() {
 
   const handleEditPromotion = (promotion: Promotion) => {
     setEditingPromo(promotion)
-    setFormData({
-      code: promotion.code,
-      description: promotion.description,
-      discount: promotion.discount,
-      minSpend: promotion.minSpend.toString(),
-      maxUsage: promotion.maxUsage.toString(),
-      expiryDate: promotion.expiryDate ? promotion.expiryDate.split('T')[0] : '',
-      active: promotion.active,
-    })
+    setFormData(buildPromotionFormData(promotion))
     setIsDialogOpen(true)
   }
 
@@ -397,17 +319,13 @@ export default function Promotions() {
                           {promotion.usageCount}/{promotion.maxUsage}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          {Math.round((promotion.usageCount / promotion.maxUsage) * 100)}% used
+                          {getPromotionUsagePercent(promotion.usageCount, promotion.maxUsage)}% used
                         </p>
                       </div>
                     </TableCell>
                     <TableCell>
                       <span
-                        className={`rounded-full px-2 py-1 text-xs font-medium ${
-                          promotion.active
-                            ? 'bg-emerald-100 text-emerald-700'
-                            : 'bg-gray-100 text-gray-700'
-                        }`}
+                        className={`rounded-full px-2 py-1 text-xs font-medium ${getPromotionStatusClassName(promotion.active)}`}
                       >
                         {promotion.active ? 'Active' : 'Inactive'}
                       </span>
