@@ -6,16 +6,17 @@ import { useEffect, useState } from 'react'
 const CONSENT_KEY = 'streetbite_cookie_consent'
 
 export function CookieConsentBanner() {
-  const [visible, setVisible] = useState(false)
-
-  useEffect(() => {
-    try {
-      const savedConsent = window.localStorage.getItem(CONSENT_KEY)
-      setVisible(!savedConsent)
-    } catch {
-      setVisible(true)
+  const [visible, setVisible] = useState(() => {
+    if (typeof window === 'undefined') {
+      return false
     }
-  }, [])
+
+    try {
+      return !window.localStorage.getItem(CONSENT_KEY)
+    } catch {
+      return true
+    }
+  })
 
   const acceptCookies = () => {
     try {

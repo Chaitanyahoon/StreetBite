@@ -18,14 +18,15 @@ export function DirectionsMap({ origin, destination }: DirectionsMapProps) {
     const destinationMarker = useRef<any>(null)
 
     const [loaded, setLoaded] = useState(false)
-    const [error, setError] = useState<string | null>(null)
+    const [error, setError] = useState<string | null>(() =>
+        GOOGLE_MAPS_API_KEY ? null : 'Google Maps API key not configured'
+    )
     const [routeInfo, setRouteInfo] = useState<{ distance: string; duration: string } | null>(null)
 
     useEffect(() => {
         const key = GOOGLE_MAPS_API_KEY
 
         if (!key) {
-            setError('Google Maps API key not configured')
             return
         }
 
@@ -189,7 +190,7 @@ export function DirectionsMap({ origin, destination }: DirectionsMapProps) {
             )
         }
 
-    }, [loaded, origin.lat, origin.lng, destination.lat, destination.lng])
+    }, [loaded, origin, destination])
 
     const openInGoogleMaps = () => {
         window.open(`https://www.google.com/maps/dir/?api=1&origin=${origin.lat},${origin.lng}&destination=${destination.lat},${destination.lng}&travelmode=driving`,

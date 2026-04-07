@@ -61,30 +61,34 @@ const getDailyPoll = () => {
 const POLL_DATA = getDailyPoll();
 
 export function DailyPoll() {
-    const [hasVoted, setHasVoted] = useState(false);
-    const [selectedOption, setSelectedOption] = useState<number | null>(null);
-    const [votes, setVotes] = useState<number[]>(POLL_DATA.options.map(() => 0));
+    const [selectedOption, setSelectedOption] = useState<number | null>(() => {
+        if (typeof window === 'undefined') return null;
 
-    useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const savedVote = localStorage.getItem(getPollStorageKey("selection"));
-            const savedVotes = localStorage.getItem(getPollStorageKey("counts"));
-            if (savedVote) {
-                setSelectedOption(parseInt(savedVote));
-                setHasVoted(true);
-            }
-            if (savedVotes) {
-                try {
-                    const parsedVotes = JSON.parse(savedVotes);
-                    if (Array.isArray(parsedVotes) && parsedVotes.length === POLL_DATA.options.length) {
-                        setVotes(parsedVotes.map((vote) => typeof vote === "number" ? vote : 0));
-                    }
-                } catch {
-                    localStorage.removeItem(getPollStorageKey("counts"));
-                }
-            }
+        const savedVote = localStorage.getItem(getPollStorageKey("selection"));
+        return savedVote ? parseInt(savedVote, 10) : null;
+    });
+    const [hasVoted, setHasVoted] = useState(() => selectedOption !== null);
+    const [votes, setVotes] = useState<number[]>(() => {
+        if (typeof window === 'undefined') {
+            return POLL_DATA.options.map(() => 0);
         }
-    }, []);
+
+        const savedVotes = localStorage.getItem(getPollStorageKey("counts"));
+        if (!savedVotes) {
+            return POLL_DATA.options.map(() => 0);
+        }
+
+        try {
+            const parsedVotes = JSON.parse(savedVotes);
+            if (Array.isArray(parsedVotes) && parsedVotes.length === POLL_DATA.options.length) {
+                return parsedVotes.map((vote) => typeof vote === "number" ? vote : 0);
+            }
+        } catch {
+            localStorage.removeItem(getPollStorageKey("counts"));
+        }
+
+        return POLL_DATA.options.map(() => 0);
+    });
 
     const handleVote = (index: number) => {
         if (hasVoted) return;

@@ -14,7 +14,7 @@ interface VendorStatus {
  */
 export function useLiveVendorStatus(vendorId: string | number) {
     const [status, setStatus] = useState<'AVAILABLE' | 'BUSY' | 'UNAVAILABLE' | null>(null)
-    const [loading, setLoading] = useState(true)
+    const [loading, setLoading] = useState(() => Boolean(vendorId && realtimeDb))
 
     useEffect(() => {
         if (!vendorId) {

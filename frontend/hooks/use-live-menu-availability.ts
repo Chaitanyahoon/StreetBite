@@ -20,7 +20,16 @@ interface LiveMenuItem {
  * @returns {Object} Availability map and lookup function.
  */
 export function useLiveMenuAvailability(menuItems: LiveMenuItem[]) {
-    const [availability, setAvailability] = useState<MenuAvailability>({})
+    const [availability, setAvailability] = useState<MenuAvailability>(() => {
+        const initialAvailability: MenuAvailability = {}
+        menuItems.forEach(item => {
+            const id = item.id ?? item.itemId
+            if (id != null) {
+                initialAvailability[String(id)] = item.isAvailable ?? true
+            }
+        })
+        return initialAvailability
+    })
 
     useEffect(() => {
         if (!realtimeDb || !menuItems || menuItems.length === 0) return

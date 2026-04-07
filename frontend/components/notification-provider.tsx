@@ -9,16 +9,10 @@ import { toast } from 'sonner'
 export function NotificationProvider({ children }: { children: ReactNode }) {
   const { requestPermission, isSupported, permission } = useNotifications()
   const { location, requestGeolocation } = useUserLocation()
-  const [showBell, setShowBell] = useState(false)
-
-  useEffect(() => {
-    if (isSupported && typeof Notification !== 'undefined' && Notification.permission !== 'granted') {
-      setShowBell(true)
-      return
-    }
-
-    setShowBell(false)
-  }, [isSupported, permission])
+  const showBell =
+    isSupported &&
+    typeof Notification !== 'undefined' &&
+    permission !== 'granted'
 
   return (
     <>

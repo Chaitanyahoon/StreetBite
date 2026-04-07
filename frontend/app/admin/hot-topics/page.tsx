@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { hotTopicApi } from '@/lib/api'
 import {
   AlertDialog,
@@ -53,7 +53,7 @@ export default function HotTopicManagement() {
     isActive: true
   })
 
-  const fetchTopics = async () => {
+  const fetchTopics = useCallback(async () => {
     try {
       setLoading(true)
       const data = await hotTopicApi.getAll()
@@ -81,11 +81,11 @@ export default function HotTopicManagement() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [logout])
 
   useEffect(() => {
-    fetchTopics()
-  }, [])
+    void fetchTopics()
+  }, [fetchTopics])
 
   const handleOpenCreate = () => {
     setEditingTopic(null)

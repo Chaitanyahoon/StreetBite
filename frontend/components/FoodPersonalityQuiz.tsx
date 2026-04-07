@@ -65,25 +65,17 @@ export const RESULTS = {
 };
 
 export function FoodPersonalityQuiz() {
-    const [view, setView] = useState<'intro' | 'question' | 'result'>('intro');
+    const savedResult = typeof window !== 'undefined'
+        ? localStorage.getItem("tasteArchetype")
+        : null;
+    const initialResult = savedResult && RESULTS[savedResult as keyof typeof RESULTS]
+        ? savedResult as keyof typeof RESULTS
+        : null;
+
+    const [view, setView] = useState<'intro' | 'question' | 'result'>(initialResult ? 'result' : 'intro');
     const [currentQ, setCurrentQ] = useState(0);
     const [answers, setAnswers] = useState<string[]>([]);
-    const [result, setResult] = useState<keyof typeof RESULTS | null>(null);
-    const [mounted, setMounted] = useState(false);
-
-    // Load saved result on mount
-    useEffect(() => {
-        setMounted(true);
-        if (typeof window !== 'undefined') {
-            const saved = localStorage.getItem("tasteArchetype");
-            if (saved && RESULTS[saved as keyof typeof RESULTS]) {
-                setResult(saved as keyof typeof RESULTS);
-                setView('result');
-            }
-        }
-    }, []);
-
-    if (!mounted) return null;
+    const [result, setResult] = useState<keyof typeof RESULTS | null>(initialResult);
 
     const handleStart = () => setView('question');
 

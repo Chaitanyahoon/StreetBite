@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { MessageSquare, AlertCircle, History, Clock, Loader2, Send } from 'lucide-react'
 import { reportApi } from '@/lib/api'
@@ -182,7 +182,7 @@ function TicketHistory() {
     const [loading, setLoading] = useState(true)
     const { user } = useAuth()
 
-    const fetchTickets = async () => {
+    const fetchTickets = useCallback(async () => {
         try {
             if (!user) return
 
@@ -198,13 +198,13 @@ function TicketHistory() {
         } finally {
             setLoading(false)
         }
-    }
+    }, [user])
 
     useEffect(() => {
-        fetchTickets()
+        void fetchTickets()
         window.addEventListener('ticket-created', fetchTickets)
         return () => window.removeEventListener('ticket-created', fetchTickets)
-    }, [])
+    }, [fetchTickets])
 
     if (loading) return <div className="text-center py-4"><Loader2 className="animate-spin mx-auto text-primary" /></div>
 

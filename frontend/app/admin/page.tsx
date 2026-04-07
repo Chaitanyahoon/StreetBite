@@ -4,7 +4,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { TrendingUp, Users, Heart, AlertCircle, ShieldCheck, Trash2 } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { analyticsApi, vendorApi, announcementApi } from '@/lib/api'
 import { toast } from 'sonner'
 import { useAuth } from '@/context/AuthContext'
@@ -23,45 +23,45 @@ export default function AdminDashboard() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const { logout } = useAuth()
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [platformData, vendorsData, announcementsData] = await Promise.all([
-          analyticsApi.getPlatformAnalytics(),
-          vendorApi.getAll(),
-          announcementApi.getAll()
-        ])
+  const fetchData = useCallback(async () => {
+    try {
+      const [platformData, vendorsData, announcementsData] = await Promise.all([
+        analyticsApi.getPlatformAnalytics(),
+        vendorApi.getAll(),
+        announcementApi.getAll()
+      ])
 
-        setStats(platformData)
-        setAnnouncements(announcementsData || [])
+      setStats(platformData)
+      setAnnouncements(announcementsData || [])
 
-        // Get 5 most recent vendors
-        const vendors = Array.isArray(vendorsData) ? vendorsData : []
-        const sortedVendors = vendors
-          .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-          .slice(0, 5)
+      // Get 5 most recent vendors
+      const vendors = Array.isArray(vendorsData) ? vendorsData : []
+      const sortedVendors = vendors
+        .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .slice(0, 5)
 
-        setRecentVendors(sortedVendors)
-        setErrorMessage(null)
-      } catch (error) {
-        console.error('Error fetching admin data:', error)
-        const status = (error as any)?.response?.status
-        if (status === 401 || status === 403) {
-          setErrorMessage('Your admin session is unavailable. Sign in again and allow cookies for StreetBite.')
-          toast.error('Admin session required')
-          if (status === 401) {
-            await logout()
-          }
-        } else {
-          setErrorMessage('Failed to load admin data. Please refresh and try again.')
+      setRecentVendors(sortedVendors)
+      setErrorMessage(null)
+    } catch (error) {
+      console.error('Error fetching admin data:', error)
+      const status = (error as any)?.response?.status
+      if (status === 401 || status === 403) {
+        setErrorMessage('Your admin session is unavailable. Sign in again and allow cookies for StreetBite.')
+        toast.error('Admin session required')
+        if (status === 401) {
+          await logout()
         }
-      } finally {
-        setLoading(false)
+      } else {
+        setErrorMessage('Failed to load admin data. Please refresh and try again.')
       }
+    } finally {
+      setLoading(false)
     }
+  }, [logout])
 
-    fetchData()
-  }, [])
+  useEffect(() => {
+    void fetchData()
+  }, [fetchData])
 
   if (loading) {
     return (

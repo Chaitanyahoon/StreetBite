@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Eye, MapPin, Utensils, Star } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { analyticsApi } from '@/lib/api'
@@ -11,37 +11,37 @@ export default function VendorDashboard() {
   const [analytics, setAnalytics] = useState<any>(null)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    const loadAnalytics = async () => {
-      try {
-        if (!user) {
-          setLoading(false)
-          return
-        }
-
-        if (!user.vendorId && user.role === 'VENDOR') {
-          console.warn('VendorId missing from user data')
-          setLoading(false)
-          return
-        }
-
-        const vendorId = user.vendorId
-        if (!vendorId) {
-          setLoading(false)
-          return
-        }
-
-        const data = await analyticsApi.getVendorAnalytics(String(vendorId))
-        setAnalytics(data)
-      } catch (err) {
-        console.error('Failed to load analytics:', err)
-      } finally {
+  const loadAnalytics = useCallback(async () => {
+    try {
+      if (!user) {
         setLoading(false)
+        return
       }
-    }
 
-    loadAnalytics()
-  }, [])
+      if (!user.vendorId && user.role === 'VENDOR') {
+        console.warn('VendorId missing from user data')
+        setLoading(false)
+        return
+      }
+
+      const vendorId = user.vendorId
+      if (!vendorId) {
+        setLoading(false)
+        return
+      }
+
+      const data = await analyticsApi.getVendorAnalytics(String(vendorId))
+      setAnalytics(data)
+    } catch (err) {
+      console.error('Failed to load analytics:', err)
+    } finally {
+      setLoading(false)
+    }
+  }, [user])
+
+  useEffect(() => {
+    void loadAnalytics()
+  }, [loadAnalytics])
 
   if (loading) {
     return (

@@ -22,14 +22,15 @@ export function VendorMap({ vendors = [], onVendorSelect }: { vendors: Vendor[],
   const markersRef = useRef<any[]>([])
   const infoWindowRef = useRef<any>(null)
   const [loaded, setLoaded] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(() =>
+    GOOGLE_MAPS_API_KEY ? null : 'Google Maps API key not configured'
+  )
 
   useEffect(() => {
     // Check for API key
     const key = GOOGLE_MAPS_API_KEY
 
     if (!key) {
-      setError('Google Maps API key not configured')
       console.warn('Google Maps API key is not set. Map functionality disabled.')
       return
     }
@@ -124,7 +125,7 @@ export function VendorMap({ vendors = [], onVendorSelect }: { vendors: Vendor[],
     return () => {
       // Don't cleanup on every render, only on unmount
     }
-  }, [loaded])
+  }, [loaded, userLocation, vendors])
 
   // Update map center when user location changes
   useEffect(() => {

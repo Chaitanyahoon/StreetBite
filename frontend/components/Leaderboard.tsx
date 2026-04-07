@@ -14,7 +14,7 @@ interface User {
 }
 
 import { gamificationApi } from "@/lib/api";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useGamification, getLevelFromXP } from "@/context/GamificationContext";
 import { useAuth } from '@/context/AuthContext';
 
@@ -27,18 +27,7 @@ export function Leaderboard() {
 
     const userProfilePic = authUser?.profilePicture || '';
 
-    useEffect(() => {
-        fetchLeaderboard();
-
-        // Auto-refresh every 30 seconds
-        const interval = setInterval(() => {
-            fetchLeaderboard(true);
-        }, 30000);
-
-        return () => clearInterval(interval);
-    }, []);
-
-    const fetchLeaderboard = async (silent = false) => {
+    const fetchLeaderboard = useCallback(async (silent = false) => {
         if (!silent) setLoading(true);
         setRefreshing(true);
 
@@ -59,7 +48,17 @@ export function Leaderboard() {
             setLoading(false);
             setRefreshing(false);
         }
-    };
+    }, []);
+
+    useEffect(() => {
+        void fetchLeaderboard();
+
+        const interval = setInterval(() => {
+            void fetchLeaderboard(true);
+        }, 30000);
+
+        return () => clearInterval(interval);
+    }, [fetchLeaderboard]);
 
     const getAvatarForRank = (rank: number) => {
         if (rank === 1) return "👑";

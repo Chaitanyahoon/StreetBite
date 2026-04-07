@@ -16,7 +16,7 @@ interface VendorLocation {
  */
 export function useLiveVendorLocation(vendorId: string | number) {
     const [location, setLocation] = useState<VendorLocation | null>(null)
-    const [loading, setLoading] = useState(true)
+    const [loading, setLoading] = useState(() => Boolean(vendorId && realtimeDb))
 
     useEffect(() => {
         if (!vendorId) {
