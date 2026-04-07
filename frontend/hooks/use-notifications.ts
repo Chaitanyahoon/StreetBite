@@ -47,8 +47,7 @@ export function useNotifications() {
                 if (currentToken) {
                     setToken(currentToken)
 
-                    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8081/api'
-                    const response = await fetch(`${backendUrl}/notifications/token`, {
+                    const response = await fetch('/api/notifications/token', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -67,7 +66,7 @@ export function useNotifications() {
             }
             return permission
         } catch (err) {
-            console.log('An error occurred while retrieving token. ', err)
+            console.error('An error occurred while retrieving token.', err)
             return null
         }
     }

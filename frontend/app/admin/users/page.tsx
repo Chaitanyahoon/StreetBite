@@ -65,7 +65,7 @@ export default function UserManagementPage() {
                 </div>
                 <div className="flex items-center gap-4">
                     <Button 
-                        onClick={() => window.open(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8081/api'}/newsletter/export`, '_blank')}
+                        onClick={() => window.open('/api/newsletter/export', '_blank', 'noopener,noreferrer')}
                         className="bg-emerald-600 hover:bg-emerald-700 text-white"
                     >
                         Export Newsletter (CSV)

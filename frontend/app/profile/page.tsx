@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { User, Mail, Phone, MapPin, Save, ArrowLeft, Upload, Trash2, X } from 'lucide-react'
-import { userApi } from '@/lib/api'
+import { authApi, userApi } from '@/lib/api'
 import Link from 'next/link'
 import { Navbar } from '@/components/navbar'
 import {
@@ -22,7 +22,8 @@ import {
 import axios from 'axios'
 import { useAuth } from '@/context/AuthContext'
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8081/api';
+const API_BASE_URL = '/api'
+const BACKEND_ASSET_URL = (process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8081/api').replace(/\/api\/?$/, '')
 
 export default function ProfilePage() {
   const router = useRouter()
@@ -101,7 +102,7 @@ export default function ProfilePage() {
   const handleForgotPassword = async () => {
     setResetStatus('sending')
     try {
-      await axios.post(`${BACKEND_URL}/auth/forgot-password`, { email: resetEmail })
+      await authApi.forgotPassword(resetEmail)
       setResetStatus('sent')
     } catch (err) {
       setResetStatus('error')
@@ -117,7 +118,9 @@ export default function ProfilePage() {
     formData.append('file', file)
 
     try {
-      const response = await axios.post(`${BACKEND_URL}/files/upload`, formData)
+      const response = await axios.post(`${API_BASE_URL}/files/upload`, formData, {
+        withCredentials: true,
+      })
 
       const imageUrl = response.data.url
       setUserData({ ...userData, profilePicture: imageUrl })
@@ -202,8 +205,7 @@ export default function ProfilePage() {
                         const path = userData.profilePicture;
                         if (path.startsWith('http')) return path;
                         if (path.startsWith('/avatars/')) return path;
-                        const baseUrl = BACKEND_URL.replace(/\/api\/?$/, '');
-                        return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
+                        return `${BACKEND_ASSET_URL}${path.startsWith('/') ? '' : '/'}${path}`;
                       })()}
                       alt="Profile"
                       className="w-full h-full object-cover"
