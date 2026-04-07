@@ -68,6 +68,13 @@ export type VendorStatusMeta = {
   dotClassName: string
 }
 
+export type VendorQuickStat = {
+  label: string
+  value: string
+}
+
+export const VENDOR_DETAIL_TABS = ['Menu', 'Offers', 'About', 'Reviews'] as const
+
 export const statusMeta: Record<string, VendorStatusMeta> = {
   AVAILABLE: {
     label: 'Open now',
@@ -164,5 +171,31 @@ export function getPromotionBadges(promo: VendorPromotion): PromotionBadge[] {
 }
 
 export function buildPromotionShareText(vendorName: string | undefined, promo: VendorPromotion) {
-  return `Check out this amazing offer at ${vendorName || 'this vendor'}!\n\n${promo.title}\nCode: ${promo.promoCode}\n${promo.discountType === 'PERCENTAGE' ? `${promo.discountValue}% OFF` : `₹${promo.discountValue} OFF`}\n\nFound on StreetBite 🍔`
+  return `Check out this offer at ${vendorName || 'this vendor'}.\n\n${promo.title}\nCode: ${promo.promoCode}\n${promo.discountType === 'PERCENTAGE' ? `${promo.discountValue}% OFF` : `₹${promo.discountValue} OFF`}\n\nFound on StreetBite.`
+}
+
+export function buildVendorQuickStats(
+  menuItemsCount: number,
+  promotionsCount: number,
+  reviewsCount: number,
+): VendorQuickStat[] {
+  return [
+    {
+      label: 'Menu items',
+      value: menuItemsCount > 0 ? `${menuItemsCount}+` : 'Soon',
+    },
+    {
+      label: 'Offers live',
+      value: promotionsCount > 0 ? String(promotionsCount) : 'None',
+    },
+    {
+      label: 'Reviews',
+      value: reviewsCount > 0 ? String(reviewsCount) : 'New',
+    },
+  ]
+}
+
+export function getReviewSummaryText(reviewCount: number) {
+  const displayCount = Math.max(reviewCount, 1)
+  return `from ${displayCount} review${displayCount === 1 ? '' : 's'}`
 }

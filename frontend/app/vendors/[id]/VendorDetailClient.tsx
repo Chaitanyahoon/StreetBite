@@ -27,15 +27,18 @@ import { useLiveMenuAvailability } from '@/hooks/use-live-menu-availability'
 import { useToast } from '@/hooks/use-toast'
 import { useAuth } from '@/context/AuthContext'
 import {
+    buildVendorQuickStats,
     buildPromotionShareText,
     filterAndSortPromotions,
     getPromotionBadges,
+    getReviewSummaryText,
     groupMenuItemsByCategory,
     MenuItem,
     OfferFilter,
     OfferSort,
     Review,
     statusMeta,
+    VENDOR_DETAIL_TABS,
     Vendor,
     VendorPromotion,
 } from './vendor-detail-helpers'
@@ -507,21 +510,7 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
     const vendorReviewCount = reviews.length
     const vendorPhone = displayVendor?.phone
     const filteredPromotions = filterAndSortPromotions(promotions, offerFilter, offerSort)
-
-    const quickStats = [
-        {
-            label: 'Menu items',
-            value: menuItems.length > 0 ? `${menuItems.length}+` : 'Soon',
-        },
-        {
-            label: 'Offers live',
-            value: promotions.length > 0 ? String(promotions.length) : 'None',
-        },
-        {
-            label: 'Reviews',
-            value: reviews.length > 0 ? String(reviews.length) : 'New',
-        },
-    ]
+    const quickStats = buildVendorQuickStats(menuItems.length, promotions.length, reviews.length)
 
     return (
         <div className="min-h-screen bg-[linear-gradient(180deg,#fffaf4_0%,#fff7ef_18%,#f8fafc_50%,#ffffff_100%)]">
@@ -626,11 +615,8 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
                                             <Star size={15} className="fill-amber-300 text-amber-300" />
                                             <span>{vendorRating.toFixed(1)}</span>
                                             <span className="text-white/70">
-                                            {(() => {
-                                                const displayCount = Math.max(vendorReviewCount, 1)
-                                                return `from ${displayCount} review${displayCount === 1 ? '' : 's'}`
-                                            })()}
-                                        </span>
+                                                {getReviewSummaryText(vendorReviewCount)}
+                                            </span>
                                         </div>
                                     )}
                                     <div className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold uppercase tracking-[0.18em] shadow-lg backdrop-blur-sm ${activeStatusMeta.badgeClassName}`}>
@@ -723,7 +709,7 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
             <div className="sticky top-16 z-30 mt-8 border-y border-orange-100/80 bg-white/90 shadow-sm backdrop-blur">
                 <div className="max-w-7xl mx-auto px-4 md:px-6">
                     <div className="flex gap-3 overflow-x-auto py-3 no-scrollbar">
-                        {['Menu', 'Offers', 'About', 'Reviews'].map((tab) => (
+                        {VENDOR_DETAIL_TABS.map((tab) => (
                             <button
                                 key={tab}
                                 onClick={() => setActiveTab(tab.toLowerCase())}
