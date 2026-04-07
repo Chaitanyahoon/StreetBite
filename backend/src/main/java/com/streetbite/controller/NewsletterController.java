@@ -1,110 +1,93 @@
 package com.streetbite.controller;
 
-import com.streetbite.model.NewsletterSubscriber;
-import com.streetbite.repository.NewsletterSubscriberRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.streetbite.dto.newsletter.NewsletterCountResponse;
+import com.streetbite.dto.newsletter.NewsletterEmailRequest;
+import com.streetbite.dto.newsletter.NewsletterResponse;
+import com.streetbite.model.User;
+import com.streetbite.security.AuthenticatedUserService;
+import com.streetbite.service.NewsletterService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
-import java.util.regex.Pattern;
 
 @RestController
 @RequestMapping("/api/newsletter")
 public class NewsletterController {
 
-    @Autowired
-    private NewsletterSubscriberRepository subscriberRepository;
+    private final NewsletterService newsletterService;
+    private final AuthenticatedUserService authenticatedUserService;
 
-    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
+    public NewsletterController(NewsletterService newsletterService, AuthenticatedUserService authenticatedUserService) {
+        this.newsletterService = newsletterService;
+        this.authenticatedUserService = authenticatedUserService;
+    }
 
     @PostMapping("/subscribe")
-    public ResponseEntity<?> subscribe(@RequestBody Map<String, String> request) {
-        String email = request.get("email");
-
-        // Validate email
-        if (email == null || email.trim().isEmpty()) {
-            return ResponseEntity.badRequest()
-                    .body(Map.of("success", false, "message", "Email is required"));
-        }
-
-        email = email.trim().toLowerCase();
-
-        if (!EMAIL_PATTERN.matcher(email).matches()) {
-            return ResponseEntity.badRequest()
-                    .body(Map.of("success", false, "message", "Invalid email format"));
-        }
-
-        // Check if already subscribed
-        if (subscriberRepository.existsByEmail(email)) {
-            return ResponseEntity.ok()
-                    .body(Map.of("success", true, "message", "You're already subscribed to our newsletter!"));
-        }
-
+    public ResponseEntity<?> subscribe(@RequestBody NewsletterEmailRequest request) {
         try {
-            // Create new subscriber
-            NewsletterSubscriber subscriber = new NewsletterSubscriber(email);
-            subscriber.setUnsubscribeToken(UUID.randomUUID().toString());
-
-            subscriberRepository.save(subscriber);
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("message",
-                    "Successfully subscribed! You'll receive updates about new vendors and exclusive offers.");
-
+            NewsletterResponse response = newsletterService.subscribe(request.getEmail());
             return ResponseEntity.ok(response);
-
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(new NewsletterResponse(false, e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(500)
-                    .body(Map.of("success", false, "message", "Subscription failed. Please try again."));
+                    .body(new NewsletterResponse(false, "Subscription failed. Please try again."));
         }
     }
 
     @PostMapping("/unsubscribe")
-    public ResponseEntity<?> unsubscribe(@RequestBody Map<String, String> request) {
-        String email = request.get("email");
-
-        if (email == null || email.trim().isEmpty()) {
-            return ResponseEntity.badRequest()
-                    .body(Map.of("success", false, "message", "Email is required"));
+    public ResponseEntity<?> unsubscribe(@RequestBody NewsletterEmailRequest request) {
+        try {
+            return ResponseEntity.ok(newsletterService.unsubscribe(request.getEmail()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(new NewsletterResponse(false, e.getMessage()));
         }
-
-        email = email.trim().toLowerCase();
-
-        return subscriberRepository.findByEmail(email)
-                .map(subscriber -> {
-                    subscriber.setIsActive(false);
-                    subscriberRepository.save(subscriber);
-                    return ResponseEntity.ok()
-                            .body(Map.of("success", true, "message", "Successfully unsubscribed"));
-                })
-                .orElse(ResponseEntity.ok()
-                        .body(Map.of("success", true, "message", "Email not found in our list")));
     }
 
     @GetMapping("/count")
-    public ResponseEntity<?> getSubscriberCount() {
-        long count = subscriberRepository.count();
-        return ResponseEntity.ok(Map.of("count", count));
+    public ResponseEntity<?> getSubscriberCount(Authentication authentication) {
+        User currentUser = resolveAuthenticatedUser(authentication);
+        if (currentUser == null) {
+            return unauthorized("Login required");
+        }
+        if (!authenticatedUserService.isAdmin(currentUser)) {
+            return forbidden("Admin access only");
+        }
+
+        return ResponseEntity.ok(new NewsletterCountResponse(newsletterService.getSubscriberCount()));
     }
+
     @GetMapping("/export")
-    public ResponseEntity<String> exportSubscribers() {
-        StringBuilder csv = new StringBuilder();
-        csv.append("ID,Email,SubscribedAt,IsActive\\n");
-        
-        subscriberRepository.findAll().forEach(subscriber -> {
-            csv.append(subscriber.getId()).append(",")
-               .append(subscriber.getEmail()).append(",")
-               .append(subscriber.getSubscribedAt()).append(",")
-               .append(subscriber.getIsActive()).append("\\n");
-        });
-        
+    public ResponseEntity<?> exportSubscribers(Authentication authentication) {
+        User currentUser = resolveAuthenticatedUser(authentication);
+        if (currentUser == null) {
+            return unauthorized("Login required");
+        }
+        if (!authenticatedUserService.isAdmin(currentUser)) {
+            return forbidden("Admin access only");
+        }
+
         return ResponseEntity.ok()
                 .header("Content-Disposition", "attachment; filename=\"subscribers.csv\"")
                 .header("Content-Type", "text/csv")
-                .body(csv.toString());
+                .body(newsletterService.exportSubscribersCsv());
+    }
+
+    private User resolveAuthenticatedUser(Authentication authentication) {
+        return authenticatedUserService.findAuthenticatedUser(authentication).orElse(null);
+    }
+
+    private ResponseEntity<Map<String, String>> unauthorized(String message) {
+        return ResponseEntity.status(401).body(Map.of("error", message));
+    }
+
+    private ResponseEntity<Map<String, String>> forbidden(String message) {
+        return ResponseEntity.status(403).body(Map.of("error", message));
     }
 }
