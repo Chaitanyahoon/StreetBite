@@ -105,15 +105,15 @@ function SignInContent() {
       <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-orange-200/40 rounded-full mix-blend-multiply filter blur-[80px] opacity-70 animate-blob animation-delay-2000 -z-10" />
 
       {/* Back button */}
-      <div className="px-4 pt-4 pb-2 sm:px-6 sm:pt-6 sm:pb-3 relative z-10">
-        <Link href="/" className="inline-flex items-center gap-2 px-4 py-2.5 sm:px-6 sm:py-3 rounded-xl bg-white text-black font-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-all text-sm sm:text-base">
-          <ArrowLeft size={20} strokeWidth={3} />
+      <div className="px-4 pt-3 pb-1 sm:px-6 sm:pt-5 sm:pb-2 relative z-10">
+        <Link href="/" className="inline-flex items-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl bg-white text-black font-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-all text-sm">
+          <ArrowLeft size={18} strokeWidth={3} />
           BACK TO HOME
         </Link>
       </div>
 
       {/* Sign In Form */}
-      <div className="flex-1 flex items-center justify-center px-4 py-4 sm:py-6 relative z-10">
+      <div className="flex-1 flex items-start md:items-center justify-center px-4 pt-2 pb-5 sm:pt-3 sm:pb-6 relative z-10">
         <motion.div
           className="w-full max-w-md"
           variants={containerVariants}
@@ -121,9 +121,9 @@ function SignInContent() {
           animate="visible"
         >
           {/* Logo and Heading */}
-          <div className="text-center mb-4 sm:mb-6">
+          <div className="text-center mb-3 sm:mb-5">
             <motion.div
-              className="flex justify-center mb-3 sm:mb-4 transform hover:scale-110 transition-transform duration-300"
+              className="flex justify-center mb-2 sm:mb-3 transform hover:scale-110 transition-transform duration-300"
               whileHover={{ rotate: [0, -10, 10, 0] }}
             >
               <Logo />
@@ -135,10 +135,10 @@ function SignInContent() {
               <ShieldCheck className="size-4" strokeWidth={3} />
               Cookie-Secure Access
             </motion.div>
-            <motion.h1 variants={itemVariants} className="text-3xl sm:text-4xl md:text-5xl font-black mb-3 text-black tracking-tight">
+            <motion.h1 variants={itemVariants} className="text-[2rem] sm:text-4xl md:text-5xl font-black mb-2 text-black tracking-tight">
               {showForgotPassword ? 'RESET PASSWORD' : 'WELCOME BACK!'}
             </motion.h1>
-            <motion.p variants={itemVariants} className="text-base sm:text-lg font-bold text-gray-700">
+            <motion.p variants={itemVariants} className="text-sm sm:text-lg font-bold text-gray-700">
               {showForgotPassword
                 ? 'Don\'t worry, we\'ll get you back in!'
                 : 'Sign in and get straight back to your saved bites.'}
@@ -152,7 +152,7 @@ function SignInContent() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
               onSubmit={handleForgotPassword}
-              className="bg-white rounded-[2rem] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-6 sm:p-8 border-4 border-black relative overflow-hidden"
+              className="bg-white rounded-[2rem] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-5 sm:p-8 border-4 border-black relative overflow-hidden"
             >
               {resetStatus === 'sent' ? (
                 <div className="text-center space-y-5">
@@ -231,9 +231,9 @@ function SignInContent() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
               onSubmit={handleSignIn}
-              className="bg-white rounded-[2rem] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-6 sm:p-7 border-4 border-black relative overflow-hidden"
+              className="bg-white rounded-[2rem] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-5 sm:p-7 border-4 border-black relative overflow-hidden"
             >
-              <div className="mb-5 rounded-[1.25rem] border-4 border-black bg-[#FFF5D8] px-4 py-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+              <div className="mb-4 rounded-[1.25rem] border-4 border-black bg-[#FFF5D8] px-4 py-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                 <p className="text-[11px] font-black uppercase tracking-[0.26em] text-gray-500">Email + Password</p>
                 <p className="mt-1 text-sm font-bold text-gray-700">
                   StreetBite uses one secure session cookie to keep you signed in.
@@ -313,7 +313,7 @@ function SignInContent() {
               )}
 
               {/* Email Input */}
-              <motion.div variants={itemVariants} className="space-y-3 mb-5">
+              <motion.div variants={itemVariants} className="space-y-3 mb-4">
                 <label className="block text-sm font-black text-black uppercase tracking-wider ml-1">Email Address</label>
                 <div className="relative group">
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-black transition-colors size-6" strokeWidth={2.5} />
@@ -322,14 +322,14 @@ function SignInContent() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@example.com"
-                    className="w-full pl-14 pr-4 py-4 border-4 border-black rounded-xl text-lg font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400 bg-gray-50 transition-all placeholder:text-gray-400"
-                    required
-                  />
-                </div>
+                      className="w-full pl-14 pr-4 py-3.5 border-4 border-black rounded-xl text-base sm:text-lg font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400 bg-gray-50 transition-all placeholder:text-gray-400"
+                      required
+                    />
+                  </div>
               </motion.div>
 
               {/* Password Input */}
-              <motion.div variants={itemVariants} className="space-y-3 mb-7">
+              <motion.div variants={itemVariants} className="space-y-3 mb-6">
                 <label className="block text-sm font-black text-black uppercase tracking-wider ml-1">Password</label>
                 <div className="relative group">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-black transition-colors size-6" strokeWidth={2.5} />
@@ -339,7 +339,7 @@ function SignInContent() {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
                     autoComplete="current-password"
-                    className="w-full pl-14 pr-14 py-4 border-4 border-black rounded-xl text-lg font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400 bg-gray-50 transition-all placeholder:text-gray-400"
+                    className="w-full pl-14 pr-14 py-3.5 border-4 border-black rounded-xl text-base sm:text-lg font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400 bg-gray-50 transition-all placeholder:text-gray-400"
                     required
                   />
                   <button
@@ -366,7 +366,7 @@ function SignInContent() {
                 <Button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full h-16 bg-orange-500 hover:bg-orange-600 text-white rounded-xl border-4 border-black font-black text-2xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all disabled:opacity-70 disabled:hover:translate-y-0"
+                  className="w-full h-14 sm:h-16 bg-orange-500 hover:bg-orange-600 text-white rounded-xl border-4 border-black font-black text-xl sm:text-2xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all disabled:opacity-70 disabled:hover:translate-y-0"
                 >
                   {isLoading ? (
                     <span className="flex items-center gap-3">
@@ -380,7 +380,7 @@ function SignInContent() {
               </motion.div>
 
               {/* Divider */}
-              <motion.div variants={itemVariants} className="flex items-center gap-3 my-6">
+              <motion.div variants={itemVariants} className="flex items-center gap-3 my-5">
                 <div className="flex-1 h-1 bg-gray-200 rounded-full" />
                 <span className="text-xs text-gray-400 font-black uppercase tracking-widest">NEW HERE?</span>
                 <div className="flex-1 h-1 bg-gray-200 rounded-full" />

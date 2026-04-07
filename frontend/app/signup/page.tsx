@@ -174,24 +174,24 @@ export default function SignUpPage() {
       </AnimatePresence>
 
       {/* Back button */}
-      <div className="px-4 pt-4 pb-2 sm:px-6 sm:pt-6 sm:pb-3 relative z-10">
-        <Link href="/" className="inline-flex items-center gap-2 px-4 py-2.5 sm:px-6 sm:py-3 rounded-xl bg-white text-black font-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-all text-sm sm:text-base">
-          <ArrowLeft size={20} strokeWidth={3} />
+      <div className="px-4 pt-3 pb-1 sm:px-6 sm:pt-5 sm:pb-2 relative z-10">
+        <Link href="/" className="inline-flex items-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl bg-white text-black font-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-all text-sm">
+          <ArrowLeft size={18} strokeWidth={3} />
           BACK TO HOME
         </Link>
       </div>
 
       {/* Sign Up Form */}
-      <div className="flex-1 flex items-center justify-center px-4 py-4 sm:py-6 relative z-10">
+      <div className="flex-1 flex items-start md:items-center justify-center px-4 pt-2 pb-5 sm:pt-3 sm:pb-6 relative z-10">
         <div className="w-full max-w-2xl">
           {/* Logo and Heading */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-5 sm:mb-7"
+            className="text-center mb-4 sm:mb-6"
           >
             <motion.div
-              className="flex justify-center mb-3 sm:mb-4 transform"
+              className="flex justify-center mb-2 sm:mb-3 transform"
               whileHover={{ rotate: [0, -10, 10, 0] }}
             >
               <Logo />
@@ -200,10 +200,10 @@ export default function SignUpPage() {
               <ShieldCheck className="size-4" strokeWidth={3} />
               Quick Secure Setup
             </div>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black mb-3 text-black tracking-tight uppercase">
+            <h1 className="text-[2rem] sm:text-4xl md:text-5xl font-black mb-2 text-black tracking-tight uppercase">
               Join the Feast
             </h1>
-            <p className="text-base sm:text-lg font-bold text-gray-700">Create your account and get into StreetBite fast.</p>
+            <p className="text-sm sm:text-lg font-bold text-gray-700">Create your account and get into StreetBite fast.</p>
             <p className="mt-2 text-[11px] sm:text-sm font-bold uppercase tracking-[0.2em] text-gray-500">
               Pick your role, enter the basics, verify once
             </p>
@@ -216,25 +216,25 @@ export default function SignUpPage() {
                 initial={{ opacity: 0, x: -50 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -50 }}
-                className="grid md:grid-cols-2 gap-4 sm:gap-5"
+                className="grid md:grid-cols-2 gap-3 sm:gap-4"
               >
                 {/* Customer Card */}
                 <motion.div
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setUserType('customer')}
-                    className={`p-5 sm:p-6 rounded-[2rem] border-4 cursor-pointer transition-all ${userType === 'customer'
+                    className={`p-4 sm:p-5 rounded-[2rem] border-4 cursor-pointer transition-all ${userType === 'customer'
                     ? 'bg-yellow-400 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] z-10'
                     : 'bg-white border-black hover:bg-yellow-50 hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]'
                     }`}
                 >
-                  <div className="mb-4 flex size-16 items-center justify-center rounded-[1.25rem] border-4 border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                    <UtensilsCrossed className="size-8 text-orange-500" strokeWidth={2.7} />
+                  <div className="mb-3 flex size-14 items-center justify-center rounded-[1rem] border-4 border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                    <UtensilsCrossed className="size-7 text-orange-500" strokeWidth={2.7} />
                   </div>
                   <p className="mb-3 inline-flex rounded-full border-2 border-black bg-white px-3 py-1 text-[11px] font-black uppercase tracking-[0.25em] text-gray-600">Customer</p>
                   <h2 className="text-2xl font-black text-black mb-2 uppercase">Foodie</h2>
-                  <p className="text-gray-700 font-medium mb-4 leading-relaxed">Save favorite vendors, track offers, and discover what is nearby.</p>
-                  <div className="space-y-2 font-bold text-sm text-black/80">
+                  <p className="text-gray-700 font-medium mb-3 leading-relaxed text-sm sm:text-base">Save favorite vendors, track offers, and discover what is nearby.</p>
+                  <div className="space-y-1.5 font-bold text-xs sm:text-sm text-black/80">
                     <div>Save favorites</div>
                     <div>Join community posts</div>
                     <div>Track live vendors</div>
@@ -246,18 +246,18 @@ export default function SignUpPage() {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setUserType('vendor')}
-                    className={`p-5 sm:p-6 rounded-[2rem] border-4 cursor-pointer transition-all ${userType === 'vendor'
+                    className={`p-4 sm:p-5 rounded-[2rem] border-4 cursor-pointer transition-all ${userType === 'vendor'
                     ? 'bg-orange-500 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] z-10'
                     : 'bg-white border-black hover:bg-orange-50 hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]'
                     }`}
                 >
-                  <div className="mb-4 flex size-16 items-center justify-center rounded-[1.25rem] border-4 border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                    <Store className="size-8 text-orange-500" strokeWidth={2.7} />
+                  <div className="mb-3 flex size-14 items-center justify-center rounded-[1rem] border-4 border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                    <Store className="size-7 text-orange-500" strokeWidth={2.7} />
                   </div>
                   <p className="mb-3 inline-flex rounded-full border-2 border-black bg-white px-3 py-1 text-[11px] font-black uppercase tracking-[0.25em] text-gray-600">Vendor</p>
                   <h2 className="text-2xl font-black text-black mb-2 uppercase">Vendor</h2>
-                  <p className="text-black/80 font-medium mb-4 leading-relaxed">Launch your stall profile, publish offers, and manage your dashboard.</p>
-                  <div className="space-y-2 font-bold text-sm text-black/80">
+                  <p className="text-black/80 font-medium mb-3 leading-relaxed text-sm sm:text-base">Launch your stall profile, publish offers, and manage your dashboard.</p>
+                  <div className="space-y-1.5 font-bold text-xs sm:text-sm text-black/80">
                     <div>Vendor dashboard</div>
                     <div>Menu and offer control</div>
                     <div>Location visibility</div>
@@ -274,7 +274,7 @@ export default function SignUpPage() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 50 }}
                 onSubmit={handleSubmit}
-                className="bg-white rounded-[2rem] shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] p-6 sm:p-8 md:p-9 space-y-5 border-4 border-black relative overflow-hidden"
+                className="bg-white rounded-[2rem] shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] p-5 sm:p-7 md:p-8 space-y-4 border-4 border-black relative overflow-hidden"
               >
                 {/* Decorative Element */}
                 <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-400 rounded-bl-[100%] z-0 opacity-20"></div>
@@ -304,7 +304,7 @@ export default function SignUpPage() {
                   </div>
                 )}
 
-                <div className="grid md:grid-cols-2 gap-6 relative z-10">
+                <div className="grid md:grid-cols-2 gap-4 relative z-10">
                   <div className="space-y-2">
                     <label className="block text-sm font-black text-black uppercase tracking-wider ml-1">First Name</label>
                     <input
@@ -313,7 +313,7 @@ export default function SignUpPage() {
                       value={formData.firstName}
                       onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                       required
-                      className="w-full px-4 py-4 border-4 border-black rounded-xl text-lg font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400 bg-gray-50 transition-all placeholder:text-gray-300 uppercase"
+                      className="w-full px-4 py-3.5 border-4 border-black rounded-xl text-base sm:text-lg font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400 bg-gray-50 transition-all placeholder:text-gray-300 uppercase"
                     />
                   </div>
                   <div className="space-y-2">
@@ -324,7 +324,7 @@ export default function SignUpPage() {
                       value={formData.lastName}
                       onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                       required
-                      className="w-full px-4 py-4 border-4 border-black rounded-xl text-lg font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400 bg-gray-50 transition-all placeholder:text-gray-300 uppercase"
+                      className="w-full px-4 py-3.5 border-4 border-black rounded-xl text-base sm:text-lg font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400 bg-gray-50 transition-all placeholder:text-gray-300 uppercase"
                     />
                   </div>
                 </div>
@@ -338,7 +338,7 @@ export default function SignUpPage() {
                     onChange={(e) => setFormData({ ...formData, email: e.target.value.toLowerCase() })}
                     required
                     autoComplete="username"
-                    className="w-full px-4 py-4 border-4 border-black rounded-xl text-lg font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400 bg-gray-50 transition-all placeholder:text-gray-300 lowercase"
+                    className="w-full px-4 py-3.5 border-4 border-black rounded-xl text-base sm:text-lg font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400 bg-gray-50 transition-all placeholder:text-gray-300 lowercase"
                   />
                   <p className="text-xs font-bold uppercase tracking-[0.2em] text-gray-500">Use the email you want to keep on this account.</p>
                 </div>
@@ -368,7 +368,7 @@ export default function SignUpPage() {
                       required
                       minLength={8}
                       autoComplete="new-password"
-                      className="w-full px-4 py-4 pr-14 border-4 border-black rounded-xl text-lg font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400 bg-gray-50 transition-all placeholder:text-gray-300"
+                      className="w-full px-4 py-3.5 pr-14 border-4 border-black rounded-xl text-base sm:text-lg font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400 bg-gray-50 transition-all placeholder:text-gray-300"
                     />
                     <button
                       type="button"
@@ -409,13 +409,13 @@ export default function SignUpPage() {
                       placeholder="YOUR FOOD STAND NAME"
                       value={formData.businessName}
                       onChange={(e) => setFormData({ ...formData, businessName: e.target.value })}
-                      className="w-full px-4 py-4 border-4 border-black rounded-xl text-lg font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400 bg-gray-50 transition-all placeholder:text-gray-300 uppercase"
+                      className="w-full px-4 py-3.5 border-4 border-black rounded-xl text-base sm:text-lg font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400 bg-gray-50 transition-all placeholder:text-gray-300 uppercase"
                     />
                     <p className="text-xs font-bold uppercase tracking-[0.2em] text-gray-500">You can edit this later from the vendor dashboard.</p>
                   </div>
                 )}
 
-                <div className="flex flex-col-reverse gap-4 pt-6 relative z-10 sm:flex-row">
+                <div className="flex flex-col-reverse gap-3 pt-4 relative z-10 sm:flex-row">
                   <Button
                     type="button"
                     variant="outline"
@@ -450,7 +450,7 @@ export default function SignUpPage() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 50 }}
                 onSubmit={handleVerifyEmail}
-                className="bg-white rounded-[2rem] shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] p-6 sm:p-8 md:p-9 space-y-5 border-4 border-black relative overflow-hidden"
+                className="bg-white rounded-[2rem] shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] p-5 sm:p-7 md:p-8 space-y-4 border-4 border-black relative overflow-hidden"
               >
                 <div className="relative z-10 rounded-[1.25rem] border-4 border-black bg-[#FFF5D8] p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -493,7 +493,7 @@ export default function SignUpPage() {
                       value={verificationCode}
                       onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                       placeholder="123456"
-                      className="w-full pl-14 pr-4 py-4 border-4 border-black rounded-xl text-lg font-bold tracking-[0.4em] focus:outline-none focus:ring-4 focus:ring-yellow-400 bg-gray-50 transition-all placeholder:text-gray-300"
+                      className="w-full pl-14 pr-4 py-3.5 border-4 border-black rounded-xl text-base sm:text-lg font-bold tracking-[0.35em] focus:outline-none focus:ring-4 focus:ring-yellow-400 bg-gray-50 transition-all placeholder:text-gray-300"
                       required
                     />
                   </div>
@@ -537,7 +537,7 @@ export default function SignUpPage() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mt-8 flex justify-center"
+              className="mt-6 flex justify-center"
             >
               <Button
                 onClick={handleContinue}
