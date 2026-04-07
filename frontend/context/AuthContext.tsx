@@ -64,8 +64,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(null)
         const sessionError =
           meError?.response?.status === 401
-            ? 'Login succeeded, but your browser is blocking the session cookie. Allow cookies for StreetBite and try again.'
-            : 'Login succeeded, but the session could not be verified. Please allow cookies and try again.'
+            ? 'Please allow cookies for StreetBite and try signing in again.'
+            : 'Please allow cookies and try signing in again.'
 
         return { success: false, error: sessionError }
       }

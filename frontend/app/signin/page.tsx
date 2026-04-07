@@ -25,6 +25,7 @@ function SignInContent() {
   const [resetEmail, setResetEmail] = useState('')
   const [resetStatus, setResetStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
   const [resetError, setResetError] = useState<string | null>(null)
+  const isCookieIssue = !!error?.toLowerCase().includes('allow cookies')
 
   const performLogin = async (emailInput: string, passwordInput: string) => {
     setIsLoading(true)
@@ -247,11 +248,11 @@ function SignInContent() {
                   </div>
                 </div>
                 <p className="mt-2 text-xs sm:text-sm font-bold text-gray-700">
-                  Your session is verified from the backend, so make sure cookies are enabled before signing in.
+                  Sign in with cookies enabled so StreetBite can keep your session active.
                 </p>
               </div>
 
-              {error && (
+              {error && !isCookieIssue && (
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -262,13 +263,13 @@ function SignInContent() {
                 </motion.div>
               )}
 
-              {error?.toLowerCase().includes('cookie') && (
+              {isCookieIssue && (
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   className="mb-6 rounded-xl border-4 border-black bg-yellow-100 px-4 py-4 text-sm font-bold text-black"
                 >
-                  Enable cookies for `streetbitego.vercel.app` and `streetbite.onrender.com`, then try signing in again.
+                  Allow cookies for StreetBite, then try signing in again.
                 </motion.div>
               )}
 
