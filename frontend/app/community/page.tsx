@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
-import { MessageSquare, Award, Gamepad2, Camera, CalendarDays, Heart, Send, X, Search, Flame, MapPin, ShieldCheck, Star, Loader2, UtensilsCrossed } from 'lucide-react'
+import { MessageSquare, Award, Gamepad2, Heart, Send, X, Search, Flame, MapPin, ShieldCheck, Star, Loader2, UtensilsCrossed } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -13,6 +13,19 @@ import { Textarea } from '@/components/ui/textarea'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { toast } from 'sonner'
 import { useAuth } from '@/context/AuthContext'
+import {
+    COMMUNITY_TABS,
+    EMPTY_TOPIC_FORM,
+    TOPIC_SORT_OPTIONS,
+    countActiveTopics,
+    filterAndSortDiscussions,
+    getLastActivity,
+    getParticipantCount,
+    type CommunityTabId,
+    type Discussion,
+    type TopicFormState,
+    type TopicSort,
+} from './community-helpers'
 
 // Lazy-load heavy community widgets — only loaded when scrolled into view
 const ZodiacCard = dynamic(() => import('@/components/ZodiacCard').then(m => m.ZodiacCard), { ssr: false, loading: () => <WidgetSkeleton /> })
@@ -45,22 +58,18 @@ export default function CommunityPage() {
     const { performAction } = useGamification()
     const { user: authUser, isLoggedIn: authIsLoggedIn, logout } = useAuth()
     const [vendor, setVendor] = useState<any>(null);
-    const [discussions, setDiscussions] = useState<any[]>([]);
+    const [discussions, setDiscussions] = useState<Discussion[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
-    const [topicSort, setTopicSort] = useState<'newest' | 'most_liked' | 'most_active'>('newest');
-    const [activeTab, setActiveTab] = useState('games');
-    const [selectedDiscussion, setSelectedDiscussion] = useState<any | null>(null);
+    const [topicSort, setTopicSort] = useState<TopicSort>('newest');
+    const [activeTab, setActiveTab] = useState<CommunityTabId>('games');
+    const [selectedDiscussion, setSelectedDiscussion] = useState<Discussion | null>(null);
     const [newComment, setNewComment] = useState('');
     const [hasLiked, setHasLiked] = useState(false);
     const [hotAnnouncements, setHotAnnouncements] = useState<any[]>([]);
     const [activeNowCount, setActiveNowCount] = useState(0);
     const [isTopicDialogOpen, setIsTopicDialogOpen] = useState(false);
     const [isSubmittingTopic, setIsSubmittingTopic] = useState(false);
-    const [topicForm, setTopicForm] = useState({
-        title: '',
-        content: '',
-        imageUrl: ''
-    });
+    const [topicForm, setTopicForm] = useState<TopicFormState>(EMPTY_TOPIC_FORM);
 
     useEffect(() => {
         fetchRandomVendor();
@@ -72,16 +81,7 @@ export default function CommunityPage() {
         try {
             const data = await hotTopicApi.getAllActive();
             setDiscussions(data);
-            const twentyFourHoursAgo = Date.now() - 24 * 60 * 60 * 1000;
-            const activeCount = data.filter((topic: any) => {
-                const createdAt = topic.createdAt ? new Date(topic.createdAt).getTime() : 0;
-                const recentComment = topic.comments?.some((c: any) => {
-                    const created = c.createdAt ? new Date(c.createdAt).getTime() : 0;
-                    return created >= twentyFourHoursAgo;
-                });
-                return createdAt >= twentyFourHoursAgo || recentComment;
-            }).length;
-            setActiveNowCount(activeCount);
+            setActiveNowCount(countActiveTopics(data));
         } catch (error) {
             console.error('Failed to fetch hot topics:', error);
             // toast.error('Failed to load hot topics');
@@ -109,7 +109,7 @@ export default function CommunityPage() {
         }
     };
 
-    const handleDiscussionClick = (discussion: any) => {
+    const handleDiscussionClick = (discussion: Discussion) => {
         setSelectedDiscussion(discussion);
         if (authUser && discussion.likes) {
             const liked = discussion.likes.some((l: any) => l.user?.id === authUser.id);
@@ -252,7 +252,7 @@ export default function CommunityPage() {
                 imageUrl: topicForm.imageUrl.trim() || undefined
             });
             setIsTopicDialogOpen(false);
-            setTopicForm({ title: '', content: '', imageUrl: '' });
+            setTopicForm(EMPTY_TOPIC_FORM);
             toast.success('Topic submitted for review', {
                 description: 'Our team will approve it shortly.',
             });
@@ -289,47 +289,7 @@ export default function CommunityPage() {
         scrollToSection('games');
     };
 
-    const tabs = [
-        { id: 'games', label: 'Games', icon: Gamepad2 },
-        { id: 'photos', label: 'Photos', icon: Camera },
-        { id: 'events', label: 'Events', icon: CalendarDays }
-    ];
-
-    const getLastActivity = (discussion: any) => {
-        const commentDates = discussion.comments?.map((c: any) => new Date(c.createdAt).getTime()).filter((d: number) => !Number.isNaN(d)) || [];
-        const latestComment = commentDates.length ? Math.max(...commentDates) : 0;
-        const createdAt = discussion.createdAt ? new Date(discussion.createdAt).getTime() : 0;
-        const lastActivity = Math.max(latestComment, createdAt);
-        if (!lastActivity) return 'No activity yet';
-        return new Date(lastActivity).toLocaleDateString();
-    };
-
-    const getParticipantCount = (discussion: any) => {
-        const ids = new Set<string>();
-        discussion.likes?.forEach((like: any) => {
-            if (like.user?.id) ids.add(String(like.user.id));
-        });
-        discussion.comments?.forEach((comment: any) => {
-            if (comment.user?.id) ids.add(String(comment.user.id));
-        });
-        return ids.size;
-    };
-
-    const filteredDiscussions = discussions.filter((d) =>
-        d.title.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-
-    const sortedDiscussions = [...filteredDiscussions].sort((a, b) => {
-        if (topicSort === 'most_liked') {
-            return (b.likes?.length || 0) - (a.likes?.length || 0);
-        }
-        if (topicSort === 'most_active') {
-            return (b.comments?.length || 0) - (a.comments?.length || 0);
-        }
-        const aDate = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-        const bDate = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-        return bDate - aDate;
-    });
+    const sortedDiscussions = filterAndSortDiscussions(discussions, searchQuery, topicSort);
 
     return (
         <div className="min-h-screen">
@@ -469,18 +429,18 @@ export default function CommunityPage() {
                                     <span className="rounded-full border-2 border-black bg-black px-3 py-1 text-[0.65rem] font-black uppercase tracking-[0.2em] text-yellow-300">
                                         Sort by
                                     </span>
-                                    {(['newest', 'most_active', 'most_liked'] as const).map((option) => (
+                                    {TOPIC_SORT_OPTIONS.map((option) => (
                                         <button
-                                            key={option}
+                                            key={option.id}
                                             type="button"
-                                            onClick={() => setTopicSort(option)}
+                                            onClick={() => setTopicSort(option.id)}
                                             className={`rounded-full border-2 px-3 py-1 text-[0.65rem] font-black uppercase tracking-[0.18em] ${
-                                                topicSort === option
+                                                topicSort === option.id
                                                     ? 'border-black bg-yellow-300 text-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]'
                                                     : 'border-black bg-white text-black/70'
                                             }`}
                                         >
-                                            {option === 'newest' ? 'Newest' : option === 'most_active' ? 'Most active' : 'Most liked'}
+                                            {option.label}
                                         </button>
                                     ))}
                                 </div>
@@ -610,7 +570,7 @@ export default function CommunityPage() {
 
                             <div className="border-b-4 border-black bg-black p-4">
                                 <div className="flex gap-4 overflow-x-auto no-scrollbar justify-center">
-                                    {tabs.map(tab => {
+                                    {COMMUNITY_TABS.map(tab => {
                                         const Icon = tab.icon;
                                         const isActive = activeTab === tab.id;
                                         return (
