@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS vendors (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     owner_id BIGINT,
     name VARCHAR(255) NOT NULL,
+    slug VARCHAR(255) UNIQUE,
     description TEXT,
     cuisine VARCHAR(255),
     address VARCHAR(500),
@@ -125,6 +126,16 @@ CREATE TABLE IF NOT EXISTS user_favorites (
     FOREIGN KEY (vendor_id) REFERENCES vendors(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+CREATE TABLE IF NOT EXISTS favorites (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    vendor_id BIGINT NOT NULL,
+    created_at DATETIME,
+    CONSTRAINT uk_favorites_user_vendor UNIQUE (user_id, vendor_id),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (vendor_id) REFERENCES vendors(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- 10. PROMOTIONS
 CREATE TABLE IF NOT EXISTS promotions (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -193,6 +204,36 @@ CREATE TABLE IF NOT EXISTS hot_topics (
     updated_at DATETIME,
     FOREIGN KEY (created_by_id) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+SET @dbname = DATABASE();
+
+SET @preparedStatement = (SELECT IF(
+  (
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = @dbname
+      AND TABLE_NAME = 'vendors'
+      AND COLUMN_NAME = 'slug'
+  ) > 0,
+  'SELECT 1',
+  'ALTER TABLE vendors ADD COLUMN slug VARCHAR(255) NULL'
+));
+PREPARE alterIfNotExists FROM @preparedStatement;
+EXECUTE alterIfNotExists;
+DEALLOCATE PREPARE alterIfNotExists;
+
+SET @preparedStatement = (SELECT IF(
+  (
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS
+    WHERE TABLE_SCHEMA = @dbname
+      AND TABLE_NAME = 'vendors'
+      AND INDEX_NAME = 'uk_vendors_slug'
+  ) > 0,
+  'SELECT 1',
+  'ALTER TABLE vendors ADD CONSTRAINT uk_vendors_slug UNIQUE (slug)'
+));
+PREPARE alterIfNotExists FROM @preparedStatement;
+EXECUTE alterIfNotExists;
+DEALLOCATE PREPARE alterIfNotExists;
 
 -- Bring older hot_topics tables up to date before JPA validation runs.
 SET @dbname = DATABASE();
@@ -282,19 +323,169 @@ CREATE TABLE IF NOT EXISTS topic_likes (
 -- 17. ANALYTICS EVENTS
 CREATE TABLE IF NOT EXISTS analytics_events (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    vendor_id BIGINT,
     user_id BIGINT,
+    item_id BIGINT,
     event_type VARCHAR(255),
-    event_data TEXT,
-    created_at DATETIME,
+    timestamp DATETIME,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+SET @preparedStatement = (SELECT IF(
+  (
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = @dbname
+      AND TABLE_NAME = 'analytics_events'
+      AND COLUMN_NAME = 'vendor_id'
+  ) > 0,
+  'SELECT 1',
+  'ALTER TABLE analytics_events ADD COLUMN vendor_id BIGINT NULL'
+));
+PREPARE alterIfNotExists FROM @preparedStatement;
+EXECUTE alterIfNotExists;
+DEALLOCATE PREPARE alterIfNotExists;
+
+SET @preparedStatement = (SELECT IF(
+  (
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = @dbname
+      AND TABLE_NAME = 'analytics_events'
+      AND COLUMN_NAME = 'item_id'
+  ) > 0,
+  'SELECT 1',
+  'ALTER TABLE analytics_events ADD COLUMN item_id BIGINT NULL'
+));
+PREPARE alterIfNotExists FROM @preparedStatement;
+EXECUTE alterIfNotExists;
+DEALLOCATE PREPARE alterIfNotExists;
+
+SET @preparedStatement = (SELECT IF(
+  (
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = @dbname
+      AND TABLE_NAME = 'analytics_events'
+      AND COLUMN_NAME = 'timestamp'
+  ) > 0,
+  'SELECT 1',
+  'ALTER TABLE analytics_events ADD COLUMN timestamp DATETIME NULL'
+));
+PREPARE alterIfNotExists FROM @preparedStatement;
+EXECUTE alterIfNotExists;
+DEALLOCATE PREPARE alterIfNotExists;
+
+SET @preparedStatement = (SELECT IF(
+  (
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = @dbname
+      AND TABLE_NAME = 'analytics_events'
+      AND COLUMN_NAME = 'created_at'
+  ) > 0,
+  'UPDATE analytics_events SET timestamp = COALESCE(timestamp, created_at) WHERE timestamp IS NULL',
+  'SELECT 1'
+));
+PREPARE alterIfNotExists FROM @preparedStatement;
+EXECUTE alterIfNotExists;
+DEALLOCATE PREPARE alterIfNotExists;
 
 -- 18. USER DEVICES
 CREATE TABLE IF NOT EXISTS user_devices (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT NOT NULL,
-    device_token VARCHAR(255) NOT NULL,
+    fcm_token VARCHAR(255) NOT NULL,
     device_type VARCHAR(50),
-    last_active DATETIME,
+    created_at DATETIME,
+    updated_at DATETIME,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+SET @preparedStatement = (SELECT IF(
+  (
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = @dbname
+      AND TABLE_NAME = 'user_devices'
+      AND COLUMN_NAME = 'fcm_token'
+  ) > 0,
+  'SELECT 1',
+  'ALTER TABLE user_devices ADD COLUMN fcm_token VARCHAR(255) NULL'
+));
+PREPARE alterIfNotExists FROM @preparedStatement;
+EXECUTE alterIfNotExists;
+DEALLOCATE PREPARE alterIfNotExists;
+
+SET @preparedStatement = (SELECT IF(
+  (
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = @dbname
+      AND TABLE_NAME = 'user_devices'
+      AND COLUMN_NAME = 'created_at'
+  ) > 0,
+  'SELECT 1',
+  'ALTER TABLE user_devices ADD COLUMN created_at DATETIME NULL'
+));
+PREPARE alterIfNotExists FROM @preparedStatement;
+EXECUTE alterIfNotExists;
+DEALLOCATE PREPARE alterIfNotExists;
+
+SET @preparedStatement = (SELECT IF(
+  (
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = @dbname
+      AND TABLE_NAME = 'user_devices'
+      AND COLUMN_NAME = 'updated_at'
+  ) > 0,
+  'SELECT 1',
+  'ALTER TABLE user_devices ADD COLUMN updated_at DATETIME NULL'
+));
+PREPARE alterIfNotExists FROM @preparedStatement;
+EXECUTE alterIfNotExists;
+DEALLOCATE PREPARE alterIfNotExists;
+
+SET @preparedStatement = (SELECT IF(
+  (
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = @dbname
+      AND TABLE_NAME = 'user_devices'
+      AND COLUMN_NAME = 'device_token'
+  ) > 0,
+  'UPDATE user_devices SET fcm_token = COALESCE(fcm_token, device_token) WHERE fcm_token IS NULL',
+  'SELECT 1'
+));
+PREPARE alterIfNotExists FROM @preparedStatement;
+EXECUTE alterIfNotExists;
+DEALLOCATE PREPARE alterIfNotExists;
+
+SET @preparedStatement = (SELECT IF(
+  (
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = @dbname
+      AND TABLE_NAME = 'user_devices'
+      AND COLUMN_NAME = 'last_active'
+  ) > 0,
+  'UPDATE user_devices SET created_at = COALESCE(created_at, last_active, CURRENT_TIMESTAMP), updated_at = COALESCE(updated_at, last_active, CURRENT_TIMESTAMP) WHERE created_at IS NULL OR updated_at IS NULL',
+  'UPDATE user_devices SET created_at = COALESCE(created_at, CURRENT_TIMESTAMP), updated_at = COALESCE(updated_at, CURRENT_TIMESTAMP) WHERE created_at IS NULL OR updated_at IS NULL'
+));
+PREPARE alterIfNotExists FROM @preparedStatement;
+EXECUTE alterIfNotExists;
+DEALLOCATE PREPARE alterIfNotExists;
+
+SET @preparedStatement = (SELECT IF(
+  (
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS
+    WHERE TABLE_SCHEMA = @dbname
+      AND TABLE_NAME = 'user_devices'
+      AND INDEX_NAME = 'uk_user_devices_fcm_token'
+  ) > 0,
+  'SELECT 1',
+  'ALTER TABLE user_devices ADD CONSTRAINT uk_user_devices_fcm_token UNIQUE (fcm_token)'
+));
+PREPARE alterIfNotExists FROM @preparedStatement;
+EXECUTE alterIfNotExists;
+DEALLOCATE PREPARE alterIfNotExists;
+
+CREATE TABLE IF NOT EXISTS newsletter_subscribers (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    subscribed_at DATETIME,
+    is_active BOOLEAN DEFAULT TRUE,
+    unsubscribe_token VARCHAR(255)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
