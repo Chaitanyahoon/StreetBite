@@ -7,6 +7,7 @@ import com.streetbite.service.UserService;
 import com.streetbite.service.VendorService;
 import com.streetbite.service.EmailService;
 import com.streetbite.util.JwtUtil;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
