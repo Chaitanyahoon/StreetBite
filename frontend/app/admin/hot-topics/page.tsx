@@ -21,6 +21,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { MessageSquare, Heart, Trash2, Edit, Plus, Eye, EyeOff, Loader2, CheckCircle2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { useAuth } from '@/context/AuthContext'
 
 interface HotTopic {
   id: number
@@ -38,9 +39,11 @@ interface HotTopic {
 export default function HotTopicManagement() {
   const [topics, setTopics] = useState<HotTopic[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingTopic, setEditingTopic] = useState<HotTopic | null>(null)
   const [topicToDelete, setTopicToDelete] = useState<HotTopic | null>(null)
+  const { logout } = useAuth()
   
   // Form State
   const [formData, setFormData] = useState({
@@ -61,9 +64,20 @@ export default function HotTopicManagement() {
         commentsCount: t.comments?.length || 0
       }))
       setTopics(mapped)
+      setError(null)
     } catch (err) {
       console.error('Failed to fetch hot topics', err)
-      toast.error('Failed to load community discussions')
+      const status = (err as any)?.response?.status
+      if (status === 401 || status === 403) {
+        setError('Admin access is required. Sign in again and allow cookies for StreetBite.')
+        toast.error('Admin session required')
+        if (status === 401) {
+          await logout()
+        }
+      } else {
+        setError('Failed to load community discussions')
+        toast.error('Failed to load community discussions')
+      }
     } finally {
       setLoading(false)
     }
@@ -165,11 +179,22 @@ export default function HotTopicManagement() {
               <p className="text-muted-foreground font-medium">Fetching topics...</p>
             </div>
           ) : topics.length === 0 ? (
+            error ? (
+              <div className="text-center py-20 bg-muted/20 space-y-4">
+                <MessageSquare className="w-12 h-12 text-muted-foreground mx-auto opacity-20" />
+                <p className="text-xl font-semibold">Admin Access Required</p>
+                <p className="text-muted-foreground">{error}</p>
+                <Button onClick={() => window.location.href = '/signin'} className="bg-orange-600 hover:bg-orange-700">
+                  Go to Sign In
+                </Button>
+              </div>
+            ) : (
             <div className="text-center py-20 bg-muted/20">
                 <MessageSquare className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-20" />
                 <p className="text-xl font-semibold">No Hot Topics Yet</p>
                 <p className="text-muted-foreground">Start by creating your first community discussion.</p>
             </div>
+            )
           ) : (
             <Table>
               <TableHeader>

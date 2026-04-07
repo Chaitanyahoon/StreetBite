@@ -7,6 +7,7 @@ import { TrendingUp, Users, Heart, AlertCircle, ShieldCheck, Trash2 } from 'luci
 import { useEffect, useState } from 'react'
 import { analyticsApi, vendorApi, announcementApi } from '@/lib/api'
 import { toast } from 'sonner'
+import { useAuth } from '@/context/AuthContext'
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState<any>({
@@ -19,6 +20,8 @@ export default function AdminDashboard() {
   const [recentVendors, setRecentVendors] = useState<any[]>([])
   const [announcements, setAnnouncements] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const { logout } = useAuth()
 
   useEffect(() => {
     const fetchData = async () => {
@@ -39,8 +42,19 @@ export default function AdminDashboard() {
           .slice(0, 5)
 
         setRecentVendors(sortedVendors)
+        setErrorMessage(null)
       } catch (error) {
         console.error('Error fetching admin data:', error)
+        const status = (error as any)?.response?.status
+        if (status === 401 || status === 403) {
+          setErrorMessage('Your admin session is unavailable. Sign in again and allow cookies for StreetBite.')
+          toast.error('Admin session required')
+          if (status === 401) {
+            await logout()
+          }
+        } else {
+          setErrorMessage('Failed to load admin data. Please refresh and try again.')
+        }
       } finally {
         setLoading(false)
       }
@@ -56,6 +70,27 @@ export default function AdminDashboard() {
           <ShieldCheck className="w-8 h-8 text-primary opacity-50" />
           <p className="text-muted-foreground font-medium">Loading Dashboard...</p>
         </div>
+      </div>
+    )
+  }
+
+  if (errorMessage) {
+    return (
+      <div className="min-h-screen p-8 flex items-center justify-center bg-gray-50/30">
+        <Card className="max-w-xl w-full border-2 border-orange-200 shadow-lg">
+          <CardHeader>
+            <CardTitle className="text-2xl font-black">Admin Dashboard Unavailable</CardTitle>
+            <CardDescription>{errorMessage}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button
+              className="bg-primary hover:bg-primary/90 text-white"
+              onClick={() => window.location.href = '/signin'}
+            >
+              Go to Sign In
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     )
   }

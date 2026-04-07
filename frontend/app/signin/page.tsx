@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Logo } from '@/components/logo'
 import { Button } from '@/components/ui/button'
 import { Mail, Lock, ArrowLeft, Sparkles, Eye, EyeOff } from 'lucide-react'
@@ -13,6 +13,7 @@ import { motion } from 'framer-motion'
 
 export default function SignInPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { login } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -32,6 +33,12 @@ export default function SignInPage() {
     const result = await login(emailInput, passwordInput)
 
     if (result.success && result.user) {
+      const nextPath = searchParams.get('next')
+      if (nextPath && nextPath.startsWith('/')) {
+        router.push(nextPath)
+        return
+      }
+
       // Redirect based on user role
       const role = result.user.role?.toUpperCase()
       if (role === 'VENDOR') {
@@ -228,6 +235,16 @@ export default function SignInPage() {
                 >
                   <div className="w-4 h-4 bg-red-500 rounded-full border border-black flex-shrink-0" />
                   {error}
+                </motion.div>
+              )}
+
+              {error?.toLowerCase().includes('cookie') && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mb-6 rounded-xl border-4 border-black bg-yellow-100 px-4 py-4 text-sm font-bold text-black"
+                >
+                  Enable cookies for `streetbitego.vercel.app` and `streetbite.onrender.com`, then try signing in again.
                 </motion.div>
               )}
 

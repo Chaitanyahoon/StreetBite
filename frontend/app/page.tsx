@@ -28,7 +28,7 @@ export default function Home() {
       {/* Enhanced Navbar */}
       <Navbar forceSolid />
 
-      <main className="flex-1 pt-20">
+      <main className="flex-1">
 
 
 
@@ -39,7 +39,6 @@ export default function Home() {
             <div className="absolute right-[6%] top-16 h-28 w-28 rotate-12 rounded-[2rem] border-4 border-black/12 bg-yellow-300/35 shadow-[var(--shadow-soft)] md:h-40 md:w-40" />
             <div className="absolute bottom-20 left-[8%] h-20 w-20 -rotate-12 rounded-full border-4 border-black/10 bg-teal-200/45 shadow-[var(--shadow-soft)] md:h-28 md:w-28" />
             <div className="absolute bottom-8 right-[-4%] h-60 w-60 rounded-full bg-orange-200/25 blur-3xl md:h-80 md:w-80" />
-            <div className="absolute inset-x-0 top-0 h-px bg-black/10" />
           </div>
 
           <div className="max-w-screen-2xl mx-auto px-4 md:px-6 text-center">

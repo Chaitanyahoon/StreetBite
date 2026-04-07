@@ -38,9 +38,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = useCallback(async (email: string, password: string) => {
     try {
       const response = await authApi.login({ email, password })
-      // Backend sets HttpOnly cookie automatically
-      // Also store user info from the response directly (avoids extra /me call)
-      const userData = response.user as AuthUser
+      // Verify the cookie-backed session actually persisted before treating login as successful.
+      let userData = response.user as AuthUser
+
+      try {
+        const me = await authApi.me()
+        userData = me as AuthUser
+      } catch (meError: any) {
+        setUser(null)
+        const sessionError =
+          meError?.response?.status === 401
+            ? 'Login succeeded, but your browser is blocking the session cookie. Allow cookies for StreetBite and try again.'
+            : 'Login succeeded, but the session could not be verified. Please allow cookies and try again.'
+
+        return { success: false, error: sessionError }
+      }
+
       setUser(userData)
 
       // Notify other components (e.g. Navbar in other tabs)
