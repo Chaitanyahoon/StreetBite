@@ -8,11 +8,23 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Separator } from '@/components/ui/separator'
 import { Switch } from '@/components/ui/switch'
-import { Upload, Save, MapPin, Clock, Phone, Store, Shield, Bell, CheckCircle2, AlertCircle, XCircle, X } from 'lucide-react'
+import { Upload, Save, MapPin, Clock, Phone, Store, X } from 'lucide-react'
 import { vendorApi } from '@/lib/api'
 import { toast } from 'sonner'
-import { Navbar } from '@/components/navbar'
 import { useAuth } from '@/context/AuthContext'
+import {
+  buildVendorSettingsForm,
+  DEFAULT_VENDOR_PREFERENCES,
+  EMPTY_VENDOR_SETTINGS_FORM,
+  formatCoordinatePair,
+  hasValidCoordinates,
+  SETTINGS_CARD_ICONS,
+  VENDOR_PREFERENCE_OPTIONS,
+  VENDOR_SECURITY_ACTIONS,
+  VENDOR_STATUS_OPTIONS,
+  type VendorPreferenceState,
+  type VendorSettingsFormState,
+} from './settings-helpers'
 
 export default function Settings() {
   const { user } = useAuth()
@@ -20,28 +32,12 @@ export default function Settings() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
 
-  const [vendorData, setVendorData] = useState({
-    name: '',
-    address: '',
-    phone: '',
-    hours: '',
-    description: '',
-    cuisine: '',
-    latitude: '',
-    longitude: '',
-    bannerImageUrl: '',
-    displayImageUrl: '',
-    status: 'AVAILABLE',
-  })
+  const [vendorData, setVendorData] = useState<VendorSettingsFormState>(EMPTY_VENDOR_SETTINGS_FORM)
 
   const [bannerPreview, setBannerPreview] = useState<string | null>(null)
   const [displayPreview, setDisplayPreview] = useState<string | null>(null)
 
-  const [settings, setSettings] = useState({
-    notifications: true,
-    weeklyReports: true,
-    emailPromos: false,
-  })
+  const [settings, setSettings] = useState<VendorPreferenceState>(DEFAULT_VENDOR_PREFERENCES)
 
   useEffect(() => {
     const loadVendorData = async () => {
@@ -67,19 +63,7 @@ export default function Settings() {
         setVendorId(vid)
 
         const vendor = await vendorApi.getById(vid)
-        setVendorData({
-          name: vendor.name || '',
-          address: vendor.address || '',
-          phone: vendor.phone || '',
-          hours: vendor.hours || '',
-          description: vendor.description || '',
-          cuisine: vendor.cuisine || '',
-          latitude: vendor.latitude?.toString() || '',
-          longitude: vendor.longitude?.toString() || '',
-          bannerImageUrl: vendor.bannerImageUrl || '',
-          displayImageUrl: vendor.displayImageUrl || '',
-          status: vendor.status || 'AVAILABLE',
-        })
+        setVendorData(buildVendorSettingsForm(vendor))
 
         if (vendor.bannerImageUrl) setBannerPreview(vendor.bannerImageUrl)
         if (vendor.displayImageUrl) setDisplayPreview(vendor.displayImageUrl)
@@ -219,36 +203,23 @@ export default function Settings() {
           </div>
 
           <div className="flex items-center gap-2 bg-white p-1 rounded-full shadow-sm border border-gray-200">
-            <button
-              onClick={() => updateStatus('AVAILABLE')}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 flex items-center gap-2 ${vendorData.status === 'AVAILABLE'
-                ? 'bg-green-500 text-white shadow-sm'
-                : 'text-gray-500 hover:bg-gray-50'
-                }`}
-            >
-              <CheckCircle2 className="w-4 h-4" />
-              Open
-            </button>
-            <button
-              onClick={() => updateStatus('BUSY')}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 flex items-center gap-2 ${vendorData.status === 'BUSY'
-                ? 'bg-orange-500 text-white shadow-sm'
-                : 'text-gray-500 hover:bg-gray-50'
-                }`}
-            >
-              <AlertCircle className="w-4 h-4" />
-              Busy
-            </button>
-            <button
-              onClick={() => updateStatus('UNAVAILABLE')}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 flex items-center gap-2 ${vendorData.status === 'UNAVAILABLE'
-                ? 'bg-red-500 text-white shadow-sm'
-                : 'text-gray-500 hover:bg-gray-50'
-                }`}
-            >
-              <XCircle className="w-4 h-4" />
-              Closed
-            </button>
+            {VENDOR_STATUS_OPTIONS.map((option) => {
+              const Icon = option.icon
+
+              return (
+                <button
+                  key={option.value}
+                  onClick={() => updateStatus(option.value)}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 flex items-center gap-2 ${vendorData.status === option.value
+                    ? option.activeClassName
+                    : 'text-gray-500 hover:bg-gray-50'
+                    }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  {option.label}
+                </button>
+              )
+            })}
           </div>
         </div>
 
@@ -513,7 +484,7 @@ export default function Settings() {
                   </div>
 
                   {/* Mini Map Preview */}
-                  {vendorData.latitude && vendorData.longitude && !isNaN(parseFloat(vendorData.latitude)) && !isNaN(parseFloat(vendorData.longitude)) && (
+                  {hasValidCoordinates(vendorData.latitude, vendorData.longitude) && (
                     <div className="mt-4 rounded-lg overflow-hidden border border-blue-200">
                       <iframe
                         width="100%"
@@ -525,7 +496,7 @@ export default function Settings() {
                       />
                       <div className="bg-blue-100 px-3 py-2 text-xs text-blue-700">
                         <MapPin className="w-3 h-3 inline mr-1" />
-                        📍 {parseFloat(vendorData.latitude).toFixed(6)}, {parseFloat(vendorData.longitude).toFixed(6)}
+                        {formatCoordinatePair(vendorData.latitude, vendorData.longitude)}
                       </div>
                     </div>
                   )}
@@ -541,7 +512,7 @@ export default function Settings() {
               <CardHeader className="bg-gradient-to-r from-emerald-50 to-white border-b border-emerald-100/50 py-4 px-6">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-emerald-100 rounded-lg">
-                    <Bell className="w-5 h-5 text-emerald-600" />
+                    <SETTINGS_CARD_ICONS.preferences className="w-5 h-5 text-emerald-600" />
                   </div>
                   <div>
                     <CardTitle className="text-lg">Preferences</CardTitle>
@@ -549,27 +520,21 @@ export default function Settings() {
                 </div>
               </CardHeader>
               <CardContent className="p-6 space-y-5">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label className="text-sm font-medium">Notifications</Label>
-                    <p className="text-xs text-muted-foreground">Receive review & engagement alerts</p>
+                {VENDOR_PREFERENCE_OPTIONS.map((option, index) => (
+                  <div key={option.key}>
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label className="text-sm font-medium">{option.title}</Label>
+                        <p className="text-xs text-muted-foreground">{option.description}</p>
+                      </div>
+                      <Switch
+                        checked={settings[option.key]}
+                        onCheckedChange={(checked) => setSettings({ ...settings, [option.key]: checked })}
+                      />
+                    </div>
+                    {index < VENDOR_PREFERENCE_OPTIONS.length - 1 ? <Separator /> : null}
                   </div>
-                  <Switch
-                    checked={settings.notifications}
-                    onCheckedChange={(c) => setSettings({ ...settings, notifications: c })}
-                  />
-                </div>
-                <Separator />
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label className="text-sm font-medium">Weekly Reports</Label>
-                    <p className="text-xs text-muted-foreground">Performance summary</p>
-                  </div>
-                  <Switch
-                    checked={settings.weeklyReports}
-                    onCheckedChange={(c) => setSettings({ ...settings, weeklyReports: c })}
-                  />
-                </div>
+                ))}
               </CardContent>
             </Card>
 
@@ -578,7 +543,7 @@ export default function Settings() {
               <CardHeader className="bg-gradient-to-r from-gray-50 to-white border-b border-gray-100/50 py-4 px-6">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-gray-100 rounded-lg">
-                    <Shield className="w-5 h-5 text-gray-600" />
+                    <SETTINGS_CARD_ICONS.security className="w-5 h-5 text-gray-600" />
                   </div>
                   <div>
                     <CardTitle className="text-lg">Security</CardTitle>
@@ -586,27 +551,16 @@ export default function Settings() {
                 </div>
               </CardHeader>
               <CardContent className="p-6 space-y-3">
-                <Button
-                  variant="outline"
-                  className="w-full justify-start h-10 text-sm"
-                  onClick={() => toast.info('Password change feature coming soon!')}
-                >
-                  Change Password
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start h-10 text-sm"
-                  onClick={() => toast.info('Two-factor authentication coming soon!')}
-                >
-                  Two-Factor Auth
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start h-10 text-sm"
-                  onClick={() => toast.info('Session management coming soon!')}
-                >
-                  Active Sessions
-                </Button>
+                {VENDOR_SECURITY_ACTIONS.map((action) => (
+                  <Button
+                    key={action.label}
+                    variant="outline"
+                    className="w-full justify-start h-10 text-sm"
+                    onClick={() => toast.info(action.toastMessage)}
+                  >
+                    {action.label}
+                  </Button>
+                ))}
               </CardContent>
             </Card>
 
