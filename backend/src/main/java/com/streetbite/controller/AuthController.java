@@ -7,7 +7,6 @@ import com.streetbite.service.UserService;
 import com.streetbite.service.VendorService;
 import com.streetbite.service.EmailService;
 import com.streetbite.util.JwtUtil;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,12 +69,6 @@ public class AuthController {
      * Helper: set the HttpOnly JWT cookie on the response.
      */
     private void setTokenCookie(HttpServletResponse response, String token) {
-        Cookie cookie = new Cookie(COOKIE_NAME, token);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(cookieSettings.isSecure());
-        cookie.setPath("/");
-        cookie.setMaxAge(COOKIE_MAX_AGE);
-        response.addCookie(cookie);
         response.setHeader("Set-Cookie", buildCookieHeader(token, COOKIE_MAX_AGE));
     }
 
@@ -83,12 +76,6 @@ public class AuthController {
      * Helper: clear the JWT cookie.
      */
     private void clearTokenCookie(HttpServletResponse response) {
-        Cookie cookie = new Cookie(COOKIE_NAME, "");
-        cookie.setHttpOnly(true);
-        cookie.setSecure(cookieSettings.isSecure());
-        cookie.setPath("/");
-        cookie.setMaxAge(0);
-        response.addCookie(cookie);
         response.setHeader("Set-Cookie", buildCookieHeader("", 0));
     }
 
