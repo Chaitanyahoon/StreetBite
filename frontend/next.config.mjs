@@ -1,3 +1,5 @@
+const backendApiUrl = (process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8081/api').replace(/\/$/, '')
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Explicitly set Turbopack root to this frontend package
@@ -9,6 +11,14 @@ const nextConfig = {
   },
   images: {
     unoptimized: true,
+  },
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: `${backendApiUrl}/:path*`,
+      },
+    ]
   },
 }
 

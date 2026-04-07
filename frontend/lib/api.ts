@@ -3,7 +3,7 @@ import axios from 'axios';
 /**
  * Base URL for the API, defaulting to localhost if not set in environment variables.
  */
-const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8081/api';
+const API_BASE_URL = '/api';
 
 /**
  * Axios instance configured with base URL, default headers, and cookie credentials.
