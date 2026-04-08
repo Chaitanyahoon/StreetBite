@@ -15,6 +15,7 @@ export default function AdminSettingsPage() {
     const [adminProfile, setAdminProfile] = useState<any>(null)
     const [maintenanceMode, setMaintenanceMode] = useState(false)
     const [emailNotifications, setEmailNotifications] = useState(true)
+    const passwordChangeAvailable = false
 
     useEffect(() => {
         if (user) {
@@ -93,46 +94,32 @@ export default function AdminSettingsPage() {
                             <CardDescription>Manage your password and security settings</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            <form onSubmit={async (e) => {
+                            {!passwordChangeAvailable ? (
+                                <div className="rounded-lg border border-yellow-200 bg-yellow-50 px-4 py-3 text-sm text-yellow-800">
+                                    Password changes are not available yet. Add a secure change-password endpoint before enabling this.
+                                </div>
+                            ) : null}
+
+                            <form onSubmit={(e) => {
                                 e.preventDefault()
-                                const form = e.target as HTMLFormElement
-                                const newPassword = (form.elements.namedItem('newPassword') as HTMLInputElement).value
-                                const confirmPassword = (form.elements.namedItem('confirmPassword') as HTMLInputElement).value
-
-                                if (newPassword !== confirmPassword) {
-                                    toast.error('Passwords do not match')
-                                    return
-                                }
-
-                                try {
-                                    const { authApi } = await import('@/lib/api')
-                                    // Assuming resetPassword endpoint handles this or we need a change-password endpoint
-                                    // For now using resetPassword as a proxy if available, or just mocking success if no endpoint
-                                    // Note: Real implementation needs a proper change-password endpoint
-                                    await authApi.resetPassword({ email: adminProfile.email, newPassword, token: 'admin-override' })
-                                    toast.success('Password updated successfully')
-                                    form.reset()
-                                } catch (err) {
-                                    console.error(err)
-                                    toast.error('Failed to update password')
-                                }
+                                toast.error('Password changes are not available yet')
                             }}>
                                 <div className="space-y-2">
                                     <Label>Current Password</Label>
-                                    <Input type="password" name="currentPassword" required />
+                                    <Input type="password" name="currentPassword" required disabled={!passwordChangeAvailable} />
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
                                         <Label>New Password</Label>
-                                        <Input type="password" name="newPassword" required />
+                                        <Input type="password" name="newPassword" required disabled={!passwordChangeAvailable} />
                                     </div>
                                     <div className="space-y-2">
                                         <Label>Confirm Password</Label>
-                                        <Input type="password" name="confirmPassword" required />
+                                        <Input type="password" name="confirmPassword" required disabled={!passwordChangeAvailable} />
                                     </div>
                                 </div>
                                 <div className="flex justify-end mt-4">
-                                    <Button type="submit" variant="outline">Update Password</Button>
+                                    <Button type="submit" variant="outline" disabled={!passwordChangeAvailable}>Update Password</Button>
                                 </div>
                             </form>
                         </CardContent>
