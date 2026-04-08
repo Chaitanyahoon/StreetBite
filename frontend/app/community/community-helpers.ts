@@ -2,7 +2,7 @@
 
 import { Camera, CalendarDays, Gamepad2, type LucideIcon } from 'lucide-react'
 
-export type TopicSort = 'newest' | 'most_liked' | 'most_active'
+export type TopicSort = 'newest' | 'most_liked' | 'most_active' | 'distance'
 export type TopicMode = 'all' | 'live' | 'unanswered' | 'debate' | 'nearby'
 export type CommunityTabId = 'games' | 'photos' | 'events'
 
@@ -74,6 +74,7 @@ export const TOPIC_SORT_OPTIONS: Array<{ id: TopicSort; label: string }> = [
   { id: 'newest', label: 'Newest' },
   { id: 'most_active', label: 'Most active' },
   { id: 'most_liked', label: 'Most liked' },
+  { id: 'distance', label: 'Nearest' },
 ]
 
 export const LIVE_MODE_WINDOW_MINUTES = 120
@@ -391,6 +392,12 @@ export function filterAndSortDiscussions(
 
     if (topicSort === 'most_active') {
       return (b.comments?.length || 0) - (a.comments?.length || 0)
+    }
+
+    if (topicSort === 'distance') {
+      const aDate = a.createdAt ? new Date(a.createdAt).getTime() : 0
+      const bDate = b.createdAt ? new Date(b.createdAt).getTime() : 0
+      return bDate - aDate
     }
 
     const aDate = a.createdAt ? new Date(a.createdAt).getTime() : 0

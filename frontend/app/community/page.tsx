@@ -98,6 +98,7 @@ function CommunityPageContent() {
     const [locationError, setLocationError] = useState<string | null>(null);
     const topicsRequestIdRef = useRef(0);
     const discussionsRef = useRef<Discussion[]>([]);
+    const nonNearbySortRef = useRef<TopicSort>('newest');
 
     const isSameDiscussionId = (leftId: Discussion['id'], rightId: Discussion['id']) =>
         String(leftId) === String(rightId);
@@ -119,6 +120,26 @@ function CommunityPageContent() {
     useEffect(() => {
         discussionsRef.current = discussions;
     }, [discussions]);
+
+    useEffect(() => {
+        if (topicMode === 'nearby') {
+            setTopicSort((previousSort) => {
+                if (previousSort !== 'distance') {
+                    nonNearbySortRef.current = previousSort;
+                    return 'distance';
+                }
+                return previousSort;
+            });
+            return;
+        }
+
+        setTopicSort((previousSort) => {
+            if (previousSort === 'distance') {
+                return nonNearbySortRef.current === 'distance' ? 'newest' : nonNearbySortRef.current;
+            }
+            return previousSort;
+        });
+    }, [topicMode]);
 
     useEffect(() => {
         const tabParam = searchParams.get('tab')
@@ -635,12 +656,20 @@ function CommunityPageContent() {
     const debateModeCount = filterDiscussionsByMode(discussions, 'debate', nowTimestamp).length;
     const nearbyModeCount = filterDiscussionsByMode(discussions, 'nearby', nowTimestamp).length;
     const modeFilteredDiscussions = filterDiscussionsByMode(discussions, topicMode, nowTimestamp);
-    const modeSortedDiscussions = filterAndSortDiscussions(modeFilteredDiscussions, deferredSearchQuery, topicSort);
+    const baseSortedDiscussions = filterAndSortDiscussions(
+        modeFilteredDiscussions,
+        deferredSearchQuery,
+        topicSort === 'distance' ? 'newest' : topicSort
+    );
     const sortedDiscussions =
-        topicMode === 'nearby'
-            ? sortDiscussionsByDistance(modeSortedDiscussions, userLocation)
-            : modeSortedDiscussions;
+        topicMode === 'nearby' && topicSort === 'distance'
+            ? sortDiscussionsByDistance(baseSortedDiscussions, userLocation)
+            : baseSortedDiscussions;
     const sortedPendingSubmissions = filterAndSortDiscussions(pendingTopicSubmissions, deferredSearchQuery, 'newest');
+    const visibleSortOptions =
+        topicMode === 'nearby'
+            ? TOPIC_SORT_OPTIONS
+            : TOPIC_SORT_OPTIONS.filter((option) => option.id !== 'distance');
     const hasSearchQuery = deferredSearchQuery.trim().length > 0;
     const lastTopicsRefreshLabel = lastTopicsRefreshAt
         ? new Intl.DateTimeFormat('en-IN', { hour: '2-digit', minute: '2-digit' }).format(lastTopicsRefreshAt)
@@ -878,7 +907,7 @@ function CommunityPageContent() {
                                     <span className="rounded-full border-2 border-black bg-black px-3 py-1 text-[0.65rem] font-black uppercase tracking-[0.2em] text-yellow-300">
                                         Sort by
                                     </span>
-                                    {TOPIC_SORT_OPTIONS.map((option) => (
+                                    {visibleSortOptions.map((option) => (
                                         <button
                                             key={option.id}
                                             type="button"
@@ -941,7 +970,7 @@ function CommunityPageContent() {
                                         </p>
                                         <p className="mt-1 text-xs font-bold text-black/70">
                                             {userLocation
-                                                ? 'Ranking topics by nearest distance whenever coordinates are available.'
+                                                ? 'Nearby mode auto-sorts by nearest distance whenever coordinates are available.'
                                                 : 'Showing nearby-signal topics. Enable location to rank by true distance.'}
                                         </p>
                                         <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -1043,6 +1072,9 @@ function CommunityPageContent() {
                                                 const nearbySignal = getNearbySignal(discussion);
                                                 const nearbyTags = getNearbyTags(discussion, 2);
                                                 const nearbyDistanceKm = getDiscussionDistanceKm(discussion, userLocation);
+                                                const hasTopicCoordinates =
+                                                    typeof discussion.latitude === 'number' &&
+                                                    typeof discussion.longitude === 'number';
                                                 const authorLabel = discussion.createdByDisplayName
                                                     ? `@${discussion.createdByDisplayName}`
                                                     : '@StreetBiteTeam';
@@ -1119,6 +1151,11 @@ function CommunityPageContent() {
                                                                         {nearbyDistanceKm < 1
                                                                             ? `${Math.round(nearbyDistanceKm * 1000)}m away`
                                                                             : `${nearbyDistanceKm.toFixed(1)}km away`}
+                                                                    </span>
+                                                                )}
+                                                                {!hasTopicCoordinates && (
+                                                                    <span className="rounded-full border border-black bg-white px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-black/70">
+                                                                        distance unavailable
                                                                     </span>
                                                                 )}
                                                                 {nearbyTags.length > 0 ? nearbyTags.map((tag) => (
