@@ -338,15 +338,9 @@ function ExplorePageContent() {
 
             <div className="mt-4 flex flex-col gap-4 border-t-2 border-black/15 pt-4">
               <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
-                  <div className="inline-flex items-center gap-2 rounded-full border-2 border-black bg-black px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-white shadow-[3px_3px_0px_0px_rgba(251,191,36,1)]">
-                    <Flame className="h-4 w-4 text-primary" />
-                    {sortedVendors.length} results
-                  </div>
-                  <div className="inline-flex items-center gap-2 rounded-full border-2 border-black bg-white px-4 py-2 text-xs font-black uppercase tracking-[0.14em] text-black/60">
-                    <MapPin className="h-4 w-4 text-primary" />
-                    {locationSummary}
-                  </div>
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-black/55">
+                  <MapPin className="h-4 w-4 text-primary" />
+                  {locationSummary}
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
@@ -365,9 +359,23 @@ function ExplorePageContent() {
                     <ChevronDown className={`h-4 w-4 transition-transform ${showAdvancedFilters ? 'rotate-180' : ''}`} />
                   </button>
 
-                  <div className="inline-flex items-center gap-2 rounded-full border-2 border-black bg-white px-3 py-2 text-xs font-black uppercase tracking-[0.16em] text-black/55">
+                  <div className="flex items-center gap-2 rounded-full border-2 border-black bg-white px-3 py-2 text-xs font-black uppercase tracking-[0.16em] text-black/55">
                     <ArrowUpDown className="h-4 w-4" />
-                    {SORT_OPTIONS.find((option) => option.id === selectedSort)?.label ?? 'Recommended'}
+                    <select
+                      className="bg-transparent text-xs font-black uppercase tracking-[0.16em] text-black/70 outline-none"
+                      value={selectedSort}
+                      onChange={(event) => {
+                        const nextSort = event.target.value as SortMode
+                        setSelectedSort(nextSort)
+                        replaceExploreQuery({ sort: nextSort })
+                      }}
+                    >
+                      {SORT_OPTIONS.map((option) => (
+                        <option key={option.id} value={option.id}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   {hasActiveFilters ? (
@@ -514,7 +522,12 @@ function ExplorePageContent() {
 
           <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
             <div>
-              <h2 className="text-3xl font-black text-black md:text-4xl">Top spots</h2>
+              <h2 className="text-3xl font-black text-black md:text-4xl">
+                Top spots
+                <span className="ml-3 rounded-full border-2 border-black bg-black px-3 py-1 text-xs font-black uppercase tracking-[0.18em] text-white shadow-[3px_3px_0px_0px_rgba(251,191,36,1)]">
+                  {sortedVendors.length} results
+                </span>
+              </h2>
               <p className="mt-2 text-sm font-semibold uppercase tracking-[0.14em] text-black/55">
                 {selectedSort === 'recommended'
                   ? 'Balanced by favorites, open status, rating, and proof'
