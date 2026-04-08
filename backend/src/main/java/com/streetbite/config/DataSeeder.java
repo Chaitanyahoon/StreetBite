@@ -48,6 +48,9 @@ public class DataSeeder implements CommandLineRunner {
             // One-time legacy cleanup for Orphaned tables
             cleanupLegacyTables();
 
+            System.out.println("Grandfathering existing users by setting email_verified to true...");
+            jdbcTemplate.execute("UPDATE users SET email_verified = true WHERE (email_verified = false OR email_verified IS NULL) AND created_at < '2026-04-15 00:00:00'");
+
             System.out.println("Checking and seeding default users...");
             seedUsers();
 
@@ -107,9 +110,11 @@ public class DataSeeder implements CommandLineRunner {
                     // production
                     if (existingUser.getRole() != role) {
                         existingUser.setRole(role);
-                        return userRepository.save(existingUser);
                     }
-                    return existingUser;
+                    if (!Boolean.TRUE.equals(existingUser.getEmailVerified())) {
+                        existingUser.setEmailVerified(true);
+                    }
+                    return userRepository.save(existingUser);
                 })
                 .orElseGet(() -> {
                     // Create new user
@@ -119,6 +124,7 @@ public class DataSeeder implements CommandLineRunner {
                     user.setPasswordHash(passwordEncoder.encode(password));
                     user.setDisplayName(displayName);
                     user.setRole(role);
+                    user.setEmailVerified(true);
                     user.setCreatedAt(java.time.LocalDateTime.now());
                     user.setUpdatedAt(java.time.LocalDateTime.now());
                     return userRepository.save(user);
@@ -333,3 +339,6 @@ public class DataSeeder implements CommandLineRunner {
         return vendor;
     }
 }
+
+
+
