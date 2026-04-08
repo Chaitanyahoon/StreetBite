@@ -87,6 +87,7 @@ function CommunityPageContent() {
     const [activeNowCount, setActiveNowCount] = useState(0);
     const [isTopicDialogOpen, setIsTopicDialogOpen] = useState(false);
     const [isSubmittingTopic, setIsSubmittingTopic] = useState(false);
+    const [isTopicLocationLoading, setIsTopicLocationLoading] = useState(false);
     const [topicForm, setTopicForm] = useState<TopicFormState>(EMPTY_TOPIC_FORM);
     const [pendingTopicSubmissions, setPendingTopicSubmissions] = useState<Discussion[]>([]);
     const [isTopicsLoading, setIsTopicsLoading] = useState(true);
@@ -513,6 +514,43 @@ function CommunityPageContent() {
             return;
         }
         setIsTopicDialogOpen(true);
+    };
+
+    const handleUseCurrentLocationForTopic = () => {
+        if (typeof window === 'undefined' || !('geolocation' in navigator)) {
+            toast.error('Location is not supported in this browser.');
+            return;
+        }
+
+        setIsTopicLocationLoading(true);
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const latitude = position.coords.latitude;
+                const longitude = position.coords.longitude;
+
+                setTopicForm((previous) => ({
+                    ...previous,
+                    latitude: latitude.toFixed(6),
+                    longitude: longitude.toFixed(6),
+                }));
+                setUserLocation({ latitude, longitude });
+                setIsTopicLocationLoading(false);
+                toast.success('Coordinates added from your current location.');
+            },
+            (error) => {
+                const message =
+                    error.code === error.PERMISSION_DENIED
+                        ? 'Location permission denied. Enable it to autofill coordinates.'
+                        : 'Could not access your location.';
+                setIsTopicLocationLoading(false);
+                toast.error(message);
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 12000,
+                maximumAge: 5 * 60 * 1000,
+            }
+        );
     };
 
     const handleSubmitTopic = async (e: React.FormEvent) => {
@@ -1394,9 +1432,11 @@ function CommunityPageContent() {
             <TopicSubmissionDialog
                 isOpen={isTopicDialogOpen}
                 isSubmitting={isSubmittingTopic}
+                isLocationLoading={isTopicLocationLoading}
                 topicForm={topicForm}
                 onOpenChange={setIsTopicDialogOpen}
                 onTopicFormChange={setTopicForm}
+                onUseCurrentLocation={handleUseCurrentLocationForTopic}
                 onSubmit={handleSubmitTopic}
             />
 

@@ -26,9 +26,11 @@ interface CommunitySidebarProps {
 interface TopicSubmissionDialogProps {
   isOpen: boolean
   isSubmitting: boolean
+  isLocationLoading: boolean
   topicForm: TopicFormState
   onOpenChange: (open: boolean) => void
   onTopicFormChange: (value: TopicFormState) => void
+  onUseCurrentLocation: () => void
   onSubmit: (e: React.FormEvent) => void
 }
 
@@ -218,9 +220,11 @@ export function CommunitySidebar({
 export function TopicSubmissionDialog({
   isOpen,
   isSubmitting,
+  isLocationLoading,
   topicForm,
   onOpenChange,
   onTopicFormChange,
+  onUseCurrentLocation,
   onSubmit,
 }: TopicSubmissionDialogProps) {
   return (
@@ -295,6 +299,27 @@ export function TopicSubmissionDialog({
                   className="border-4 border-black rounded-xl h-12 font-bold focus-visible:ring-0 focus-visible:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
                 />
               </div>
+            </div>
+            <div className="flex justify-end">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onUseCurrentLocation}
+                disabled={isLocationLoading}
+                className="h-10 border-2 border-black rounded-xl font-black uppercase tracking-[0.12em]"
+              >
+                {isLocationLoading ? (
+                  <span className="inline-flex items-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Locating
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-2">
+                    <MapPin className="w-4 h-4" />
+                    Use Current Location
+                  </span>
+                )}
+              </Button>
             </div>
             <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-black/60">
               Add both latitude and longitude if you include coordinates.
