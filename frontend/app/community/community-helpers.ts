@@ -382,7 +382,18 @@ export function filterAndSortDiscussions(
   const normalizedQuery = searchQuery.trim().toLowerCase()
 
   const filteredDiscussions = normalizedQuery
-    ? discussions.filter((discussion) => discussion.title.toLowerCase().includes(normalizedQuery))
+    ? discussions.filter((discussion) => {
+        const searchable = [
+          discussion.title,
+          discussion.content,
+          discussion.cityName ?? '',
+          discussion.createdByDisplayName ?? '',
+        ]
+          .join(' ')
+          .toLowerCase()
+
+        return searchable.includes(normalizedQuery)
+      })
     : discussions
 
   return [...filteredDiscussions].sort((a, b) => {

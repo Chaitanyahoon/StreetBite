@@ -367,6 +367,15 @@ export function DiscussionModal({
 }: DiscussionModalProps) {
   if (!selectedDiscussion) return null
 
+  const hasCoordinates =
+    typeof selectedDiscussion.latitude === 'number' &&
+    typeof selectedDiscussion.longitude === 'number'
+  const locationLabel = selectedDiscussion.cityName?.trim()
+    ? selectedDiscussion.cityName.trim()
+    : hasCoordinates
+      ? `${selectedDiscussion.latitude!.toFixed(4)}, ${selectedDiscussion.longitude!.toFixed(4)}`
+      : null
+
   return (
     <div
       className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200"
@@ -394,6 +403,12 @@ export function DiscussionModal({
                 </span>
                 <span className="text-white">• {formatDiscussionDate(selectedDiscussion.createdAt)}</span>
               </div>
+              {locationLabel && (
+                <div className="mb-2 inline-flex items-center gap-1 rounded-full border-2 border-black bg-white px-2 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-black">
+                  <MapPin className="h-3 w-3" />
+                  {locationLabel}
+                </div>
+              )}
               <h3 className="text-3xl font-black leading-tight drop-shadow-md mb-2">{selectedDiscussion.title}</h3>
               <p className="text-white/90 font-medium text-lg">{selectedDiscussion.content}</p>
             </div>
