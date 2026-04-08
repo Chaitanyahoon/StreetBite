@@ -300,13 +300,6 @@ export const reviewApi = {
     api.delete(`/reviews/${reviewId}`) as Promise<{ success: boolean; message: string }>,
 };
 
-export const orderApi = {
-  create: (data: any) => api.post('/orders', data) as Promise<any>,
-  getByUser: (userId: string) => api.get(`/orders/user/${userId}`) as Promise<any>,
-  getByVendor: (vendorId: string) => api.get(`/orders/vendor/${vendorId}`) as Promise<any>,
-  updateStatus: (id: string, status: string) => api.put(`/orders/${id}/status`, { status }) as Promise<any>,
-};
-
 export const promotionApi = {
   getAll: () => api.get('/promotions/all') as Promise<ApiPromotion[]>,
   getAllActive: () => api.get('/promotions/active') as Promise<ApiPromotion[]>,
