@@ -35,6 +35,11 @@ export interface Discussion {
   comments?: DiscussionComment[]
 }
 
+export interface UserCoordinates {
+  latitude: number
+  longitude: number
+}
+
 export interface CommunityTab {
   id: CommunityTabId
   label: string
@@ -175,6 +180,10 @@ function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value))
 }
 
+function toRadians(value: number): number {
+  return (value * Math.PI) / 180
+}
+
 export function getDebateSplit(discussion: Discussion): { left: number; right: number } {
   const seed = `${discussion.id}-${discussion.title}-${discussion.content}`
   let hash = 0
@@ -255,6 +264,71 @@ export function getNearbyTags(discussion: Discussion, maxTags: number = 3): stri
 
 export function isNearbyDiscussion(discussion: Discussion): boolean {
   return getNearbySignal(discussion) >= 28
+}
+
+export function getDiscussionDistanceKm(
+  discussion: Discussion,
+  userLocation: UserCoordinates | null
+): number | null {
+  if (!userLocation) {
+    return null
+  }
+
+  const latitude = typeof discussion.latitude === 'number' ? discussion.latitude : null
+  const longitude = typeof discussion.longitude === 'number' ? discussion.longitude : null
+  if (latitude === null || longitude === null) {
+    return null
+  }
+
+  const earthRadiusKm = 6371
+  const deltaLat = toRadians(latitude - userLocation.latitude)
+  const deltaLon = toRadians(longitude - userLocation.longitude)
+  const userLatitudeRadians = toRadians(userLocation.latitude)
+  const topicLatitudeRadians = toRadians(latitude)
+
+  const a =
+    Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) +
+    Math.cos(userLatitudeRadians) *
+      Math.cos(topicLatitudeRadians) *
+      Math.sin(deltaLon / 2) *
+      Math.sin(deltaLon / 2)
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+
+  return earthRadiusKm * c
+}
+
+export function sortDiscussionsByDistance(
+  discussions: Discussion[],
+  userLocation: UserCoordinates | null
+): Discussion[] {
+  if (!userLocation) {
+    return discussions
+  }
+
+  return [...discussions].sort((left, right) => {
+    const leftDistance = getDiscussionDistanceKm(left, userLocation)
+    const rightDistance = getDiscussionDistanceKm(right, userLocation)
+
+    if (leftDistance !== null && rightDistance !== null) {
+      if (Math.abs(leftDistance - rightDistance) > 0.05) {
+        return leftDistance - rightDistance
+      }
+    } else if (leftDistance !== null) {
+      return -1
+    } else if (rightDistance !== null) {
+      return 1
+    }
+
+    const leftSignal = getNearbySignal(left)
+    const rightSignal = getNearbySignal(right)
+    if (leftSignal !== rightSignal) {
+      return rightSignal - leftSignal
+    }
+
+    const leftDate = left.createdAt ? new Date(left.createdAt).getTime() : 0
+    const rightDate = right.createdAt ? new Date(right.createdAt).getTime() : 0
+    return rightDate - leftDate
+  })
 }
 
 export function filterDiscussionsByMode(

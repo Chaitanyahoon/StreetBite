@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
-import { MessageSquare, Gamepad2, Search, Flame, Loader2, Heart, MapPin, Scale, Star } from 'lucide-react'
+import { MessageSquare, Gamepad2, Search, Flame, Loader2, Heart, MapPin, Scale, Star, LocateFixed } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -24,13 +24,16 @@ import {
     getLastActivity,
     getNearbySignal,
     getNearbyTags,
+    getDiscussionDistanceKm,
     getParticipantCount,
+    sortDiscussionsByDistance,
     type CommunityTabId,
     type DiscussionComment,
     type Discussion,
     type TopicMode,
     type TopicFormState,
     type TopicSort,
+    type UserCoordinates,
 } from './community-helpers'
 import {
     CommunityAnnouncementsBanner,
@@ -90,6 +93,9 @@ function CommunityPageContent() {
     const [topicsError, setTopicsError] = useState<string | null>(null);
     const [lastTopicsRefreshAt, setLastTopicsRefreshAt] = useState<Date | null>(null);
     const [hasInitializedUrlState, setHasInitializedUrlState] = useState(false);
+    const [userLocation, setUserLocation] = useState<UserCoordinates | null>(null);
+    const [isLocationLoading, setIsLocationLoading] = useState(false);
+    const [locationError, setLocationError] = useState<string | null>(null);
     const topicsRequestIdRef = useRef(0);
     const discussionsRef = useRef<Discussion[]>([]);
 
@@ -286,6 +292,44 @@ function CommunityPageContent() {
             return;
         }
         handleDiscussionClick(matchedDiscussion);
+    };
+
+    const requestUserLocation = () => {
+        if (typeof window === 'undefined' || !('geolocation' in navigator)) {
+            const message = 'Location is not supported in this browser.';
+            setLocationError(message);
+            toast.error(message);
+            return;
+        }
+
+        setIsLocationLoading(true);
+        setLocationError(null);
+
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const coordinates: UserCoordinates = {
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude,
+                };
+                setUserLocation(coordinates);
+                setIsLocationLoading(false);
+                toast.success('Using your location to rank nearby topics.');
+            },
+            (error) => {
+                const message =
+                    error.code === error.PERMISSION_DENIED
+                        ? 'Location permission denied. Enable it to rank by distance.'
+                        : 'Could not fetch your location.';
+                setLocationError(message);
+                setIsLocationLoading(false);
+                toast.error(message);
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 12000,
+                maximumAge: 5 * 60 * 1000,
+            }
+        );
     };
 
     const handleLikeDiscussion = async () => {
@@ -591,7 +635,11 @@ function CommunityPageContent() {
     const debateModeCount = filterDiscussionsByMode(discussions, 'debate', nowTimestamp).length;
     const nearbyModeCount = filterDiscussionsByMode(discussions, 'nearby', nowTimestamp).length;
     const modeFilteredDiscussions = filterDiscussionsByMode(discussions, topicMode, nowTimestamp);
-    const sortedDiscussions = filterAndSortDiscussions(modeFilteredDiscussions, deferredSearchQuery, topicSort);
+    const modeSortedDiscussions = filterAndSortDiscussions(modeFilteredDiscussions, deferredSearchQuery, topicSort);
+    const sortedDiscussions =
+        topicMode === 'nearby'
+            ? sortDiscussionsByDistance(modeSortedDiscussions, userLocation)
+            : modeSortedDiscussions;
     const sortedPendingSubmissions = filterAndSortDiscussions(pendingTopicSubmissions, deferredSearchQuery, 'newest');
     const hasSearchQuery = deferredSearchQuery.trim().length > 0;
     const lastTopicsRefreshLabel = lastTopicsRefreshAt
@@ -892,8 +940,41 @@ function CommunityPageContent() {
                                             Nearby Mode
                                         </p>
                                         <p className="mt-1 text-xs font-bold text-black/70">
-                                            Showing topics that mention local place cues like city names, markets, and nearby intent.
+                                            {userLocation
+                                                ? 'Ranking topics by nearest distance whenever coordinates are available.'
+                                                : 'Showing nearby-signal topics. Enable location to rank by true distance.'}
                                         </p>
+                                        <div className="mt-3 flex flex-wrap items-center gap-2">
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                onClick={requestUserLocation}
+                                                disabled={isLocationLoading}
+                                                className="h-8 border-2 border-black bg-white px-3 text-[0.65rem] font-black uppercase tracking-[0.14em] text-black"
+                                            >
+                                                {isLocationLoading ? (
+                                                    <span className="inline-flex items-center gap-2">
+                                                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                                        Locating
+                                                    </span>
+                                                ) : (
+                                                    <span className="inline-flex items-center gap-2">
+                                                        <LocateFixed className="h-3.5 w-3.5" />
+                                                        {userLocation ? 'Update my location' : 'Use my location'}
+                                                    </span>
+                                                )}
+                                            </Button>
+                                            {userLocation && (
+                                                <span className="rounded-full border-2 border-black bg-white px-3 py-1 text-[0.6rem] font-black uppercase tracking-[0.14em] text-black/70">
+                                                    {userLocation.latitude.toFixed(2)}, {userLocation.longitude.toFixed(2)}
+                                                </span>
+                                            )}
+                                            {!userLocation && locationError && (
+                                                <span className="rounded-full border-2 border-black bg-rose-100 px-3 py-1 text-[0.6rem] font-black uppercase tracking-[0.14em] text-black/70">
+                                                    {locationError}
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
                                 )}
                                 {topicMode === 'all' && sortedPendingSubmissions.length > 0 && (
@@ -961,6 +1042,7 @@ function CommunityPageContent() {
                                                 const debateSplit = getDebateSplit(discussion);
                                                 const nearbySignal = getNearbySignal(discussion);
                                                 const nearbyTags = getNearbyTags(discussion, 2);
+                                                const nearbyDistanceKm = getDiscussionDistanceKm(discussion, userLocation);
                                                 const authorLabel = discussion.createdByDisplayName
                                                     ? `@${discussion.createdByDisplayName}`
                                                     : '@StreetBiteTeam';
@@ -1032,6 +1114,13 @@ function CommunityPageContent() {
                                                                 <div className="h-full bg-gradient-to-r from-teal-500 to-cyan-400 transition-all" style={{ width: `${nearbySignal}%` }} />
                                                             </div>
                                                             <div className="mt-2 flex flex-wrap items-center gap-2">
+                                                                {nearbyDistanceKm !== null && (
+                                                                    <span className="rounded-full border border-black bg-white px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-black/70">
+                                                                        {nearbyDistanceKm < 1
+                                                                            ? `${Math.round(nearbyDistanceKm * 1000)}m away`
+                                                                            : `${nearbyDistanceKm.toFixed(1)}km away`}
+                                                                    </span>
+                                                                )}
                                                                 {nearbyTags.length > 0 ? nearbyTags.map((tag) => (
                                                                     <span
                                                                         key={`${discussion.id}-nearby-${tag}`}
