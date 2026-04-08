@@ -28,7 +28,7 @@ export function VendorNavbar({ onMenuClick }: VendorNavbarProps) {
         <div className="relative group flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground group-hover:text-orange-500 transition-colors" />
           <Input 
-            placeholder="Search orders..." 
+            placeholder="Search vendors, stalls, or dishes..." 
             className="pl-10 bg-white/50 border-white/20 focus:bg-white focus:border-orange-500/50 transition-all duration-300 rounded-xl w-full"
           />
         </div>

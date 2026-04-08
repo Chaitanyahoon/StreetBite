@@ -32,7 +32,6 @@ interface Vendor {
   joined: string
   rating: number
   revenue: string
-  orders: number
 }
 
 export default function VendorManagement() {
@@ -60,7 +59,6 @@ export default function VendorManagement() {
         joined: v.createdAt ? new Date(v.createdAt).toLocaleDateString() : 'Unknown',
         rating: v.rating || 0,
         revenue: '₹0', // Placeholder
-        orders: 0, // Placeholder
       }))
       setVendors(mappedVendors)
       setError(null)
@@ -181,7 +179,6 @@ export default function VendorManagement() {
                   <TableHead>Status</TableHead>
                   <TableHead>Rating</TableHead>
                   <TableHead>Revenue</TableHead>
-                  <TableHead>Orders</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -209,7 +206,6 @@ export default function VendorManagement() {
                       )}
                     </TableCell>
                     <TableCell className="font-medium">{vendor.revenue}</TableCell>
-                    <TableCell>{vendor.orders}</TableCell>
                     <TableCell>
                       <div className="flex gap-2">
                         <Dialog>
