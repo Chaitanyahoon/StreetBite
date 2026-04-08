@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import { Award, Flame, Heart, Loader2, MapPin, MessageSquare, Search, Send, ShieldCheck, Star, UtensilsCrossed, X } from 'lucide-react'
+import { Award, Flame, Heart, Loader2, MapPin, MessageSquare, Search, Send, ShieldCheck, Share2, Star, UtensilsCrossed, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -43,6 +43,7 @@ interface DiscussionModalProps {
   onCommentChange: (value: string) => void
   onLike: () => void
   onPostComment: () => void
+  onShare: () => void
 }
 
 const formatDiscussionDate = (createdAt?: string | null) => {
@@ -364,6 +365,7 @@ export function DiscussionModal({
   onCommentChange,
   onLike,
   onPostComment,
+  onShare,
 }: DiscussionModalProps) {
   if (!selectedDiscussion) return null
 
@@ -423,6 +425,13 @@ export function DiscussionModal({
             >
               <Heart className={`w-4 h-4 ${hasLiked ? 'fill-current' : ''}`} />
               <span>{selectedDiscussion.likes?.length || 0} LIKES</span>
+            </button>
+            <button
+              onClick={onShare}
+              className="flex items-center gap-2 px-6 py-2 rounded-xl text-sm font-black uppercase tracking-wider transition-all border-2 border-black bg-white text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 active:translate-y-0 active:shadow-none"
+            >
+              <Share2 className="w-4 h-4" />
+              <span>Share</span>
             </button>
             <div className="flex items-center gap-2 px-6 py-2 rounded-xl bg-black/20 text-sm font-black text-white border-2 border-white/30 backdrop-blur-sm">
               <MessageSquare className="w-4 h-4" />

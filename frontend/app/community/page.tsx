@@ -316,6 +316,48 @@ function CommunityPageContent() {
         handleDiscussionClick(matchedDiscussion);
     };
 
+    const handleShareDiscussion = async () => {
+        if (!selectedDiscussion || typeof window === 'undefined') {
+            return;
+        }
+
+        const shareUrl = new URL(window.location.href);
+        const params = new URLSearchParams(shareUrl.search);
+        params.set('tab', activeTab);
+        params.set('sort', topicSort);
+        params.set('mode', topicMode);
+
+        const trimmedQuery = searchQuery.trim();
+        if (trimmedQuery) {
+            params.set('q', trimmedQuery);
+        } else {
+            params.delete('q');
+        }
+        params.set('topic', String(selectedDiscussion.id));
+        shareUrl.search = params.toString();
+        const finalUrl = shareUrl.toString();
+
+        try {
+            if (navigator.clipboard?.writeText) {
+                await navigator.clipboard.writeText(finalUrl);
+            } else {
+                const textarea = document.createElement('textarea');
+                textarea.value = finalUrl;
+                textarea.style.position = 'fixed';
+                textarea.style.opacity = '0';
+                document.body.appendChild(textarea);
+                textarea.focus();
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+            }
+            toast.success('Topic link copied to clipboard.');
+        } catch (error) {
+            console.error('Failed to copy topic link', error);
+            toast.error('Could not copy link. Please copy from the address bar.');
+        }
+    };
+
     const requestUserLocation = () => {
         if (typeof window === 'undefined' || !('geolocation' in navigator)) {
             const message = 'Location is not supported in this browser.';
@@ -1449,6 +1491,7 @@ function CommunityPageContent() {
                 onCommentChange={setNewComment}
                 onLike={handleLikeDiscussion}
                 onPostComment={handlePostComment}
+                onShare={handleShareDiscussion}
             />
 
             <Footer />
