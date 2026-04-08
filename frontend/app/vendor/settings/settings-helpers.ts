@@ -38,7 +38,8 @@ export interface VendorPreferenceOption {
 
 export interface VendorSecurityAction {
   label: string
-  toastMessage: string
+  description: string
+  available?: boolean
 }
 
 export const EMPTY_VENDOR_SETTINGS_FORM: VendorSettingsFormState = {
@@ -98,15 +99,18 @@ export const VENDOR_PREFERENCE_OPTIONS: VendorPreferenceOption[] = [
 export const VENDOR_SECURITY_ACTIONS: VendorSecurityAction[] = [
   {
     label: 'Change Password',
-    toastMessage: 'Password change feature coming soon!',
+    description: 'Requires a secure change-password endpoint.',
+    available: false,
   },
   {
     label: 'Two-Factor Auth',
-    toastMessage: 'Two-factor authentication coming soon!',
+    description: 'Enable once OTP delivery is wired for vendors.',
+    available: false,
   },
   {
     label: 'Active Sessions',
-    toastMessage: 'Session management coming soon!',
+    description: 'List and revoke active sessions from the backend.',
+    available: false,
   },
 ]
 

@@ -8,7 +8,6 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { Switch } from '@/components/ui/switch'
 import { Save, Upload, X, type LucideIcon } from 'lucide-react'
-import { toast } from 'sonner'
 import {
   SETTINGS_CARD_ICONS,
   VENDOR_PREFERENCE_OPTIONS,
@@ -252,6 +251,7 @@ export function VendorPreferencesCard({ settings, onSettingsChange }: VendorPref
 }
 
 export function VendorSecurityCard() {
+  const hasAvailableActions = VENDOR_SECURITY_ACTIONS.some((action) => action.available)
   return (
     <Card className="border-none shadow-sm overflow-hidden">
       <SettingsCardHeader
@@ -263,15 +263,22 @@ export function VendorSecurityCard() {
         Icon={SETTINGS_CARD_ICONS.security}
       />
       <CardContent className="p-6 space-y-3">
+        {!hasAvailableActions ? (
+          <div className="rounded-lg border border-yellow-200 bg-yellow-50 px-4 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-yellow-900">
+            Security actions are disabled until the backend supports them.
+          </div>
+        ) : null}
         {VENDOR_SECURITY_ACTIONS.map((action) => (
-          <Button
-            key={action.label}
-            variant="outline"
-            className="w-full justify-start h-10 text-sm"
-            onClick={() => toast.info(action.toastMessage)}
-          >
-            {action.label}
-          </Button>
+          <div key={action.label} className="flex flex-col gap-2 rounded-lg border border-gray-100 bg-white px-3 py-2">
+            <Button
+              variant="outline"
+              className="w-full justify-start h-10 text-sm"
+              disabled={!action.available}
+            >
+              {action.label}
+            </Button>
+            <p className="text-xs text-muted-foreground">{action.description}</p>
+          </div>
         ))}
       </CardContent>
     </Card>
