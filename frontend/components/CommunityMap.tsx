@@ -6,9 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Locate, MapPin, Navigation, Sparkles, Star } from "lucide-react";
 import { toast } from "sonner";
+import { type Discussion } from "@/app/community/community-helpers";
+
+interface CommunityMapProps {
+  discussions?: Discussion[];
+  onSelectDiscussion?: (discussionId: Discussion["id"]) => void;
+}
 
 interface FoodPin {
-  id: number;
+  id: string | number;
   name: string;
   foodType: string;
   lat: number;
@@ -16,6 +22,8 @@ interface FoodPin {
   rating: number;
   addedBy: string;
   emoji: string;
+  source: "community" | "manual";
+  discussionId?: Discussion["id"];
 }
 
 interface NewPinDraft {
@@ -28,14 +36,15 @@ interface NewPinDraft {
 }
 
 const SAMPLE_PINS: FoodPin[] = [
-  { id: 1, name: "Raghu's Vada Pav", foodType: "Street Food", lat: 19.076, lng: 72.8777, rating: 4.8, addedBy: "foodie_raj", emoji: "🥪" },
-  { id: 2, name: "Sharma Ji's Chaat", foodType: "Chaat", lat: 28.6139, lng: 77.209, rating: 4.9, addedBy: "delhi_eats", emoji: "🥟" },
-  { id: 3, name: "Lakshmi's Dosa Corner", foodType: "South Indian", lat: 12.9716, lng: 77.5946, rating: 4.7, addedBy: "dosa_king", emoji: "🥞" },
-  { id: 4, name: "Khan's Kebab House", foodType: "Kebab", lat: 26.8467, lng: 80.9462, rating: 4.6, addedBy: "kebab_lover", emoji: "🍖" },
-  { id: 5, name: "Mohan's Misal", foodType: "Maharashtrian", lat: 18.5204, lng: 73.8567, rating: 4.8, addedBy: "pune_foodie", emoji: "🍲" },
+  { id: 1, name: "Raghu's Vada Pav", foodType: "Street Food", lat: 19.076, lng: 72.8777, rating: 4.8, addedBy: "foodie_raj", emoji: "🥪", source: "manual" },
+  { id: 2, name: "Sharma Ji's Chaat", foodType: "Chaat", lat: 28.6139, lng: 77.209, rating: 4.9, addedBy: "delhi_eats", emoji: "🥟", source: "manual" },
+  { id: 3, name: "Lakshmi's Dosa Corner", foodType: "South Indian", lat: 12.9716, lng: 77.5946, rating: 4.7, addedBy: "dosa_king", emoji: "🥞", source: "manual" },
+  { id: 4, name: "Khan's Kebab House", foodType: "Kebab", lat: 26.8467, lng: 80.9462, rating: 4.6, addedBy: "kebab_lover", emoji: "🍖", source: "manual" },
+  { id: 5, name: "Mohan's Misal", foodType: "Maharashtrian", lat: 18.5204, lng: 73.8567, rating: 4.8, addedBy: "pune_foodie", emoji: "🍲", source: "manual" },
 ];
 
-const FOOD_TYPES = ["All", "Street Food", "Chaat", "South Indian", "Kebab", "Maharashtrian"] as const;
+const FOOD_TYPES = ["All", "Community", "Street Food", "Chaat", "South Indian", "Kebab", "Maharashtrian"] as const;
+const ADDABLE_FOOD_TYPES = ["Street Food", "Chaat", "South Indian", "Kebab", "Maharashtrian"] as const;
 
 const MAP_BOUNDS = {
   minLat: 8,
@@ -66,17 +75,64 @@ function projectPinToMap(lat: number, lng: number) {
   return { x, y };
 }
 
-export function CommunityMap() {
-  const [pins, setPins] = useState<FoodPin[]>(SAMPLE_PINS);
+function pickDiscussionEmoji(discussion: Discussion): string {
+  const text = `${discussion.title} ${discussion.content}`.toLowerCase();
+
+  if (text.includes("chaat")) return "🥟";
+  if (text.includes("dosa") || text.includes("idli") || text.includes("uttapam")) return "🥞";
+  if (text.includes("kebab") || text.includes("kebabs")) return "🍖";
+  if (text.includes("vada") || text.includes("pav")) return "🥪";
+  if (text.includes("misal")) return "🍲";
+  if (text.includes("biryani") || text.includes("rice")) return "🍛";
+  return "🗣️";
+}
+
+function buildCommunityPins(discussions: Discussion[]): FoodPin[] {
+  return discussions.reduce<FoodPin[]>((pins, discussion) => {
+      const lat = typeof discussion.latitude === "number" ? discussion.latitude : null;
+      const lng = typeof discussion.longitude === "number" ? discussion.longitude : null;
+      if (lat === null || lng === null || Number.isNaN(lat) || Number.isNaN(lng)) {
+        return pins;
+      }
+
+      const likesCount = discussion.likes?.length ?? 0;
+      const commentsCount = discussion.comments?.length ?? 0;
+      const engagement = likesCount + commentsCount * 2;
+      const score = Math.min(5, 4 + Math.min(1, engagement / 20));
+      const rating = Number(score.toFixed(1));
+
+      pins.push({
+        id: `community-${discussion.id}`,
+        name: discussion.title,
+        foodType: "Community",
+        lat,
+        lng,
+        rating,
+        addedBy: discussion.createdByDisplayName || "community",
+        emoji: pickDiscussionEmoji(discussion),
+        source: "community",
+        discussionId: discussion.id,
+      });
+
+      return pins;
+    }, []);
+}
+
+export function CommunityMap({ discussions = [], onSelectDiscussion }: CommunityMapProps) {
+  const [manualPins, setManualPins] = useState<FoodPin[]>(SAMPLE_PINS);
   const [selectedFilter, setSelectedFilter] = useState<(typeof FOOD_TYPES)[number]>("All");
-  const [selectedPin, setSelectedPin] = useState<FoodPin | null>(SAMPLE_PINS[0] ?? null);
+  const [selectedPin, setSelectedPin] = useState<FoodPin | null>(null);
   const [isAddFormOpen, setIsAddFormOpen] = useState(false);
   const [newPin, setNewPin] = useState<NewPinDraft>(DEFAULT_NEW_PIN);
+
+  const communityPins = useMemo(() => buildCommunityPins(discussions), [discussions]);
+  const pins = useMemo(() => [...communityPins, ...manualPins], [communityPins, manualPins]);
 
   const filteredPins = useMemo(
     () => (selectedFilter === "All" ? pins : pins.filter((pin) => pin.foodType === selectedFilter)),
     [pins, selectedFilter]
   );
+
   const foodTypeCounts = useMemo(() => {
     const counts: Partial<Record<(typeof FOOD_TYPES)[number], number>> = {};
     FOOD_TYPES.forEach((type) => {
@@ -84,12 +140,14 @@ export function CommunityMap() {
     });
     return counts;
   }, [pins]);
+
   const topRatedVisiblePin = useMemo(() => {
     if (filteredPins.length === 0) {
       return null;
     }
     return [...filteredPins].sort((left, right) => right.rating - left.rating)[0] ?? null;
   }, [filteredPins]);
+
   const activeSelectedPin = useMemo(() => {
     if (!selectedPin) {
       return filteredPins[0] ?? null;
@@ -97,6 +155,7 @@ export function CommunityMap() {
     const visibleSelected = filteredPins.find((pin) => pin.id === selectedPin.id);
     return visibleSelected ?? filteredPins[0] ?? null;
   }, [filteredPins, selectedPin]);
+
   const selectedPinPoint = useMemo(() => {
     if (!activeSelectedPin) {
       return null;
@@ -104,11 +163,18 @@ export function CommunityMap() {
     return projectPinToMap(activeSelectedPin.lat, activeSelectedPin.lng);
   }, [activeSelectedPin]);
 
+  const handleOpenDiscussion = (pin: FoodPin) => {
+    if (pin.source !== "community" || !pin.discussionId || !onSelectDiscussion) {
+      return;
+    }
+    onSelectDiscussion(pin.discussionId);
+  };
+
   const handlePinClick = (pin: FoodPin) => {
-    setSelectedPin((prev) => {
-      const currentSelectedId = prev?.id ?? activeSelectedPin?.id;
-      return currentSelectedId === pin.id ? null : pin;
-    });
+    setSelectedPin((prev) => (prev?.id === pin.id ? null : pin));
+    if (pin.source === "community") {
+      handleOpenDiscussion(pin);
+    }
   };
 
   const toggleAddPin = () => {
@@ -142,7 +208,8 @@ export function CommunityMap() {
     }
 
     const rating = Math.round((4.5 + Math.random() * 0.5) * 10) / 10;
-    const nextId = Math.max(0, ...pins.map((pin) => pin.id)) + 1;
+    const nextId =
+      Math.max(0, ...manualPins.map((pin) => (typeof pin.id === "number" ? pin.id : 0))) + 1;
 
     const createdPin: FoodPin = {
       id: nextId,
@@ -153,9 +220,10 @@ export function CommunityMap() {
       rating,
       addedBy: newPin.addedBy.trim().replace(/^@+/, ""),
       emoji: newPin.emoji.trim() || "🍜",
+      source: "manual",
     };
 
-    setPins((prev) => [createdPin, ...prev]);
+    setManualPins((previousPins) => [createdPin, ...previousPins]);
     setSelectedFilter(createdPin.foodType as (typeof FOOD_TYPES)[number]);
     setSelectedPin(createdPin);
     setNewPin(DEFAULT_NEW_PIN);
@@ -179,7 +247,7 @@ export function CommunityMap() {
               <span className="font-black uppercase tracking-wide">Food Map</span>
             </CardTitle>
             <p className="text-xs text-white font-bold mt-1 ml-1 uppercase tracking-widest opacity-90">
-              Find hidden gems
+              Community radar + hidden gems
             </p>
           </div>
           <Button
@@ -203,24 +271,24 @@ export function CommunityMap() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <Input
                 value={newPin.name}
-                onChange={(e) => setNewPin((prev) => ({ ...prev, name: e.target.value }))}
+                onChange={(event) => setNewPin((prev) => ({ ...prev, name: event.target.value }))}
                 placeholder="Stall name"
                 className="border-2 border-black font-bold bg-white"
                 required
               />
               <Input
                 value={newPin.addedBy}
-                onChange={(e) => setNewPin((prev) => ({ ...prev, addedBy: e.target.value }))}
+                onChange={(event) => setNewPin((prev) => ({ ...prev, addedBy: event.target.value }))}
                 placeholder="Your username"
                 className="border-2 border-black font-bold bg-white"
                 required
               />
               <select
                 value={newPin.foodType}
-                onChange={(e) => setNewPin((prev) => ({ ...prev, foodType: e.target.value }))}
+                onChange={(event) => setNewPin((prev) => ({ ...prev, foodType: event.target.value }))}
                 className="h-10 rounded-md border-2 border-black px-3 text-sm font-bold bg-white"
               >
-                {FOOD_TYPES.filter((type) => type !== "All").map((type) => (
+                {ADDABLE_FOOD_TYPES.map((type) => (
                   <option key={type} value={type}>
                     {type}
                   </option>
@@ -228,20 +296,20 @@ export function CommunityMap() {
               </select>
               <Input
                 value={newPin.emoji}
-                onChange={(e) => setNewPin((prev) => ({ ...prev, emoji: e.target.value }))}
+                onChange={(event) => setNewPin((prev) => ({ ...prev, emoji: event.target.value }))}
                 placeholder="Emoji (e.g. 🍜)"
                 className="border-2 border-black font-bold bg-white"
               />
               <Input
                 value={newPin.lat}
-                onChange={(e) => setNewPin((prev) => ({ ...prev, lat: e.target.value }))}
+                onChange={(event) => setNewPin((prev) => ({ ...prev, lat: event.target.value }))}
                 placeholder="Latitude"
                 className="border-2 border-black font-bold bg-white"
                 required
               />
               <Input
                 value={newPin.lng}
-                onChange={(e) => setNewPin((prev) => ({ ...prev, lng: e.target.value }))}
+                onChange={(event) => setNewPin((prev) => ({ ...prev, lng: event.target.value }))}
                 placeholder="Longitude"
                 className="border-2 border-black font-bold bg-white"
                 required
@@ -264,8 +332,8 @@ export function CommunityMap() {
             <p className="text-lg font-black text-black">{pins.length}</p>
           </div>
           <div className="rounded-xl border-2 border-black bg-white px-3 py-2 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
-            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-black/60">Visible</p>
-            <p className="text-lg font-black text-black">{filteredPins.length}</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-black/60">Community</p>
+            <p className="text-lg font-black text-black">{communityPins.length}</p>
           </div>
           <div className="rounded-xl border-2 border-black bg-white px-3 py-2 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
             <p className="text-[10px] font-black uppercase tracking-[0.16em] text-black/60">Top Rated</p>
@@ -344,9 +412,9 @@ export function CommunityMap() {
                     <button
                       key={pin.id}
                       onClick={() => handlePinClick(pin)}
-                      className={`absolute -translate-x-1/2 -translate-y-1/2 z-20 rounded-xl border-2 border-black bg-white p-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:scale-110 transition-all ${
-                        isSelected ? "ring-4 ring-blue-500/60 scale-110" : ""
-                      }`}
+                      className={`absolute -translate-x-1/2 -translate-y-1/2 z-20 rounded-xl border-2 border-black p-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:scale-110 transition-all ${
+                        pin.source === "community" ? "bg-yellow-100" : "bg-white"
+                      } ${isSelected ? "ring-4 ring-blue-500/60 scale-110" : ""}`}
                       style={{ left: `${point.x}%`, top: `${point.y}%` }}
                       title={`${pin.name} (${pin.foodType})`}
                     >
@@ -370,13 +438,22 @@ export function CommunityMap() {
                   <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-2xl border-2 border-black">
                     {activeSelectedPin.emoji}
                   </div>
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <p className="font-black text-sm uppercase truncate">{activeSelectedPin.name}</p>
                     <p className="text-xs font-bold text-gray-700">{activeSelectedPin.foodType}</p>
                     <p className="text-[10px] font-bold text-gray-500">
                       @{activeSelectedPin.addedBy} • {activeSelectedPin.lat.toFixed(4)}, {activeSelectedPin.lng.toFixed(4)}
                     </p>
                   </div>
+                  {activeSelectedPin.source === "community" && activeSelectedPin.discussionId && onSelectDiscussion ? (
+                    <Button
+                      size="sm"
+                      onClick={() => onSelectDiscussion(activeSelectedPin.discussionId as Discussion["id"])}
+                      className="h-8 px-3 bg-black text-white border-2 border-black font-black uppercase text-[10px] tracking-wide hover:bg-blue-600"
+                    >
+                      Open Topic
+                    </Button>
+                  ) : null}
                 </div>
               </div>
             ) : null}
@@ -404,7 +481,14 @@ export function CommunityMap() {
                     </div>
                     <div className="flex-1 min-w-0 pt-0.5">
                       <h5 className="font-black text-sm text-black truncate uppercase">{pin.name}</h5>
-                      <p className="text-xs text-gray-600 font-bold mb-1">{pin.foodType}</p>
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="text-xs text-gray-600 font-bold">{pin.foodType}</p>
+                        {pin.source === "community" ? (
+                          <span className="rounded-full border border-black bg-yellow-300 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-[0.14em] text-black">
+                            Topic
+                          </span>
+                        ) : null}
+                      </div>
                       <div className="flex items-center gap-3">
                         <span className="flex items-center gap-1 text-[10px] font-black bg-yellow-300 text-black px-1.5 py-0.5 rounded border border-black shadow-sm">
                           <Star className="w-2.5 h-2.5 fill-black" />

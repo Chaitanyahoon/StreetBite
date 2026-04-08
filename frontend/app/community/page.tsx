@@ -279,6 +279,15 @@ function CommunityPageContent() {
         setNewComment('');
     };
 
+    const handleMapDiscussionSelect = (discussionId: Discussion['id']) => {
+        const matchedDiscussion = discussions.find((discussion) => isSameDiscussionId(discussion.id, discussionId));
+        if (!matchedDiscussion) {
+            toast.error('Discussion is no longer available');
+            return;
+        }
+        handleDiscussionClick(matchedDiscussion);
+    };
+
     const handleLikeDiscussion = async () => {
         if (!selectedDiscussion) return;
 
@@ -1181,7 +1190,10 @@ function CommunityPageContent() {
                                     <div className="inline-flex items-center rounded-full border-2 border-black bg-blue-100 px-3 py-1 text-xs font-black uppercase tracking-[0.18em] text-black">
                                         Community Radar
                                     </div>
-                                    <CommunityMap />
+                                    <CommunityMap
+                                        discussions={modeFilteredDiscussions}
+                                        onSelectDiscussion={handleMapDiscussionSelect}
+                                    />
                                 </div>
 
                                 <div className="border-4 border-black rounded-3xl overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white">
