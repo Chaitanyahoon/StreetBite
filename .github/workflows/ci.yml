@@ -7,8 +7,8 @@ on:
   pull_request:
 
 jobs:
-  frontend-build:
-    name: Frontend Build
+  frontend:
+    name: Frontend Checks
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -27,11 +27,20 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci --legacy-peer-deps
 
+      - name: Lint frontend
+        run: npm run lint
+
+      - name: Typecheck frontend
+        run: npm run typecheck
+
+      - name: Test frontend
+        run: npm test -- --runInBand
+
       - name: Build frontend
         run: npm run build
 
-  backend-build:
-    name: Backend Package
+  backend:
+    name: Backend Verify
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -47,5 +56,5 @@ jobs:
           java-version: '21'
           cache: maven
 
-      - name: Package backend
-        run: mvn -B clean package -DskipTests
+      - name: Verify backend
+        run: mvn -B clean verify

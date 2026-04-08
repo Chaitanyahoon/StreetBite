@@ -12,11 +12,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class VendorServiceTest {
@@ -33,6 +33,9 @@ class VendorServiceTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
+
     @InjectMocks
     private VendorService vendorService;
 
@@ -45,15 +48,13 @@ class VendorServiceTest {
         vendor.setOwner(owner);
         vendor.setActive(true);
 
-        when(vendorRepository.save(vendor)).thenReturn(vendor);
-
         Vendor updated = vendorService.applyStatusChange(vendor, VendorStatus.BANNED);
 
         assertThat(updated.getStatus()).isEqualTo(VendorStatus.BANNED);
         assertThat(updated.isActive()).isFalse();
         assertThat(owner.getActive()).isFalse();
         verify(userRepository).save(owner);
-        verify(vendorRepository).save(vendor);
+        verify(vendorRepository, never()).save(vendor);
     }
 
     @Test
@@ -65,14 +66,12 @@ class VendorServiceTest {
         vendor.setOwner(owner);
         vendor.setActive(true);
 
-        when(vendorRepository.save(vendor)).thenReturn(vendor);
-
         Vendor updated = vendorService.applyStatusChange(vendor, VendorStatus.SUSPENDED);
 
         assertThat(updated.getStatus()).isEqualTo(VendorStatus.SUSPENDED);
         assertThat(updated.isActive()).isFalse();
         assertThat(owner.getActive()).isTrue();
         verify(userRepository, never()).save(owner);
-        verify(vendorRepository).save(vendor);
+        verify(vendorRepository, never()).save(vendor);
     }
 }

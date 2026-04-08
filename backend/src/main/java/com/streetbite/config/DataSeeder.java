@@ -9,6 +9,7 @@ import com.streetbite.repository.VendorRepository;
 import com.streetbite.repository.HotTopicRepository;
 import com.streetbite.model.HotTopic;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cache.CacheManager;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,6 +19,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Component
+@ConditionalOnProperty(name = "streetbite.seed.enabled", havingValue = "true")
 public class DataSeeder implements CommandLineRunner {
 
     private final VendorRepository vendorRepository;

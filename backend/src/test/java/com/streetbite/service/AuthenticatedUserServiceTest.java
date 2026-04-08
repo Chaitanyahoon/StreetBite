@@ -11,6 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 
+import java.util.Collections;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -31,7 +32,10 @@ class AuthenticatedUserServiceTest {
         user.setEmail("user@streetbite.com");
         user.setActive(true);
 
-        Authentication authentication = new UsernamePasswordAuthenticationToken("user@streetbite.com", null);
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+                "user@streetbite.com",
+                null,
+                Collections.emptyList());
         when(userRepository.findByEmail("user@streetbite.com")).thenReturn(Optional.of(user));
 
         assertThat(authenticatedUserService.findAuthenticatedUser(authentication)).contains(user);
@@ -43,7 +47,10 @@ class AuthenticatedUserServiceTest {
         user.setEmail("banned@streetbite.com");
         user.setActive(false);
 
-        Authentication authentication = new UsernamePasswordAuthenticationToken("banned@streetbite.com", null);
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+                "banned@streetbite.com",
+                null,
+                Collections.emptyList());
         when(userRepository.findByEmail("banned@streetbite.com")).thenReturn(Optional.of(user));
 
         assertThat(authenticatedUserService.findAuthenticatedUser(authentication)).isEmpty();

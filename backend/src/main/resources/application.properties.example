@@ -1,5 +1,6 @@
 # Server
 SERVER_PORT=8081
+SPRING_PROFILES_ACTIVE=dev
 
 # Database: MySQL is the source of truth
 # WARNING: allowPublicKeyRetrieval=true can expose credentials and should not be used in production.
@@ -10,6 +11,8 @@ SPRING_DATASOURCE_USERNAME=root
 SPRING_DATASOURCE_PASSWORD=change_me
 SPRING_JPA_HIBERNATE_DDL_AUTO=update
 SPRING_JPA_SHOW_SQL=true
+STREETBITE_ALLOW_INSECURE_DEFAULTS=true
+STREETBITE_SEED_ENABLED=true
 
 # Auth
 JWT_SECRET=replace_with_a_random_32_plus_char_secret

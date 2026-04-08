@@ -27,10 +27,16 @@ if (-not $env:GOOGLE_MAPS_API_KEY) {
     # $env:NEXT_PUBLIC_GOOGLE_MAPS_API_KEY = "YOUR_API_KEY_HERE"
 }
 
+# Default to the local-safe Spring profile unless the caller already set one
+if (-not $env:SPRING_PROFILES_ACTIVE) {
+    $env:SPRING_PROFILES_ACTIVE = "dev"
+    Write-Host "SPRING_PROFILES_ACTIVE not set. Defaulting to 'dev'" -ForegroundColor Green
+}
+
 # Check for DB Password
-if (-not $env:DB_PASSWORD) {
-    Write-Host "DB_PASSWORD not set. Using default 'password' (INSECURE)" -ForegroundColor Yellow
-    $env:DB_PASSWORD = "password"
+if (-not $env:SPRING_DATASOURCE_PASSWORD) {
+    Write-Host "SPRING_DATASOURCE_PASSWORD not set. Using local dev default 'root'" -ForegroundColor Yellow
+    $env:SPRING_DATASOURCE_PASSWORD = "root"
 }
 
 # Check for Firebase credentials
@@ -61,8 +67,9 @@ Write-Host "Starting servers..." -ForegroundColor Cyan
 Write-Host ""
 
 # Capture values to pass into background jobs
+$springProfiles = $env:SPRING_PROFILES_ACTIVE
 $geocodeKey = $env:GOOGLE_MAPS_API_KEY
-$dbPassword = $env:DB_PASSWORD
+$dbPassword = $env:SPRING_DATASOURCE_PASSWORD
 $firebaseCred = if (Test-Path $firebaseKeyPath) { $firebaseKeyPath } else { $env:GOOGLE_APPLICATION_CREDENTIALS }
 
 # Start backend in background
@@ -70,8 +77,12 @@ Write-Host "Starting Backend (Spring Boot)..." -ForegroundColor Cyan
 $backendJob = Start-Job -ScriptBlock {
     $env:JAVA_HOME = "C:\Program Files\Java\jdk-21"
     if ($using:firebaseCred) { $env:GOOGLE_APPLICATION_CREDENTIALS = $using:firebaseCred }
-    if ($using:geocodeKey) { $env:GOOGLE_MAPS_API_KEY = $using:geocodeKey }
-    if ($using:dbPassword) { $env:DB_PASSWORD = $using:dbPassword }
+    if ($using:springProfiles) { $env:SPRING_PROFILES_ACTIVE = $using:springProfiles }
+    if ($using:geocodeKey) {
+        $env:GOOGLE_MAPS_API_KEY = $using:geocodeKey
+        $env:GOOGLE_GEOCODING_API_KEY = $using:geocodeKey
+    }
+    if ($using:dbPassword) { $env:SPRING_DATASOURCE_PASSWORD = $using:dbPassword }
 
     Set-Location (Join-Path $using:PSScriptRoot "backend")
     if (Test-Path ".\mvnw.cmd") {

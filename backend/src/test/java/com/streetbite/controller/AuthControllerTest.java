@@ -2,9 +2,13 @@ package com.streetbite.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.streetbite.config.CookieSettings;
+import com.streetbite.config.JwtRequestFilter;
+import com.streetbite.config.OriginValidationFilter;
+import com.streetbite.dto.auth.AuthUserResponse;
 import com.streetbite.model.User;
+import com.streetbite.service.AuthRateLimitService;
+import com.streetbite.service.AuthService;
 import com.streetbite.service.UserService;
-import com.streetbite.service.VendorService;
 import com.streetbite.util.JwtUtil;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
@@ -19,6 +23,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.Map;
 import java.util.Optional;
 
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -40,16 +46,25 @@ class AuthControllerTest {
     private UserService userService;
 
     @MockBean
-    private VendorService vendorService;
+    private AuthService authService;
 
     @MockBean
-    private PasswordEncoder passwordEncoder;
+    private AuthRateLimitService authRateLimitService;
 
     @MockBean
     private JwtUtil jwtUtil;
 
     @MockBean
     private CookieSettings cookieSettings;
+
+    @MockBean
+    private PasswordEncoder passwordEncoder;
+
+    @MockBean
+    private JwtRequestFilter jwtRequestFilter;
+
+    @MockBean
+    private OriginValidationFilter originValidationFilter;
 
     @Test
     void loginSetsSecureCrossSiteCookieAndOmitsTokenFromBody() throws Exception {
@@ -59,9 +74,16 @@ class AuthControllerTest {
         user.setPasswordHash("hashed");
         user.setDisplayName("Admin User");
         user.setRole(User.Role.ADMIN);
+        user.setActive(true);
+        user.setEmailVerified(true);
 
-        when(userService.getUserByEmail("admin@streetbite.com")).thenReturn(Optional.of(user));
-        when(passwordEncoder.matches("password123", "hashed")).thenReturn(true);
+        AuthUserResponse authUserResponse = AuthUserResponse.from(user);
+
+        when(authService.normalizeEmail("admin@streetbite.com")).thenReturn("admin@streetbite.com");
+        when(authRateLimitService.check(eq("login"), anyString())).thenReturn(Optional.empty());
+        when(authService.getUserByEmail("admin@streetbite.com")).thenReturn(Optional.of(user));
+        when(authService.passwordMatches(user, "password123")).thenReturn(true);
+        when(authService.buildUserData(user)).thenReturn(authUserResponse);
         when(jwtUtil.generateToken("admin@streetbite.com", 1L, "ADMIN")).thenReturn("jwt-token");
         when(cookieSettings.isSecure()).thenReturn(true);
         when(cookieSettings.getSameSite()).thenReturn("None");

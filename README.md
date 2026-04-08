@@ -44,7 +44,7 @@ A full-stack application connecting food lovers with local street food vendors, 
 ```
 
 This script will:
-- ✅ Start backend (Spring Boot on port 8080)
+- ✅ Start backend (Spring Boot on port 8081)
 - ✅ Start frontend (Next.js on port 3000)
 - ✅ Wait for both servers to be ready
 
@@ -113,6 +113,8 @@ SPRING_DATASOURCE_PASSWORD=<PASSWORD>
 # Auth
 JWT_SECRET=<YOUR_SECRET_KEY>
 JWT_EXPIRATION_MS=86400000
+STREETBITE_ALLOW_INSECURE_DEFAULTS=false
+STREETBITE_SEED_ENABLED=false
 
 # Frontend / cookies / CORS
 FRONTEND_URL=https://<your-vercel-domain>
