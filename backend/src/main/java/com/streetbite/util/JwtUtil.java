@@ -4,11 +4,17 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
+import java.security.SecureRandom;
+import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,6 +23,7 @@ import java.util.function.Function;
 @Component
 public class JwtUtil {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(JwtUtil.class);
     private static final String DEFAULT_DEV_SECRET =
             "StreetBiteDevSecretKeyForLocalAndTestOnlyMustBe256BitsLong!!";
     private static final long DEFAULT_TOKEN_VALIDITY_MS = 24 * 60 * 60 * 1000L;
@@ -30,11 +37,15 @@ public class JwtUtil {
                 environment.getProperty("streetbite.allow-insecure-defaults", Boolean.class, false);
 
         if (configuredSecret == null || configuredSecret.isBlank()) {
-            if (!allowInsecureDefaults) {
-                throw new IllegalStateException(
-                        "JWT_SECRET must be configured when streetbite.allow-insecure-defaults=false");
+            if (allowInsecureDefaults) {
+                this.secretKey = DEFAULT_DEV_SECRET;
+                LOGGER.warn("JWT_SECRET not set. Using local development fallback secret.");
+            } else {
+                this.secretKey = generateEphemeralSecret();
+                LOGGER.error(
+                        "JWT_SECRET not configured in production. Using ephemeral startup secret. "
+                                + "Set JWT_SECRET in environment to keep sessions stable across restarts.");
             }
-            this.secretKey = DEFAULT_DEV_SECRET;
         } else {
             this.secretKey = configuredSecret;
         }
@@ -56,7 +67,25 @@ public class JwtUtil {
     }
 
     private Key getSigningKey() {
-        return Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
+        byte[] keyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
+        if (keyBytes.length < 32) {
+            keyBytes = sha256(keyBytes);
+        }
+        return Keys.hmacShaKeyFor(keyBytes);
+    }
+
+    private String generateEphemeralSecret() {
+        byte[] random = new byte[48];
+        new SecureRandom().nextBytes(random);
+        return Base64.getEncoder().encodeToString(random);
+    }
+
+    private byte[] sha256(byte[] source) {
+        try {
+            return MessageDigest.getInstance("SHA-256").digest(source);
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("Unable to initialize JWT signing key", e);
+        }
     }
 
     public String generateToken(String email, Long userId, String role) {
