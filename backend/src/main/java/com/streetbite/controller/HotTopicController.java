@@ -60,8 +60,12 @@ public class HotTopicController {
             return forbidden("Admin access only");
         }
 
-        HotTopic created = hotTopicService.createHotTopic(request);
-        return ResponseEntity.ok(HotTopicResponse.from(created));
+        try {
+            HotTopic created = hotTopicService.createHotTopic(request);
+            return ResponseEntity.ok(HotTopicResponse.from(created));
+        } catch (RuntimeException exception) {
+            return badRequest(exception.getMessage() != null ? exception.getMessage() : "Unable to create topic");
+        }
     }
 
     @PutMapping("/{id}")
@@ -76,8 +80,16 @@ public class HotTopicController {
             return forbidden("Admin access only");
         }
 
-        HotTopic updated = hotTopicService.updateHotTopic(id, updates);
-        return ResponseEntity.ok(HotTopicResponse.from(updated));
+        try {
+            HotTopic updated = hotTopicService.updateHotTopic(id, updates);
+            return ResponseEntity.ok(HotTopicResponse.from(updated));
+        } catch (RuntimeException exception) {
+            String message = exception.getMessage() != null ? exception.getMessage() : "Unable to update topic";
+            if (isTopicNotFound(message)) {
+                return notFound(message);
+            }
+            return badRequest(message);
+        }
     }
 
     @DeleteMapping("/{id}")
@@ -90,8 +102,16 @@ public class HotTopicController {
             return forbidden("Admin access only");
         }
 
-        hotTopicService.deleteHotTopic(id);
-        return ResponseEntity.ok(Map.of("success", true));
+        try {
+            hotTopicService.deleteHotTopic(id);
+            return ResponseEntity.ok(Map.of("success", true));
+        } catch (RuntimeException exception) {
+            String message = exception.getMessage() != null ? exception.getMessage() : "Unable to delete topic";
+            if (isTopicNotFound(message)) {
+                return notFound(message);
+            }
+            return badRequest(message);
+        }
     }
 
     @PostMapping("/{id}/comment")
@@ -162,5 +182,17 @@ public class HotTopicController {
 
     private ResponseEntity<Map<String, String>> forbidden(String message) {
         return ResponseEntity.status(403).body(Map.of("error", message));
+    }
+
+    private ResponseEntity<Map<String, String>> badRequest(String message) {
+        return ResponseEntity.badRequest().body(Map.of("error", message));
+    }
+
+    private ResponseEntity<Map<String, String>> notFound(String message) {
+        return ResponseEntity.status(404).body(Map.of("error", message));
+    }
+
+    private boolean isTopicNotFound(String message) {
+        return message.toLowerCase().contains("not found");
     }
 }
