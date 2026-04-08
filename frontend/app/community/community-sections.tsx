@@ -267,6 +267,38 @@ export function TopicSubmissionDialog({
                 className="border-4 border-black rounded-xl h-12 font-bold focus-visible:ring-0 focus-visible:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
               />
             </div>
+            <div className="space-y-2">
+              <label className="text-xs font-black uppercase tracking-widest text-black">City (Optional)</label>
+              <Input
+                value={topicForm.cityName}
+                onChange={(e) => onTopicFormChange({ ...topicForm, cityName: e.target.value })}
+                placeholder="Mumbai, Pune, Bengaluru..."
+                className="border-4 border-black rounded-xl h-12 font-bold focus-visible:ring-0 focus-visible:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+              />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <label className="text-xs font-black uppercase tracking-widest text-black">Latitude (Optional)</label>
+                <Input
+                  value={topicForm.latitude}
+                  onChange={(e) => onTopicFormChange({ ...topicForm, latitude: e.target.value })}
+                  placeholder="19.0760"
+                  className="border-4 border-black rounded-xl h-12 font-bold focus-visible:ring-0 focus-visible:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-black uppercase tracking-widest text-black">Longitude (Optional)</label>
+                <Input
+                  value={topicForm.longitude}
+                  onChange={(e) => onTopicFormChange({ ...topicForm, longitude: e.target.value })}
+                  placeholder="72.8777"
+                  className="border-4 border-black rounded-xl h-12 font-bold focus-visible:ring-0 focus-visible:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                />
+              </div>
+            </div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-black/60">
+              Add both latitude and longitude if you include coordinates.
+            </p>
           </div>
           <DialogFooter className="gap-2 sm:gap-0">
             <Button
@@ -360,6 +392,11 @@ export function DiscussionModal({
         </div>
 
         <div className="p-6 max-h-[400px] overflow-y-auto space-y-4 bg-gray-50">
+          <div className="sticky top-0 z-10 -mx-6 mb-2 border-b-2 border-black bg-gray-50 px-6 pb-2 pt-1">
+            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-black/60">
+              Newest replies first
+            </p>
+          </div>
           {selectedDiscussion.comments?.slice().reverse().map((comment: any) => (
             <div key={comment.id} className="p-4 bg-white rounded-2xl border-2 border-black shadow-[4px_4px_0px_0px_#e5e7eb]">
               <div className="flex items-start justify-between mb-2">
@@ -377,7 +414,7 @@ export function DiscussionModal({
                   </div>
                 </div>
               </div>
-              <p className="text-base font-medium text-gray-800 pl-13 leading-relaxed">{comment.content}</p>
+              <p className="text-base font-medium text-gray-800 leading-relaxed">{comment.content}</p>
             </div>
           ))}
           {(!selectedDiscussion.comments || selectedDiscussion.comments.length === 0) && (
@@ -393,18 +430,26 @@ export function DiscussionModal({
               type="text"
               value={newComment}
               onChange={(e) => onCommentChange(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && onPostComment()}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  onPostComment()
+                }
+              }}
               placeholder="Add a comment..."
               className="flex-1 px-4 py-3 rounded-xl border-4 border-black font-bold placeholder:text-gray-400 focus:ring-0 focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-sm bg-white transition-all"
             />
             <Button
               onClick={onPostComment}
               disabled={!newComment.trim()}
-              className="h-auto px-6 rounded-xl bg-orange-500 hover:bg-orange-600 text-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-all"
+              className="h-auto px-6 rounded-xl bg-orange-500 hover:bg-orange-600 text-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
             >
               <Send className="w-5 h-5" />
             </Button>
           </div>
+          <p className="mt-2 text-[10px] font-bold uppercase tracking-[0.14em] text-black/50">
+            Tip: Press Enter to send
+          </p>
         </div>
       </div>
     </div>

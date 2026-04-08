@@ -44,9 +44,9 @@ export default function AboutPage() {
       name: "Abhilasha Thakur",
       role: "Head of Hidden Gems",
       image: "/team/abhilasha.jpg",
-      favFood: "Pani Puri (Extra Tikha)",
-      quote: "If it's not spicy, it's not food.",
-      stats: { spiceLevel: 'Extreme', reviews: 89, badge: "EXPLORER" }
+      favFood: "RasGulla (Extra Syrupy)",
+      quote: "If it's not sweet, it's not food.",
+      stats: { spiceLevel: 'Lowkey', reviews: 89, badge: "EXPLORER" }
     },
     {
       name: "Abhay Jadhav",

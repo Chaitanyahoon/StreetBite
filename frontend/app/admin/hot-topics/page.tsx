@@ -28,6 +28,9 @@ interface HotTopic {
   title: string
   content: string
   imageUrl?: string
+  cityName?: string
+  latitude?: number | null
+  longitude?: number | null
   isActive: boolean
   isApproved: boolean
   createdByDisplayName?: string
@@ -50,6 +53,9 @@ export default function HotTopicManagement() {
     title: '',
     content: '',
     imageUrl: '',
+    cityName: '',
+    latitude: '',
+    longitude: '',
     isActive: true
   })
 
@@ -89,7 +95,7 @@ export default function HotTopicManagement() {
 
   const handleOpenCreate = () => {
     setEditingTopic(null)
-    setFormData({ title: '', content: '', imageUrl: '', isActive: true })
+    setFormData({ title: '', content: '', imageUrl: '', cityName: '', latitude: '', longitude: '', isActive: true })
     setIsDialogOpen(true)
   }
 
@@ -99,6 +105,9 @@ export default function HotTopicManagement() {
       title: topic.title,
       content: topic.content,
       imageUrl: topic.imageUrl || '',
+      cityName: topic.cityName || '',
+      latitude: topic.latitude != null ? String(topic.latitude) : '',
+      longitude: topic.longitude != null ? String(topic.longitude) : '',
       isActive: topic.isActive
     })
     setIsDialogOpen(true)
@@ -106,12 +115,45 @@ export default function HotTopicManagement() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    const trimmedLatitude = formData.latitude.trim()
+    const trimmedLongitude = formData.longitude.trim()
+    const hasLatitude = trimmedLatitude.length > 0
+    const hasLongitude = trimmedLongitude.length > 0
+
+    if (hasLatitude !== hasLongitude) {
+      toast.error('Please provide both latitude and longitude')
+      return
+    }
+
+    let latitude: number | undefined
+    let longitude: number | undefined
+    if (hasLatitude && hasLongitude) {
+      const parsedLatitude = Number.parseFloat(trimmedLatitude)
+      const parsedLongitude = Number.parseFloat(trimmedLongitude)
+      if (Number.isNaN(parsedLatitude) || Number.isNaN(parsedLongitude)) {
+        toast.error('Latitude and longitude must be valid numbers')
+        return
+      }
+      latitude = parsedLatitude
+      longitude = parsedLongitude
+    }
+
+    const payload = {
+      title: formData.title,
+      content: formData.content,
+      imageUrl: formData.imageUrl,
+      cityName: formData.cityName.trim() || undefined,
+      latitude,
+      longitude,
+      isActive: formData.isActive,
+    }
+
     try {
       if (editingTopic) {
-        await hotTopicApi.update(editingTopic.id, formData)
+        await hotTopicApi.update(editingTopic.id, payload)
         toast.success('Topic updated successfully')
       } else {
-        await hotTopicApi.create(formData)
+        await hotTopicApi.create(payload)
         toast.success('New topic created!')
       }
       setIsDialogOpen(false)
@@ -319,6 +361,38 @@ export default function HotTopicManagement() {
                   value={formData.imageUrl}
                   onChange={(e) => setFormData({...formData, imageUrl: e.target.value})}
                 />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="cityName" className="font-black uppercase text-xs">City (Optional)</Label>
+                <Input
+                  id="cityName"
+                  placeholder="Mumbai, Pune, Bengaluru..."
+                  className="border-4 border-black rounded-xl h-12 font-bold focus-visible:ring-0 focus-visible:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                  value={formData.cityName}
+                  onChange={(e) => setFormData({ ...formData, cityName: e.target.value })}
+                />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid gap-2">
+                  <Label htmlFor="latitude" className="font-black uppercase text-xs">Latitude (Optional)</Label>
+                  <Input
+                    id="latitude"
+                    placeholder="19.0760"
+                    className="border-4 border-black rounded-xl h-12 font-bold focus-visible:ring-0 focus-visible:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                    value={formData.latitude}
+                    onChange={(e) => setFormData({ ...formData, latitude: e.target.value })}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="longitude" className="font-black uppercase text-xs">Longitude (Optional)</Label>
+                  <Input
+                    id="longitude"
+                    placeholder="72.8777"
+                    className="border-4 border-black rounded-xl h-12 font-bold focus-visible:ring-0 focus-visible:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                    value={formData.longitude}
+                    onChange={(e) => setFormData({ ...formData, longitude: e.target.value })}
+                  />
+                </div>
               </div>
             </div>
             <DialogFooter className="gap-2 sm:gap-0">

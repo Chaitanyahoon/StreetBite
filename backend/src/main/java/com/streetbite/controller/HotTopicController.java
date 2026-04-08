@@ -138,7 +138,10 @@ public class HotTopicController {
                     user,
                     payload.getTitle(),
                     payload.getContent(),
-                    payload.getImageUrl());
+                    payload.getImageUrl(),
+                    payload.getCityName(),
+                    payload.getLatitude(),
+                    payload.getLongitude());
             return ResponseEntity.ok(new TopicSubmissionResponse("Topic submitted for review", created.getId()));
         } catch (Exception e) {
             String message = e.getMessage() != null ? e.getMessage() : "Unable to submit topic";

@@ -11,6 +11,9 @@ public class HotTopicResponse {
     private String title;
     private String content;
     private String imageUrl;
+    private String cityName;
+    private Double latitude;
+    private Double longitude;
     private boolean isActive;
     private boolean isApproved;
     private String createdByDisplayName;
@@ -25,6 +28,9 @@ public class HotTopicResponse {
         response.setTitle(topic.getTitle());
         response.setContent(topic.getContent());
         response.setImageUrl(topic.getImageUrl());
+        response.setCityName(topic.getCityName());
+        response.setLatitude(topic.getLatitude());
+        response.setLongitude(topic.getLongitude());
         response.setActive(topic.isActive());
         response.setApproved(topic.isApproved());
         response.setCreatedByDisplayName(topic.getCreatedByDisplayName());
@@ -65,6 +71,30 @@ public class HotTopicResponse {
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    public String getCityName() {
+        return cityName;
+    }
+
+    public void setCityName(String cityName) {
+        this.cityName = cityName;
+    }
+
+    public Double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(Double latitude) {
+        this.latitude = latitude;
+    }
+
+    public Double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(Double longitude) {
+        this.longitude = longitude;
     }
 
     public boolean isActive() {

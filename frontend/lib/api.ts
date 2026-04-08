@@ -350,7 +350,7 @@ export const hotTopicApi = {
   getAllActive: () => api.get('/hottopics') as Promise<any>,
   getAll: () => api.get('/hottopics/admin/all') as Promise<any>,
   create: (data: any) => api.post('/hottopics', data) as Promise<any>,
-  createCommunity: (data: { title: string; content: string; imageUrl?: string }) =>
+  createCommunity: (data: { title: string; content: string; imageUrl?: string; cityName?: string; latitude?: number; longitude?: number }) =>
     api.post('/hottopics/community', data) as Promise<{ message?: string; topicId?: number | string }>,
   update: (id: string | number, data: any) => api.put(`/hottopics/${id}`, data) as Promise<any>,
   delete: (id: string | number) => api.delete(`/hottopics/${id}`) as Promise<any>,

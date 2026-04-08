@@ -48,18 +48,34 @@ public class HotTopicService {
         hotTopic.setTitle(request.getTitle());
         hotTopic.setContent(request.getContent());
         hotTopic.setImageUrl(request.getImageUrl());
+        String cityName = normalizeNullable(request.getCityName());
+        validateCityName(cityName);
+        hotTopic.setCityName(cityName);
+        applyCoordinates(hotTopic, request.getLatitude(), request.getLongitude());
         hotTopic.setActive(true);
         hotTopic.setApproved(true);
         return hotTopicRepository.save(hotTopic);
     }
 
-    public HotTopic createCommunityHotTopic(User user, String title, String content, String imageUrl) {
+    public HotTopic createCommunityHotTopic(
+            User user,
+            String title,
+            String content,
+            String imageUrl,
+            String cityName,
+            Double latitude,
+            Double longitude) {
         validateCommunityTopic(user, title, content);
+        String normalizedCityName = normalizeNullable(cityName);
+        validateCityName(normalizedCityName);
+        validateCoordinateRange(latitude, longitude);
 
         HotTopic topic = new HotTopic();
         topic.setTitle(title);
         topic.setContent(content);
         topic.setImageUrl(imageUrl);
+        topic.setCityName(normalizedCityName);
+        applyCoordinates(topic, latitude, longitude);
         topic.setActive(true);
         topic.setApproved(false);
         topic.setCreatedBy(user);
@@ -78,6 +94,16 @@ public class HotTopicService {
         }
         if (updates.getImageUrl() != null) {
             topic.setImageUrl(updates.getImageUrl());
+        }
+        if (updates.getCityName() != null) {
+            String nextCityName = normalizeNullable(updates.getCityName());
+            validateCityName(nextCityName);
+            topic.setCityName(nextCityName);
+        }
+        if (updates.getLatitude() != null || updates.getLongitude() != null) {
+            Double nextLatitude = updates.getLatitude() != null ? updates.getLatitude() : topic.getLatitude();
+            Double nextLongitude = updates.getLongitude() != null ? updates.getLongitude() : topic.getLongitude();
+            applyCoordinates(topic, nextLatitude, nextLongitude);
         }
         if (updates.getIsActive() != null) {
             topic.setActive(updates.getIsActive());
@@ -155,5 +181,38 @@ public class HotTopicService {
 
     public Long getLikeCount(Long topicId) {
         return topicLikeRepository.countByTopicId(topicId);
+    }
+
+    private void applyCoordinates(HotTopic topic, Double latitude, Double longitude) {
+        validateCoordinateRange(latitude, longitude);
+        topic.setLatitude(latitude);
+        topic.setLongitude(longitude);
+    }
+
+    private String normalizeNullable(String value) {
+        if (value == null) {
+            return null;
+        }
+
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    private void validateCoordinateRange(Double latitude, Double longitude) {
+        if ((latitude == null) != (longitude == null)) {
+            throw new RuntimeException("Both latitude and longitude are required when setting coordinates");
+        }
+        if (latitude != null && (latitude < -90 || latitude > 90)) {
+            throw new RuntimeException("Invalid latitude: must be between -90 and 90");
+        }
+        if (longitude != null && (longitude < -180 || longitude > 180)) {
+            throw new RuntimeException("Invalid longitude: must be between -180 and 180");
+        }
+    }
+
+    private void validateCityName(String cityName) {
+        if (cityName != null && cityName.length() > 120) {
+            throw new RuntimeException("City name is too long");
+        }
     }
 }

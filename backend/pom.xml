@@ -124,6 +124,16 @@
 			<artifactId>resend-java</artifactId>
 			<version>2.2.0</version>
 		</dependency>
+
+		<!-- Flyway migrations -->
+		<dependency>
+			<groupId>org.flywaydb</groupId>
+			<artifactId>flyway-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.flywaydb</groupId>
+			<artifactId>flyway-mysql</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>

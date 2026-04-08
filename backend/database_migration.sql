@@ -46,3 +46,62 @@ DEALLOCATE PREPARE alterIfNotExists;
 
 -- Verify the columns were added
 DESCRIBE vendors;
+
+-- ------------------------------------------------------------
+-- Add optional location fields to hot_topics (Nearby mode support)
+-- ------------------------------------------------------------
+SET @tablename = 'hot_topics';
+SET @columnname1 = 'city_name';
+SET @columnname2 = 'latitude';
+SET @columnname3 = 'longitude';
+
+-- city_name
+SET @preparedStatement = (SELECT IF(
+  (
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE
+      (TABLE_SCHEMA = @dbname)
+      AND (TABLE_NAME = @tablename)
+      AND (COLUMN_NAME = @columnname1)
+  ) > 0,
+  'SELECT 1',
+  CONCAT('ALTER TABLE ', @tablename, ' ADD COLUMN ', @columnname1, ' VARCHAR(120) NULL')
+));
+PREPARE alterIfNotExists FROM @preparedStatement;
+EXECUTE alterIfNotExists;
+DEALLOCATE PREPARE alterIfNotExists;
+
+-- latitude
+SET @preparedStatement = (SELECT IF(
+  (
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE
+      (TABLE_SCHEMA = @dbname)
+      AND (TABLE_NAME = @tablename)
+      AND (COLUMN_NAME = @columnname2)
+  ) > 0,
+  'SELECT 1',
+  CONCAT('ALTER TABLE ', @tablename, ' ADD COLUMN ', @columnname2, ' DOUBLE NULL')
+));
+PREPARE alterIfNotExists FROM @preparedStatement;
+EXECUTE alterIfNotExists;
+DEALLOCATE PREPARE alterIfNotExists;
+
+-- longitude
+SET @preparedStatement = (SELECT IF(
+  (
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE
+      (TABLE_SCHEMA = @dbname)
+      AND (TABLE_NAME = @tablename)
+      AND (COLUMN_NAME = @columnname3)
+  ) > 0,
+  'SELECT 1',
+  CONCAT('ALTER TABLE ', @tablename, ' ADD COLUMN ', @columnname3, ' DOUBLE NULL')
+));
+PREPARE alterIfNotExists FROM @preparedStatement;
+EXECUTE alterIfNotExists;
+DEALLOCATE PREPARE alterIfNotExists;
+
+-- Verify topic location columns
+DESCRIBE hot_topics;
