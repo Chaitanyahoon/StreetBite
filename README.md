@@ -1,20 +1,20 @@
 
-# 🍽️ StreetBite - Street Food Discovery Platform
+# 🍽️ StreetBite — Street Food Discovery Platform
 
 ![Version](https://img.shields.io/badge/version-1.0.0-orange)
 ![Frontend](https://img.shields.io/badge/frontend-Vercel-black?logo=vercel)
 ![Backend](https://img.shields.io/badge/backend-Render-black?logo=render)
 ![Database](https://img.shields.io/badge/database-Aiven-orange?logo=mysql)
 
-A full-stack application connecting food lovers with local street food vendors, built with **Next.js (Frontend)** and **Spring Boot (Backend)**, using **MySQL** as the primary database.
+StreetBite connects food lovers with local street food vendors. Built with **Next.js** (frontend) and **Spring Boot** (backend) on **MySQL**.
 
-## 🚀 Live Demo
+## 🚀 Live
 
 | Component | URL | Status |
 |-----------|-----|--------|
-| **Frontend** | [StreetBite App](https://streetbitego.vercel.app/) | 🟢 Live |
-| **Backend API** | [StreetBite API](https://streetbite.onrender.com) | 🟢 Live |
-| **API Docs** | [Swagger UI](https://streetbite.onrender.com/swagger-ui/index.html) | 🟢 Live |
+| **Frontend** | [streetbitego.vercel.app](https://streetbitego.vercel.app/) | 🟢 Live |
+| **Backend API** | [streetbite.onrender.com](https://streetbite.onrender.com) | 🟢 Live |
+| **API Docs** | [swagger-ui](https://streetbite.onrender.com/swagger-ui/index.html) | 🟢 Live |
 
 > **Note**: The backend is hosted on Render's free tier and may spin down after inactivity. Please allow up to 50 seconds for the first request to wake it up.
 
@@ -24,8 +24,8 @@ A full-stack application connecting food lovers with local street food vendors, 
 - 👤 **User authentication** - Cookie-based session auth for customers and vendors
 - 🏪 **Vendor management** - Complete vendor dashboard
 - 📋 **Menu management** - Add, edit, delete menu items
-- 📊 **Analytics** - Track revenue, orders, and performance
-- ⚙️ **Settings** - Manage vendor profile and preferences
+- 📊 **Analytics** - Track engagement and performance
+- 🧭 **Community** - Hot topics, comments, and likes
 - 🗺️ **Geocoding** - Automatic address to coordinates conversion
 
 ---
@@ -66,7 +66,7 @@ npm run dev
 ## 📁 Project Structure
 
 ```
-final_project/
+StreetBite/
 ├── backend/                    # Spring Boot REST API
 │   ├── src/main/java/
 │   │   └── com/streetbite/
@@ -176,7 +176,7 @@ Full API documentation available at `/swagger-ui/index.html` on the backend.
 
 | Document | Purpose |
 |----------|---------|
-| **[ARCHITECTURE.md](Documentation/ARCHITECTURE.md)** | **System Design & Explaination** |
+| **[ARCHITECTURE.md](Documentation/ARCHITECTURE.md)** | **System Design & Explanation** |
 | **[DEPLOYMENT.md](Documentation/DEPLOYMENT.md)** | Guide for Vercel & Render deployment |
 | **[DATABASE_SCHEMA.md](Documentation/DATABASE_SCHEMA.md)** | MySQL Database Schema & ERD |
 | **[DATA_STORAGE_AND_REALTIME.md](Documentation/DATA_STORAGE_AND_REALTIME.md)** | MySQL vs Firebase ownership model |
@@ -191,5 +191,5 @@ This project is for educational purposes.
 
 ---
 
-**Made with ❤️ for street food lovers** 🍽️
+**Made with ❤️ for street food lovers** 🍽️  
 Last Updated: 2026
