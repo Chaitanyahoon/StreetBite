@@ -413,7 +413,7 @@ export default function AdminDashboard() {
                         onClick={async () => {
                           try {
                             await announcementApi.delete(announcement.id)
-                            window.location.reload()
+                            setAnnouncements((prev) => prev.filter((item) => item.id !== announcement.id))
                           } catch (e) { console.error(e) }
                         }}
                       >

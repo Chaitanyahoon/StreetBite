@@ -59,18 +59,22 @@ export default function HotTopicManagement() {
     isActive: true
   })
 
+  const mapTopic = (topic: any): HotTopic => ({
+    ...topic,
+    isActive: topic?.isActive ?? topic?.active ?? false,
+    isApproved: topic?.isApproved ?? topic?.approved ?? false,
+    likesCount: Array.isArray(topic?.likes) ? topic.likes.length : (topic?.likesCount ?? 0),
+    commentsCount: Array.isArray(topic?.comments) ? topic.comments.length : (topic?.commentsCount ?? 0),
+  })
+
+  const getErrorMessage = (err: any, fallback: string) =>
+    err?.response?.data?.error || err?.message || fallback
+
   const fetchTopics = useCallback(async () => {
     try {
       setLoading(true)
       const data = await hotTopicApi.getAll()
-      // The API returns the full object with nested likes and comments
-      const mapped = data.map((t: any) => ({
-        ...t,
-        isActive: t.isActive ?? t.active ?? false,
-        isApproved: t.isApproved ?? t.approved ?? false,
-        likesCount: t.likes?.length || 0,
-        commentsCount: t.comments?.length || 0
-      }))
+      const mapped = Array.isArray(data) ? data.map(mapTopic) : []
       setTopics(mapped)
       setError(null)
     } catch (err) {
@@ -152,16 +156,17 @@ export default function HotTopicManagement() {
 
     try {
       if (editingTopic) {
-        await hotTopicApi.update(editingTopic.id, payload)
+        const updated = await hotTopicApi.update(editingTopic.id, payload)
+        setTopics((prev) => prev.map((topic) => (topic.id === updated.id ? mapTopic(updated) : topic)))
         toast.success('Topic updated successfully')
       } else {
-        await hotTopicApi.create(payload)
+        const created = await hotTopicApi.create(payload)
+        setTopics((prev) => [mapTopic(created), ...prev])
         toast.success('New topic created!')
       }
       setIsDialogOpen(false)
-      fetchTopics()
     } catch (err) {
-      toast.error('Failed to save topic')
+      toast.error(getErrorMessage(err, 'Failed to save topic'))
     }
   }
 
@@ -170,9 +175,9 @@ export default function HotTopicManagement() {
     try {
       await hotTopicApi.delete(topicToDelete.id)
       toast.success('Topic deleted')
-      fetchTopics()
+      setTopics((prev) => prev.filter((topic) => topic.id !== topicToDelete.id))
     } catch (err) {
-      toast.error('Failed to delete topic')
+      toast.error(getErrorMessage(err, 'Failed to delete topic'))
     } finally {
       setTopicToDelete(null)
     }
@@ -180,21 +185,21 @@ export default function HotTopicManagement() {
 
   const toggleStatus = async (topic: HotTopic) => {
     try {
-      await hotTopicApi.update(topic.id, { isActive: !topic.isActive })
+      const updated = await hotTopicApi.update(topic.id, { isActive: !topic.isActive })
       toast.success(`Topic is now ${!topic.isActive ? 'Visible' : 'Hidden'}`)
-      fetchTopics()
+      setTopics((prev) => prev.map((item) => (item.id === updated.id ? mapTopic(updated) : item)))
     } catch (err) {
-      toast.error('Failed to update status')
+      toast.error(getErrorMessage(err, 'Failed to update status'))
     }
   }
 
   const approveTopic = async (topic: HotTopic) => {
     try {
-      await hotTopicApi.update(topic.id, { isApproved: true, isActive: true })
+      const updated = await hotTopicApi.update(topic.id, { isApproved: true, isActive: true })
       toast.success('Topic approved and now visible')
-      fetchTopics()
+      setTopics((prev) => prev.map((item) => (item.id === updated.id ? mapTopic(updated) : item)))
     } catch (err) {
-      toast.error('Failed to approve topic')
+      toast.error(getErrorMessage(err, 'Failed to approve topic'))
     }
   }
 

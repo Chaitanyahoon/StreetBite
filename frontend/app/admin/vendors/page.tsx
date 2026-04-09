@@ -52,7 +52,7 @@ export default function VendorManagement() {
         name: v.name || 'Unknown Vendor',
         owner: v.owner?.displayName || 'Unknown',
         city: v.address || 'Unknown',
-        email: v.owner?.email || 'unknown@example.com',
+        email: v.owner?.email || '',
         phone: v.phone || 'Unknown',
         status: v.status || (v.isActive ? 'APPROVED' : 'PENDING'),
         joined: v.createdAt ? new Date(v.createdAt).toLocaleDateString() : 'Unknown',
@@ -185,7 +185,7 @@ export default function VendorManagement() {
                     <TableCell>
                       <div>
                         <p className="font-medium">{vendor.name}</p>
-                        <p className="text-xs text-muted-foreground">{vendor.email}</p>
+                        <p className="text-xs text-muted-foreground">{vendor.email || '—'}</p>
                       </div>
                     </TableCell>
                     <TableCell>{vendor.owner}</TableCell>
