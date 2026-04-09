@@ -1,4 +1,3 @@
-
 # 🍽️ StreetBite — Street Food Discovery Platform
 
 ![Version](https://img.shields.io/badge/version-1.0.0-orange)
@@ -6,7 +5,7 @@
 ![Backend](https://img.shields.io/badge/backend-Render-black?logo=render)
 ![Database](https://img.shields.io/badge/database-Aiven-orange?logo=mysql)
 
-StreetBite connects food lovers with local street food vendors. Built with **Next.js** (frontend) and **Spring Boot** (backend) on **MySQL**.
+StreetBite connects food lovers with local street food vendors. It ships a public discovery experience and a vendor/admin backend for moderation, listings, and analytics. Built with **Next.js** (frontend) and **Spring Boot** (backend) on **MySQL**.
 
 ## 🚀 Live
 
@@ -16,37 +15,43 @@ StreetBite connects food lovers with local street food vendors. Built with **Nex
 | **Backend API** | [streetbite.onrender.com](https://streetbite.onrender.com) | 🟢 Live |
 | **API Docs** | [swagger-ui](https://streetbite.onrender.com/swagger-ui/index.html) | 🟢 Live |
 
-> **Note**: The backend is hosted on Render's free tier and may spin down after inactivity. Please allow up to 50 seconds for the first request to wake it up.
+> **Note**: Render free tier can sleep after inactivity. First request can take ~50 seconds.
 
-## ✨ Features
+## ✨ What This App Does
 
-- 🔍 **Location-based vendor search** - Find vendors near you using geolocation
-- 👤 **User authentication** - Cookie-based session auth for customers and vendors
-- 🏪 **Vendor management** - Complete vendor dashboard
-- 📋 **Menu management** - Add, edit, delete menu items
-- 📊 **Analytics** - Track engagement and performance
-- 🧭 **Community** - Hot topics, comments, and likes
-- 🗺️ **Geocoding** - Automatic address to coordinates conversion
+- 🔍 **Discover vendors** by location, cuisine, and live status
+- 👤 **Auth** for customers, vendors, and admins
+- 🏪 **Vendor management** for listings and status
+- 📋 **Menu management** for items and pricing
+- 🧭 **Community** for hot topics, comments, and likes
+- 📊 **Analytics** for platform and vendor insights
+- 🗺️ **Geocoding** for address → coordinates
 
----
+## 🧱 Architecture Snapshot
+
+**Frontend**
+- Next.js 16 (App Router) + TypeScript + Tailwind
+- API client in `frontend/lib/api.ts` (Axios + cookie sessions)
+- Community features under `frontend/app/community`
+
+**Backend**
+- Spring Boot 3.3.5 + Java 21
+- REST API under `/api`
+- Spring Security + cookie-based JWT
+- MySQL (Aiven) with JPA/Hibernate
 
 ## 🚀 Quick Start (Local Development)
 
 ### Prerequisites
-- **Java 21+** (for backend)
-- **Node.js 18+** (for frontend)
-- **MySQL 8.0+** (or use Aiven/Remote DB)
-- **Maven** (or use included wrapper)
+- **Java 21+**
+- **Node.js 18+**
+- **MySQL 8.0+**
+- **Maven** (or use the wrapper)
 
 ### One-Command Startup
 ```powershell
 .\start-all.ps1
 ```
-
-This script will:
-- ✅ Start backend (Spring Boot on port 8081)
-- ✅ Start frontend (Next.js on port 3000)
-- ✅ Wait for both servers to be ready
 
 ### Manual Startup
 
@@ -61,49 +66,9 @@ cd frontend
 npm run dev
 ```
 
----
-
-## 📁 Project Structure
-
-```
-StreetBite/
-├── backend/                    # Spring Boot REST API
-│   ├── src/main/java/
-│   │   └── com/streetbite/
-│   │       ├── controller/     # REST endpoints
-│   │       ├── service/        # Business logic
-│   │       ├── model/          # JPA Entities (MySQL)
-│   │       ├── repository/     # Spring Data JPA Repositories
-│   │       ├── config/         # Security, CORS, Swagger setup
-│   │       └── exception/      # Error handling
-│   ├── pom.xml                # Maven dependencies
-│   └── ...
-│
-├── frontend/                   # Next.js React app
-│   ├── app/                    # Pages and routes
-│   ├── components/             # React components
-│   ├── lib/                    # API client, utilities
-│   ├── package.json
-│   └── ...
-│
-├── Documentation/
-│   ├── README.md              # This file
-│   ├── DEPLOYMENT.md          # Deployment guide (Vercel/Render)
-│   ├── SETUP.md               # Local setup guide
-│   ├── DATABASE_STATUS.md     # MySQL Schema documentation
-│   └── .env.example           # Environment variables template
-│
-└── ...
-```
-
----
-
 ## 🔧 Configuration
 
-### Environment Variables
-
-Use environment variables for the backend (local shell, Render dashboard, or IDE run config):
-
+### Environment Variables (Backend)
 ```properties
 # Database (MySQL/Aiven)
 SPRING_DATASOURCE_URL=jdbc:mysql://<HOST>:<PORT>/<DB_NAME>?ssl-mode=REQUIRED
@@ -127,29 +92,66 @@ COOKIE_SAMESITE=None
 GOOGLE_APPLICATION_CREDENTIALS=/etc/secrets/firebase-key.json
 ```
 
-See [DEVELOPMENT_SETUP.md](Documentation/DEVELOPMENT_SETUP.md), [DEPLOYMENT.md](Documentation/DEPLOYMENT.md), and [DATA_STORAGE_AND_REALTIME.md](Documentation/DATA_STORAGE_AND_REALTIME.md).
+See:
+- [DEVELOPMENT_SETUP.md](Documentation/DEVELOPMENT_SETUP.md)
+- [DEPLOYMENT.md](Documentation/DEPLOYMENT.md)
+- [DATA_STORAGE_AND_REALTIME.md](Documentation/DATA_STORAGE_AND_REALTIME.md)
 
----
+## 📁 Project Structure
 
-## 📚 API Endpoints
+```
+StreetBite/
+├── backend/                    # Spring Boot REST API
+│   ├── src/main/java/
+│   │   └── com/streetbite/
+│   │       ├── controller/     # REST endpoints
+│   │       ├── service/        # Business logic
+│   │       ├── model/          # JPA Entities (MySQL)
+│   │       ├── repository/     # Spring Data JPA Repositories
+│   │       ├── config/         # Security, CORS, Swagger setup
+│   │       └── exception/      # Error handling
+│   ├── pom.xml                 # Maven dependencies
+│   └── ...
+│
+├── frontend/                   # Next.js React app
+│   ├── app/                    # Pages and routes
+│   ├── components/             # UI and shared components
+│   ├── lib/                    # API client, utilities
+│   ├── package.json
+│   └── ...
+│
+├── Documentation/
+│   ├── ARCHITECTURE.md
+│   ├── DEPLOYMENT.md
+│   ├── DATABASE_SCHEMA.md
+│   ├── DEVELOPMENT_SETUP.md
+│   ├── DATA_STORAGE_AND_REALTIME.md
+│   └── FIREBASE_SETUP.md
+│
+└── ...
+```
+
+## 📚 API Overview
 
 ### Authentication
-- `POST /api/auth/register` - Register user
-- `POST /api/auth/login` - Login and issue `sb_token` cookie
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `POST /api/auth/logout`
+- `GET /api/auth/me`
 
 ### Vendors
-- `GET /api/vendors` - List all vendors
-- `GET /api/vendors/search` - Search by location
-- `POST /api/vendors` - Create vendor
-- `GET /api/vendors/{id}` - Get vendor details
+- `GET /api/vendors`
+- `GET /api/vendors/search`
+- `POST /api/vendors`
+- `GET /api/vendors/{id}`
 
-### Menu
-- `GET /api/vendors/{vendorId}/menu` - Get menu
-- `POST /api/menu` - Add menu item
+### Community (Hot Topics)
+- `GET /api/hottopics`
+- `POST /api/hottopics/community`
+- `POST /api/hottopics/{id}/comment`
+- `POST /api/hottopics/{id}/like`
 
-Full API documentation available at `/swagger-ui/index.html` on the backend.
-
----
+Full API docs: `/swagger-ui/index.html`
 
 ## 🛠️ Tech Stack
 
@@ -160,7 +162,7 @@ Full API documentation available at `/swagger-ui/index.html` on the backend.
 - **ORM**: Spring Data JPA / Hibernate
 - **Auth**: Spring Security + JWT cookie session
 - **Email**: SMTP via `JavaMailSender`
-- **Auxiliary**: Firebase Admin SDK and Firebase Web SDK for realtime mirrors and push
+- **Auxiliary**: Firebase Admin SDK + Firebase Web SDK
 - **Build**: Maven
 
 ### Frontend
@@ -170,7 +172,9 @@ Full API documentation available at `/swagger-ui/index.html` on the backend.
 - **Styling**: Tailwind CSS
 - **Deployment**: Vercel
 
----
+## 🧪 Testing
+
+No centralized test suite is configured yet. Add frontend unit tests with Vitest or Jest, and backend tests with Spring Boot Test + Testcontainers.
 
 ## 📖 Documentation
 
@@ -182,12 +186,6 @@ Full API documentation available at `/swagger-ui/index.html` on the backend.
 | **[DATA_STORAGE_AND_REALTIME.md](Documentation/DATA_STORAGE_AND_REALTIME.md)** | MySQL vs Firebase ownership model |
 | **[DEVELOPMENT_SETUP.md](Documentation/DEVELOPMENT_SETUP.md)** | Local development setup guide |
 | **[FIREBASE_SETUP.md](Documentation/FIREBASE_SETUP.md)** | Auxiliary Firebase configuration |
-
----
-
-## 📝 License
-
-This project is for educational purposes.
 
 ---
 
