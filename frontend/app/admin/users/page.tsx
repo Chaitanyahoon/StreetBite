@@ -11,6 +11,7 @@ import Link from 'next/link'
 export default function UserManagementPage() {
     const [users, setUsers] = useState<ApiUser[]>([])
     const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
     const [searchTerm, setSearchTerm] = useState('')
 
     const fetchUsers = async () => {
@@ -22,9 +23,11 @@ export default function UserManagementPage() {
             // Actually, I should update api.ts first. But I can use a workaround here or update api.ts.
             // I'll update api.ts in the next step.
             const response = await userApi.getAll()
-            setUsers(response)
+            setUsers(Array.isArray(response) ? response : [])
+            setError(null)
         } catch (error) {
             console.error('Error fetching users:', error)
+            setError('Failed to load users. Please refresh and try again.')
         } finally {
             setLoading(false)
         }
@@ -56,6 +59,22 @@ export default function UserManagementPage() {
     })
 
     if (loading) return <div className="p-8">Loading users...</div>
+
+    if (error) {
+        return (
+            <div className="p-8">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Customer Management Unavailable</CardTitle>
+                        <CardDescription>{error}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Button onClick={fetchUsers}>Retry</Button>
+                    </CardContent>
+                </Card>
+            </div>
+        )
+    }
 
     return (
         <div className="p-8 space-y-8">
