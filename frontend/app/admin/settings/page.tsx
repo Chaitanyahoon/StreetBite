@@ -5,17 +5,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Switch } from '@/components/ui/switch'
-import { User, Lock, Bell, Shield } from 'lucide-react'
+import { User } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { toast } from 'sonner'
 
 export default function AdminSettingsPage() {
     const { user, refreshUser } = useAuth()
     const [adminProfile, setAdminProfile] = useState<any>(null)
-    const [maintenanceMode, setMaintenanceMode] = useState(false)
-    const [emailNotifications, setEmailNotifications] = useState(true)
-    const passwordChangeAvailable = false
 
     useEffect(() => {
         if (user) {
@@ -37,7 +33,6 @@ export default function AdminSettingsPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Profile Settings */}
                 <div className="md:col-span-2 space-y-6">
                     <Card>
                         <CardHeader>
@@ -64,10 +59,6 @@ export default function AdminSettingsPage() {
                                     <Label>Role</Label>
                                     <Input value={adminProfile.role || ''} disabled />
                                 </div>
-                                <div className="space-y-2">
-                                    <Label>Phone</Label>
-                                    <Input defaultValue="+91 98765 43210" />
-                                </div>
                             </div>
                             <div className="flex justify-end">
                                 <Button onClick={async () => {
@@ -81,107 +72,6 @@ export default function AdminSettingsPage() {
                                         toast.error('Failed to update profile')
                                     }
                                 }}>Save Changes</Button>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <Lock className="w-5 h-5" />
-                                Security
-                            </CardTitle>
-                            <CardDescription>Manage your password and security settings</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            {!passwordChangeAvailable ? (
-                                <div className="rounded-lg border border-yellow-200 bg-yellow-50 px-4 py-3 text-sm text-yellow-800">
-                                    Password changes are not available yet. Add a secure change-password endpoint before enabling this.
-                                </div>
-                            ) : null}
-
-                            <form onSubmit={(e) => {
-                                e.preventDefault()
-                                toast.error('Password changes are not available yet')
-                            }}>
-                                <div className="space-y-2">
-                                    <Label>Current Password</Label>
-                                    <Input type="password" name="currentPassword" required disabled={!passwordChangeAvailable} />
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <Label>New Password</Label>
-                                        <Input type="password" name="newPassword" required disabled={!passwordChangeAvailable} />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label>Confirm Password</Label>
-                                        <Input type="password" name="confirmPassword" required disabled={!passwordChangeAvailable} />
-                                    </div>
-                                </div>
-                                <div className="flex justify-end mt-4">
-                                    <Button type="submit" variant="outline" disabled={!passwordChangeAvailable}>Update Password</Button>
-                                </div>
-                            </form>
-                        </CardContent>
-                    </Card>
-                </div>
-
-                {/* Platform Settings */}
-                <div className="space-y-6">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <Shield className="w-5 h-5" />
-                                Platform Controls
-                            </CardTitle>
-                            <CardDescription>System-wide configurations</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-6">
-                            <div className="flex items-center justify-between">
-                                <div className="space-y-0.5">
-                                    <Label>Maintenance Mode</Label>
-                                    <p className="text-xs text-muted-foreground">Disable access for all users</p>
-                                </div>
-                                <Switch
-                                    checked={maintenanceMode}
-                                    onCheckedChange={setMaintenanceMode}
-                                />
-                            </div>
-                            <div className="flex items-center justify-between">
-                                <div className="space-y-0.5">
-                                    <Label>New Vendor Registration</Label>
-                                    <p className="text-xs text-muted-foreground">Allow new vendors to sign up</p>
-                                </div>
-                                <Switch defaultChecked />
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <Bell className="w-5 h-5" />
-                                Notifications
-                            </CardTitle>
-                            <CardDescription>Manage system alerts</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-6">
-                            <div className="flex items-center justify-between">
-                                <div className="space-y-0.5">
-                                    <Label>Email Alerts</Label>
-                                    <p className="text-xs text-muted-foreground">Receive critical system emails</p>
-                                </div>
-                                <Switch
-                                    checked={emailNotifications}
-                                    onCheckedChange={setEmailNotifications}
-                                />
-                            </div>
-                            <div className="flex items-center justify-between">
-                                <div className="space-y-0.5">
-                                    <Label>New Vendor Alerts</Label>
-                                    <p className="text-xs text-muted-foreground">Notify when a vendor joins</p>
-                                </div>
-                                <Switch defaultChecked />
                             </div>
                         </CardContent>
                     </Card>

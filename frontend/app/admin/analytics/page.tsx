@@ -4,8 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Download, Calendar, Heart, MessageSquare, Star, Users, ArrowUpRight } from 'lucide-react'
+import { Heart, MessageSquare, Star, Users, ArrowUpRight } from 'lucide-react'
 
 export default function AdminAnalytics() {
 	const [stats, setStats] = useState<any>({
@@ -59,17 +58,8 @@ export default function AdminAnalytics() {
 						</p>
 					</div>
 				</div>
-				<div className="flex gap-2">
-					<Button variant="outline" className="gap-2 bg-white hover:bg-gray-50 shadow-sm border-gray-200">
-						<Calendar className="w-4 h-4" />
-						Last 30 Days
-					</Button>
-					<Button variant="outline" className="gap-2 bg-white hover:bg-gray-50 shadow-sm border-gray-200">
-						<Download className="w-4 h-4" />
-						Export Report
-					</Button>
-				</div>
-			</div>
+			<div />
+		</div>
 
 			{/* Platform Overview */}
 			<div className="grid grid-cols-1 md:grid-cols-4 gap-6">

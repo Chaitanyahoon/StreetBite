@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Home, Store, Users, BarChart3, Settings, LogOut, Flag } from 'lucide-react'
+import { Home, Store, Users, LogOut } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/context/AuthContext'
 
@@ -21,21 +21,6 @@ const navItems = [
     label: 'User Management',
     href: '/admin/users',
     icon: Users,
-  },
-  {
-    label: 'Analytics',
-    href: '/admin/analytics',
-    icon: BarChart3,
-  },
-  {
-    label: 'Reports',
-    href: '/admin/reports',
-    icon: Flag,
-  },
-  {
-    label: 'Settings',
-    href: '/admin/settings',
-    icon: Settings,
   },
   {
     label: 'Hot Topics',

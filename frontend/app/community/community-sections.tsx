@@ -446,7 +446,7 @@ export function DiscussionModal({
               Newest replies first
             </p>
           </div>
-          {selectedDiscussion.comments?.slice().reverse().map((comment: any) => (
+          {(selectedDiscussion.comments ?? []).slice().reverse().map((comment: any) => (
             <div key={comment.id} className="p-4 bg-white rounded-2xl border-2 border-black shadow-[4px_4px_0px_0px_#e5e7eb]">
               <div className="flex items-start justify-between mb-2">
                 <div className="flex items-center gap-3">

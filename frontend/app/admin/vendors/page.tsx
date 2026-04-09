@@ -31,7 +31,6 @@ interface Vendor {
   status: 'APPROVED' | 'PENDING' | 'SUSPENDED' | 'REJECTED' | 'AVAILABLE' | 'BUSY' | 'UNAVAILABLE' | 'BANNED'
   joined: string
   rating: number
-  revenue: string
 }
 
 export default function VendorManagement() {
@@ -58,7 +57,6 @@ export default function VendorManagement() {
         status: v.status || (v.isActive ? 'APPROVED' : 'PENDING'),
         joined: v.createdAt ? new Date(v.createdAt).toLocaleDateString() : 'Unknown',
         rating: v.rating || 0,
-        revenue: '₹0', // Placeholder
       }))
       setVendors(mappedVendors)
       setError(null)
@@ -178,7 +176,6 @@ export default function VendorManagement() {
                   <TableHead>Location</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Rating</TableHead>
-                  <TableHead>Revenue</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -205,7 +202,6 @@ export default function VendorManagement() {
                         <span className="text-muted-foreground">-</span>
                       )}
                     </TableCell>
-                    <TableCell className="font-medium">{vendor.revenue}</TableCell>
                     <TableCell>
                       <div className="flex gap-2">
                         <Dialog>

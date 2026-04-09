@@ -100,9 +100,16 @@ function CommunityPageContent() {
     const topicsRequestIdRef = useRef(0);
     const discussionsRef = useRef<Discussion[]>([]);
     const nonNearbySortRef = useRef<TopicSort>('newest');
+    const uiSelectionRef = useRef<{ id: string; urlSynced: boolean } | null>(null);
 
     const isSameDiscussionId = (leftId: Discussion['id'], rightId: Discussion['id']) =>
         String(leftId) === String(rightId);
+
+    const normalizeDiscussion = (discussion: any): Discussion => ({
+        ...discussion,
+        likes: Array.isArray(discussion?.likes) ? discussion.likes : [],
+        comments: Array.isArray(discussion?.comments) ? discussion.comments : [],
+    });
 
     const updateDiscussionById = (discussionId: Discussion['id'], updater: (discussion: Discussion) => Discussion) => {
         setDiscussions((previousDiscussions) =>
@@ -239,8 +246,9 @@ function CommunityPageContent() {
             if (topicsRequestIdRef.current !== requestId) {
                 return;
             }
-            setDiscussions(data);
-            setActiveNowCount(countActiveTopics(data));
+            const normalizedTopics = Array.isArray(data) ? data.map(normalizeDiscussion) : [];
+            setDiscussions(normalizedTopics);
+            setActiveNowCount(countActiveTopics(normalizedTopics));
             setLastTopicsRefreshAt(new Date());
             setTopicsError(null);
         } catch (error) {
@@ -297,6 +305,7 @@ function CommunityPageContent() {
     }, []);
 
     const handleDiscussionClick = (discussion: Discussion) => {
+        uiSelectionRef.current = { id: String(discussion.id), urlSynced: false };
         setSelectedDiscussion(discussion);
         if (authUser && discussion.likes) {
             const liked = discussion.likes.some((l: any) => l.user?.id === authUser.id);
@@ -789,6 +798,13 @@ function CommunityPageContent() {
         const topicId = searchParams.get('topic')
         if (!topicId) {
             if (selectedDiscussion) {
+                const selection = uiSelectionRef.current
+                const isUiSelection =
+                    selection && selection.id === String(selectedDiscussion.id)
+                if (isUiSelection && !selection.urlSynced) {
+                    return
+                }
+                uiSelectionRef.current = null
                 setSelectedDiscussion(null)
                 setHasLiked(false)
                 setNewComment('')
@@ -803,6 +819,12 @@ function CommunityPageContent() {
 
         if (selectedDiscussion?.id === matchedDiscussion.id) {
             return
+        }
+
+        if (uiSelectionRef.current?.id === topicId) {
+            uiSelectionRef.current = { id: topicId, urlSynced: true }
+        } else {
+            uiSelectionRef.current = null
         }
 
         setSelectedDiscussion(matchedDiscussion)

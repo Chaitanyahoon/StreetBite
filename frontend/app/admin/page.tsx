@@ -131,17 +131,6 @@ export default function AdminDashboard() {
         </div>
         <div className="flex gap-2">
           <Button
-            className="bg-white hover:bg-gray-50 text-foreground border shadow-sm hover:shadow transition-all"
-            onClick={() => {
-              const element = document.getElementById('system-status');
-              if (element) {
-                element.scrollIntoView({ behavior: 'smooth' });
-              }
-            }}
-          >
-            System Health
-          </Button>
-          <Button
             className="bg-primary hover:bg-primary/90 text-white shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5"
             onClick={() => {
               // Generate CSV content with proper escaping and BOM for Excel
@@ -391,9 +380,6 @@ export default function AdminDashboard() {
                 </div>
               ))}
             </div>
-            <Button variant="outline" className="w-full mt-6 hover:bg-gray-50 border-dashed">
-              View All Vendors
-            </Button>
           </CardContent>
         </Card>
 
@@ -482,39 +468,6 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="border-none shadow-lg" id="system-status">
-            <CardHeader>
-              <CardTitle className="text-lg font-bold">System Status</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 bg-emerald-50 rounded-xl border border-emerald-100">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-emerald-100 rounded-lg">
-                      <ShieldCheck className="w-4 h-4 text-emerald-700" />
-                    </div>
-                    <span className="font-medium text-sm text-emerald-900">API Gateway</span>
-                  </div>
-                  <span className="relative flex h-2.5 w-2.5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-                  </span>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-emerald-50 rounded-xl border border-emerald-100">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-emerald-100 rounded-lg">
-                      <ShieldCheck className="w-4 h-4 text-emerald-700" />
-                    </div>
-                    <span className="font-medium text-sm text-emerald-900">Database</span>
-                  </div>
-                  <span className="relative flex h-2.5 w-2.5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-                  </span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </div>
     </div>
