@@ -66,6 +66,8 @@ export default function HotTopicManagement() {
       // The API returns the full object with nested likes and comments
       const mapped = data.map((t: any) => ({
         ...t,
+        isActive: t.isActive ?? t.active ?? false,
+        isApproved: t.isApproved ?? t.approved ?? false,
         likesCount: t.likes?.length || 0,
         commentsCount: t.comments?.length || 0
       }))
