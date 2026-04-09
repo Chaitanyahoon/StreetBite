@@ -1,11 +1,11 @@
-# 🍽️ StreetBite — Street Food Discovery Platform
+# 🍽️ StreetBite — Street Food Discovery, Done Right
 
 ![Version](https://img.shields.io/badge/version-1.0.0-orange)
 ![Frontend](https://img.shields.io/badge/frontend-Vercel-black?logo=vercel)
 ![Backend](https://img.shields.io/badge/backend-Render-black?logo=render)
 ![Database](https://img.shields.io/badge/database-Aiven-orange?logo=mysql)
 
-StreetBite connects food lovers with local street food vendors. It ships a public discovery experience and a vendor/admin backend for moderation, listings, and analytics. Built with **Next.js** (frontend) and **Spring Boot** (backend) on **MySQL**.
+StreetBite is a full‑stack platform for finding the best street food nearby, building vendor loyalty, and sparking community conversations. It pairs a fast consumer experience with a robust admin/vendor backend for moderation, listings, and analytics.
 
 ## 🚀 Live
 
@@ -17,7 +17,14 @@ StreetBite connects food lovers with local street food vendors. It ships a publi
 
 > **Note**: Render free tier can sleep after inactivity. First request can take ~50 seconds.
 
-## ✨ What This App Does
+## ✨ Why It’s Different
+
+- **Discovery-first UX**: location-aware search, live status, and curated vendor cards.
+- **Community layer**: hot topics, replies, and likes drive repeat visits.
+- **Operational control**: vendor status, approvals, and moderation tools for admins.
+- **Built for scale**: clean separation of concerns and a predictable API surface.
+
+## ✨ Core Features
 
 - 🔍 **Discover vendors** by location, cuisine, and live status
 - 👤 **Auth** for customers, vendors, and admins
