@@ -39,6 +39,7 @@ interface DiscussionModalProps {
   hasLiked: boolean
   newComment: string
   selectedDiscussion: Discussion | null
+  isSubmittingComment?: boolean
   onClose: () => void
   onCommentChange: (value: string) => void
   onLike: () => void
@@ -361,6 +362,7 @@ export function DiscussionModal({
   hasLiked,
   newComment,
   selectedDiscussion,
+  isSubmittingComment,
   onClose,
   onCommentChange,
   onLike,
@@ -480,20 +482,25 @@ export function DiscussionModal({
               value={newComment}
               onChange={(e) => onCommentChange(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === 'Enter') {
+                if (e.key === 'Enter' && !isSubmittingComment) {
                   e.preventDefault()
                   onPostComment()
                 }
               }}
+              disabled={isSubmittingComment}
               placeholder="Add a comment..."
-              className="flex-1 px-4 py-3 rounded-xl border-4 border-black font-bold placeholder:text-gray-400 focus:ring-0 focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-sm bg-white transition-all"
+              className="flex-1 px-4 py-3 rounded-xl border-4 border-black font-bold placeholder:text-gray-400 focus:ring-0 focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-sm bg-white transition-all disabled:bg-gray-100 disabled:text-gray-500"
             />
             <Button
               onClick={onPostComment}
-              disabled={!newComment.trim()}
+              disabled={!newComment.trim() || isSubmittingComment}
               className="h-auto px-6 rounded-xl bg-orange-500 hover:bg-orange-600 text-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
             >
-              <Send className="w-5 h-5" />
+              {isSubmittingComment ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <Send className="w-5 h-5" />
+              )}
             </Button>
           </div>
           <p className="mt-2 text-[10px] font-bold uppercase tracking-[0.14em] text-black/50">

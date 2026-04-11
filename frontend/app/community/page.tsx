@@ -97,10 +97,12 @@ function CommunityPageContent() {
     const [userLocation, setUserLocation] = useState<UserCoordinates | null>(null);
     const [isLocationLoading, setIsLocationLoading] = useState(false);
     const [locationError, setLocationError] = useState<string | null>(null);
+    const [isSubmittingComment, setIsSubmittingComment] = useState(false);
     const topicsRequestIdRef = useRef(0);
     const discussionsRef = useRef<Discussion[]>([]);
     const nonNearbySortRef = useRef<TopicSort>('newest');
     const uiSelectionRef = useRef<{ id: string; urlSynced: boolean } | null>(null);
+    const commentSubmissionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     const isSameDiscussionId = (leftId: Discussion['id'], rightId: Discussion['id']) =>
         String(leftId) === String(rightId);
@@ -468,6 +470,8 @@ function CommunityPageContent() {
         const trimmedComment = newComment.trim();
         if (!trimmedComment) return;
         if (!selectedDiscussion) return;
+        // Prevent multiple simultaneous submissions
+        if (isSubmittingComment) return;
 
         if (!authIsLoggedIn) {
             toast('Please sign in to comment', {
@@ -488,6 +492,12 @@ function CommunityPageContent() {
                 displayName: authUser?.displayName || 'You',
             },
         };
+
+        // Set submitting state and clear any pending timeouts
+        setIsSubmittingComment(true);
+        if (commentSubmissionTimeoutRef.current) {
+            clearTimeout(commentSubmissionTimeoutRef.current);
+        }
 
         setNewComment('');
         updateDiscussionById(discussionId, (discussion) => ({
@@ -528,9 +538,14 @@ function CommunityPageContent() {
                 toast.success("Comment posted!");
             }
         } catch (error: any) {
-            console.error('Failed to post comment', error);
-            // Check for authentication errors
-            if (error?.response?.status === 401 || error?.response?.status === 400) {
+            console.error('Failed to post comment:', {
+                status: error?.response?.status,
+                data: error?.response?.data,
+                message: error?.message
+            });
+            
+            // Check for authentication/authorization errors
+            if (error?.response?.status === 401) {
                 const errorMsg = error?.response?.data?.error || '';
                 if (errorMsg.includes('log in') || errorMsg.includes('session') || errorMsg.includes('Invalid')) {
                     toast.error('Session expired. Please log in again.', {
@@ -540,13 +555,33 @@ function CommunityPageContent() {
                     setTimeout(() => window.location.href = '/signin', 1500);
                     return;
                 }
+            } else if (error?.response?.status === 403) {
+                // Handle forbidden - likely auth issue
+                toast.error('Access denied. Your session may have expired.', {
+                    description: 'Please try logging in again.'
+                });
+                await logout();
+                setTimeout(() => window.location.href = '/signin', 2000);
+                return;
+            } else if (error?.response?.status === 400) {
+                const errorMsg = error?.response?.data?.error || 'Invalid comment';
+                toast.error('Unable to post comment', {
+                    description: errorMsg
+                });
             }
+            
+            // Rollback optimistic update on error
             updateDiscussionById(discussionId, (discussion) => ({
                 ...discussion,
                 comments: (discussion.comments ?? []).filter((comment) => comment.id !== optimisticCommentId),
             }));
             setNewComment(trimmedComment);
-            toast.error('Failed to post comment');
+            
+            if (!error?.response?.status || ![401, 403, 400].includes(error.response.status)) {
+                toast.error('Failed to post comment. Please try again.');
+            }
+        } finally {
+            setIsSubmittingComment(false);
         }
     };
 
@@ -808,6 +843,10 @@ function CommunityPageContent() {
                 setSelectedDiscussion(null)
                 setHasLiked(false)
                 setNewComment('')
+                // Cancel any pending comment submissions when closing modal
+                if (commentSubmissionTimeoutRef.current) {
+                    clearTimeout(commentSubmissionTimeoutRef.current)
+                }
             }
             return
         }
@@ -835,7 +874,7 @@ function CommunityPageContent() {
             setHasLiked(false)
         }
         setNewComment('')
-    }, [discussions, searchParams, hasInitializedUrlState, selectedDiscussion, authUser])
+    }, [discussions, searchParams, hasInitializedUrlState, authUser])
 
     return (
         <div className="min-h-screen">
@@ -1509,6 +1548,7 @@ function CommunityPageContent() {
                 hasLiked={hasLiked}
                 newComment={newComment}
                 selectedDiscussion={selectedDiscussion}
+                isSubmittingComment={isSubmittingComment}
                 onClose={() => setSelectedDiscussion(null)}
                 onCommentChange={setNewComment}
                 onLike={handleLikeDiscussion}
