@@ -2,6 +2,8 @@ package com.streetbite.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +16,8 @@ import java.util.Map;
 
 @Service
 public class EmailService {
+
+    private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
 
     private volatile String lastErrorMessage = "Email delivery is unavailable";
     private final HttpClient httpClient = HttpClient.newHttpClient();
@@ -42,11 +46,9 @@ public class EmailService {
 
     @PostConstruct
     void logEmailJsConfig() {
-        System.out.println("EmailJS config: service=" + sanitize(emailJsServiceId)
-                + ", authTemplate=" + sanitize(emailJsAuthTemplateId)
-                + ", resetTemplate=" + sanitize(emailJsPasswordResetTemplateId)
-                + ", publicKeyPresent=" + !sanitize(emailJsPublicKey).isBlank()
-                + ", privateKeyPresent=" + !sanitize(emailJsPrivateKey).isBlank());
+        logger.info("EmailJS config: service={}, authTemplate={}, resetTemplate={}, publicKeyPresent={}, privateKeyPresent={}",
+                sanitize(emailJsServiceId), sanitize(emailJsAuthTemplateId), sanitize(emailJsPasswordResetTemplateId),
+                !sanitize(emailJsPublicKey).isBlank(), !sanitize(emailJsPrivateKey).isBlank());
     }
 
     public boolean canSendEmail() {
@@ -101,28 +103,27 @@ public class EmailService {
         try {
             HttpResponse<String> response = sendWithEmailJsAttempt(to, templateId, templateParams, true);
             if (response.statusCode() >= 200 && response.statusCode() < 300) {
-                System.out.println(label + " sent successfully via EmailJS to " + to);
+                logger.info("{} sent successfully via EmailJS to {}", label, to);
                 setLastErrorMessage("OK");
                 return true;
             }
 
             if (shouldRetryWithoutPrivateKey(response)) {
-                System.out.println("Retrying " + label + " via EmailJS without private key");
+                logger.info("Retrying {} via EmailJS without private key", label);
                 response = sendWithEmailJsAttempt(to, templateId, templateParams, false);
                 if (response.statusCode() >= 200 && response.statusCode() < 300) {
-                    System.out.println(label + " sent successfully via EmailJS retry to " + to);
+                    logger.info("{} sent successfully via EmailJS retry to {}", label, to);
                     setLastErrorMessage("OK");
                     return true;
                 }
             }
 
             setLastErrorMessage("EmailJS API error " + response.statusCode() + ": " + response.body());
-            System.err.println("Failed to send " + label + " via EmailJS to " + to + ": " + response.body());
+            logger.error("Failed to send {} via EmailJS to {}: {}", label, to, response.body());
             return false;
         } catch (Exception e) {
             setLastErrorMessage(e.getClass().getSimpleName() + ": " + e.getMessage());
-            System.err.println("Failed to send " + label + " via EmailJS to " + to + ": " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Failed to send {} via EmailJS to {}: {}", label, to, e.getMessage(), e);
             return false;
         }
     }
@@ -171,13 +172,13 @@ public class EmailService {
     }
 
     public boolean sendVerificationCodeEmail(String to, String code) {
-        System.out.println("==================================================");
-        System.out.println("EMAIL VERIFICATION CODE FOR: " + to);
-        System.out.println(code);
-        System.out.println("==================================================");
+        logger.debug("==================================================");
+        logger.debug("EMAIL VERIFICATION CODE FOR: {}", to);
+        logger.debug("{}", code);
+        logger.debug("==================================================");
 
         if (!canSendEmail()) {
-            System.err.println("EmailJS not configured - verification email not sent.");
+            logger.warn("EmailJS not configured - verification email not sent.");
             setLastErrorMessage("EmailJS is not configured correctly");
             return false;
         }
@@ -197,13 +198,13 @@ public class EmailService {
         String resetLink = frontendUrl + "/reset-password?token=" + token;
 
         // ALWAYS log the link so it can be retrieved from Render logs
-        System.out.println("==================================================");
-        System.out.println("PASSWORD RESET LINK FOR: " + to);
-        System.out.println(resetLink);
-        System.out.println("==================================================");
+        logger.debug("==================================================");
+        logger.debug("PASSWORD RESET LINK FOR: {}", to);
+        logger.debug("{}", resetLink);
+        logger.debug("==================================================");
 
         if (!canSendEmail()) {
-            System.err.println("EmailJS not configured - password reset email not sent.");
+            logger.warn("EmailJS not configured - password reset email not sent.");
             setLastErrorMessage("EmailJS is not configured correctly");
             return false;
         }

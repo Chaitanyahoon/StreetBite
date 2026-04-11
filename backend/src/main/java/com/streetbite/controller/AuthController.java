@@ -19,14 +19,14 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.Duration;
-import java.util.Map;
-import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
     private static final String COOKIE_NAME = "sb_token";
     private static final int COOKIE_MAX_AGE = 24 * 60 * 60; // 24 hours
     private final UserService userService;
@@ -163,7 +163,7 @@ public class AuthController {
                     "email", savedUser.getEmail(),
                     "message", "Verification code sent"));
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error during user registration", e);
             return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
         }
     }
@@ -231,7 +231,7 @@ public class AuthController {
             // Token is issued via HttpOnly cookie.
             return ResponseEntity.ok(new AuthSuccessResponse(true, userData));
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error during user login", e);
             return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
         }
     }
@@ -287,7 +287,7 @@ public class AuthController {
             AuthUserResponse userData = authService.buildUserData(user);
             return ResponseEntity.ok(new AuthSuccessResponse(true, userData));
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error during email verification", e);
             return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
         }
     }
@@ -329,7 +329,7 @@ public class AuthController {
 
             return ResponseEntity.ok(Map.of("success", true, "message", "Verification code sent."));
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error during resend verification", e);
             return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
         }
     }

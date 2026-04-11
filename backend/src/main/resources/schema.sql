@@ -366,6 +366,23 @@ CREATE TABLE IF NOT EXISTS topic_comments (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- Ensure topic_comments schema is up to date (text -> content cleanup)
+SET @dbname = DATABASE();
+SET @preparedStatement = (SELECT IF(
+  (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = @dbname AND TABLE_NAME = 'topic_comments' AND COLUMN_NAME = 'text') > 0
+  AND
+  (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = @dbname AND TABLE_NAME = 'topic_comments' AND COLUMN_NAME = 'content') > 0,
+  'ALTER TABLE topic_comments DROP COLUMN `text`',
+  IF(
+    (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = @dbname AND TABLE_NAME = 'topic_comments' AND COLUMN_NAME = 'text') > 0,
+    'ALTER TABLE topic_comments CHANGE COLUMN `text` `content` TEXT NOT NULL',
+    'SELECT 1'
+  )
+));
+PREPARE fixCommentsSchema FROM @preparedStatement;
+EXECUTE fixCommentsSchema;
+DEALLOCATE PREPARE fixCommentsSchema;
+
 -- 16. TOPIC LIKES
 CREATE TABLE IF NOT EXISTS topic_likes (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
