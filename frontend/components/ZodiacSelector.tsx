@@ -63,8 +63,8 @@ export function ZodiacSelector({ onSelect }: ZodiacSelectorProps) {
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6 pt-2 pb-8 px-8">
-                <div className="grid grid-cols-2 gap-6">
-                    <div className="space-y-2">
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-3">
                         <Label htmlFor="day" className="font-black text-black uppercase tracking-wider text-xs ml-1">Day</Label>
                         <Input
                             id="day"
@@ -74,10 +74,10 @@ export function ZodiacSelector({ onSelect }: ZodiacSelectorProps) {
                             max="31"
                             value={day}
                             onChange={(e) => setDay(e.target.value)}
-                            className="h-12 border-2 border-black rounded-xl text-lg font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus-visible:ring-0 focus-visible:ring-offset-0 focus:translate-x-[2px] focus:translate-y-[2px] focus:shadow-none transition-all bg-white"
+                            className="h-14 border-4 border-black rounded-[1rem] text-xl font-black text-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus-visible:ring-0 focus-visible:ring-offset-0 focus:translate-x-[2px] focus:translate-y-[2px] focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all bg-[#fafafa]"
                         />
                     </div>
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                         <Label htmlFor="month" className="font-black text-black uppercase tracking-wider text-xs ml-1">Month</Label>
                         <Input
                             id="month"
@@ -87,17 +87,16 @@ export function ZodiacSelector({ onSelect }: ZodiacSelectorProps) {
                             max="12"
                             value={month}
                             onChange={(e) => setMonth(e.target.value)}
-                            className="h-12 border-2 border-black rounded-xl text-lg font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus-visible:ring-0 focus-visible:ring-offset-0 focus:translate-x-[2px] focus:translate-y-[2px] focus:shadow-none transition-all bg-white"
+                            className="h-14 border-4 border-black rounded-[1rem] text-xl font-black text-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus-visible:ring-0 focus-visible:ring-offset-0 focus:translate-x-[2px] focus:translate-y-[2px] focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all bg-[#fafafa]"
                         />
                     </div>
                 </div>
 
                 <Button
-                    className="w-full h-14 text-lg bg-black text-white hover:bg-gray-800 font-black uppercase tracking-widest border-2 border-black rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5 transition-all active:translate-y-0 active:shadow-none"
+                    className="w-full h-14 text-lg bg-orange-500 text-black hover:bg-yellow-400 font-black uppercase tracking-widest border-4 border-black rounded-[1rem] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] group hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all active:translate-y-1 active:shadow-[0px_0px_0px_0px_rgba(0,0,0,1)]"
                     onClick={handleSubmit}
-                    disabled={!day || !month}
                 >
-                    Reveal My Sign 🔮
+                    Reveal My Sign <span className="ml-2 group-hover:animate-bounce">🔮</span>
                 </Button>
             </CardContent>
         </Card>

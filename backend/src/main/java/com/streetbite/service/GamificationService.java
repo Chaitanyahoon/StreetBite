@@ -73,7 +73,7 @@ public class GamificationService {
     }
 
     public List<LeaderboardUserResponse> getLeaderboard() {
-        return userRepository.findTop10ByRoleAndIsActiveTrueOrderByXpDesc(User.Role.USER).stream()
+        return userRepository.findTop50ByRoleAndIsActiveTrueOrderByXpDesc(User.Role.USER).stream()
                 .map(user -> LeaderboardUserResponse.from(user, calculateLevel(user.getXp() != null ? user.getXp() : 0)))
                 .toList();
     }
@@ -81,17 +81,17 @@ public class GamificationService {
     public Map<String, List<LeaderboardUserResponse>> getNicheLeaderboards() {
         Map<String, List<LeaderboardUserResponse>> leaderboards = new HashMap<>();
         
-        leaderboards.put("spice", userRepository.findTop10ByRoleAndIsActiveTrueOrderBySpiceXpDesc(User.Role.USER).stream()
+        leaderboards.put("spice", userRepository.findTop50ByRoleAndIsActiveTrueOrderBySpiceXpDesc(User.Role.USER).stream()
                 .filter(u -> u.getSpiceXp() > 0)
                 .map(user -> LeaderboardUserResponse.fromNiche(user, user.getSpiceXp()))
                 .toList());
                 
-        leaderboards.put("sugar", userRepository.findTop10ByRoleAndIsActiveTrueOrderBySugarXpDesc(User.Role.USER).stream()
+        leaderboards.put("sugar", userRepository.findTop50ByRoleAndIsActiveTrueOrderBySugarXpDesc(User.Role.USER).stream()
                 .filter(u -> u.getSugarXp() > 0)
                 .map(user -> LeaderboardUserResponse.fromNiche(user, user.getSugarXp()))
                 .toList());
                 
-        leaderboards.put("night", userRepository.findTop10ByRoleAndIsActiveTrueOrderByNightOwlXpDesc(User.Role.USER).stream()
+        leaderboards.put("night", userRepository.findTop50ByRoleAndIsActiveTrueOrderByNightOwlXpDesc(User.Role.USER).stream()
                 .filter(u -> u.getNightOwlXp() > 0)
                 .map(user -> LeaderboardUserResponse.fromNiche(user, user.getNightOwlXp()))
                 .toList());

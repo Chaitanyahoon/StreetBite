@@ -7,15 +7,27 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
 
-export function StreetSideAMA() {
+export interface StreetSideAMAProps {
+    vendor?: {
+        name?: string;
+        description?: string;
+        displayImageUrl?: string;
+    } | null;
+}
+
+export function StreetSideAMA({ vendor }: StreetSideAMAProps) {
     const [question, setQuestion] = useState('')
+
+    const vendorName = vendor?.name || "Momo King";
+    const vendorDesc = vendor?.description || "Ask me anything about my secret 12-spice red chutney recipe or how I started this cart 10 years ago!";
+    const vendorImage = vendor?.displayImageUrl || "https://images.unsplash.com/photo-1626776876729-bab4369a5a5a?w=400&q=80";
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
         if (!question.trim()) return
 
         toast.success("Question submitted!", {
-            description: "If selected, Momo King will answer it live.",
+            description: `If selected, ${vendorName} will answer it live.`,
             style: {
                 background: '#000',
                 color: '#fff',
@@ -44,15 +56,15 @@ export function StreetSideAMA() {
                     <div className="p-6 md:border-r-4 border-black flex flex-col items-center text-center">
                         <div className="relative mb-4">
                             <div className="w-24 h-24 rounded-full border-4 border-black overflow-hidden bg-white">
-                                <img src="https://images.unsplash.com/photo-1626776876729-bab4369a5a5a?w=400&q=80" alt="Momo King" className="w-full h-full object-cover" />
+                                <img src={vendorImage} alt={vendorName} className="w-full h-full object-cover" />
                             </div>
                             <div className="absolute -bottom-2 -right-2 bg-emerald-400 border-2 border-black rounded-lg px-2 py-0.5 text-[10px] font-black uppercase rotate-6">
                                 Featured
                             </div>
                         </div>
-                        <h4 className="font-black text-3xl uppercase mb-1">Momo King</h4>
-                        <p className="font-bold text-gray-600 mb-4 px-4 text-sm">
-                            "Ask me anything about my secret 12-spice red chutney recipe or how I started this cart 10 years ago!"
+                        <h4 className="font-black text-3xl uppercase mb-1">{vendorName}</h4>
+                        <p className="font-bold text-gray-600 mb-4 px-4 text-sm line-clamp-3">
+                            "{vendorDesc}"
                         </p>
                         
                         <form onSubmit={handleSubmit} className="w-full mt-auto relative">

@@ -1462,7 +1462,7 @@ function CommunityPageContent() {
                                         <BiteBounties />
                                         <FlavorLeaderboards />
                                     </div>
-                                    <StreetSideAMA />
+                                    <StreetSideAMA vendor={vendor} />
                                 </div>
 
                                 <div className="border-4 border-black rounded-3xl overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white mt-8">

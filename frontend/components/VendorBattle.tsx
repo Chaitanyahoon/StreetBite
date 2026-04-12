@@ -125,11 +125,10 @@ export function VendorBattle() {
                         Skip <X className="w-4 h-4 ml-1" />
                     </Button>
                 </div>
-
-                <div className="flex-1 flex items-center justify-between gap-4 relative min-h-[220px]">
+                <div className="flex-1 flex flex-col sm:flex-row items-stretch justify-center gap-8 sm:gap-16 relative py-4">
                     {/* VS Badge */}
                     <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-none">
-                        <div className="w-16 h-16 rounded-full bg-black text-white font-black flex items-center justify-center border-4 border-white shadow-[0_0_0_4px_black] text-xl rotate-12">
+                        <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-black text-white font-black flex items-center justify-center border-4 border-white shadow-[0_0_0_4px_black] text-lg sm:text-xl -rotate-12 transform scale-110">
                             VS
                         </div>
                     </div>
@@ -137,34 +136,38 @@ export function VendorBattle() {
                     {pair.map((vendor, index) => (
                         <motion.div
                             key={vendor.id}
-                            className={`flex-1 relative cursor-pointer group/card h-full ${hasVoted && index !== selectedIndex ? "opacity-50 grayscale" : ""}`}
+                            className={`w-full sm:flex-1 relative cursor-pointer group/card ${hasVoted && index !== selectedIndex ? "opacity-50 grayscale" : ""}`}
                             whileHover={{ scale: hasVoted ? 1 : 1.02, y: hasVoted ? 0 : -4 }}
                             whileTap={{ scale: hasVoted ? 1 : 0.96 }}
                             onClick={() => handleVote(index as 0 | 1)}
                         >
-                            <div className={`h-full bg-white rounded-2xl p-4 border-4 border-black transition-all duration-300 ${!hasVoted ? "hover:bg-yellow-50 hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]" : "shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"}`}>
-                                <div className="text-center flex flex-col items-center justify-center h-full gap-4">
-                                    <div className={`w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center text-4xl border-4 ${hasVoted && index === selectedIndex ? "border-green-500 bg-green-50" : "border-black"} overflow-hidden`}>
+                            <div className={`h-full bg-white rounded-[2rem] p-6 border-4 border-black transition-all duration-300 flex flex-col justify-between ${!hasVoted ? "hover:bg-yellow-50 hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]" : "shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]"}`}>
+                                <div className="text-center flex flex-col items-center justify-center gap-4">
+                                    <div className={`w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-gradient-to-tr from-gray-100 to-gray-50 flex items-center justify-center text-4xl border-4 ${hasVoted && index === selectedIndex ? "border-green-500 bg-green-50 shadow-[0_0_20px_rgba(34,197,94,0.4)]" : "border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] group-hover/card:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-shadow"} overflow-hidden relative`}>
                                         {vendor.image ? (
                                             <Image
                                                 src={vendor.image}
                                                 alt={vendor.name}
                                                 fill
                                                 unoptimized
-                                                sizes="96px"
+                                                sizes="128px"
                                                 className="object-cover"
                                             />
                                         ) : (
-                                            <span className="transform group-hover/card:scale-110 transition-transform duration-300 text-xl font-black text-black">SB</span>
+                                            <span className="transform group-hover/card:scale-110 transition-transform duration-300 text-2xl font-black text-black">SB</span>
                                         )}
                                     </div>
-                                    <h3 className="font-black text-lg leading-tight text-black w-full line-clamp-2 min-h-[3rem] flex items-center justify-center uppercase">
+                                    
+                                    <h3 className="font-black text-xl sm:text-2xl leading-tight text-black w-full min-h-[3.5rem] flex items-center justify-center uppercase tracking-tight break-words px-2">
                                         {vendor.name}
                                     </h3>
+                                    
                                     {!hasVoted && (
-                                        <span className="rounded-full border-2 border-black bg-black px-3 py-1 text-[0.65rem] font-black uppercase tracking-[0.2em] text-white">
-                                            Tap to vote
-                                        </span>
+                                        <div className="mt-2 text-center w-full">
+                                            <span className="inline-block rounded-xl border-4 border-black bg-emerald-400 px-6 py-2.5 text-xs font-black uppercase tracking-[0.2em] text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] group-hover/card:bg-yellow-400 group-hover/card:translate-y-1 group-hover/card:shadow-[0px_0px_0px_0px_rgba(0,0,0,1)] transition-all">
+                                                Tap to vote
+                                            </span>
+                                        </div>
                                     )}
 
                                     <AnimatePresence>

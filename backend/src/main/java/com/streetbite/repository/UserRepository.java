@@ -10,17 +10,17 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByResetPasswordToken(String token);
     
-    List<User> findTop10ByOrderByXpDesc();
+    List<User> findTop50ByOrderByXpDesc();
 
-    List<User> findTop10ByRoleOrderByXpDesc(User.Role role);
+    List<User> findTop50ByRoleOrderByXpDesc(User.Role role);
 
     // Leaderboard query that excludes banned users (isActive = false)
-    List<User> findTop10ByRoleAndIsActiveTrueOrderByXpDesc(User.Role role);
+    List<User> findTop50ByRoleAndIsActiveTrueOrderByXpDesc(User.Role role);
 
     // Niche Leaderboard queries
-    List<User> findTop10ByRoleAndIsActiveTrueOrderBySpiceXpDesc(User.Role role);
-    List<User> findTop10ByRoleAndIsActiveTrueOrderBySugarXpDesc(User.Role role);
-    List<User> findTop10ByRoleAndIsActiveTrueOrderByNightOwlXpDesc(User.Role role);
+    List<User> findTop50ByRoleAndIsActiveTrueOrderBySpiceXpDesc(User.Role role);
+    List<User> findTop50ByRoleAndIsActiveTrueOrderBySugarXpDesc(User.Role role);
+    List<User> findTop50ByRoleAndIsActiveTrueOrderByNightOwlXpDesc(User.Role role);
 
     List<User> findAllByOrderByXpDesc();
 

@@ -101,4 +101,11 @@ public class GamificationController {
         GamificationActionResponse response = gamificationService.buildActionResponse(updatedUser, niche);
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/cleanup-ghosts")
+    public ResponseEntity<?> cleanupGhosts() {
+        return ResponseEntity.ok(Map.of(
+            "message", "To cleanup ghost accounts, simply ban them in the admin dashboard. The leaderboard now displays the Top 50 users and automatically hides banned accounts!"
+        ));
+    }
 }
