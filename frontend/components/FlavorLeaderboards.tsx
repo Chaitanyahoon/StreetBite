@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Crown, Flame, Cookie, Moon, Trophy, Loader2 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
+import { gamificationApi } from '@/lib/api'
 
 type LeaderboardCategory = 'spice' | 'sugar' | 'night'
 
@@ -28,24 +29,18 @@ export function FlavorLeaderboards() {
     useEffect(() => {
         const fetchLeaderboards = async () => {
             try {
-                // In local dev, assuming no CORS issues since next.config.js might proxy, 
-                // or backend runs on 8081. Let's use relative path if we have rewrites or absolute if needed.
-                // Assuming NextJS proxy or standard fetch:
-                const res = await fetch('http://localhost:8081/api/gamification/niche-leaderboard');
-                if (res.ok) {
-                    const data = await res.json();
-                    
-                    // Helper to inject ranks
-                    const addRanks = (arr: ApiUser[]): RankedUser[] => {
-                        return (arr || []).map((u, i) => ({ ...u, rank: i + 1 }));
-                    }
-
-                    setLeaderboardData({
-                        spice: addRanks(data.spice),
-                        sugar: addRanks(data.sugar),
-                        night: addRanks(data.night)
-                    });
+                const data = await gamificationApi.getNicheLeaderboards();
+                
+                // Helper to inject ranks
+                const addRanks = (arr: ApiUser[]): RankedUser[] => {
+                    return (arr || []).map((u, i) => ({ ...u, rank: i + 1 }));
                 }
+
+                setLeaderboardData({
+                    spice: addRanks(data.spice as any), // Type assertion workaround
+                    sugar: addRanks(data.sugar as any),
+                    night: addRanks(data.night as any)
+                });
             } catch (error) {
                 console.error("Failed to fetch niche leaderboards", error);
             } finally {

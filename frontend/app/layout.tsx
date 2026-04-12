@@ -21,10 +21,11 @@ import { CookieConsentBanner } from '@/components/cookie-consent-banner'
 export const metadata: Metadata = {
   metadataBase: new URL('https://streetbitego.vercel.app'),
   title: {
-    default: 'StreetBite — Discover Authentic Street Food Near You',
+    default: 'StreetBite — Fast, Local & Authentic Street Food Discovery',
     template: '%s | StreetBite',
   },
-  description: 'Discover the best street food near you. Geolocation-based discovery of authentic street food vendors in your city.',
+  description: 'Uncover hidden street food gems in your city. From local food trucks to underground night markets, rank up in our foodie community and find your next craving.',
+  keywords: ['street food', 'local eats', 'authentic cuisine', 'food truck', 'gamified food discovery', 'foodie community', 'night markets'],
   generator: 'streetbite-app',
   openGraph: {
     title: 'StreetBite — Discover Amazing Street Food',
@@ -56,7 +57,6 @@ export const metadata: Metadata = {
 
 import { NotificationProvider } from '@/components/notification-provider'
 import { Toaster } from 'sonner'
-
 import { GamificationProvider } from '@/context/GamificationContext'
 import { AuthProvider } from '@/context/AuthContext'
 

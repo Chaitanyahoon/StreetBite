@@ -1,14 +1,15 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Foodies Community | StreetBite',
-  description: 'Join the largest street food community. Discuss flavors, participate in food polls, and see what the streets are cooking.',
+  title: 'Foodies Community | Gamified Social Feed | StreetBite',
+  description: 'Join the premier street food community. Climb the Flavor Leaderboards, accept Bite Bounties, and chat directly with top street food vendors!',
+  keywords: ['food community', 'flavor leaderboard', 'foodie forum', 'street food chat', 'foodie bounties', 'bite bounties'],
   alternates: {
     canonical: 'https://streetbitego.vercel.app/community',
   },
   openGraph: {
-    title: 'StreetBite Community | The Foodie Social',
-    description: 'Connect with other foodies and discover hidden street gems.',
+    title: 'StreetBite Community | Flavor Leaderboards & Bounties',
+    description: 'Connect with other foodies, earn rank in our Flavor Leaderboards, and discover hidden street gems.',
     url: 'https://streetbitego.vercel.app/community',
     type: 'website',
   }
