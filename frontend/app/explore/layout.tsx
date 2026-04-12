@@ -6,6 +6,10 @@ export const metadata: Metadata = {
   alternates: {
     canonical: 'https://streetbitego.vercel.app/explore',
   },
+  robots: {
+    index: true,
+    follow: true,
+  },
   openGraph: {
     title: 'Explore Street Food Near You | StreetBite',
     description: 'Find local street food flavors by cuisine, rating, distance, and live availability.',

@@ -27,6 +27,20 @@ export const metadata: Metadata = {
   description: 'Uncover hidden street food gems in your city. From local food trucks to underground night markets, rank up in our foodie community and find your next craving.',
   keywords: ['street food', 'local eats', 'authentic cuisine', 'food truck', 'gamified food discovery', 'foodie community', 'night markets'],
   generator: 'streetbite-app',
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  alternates: {
+    canonical: '/',
+  },
   openGraph: {
     title: 'StreetBite — Discover Amazing Street Food',
     description: 'Find top-rated street food vendors, join the community, and track your foodie journey.',

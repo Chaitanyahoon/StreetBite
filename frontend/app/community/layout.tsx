@@ -7,6 +7,10 @@ export const metadata: Metadata = {
   alternates: {
     canonical: 'https://streetbitego.vercel.app/community',
   },
+  robots: {
+    index: true,
+    follow: true,
+  },
   openGraph: {
     title: 'StreetBite Community | Flavor Leaderboards & Bounties',
     description: 'Connect with other foodies, earn rank in our Flavor Leaderboards, and discover hidden street gems.',

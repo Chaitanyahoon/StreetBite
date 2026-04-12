@@ -7,6 +7,10 @@ export const metadata: Metadata = {
   alternates: {
     canonical: 'https://streetbitego.vercel.app/recommend',
   },
+  robots: {
+    index: true,
+    follow: true,
+  },
   openGraph: {
     title: 'AI Food Recommender | StreetBite',
     description: 'Find your perfect street food match instantly with our AI quiz.',
