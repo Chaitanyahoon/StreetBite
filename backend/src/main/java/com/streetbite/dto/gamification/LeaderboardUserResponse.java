@@ -19,6 +19,16 @@ public class LeaderboardUserResponse {
         return response;
     }
 
+    public static LeaderboardUserResponse fromNiche(User user, Integer nicheXp) {
+        LeaderboardUserResponse response = new LeaderboardUserResponse();
+        response.setId(user.getId());
+        response.setDisplayName(user.getDisplayName());
+        response.setXp(nicheXp != null ? nicheXp : 0);
+        response.setLevel(1); // Not really used for niche list
+        response.setProfilePicture(user.getProfilePicture());
+        return response;
+    }
+
     public Long getId() {
         return id;
     }

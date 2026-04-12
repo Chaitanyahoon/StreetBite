@@ -43,6 +43,15 @@ public class GamificationController {
     }
 
     /**
+     * Get the multiple niche leaderboards
+     */
+    @GetMapping("/niche-leaderboard")
+    public ResponseEntity<Map<String, List<LeaderboardUserResponse>>> getNicheLeaderboards() {
+        Map<String, List<LeaderboardUserResponse>> leaderboards = gamificationService.getNicheLeaderboards();
+        return ResponseEntity.ok(leaderboards);
+    }
+
+    /**
      * Get current user's stats (AUTHENTICATED - Login required)
      */
     @GetMapping("/stats")
@@ -71,6 +80,25 @@ public class GamificationController {
 
         User updatedUser = gamificationService.awardXp(user.getId(), actionType);
         GamificationActionResponse response = gamificationService.buildActionResponse(updatedUser, actionType);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Award massive XP for specific niches to solve cold-start problem (Zero Friction)
+     */
+    @PostMapping("/niche-action/{niche}/{amount}")
+    public ResponseEntity<?> performNicheAction(
+            @PathVariable String niche,
+            @PathVariable int amount,
+            Authentication authentication) {
+
+        User user = authenticatedUserService.findAuthenticatedUser(authentication).orElse(null);
+        if (user == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "User not authenticated"));
+        }
+
+        User updatedUser = gamificationService.awardNicheXp(user.getId(), niche, amount);
+        GamificationActionResponse response = gamificationService.buildActionResponse(updatedUser, niche);
         return ResponseEntity.ok(response);
     }
 }

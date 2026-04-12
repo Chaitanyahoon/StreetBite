@@ -52,7 +52,9 @@ const EventsCalendar = dynamic(() => import('@/components/EventsCalendar').then(
 const Leaderboard = dynamic(() => import('@/components/Leaderboard').then(m => m.Leaderboard), { ssr: false, loading: () => <WidgetSkeleton /> })
 const FoodPersonalityQuiz = dynamic(() => import('@/components/FoodPersonalityQuiz').then(m => m.FoodPersonalityQuiz), { ssr: false, loading: () => <WidgetSkeleton /> })
 const UserStats = dynamic(() => import('@/components/UserStats').then(m => m.UserStats), { ssr: false, loading: () => <WidgetSkeleton /> })
-const CommunityMap = dynamic(() => import('@/components/CommunityMap').then(m => m.CommunityMap), { ssr: false, loading: () => <WidgetSkeleton h="h-64" /> })
+const BiteBounties = dynamic(() => import('@/components/BiteBounties').then(m => m.BiteBounties), { ssr: false, loading: () => <WidgetSkeleton /> })
+const FlavorLeaderboards = dynamic(() => import('@/components/FlavorLeaderboards').then(m => m.FlavorLeaderboards), { ssr: false, loading: () => <WidgetSkeleton /> })
+const StreetSideAMA = dynamic(() => import('@/components/StreetSideAMA').then(m => m.StreetSideAMA), { ssr: false, loading: () => <WidgetSkeleton /> })
 
 function WidgetSkeleton({ h = 'h-48' }: { h?: string }) {
     return (
@@ -1453,17 +1455,17 @@ function CommunityPageContent() {
                                     </div>
                                 </div>
 
-                                <div className="space-y-3">
-                                    <div className="inline-flex items-center rounded-full border-2 border-black bg-blue-100 px-3 py-1 text-xs font-black uppercase tracking-[0.18em] text-black">
-                                        Community Radar
+
+
+                                                                <div className="space-y-6">
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                        <BiteBounties />
+                                        <FlavorLeaderboards />
                                     </div>
-                                    <CommunityMap
-                                        discussions={modeFilteredDiscussions}
-                                        onSelectDiscussion={handleMapDiscussionSelect}
-                                    />
+                                    <StreetSideAMA />
                                 </div>
 
-                                <div className="border-4 border-black rounded-3xl overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white">
+                                <div className="border-4 border-black rounded-3xl overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white mt-8">
                                     <ZodiacCard />
                                 </div>
                             </CardContent>

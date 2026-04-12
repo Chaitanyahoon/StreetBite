@@ -58,6 +58,15 @@ public class User {
     @Column(name = "xp")
     private Integer xp = 0;
 
+    @Column(name = "spice_xp")
+    private Integer spiceXp = 0;
+
+    @Column(name = "sugar_xp")
+    private Integer sugarXp = 0;
+
+    @Column(name = "night_owl_xp")
+    private Integer nightOwlXp = 0;
+
     @Column(name = "level")
     private Integer level = 1;
 
@@ -86,163 +95,50 @@ public class User {
     }
 
     // Getters and Setters
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPasswordHash() {
-        return passwordHash;
-    }
-
-    public void setPasswordHash(String passwordHash) {
-        this.passwordHash = passwordHash;
-    }
-
-    public String getDisplayName() {
-        return displayName;
-    }
-
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
-    }
-
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
-
-    public String getProfilePicture() {
-        return profilePicture;
-    }
-
-    public void setProfilePicture(String profilePicture) {
-        this.profilePicture = profilePicture;
-    }
-
-    public String getResetPasswordToken() {
-        return resetPasswordToken;
-    }
-
-    public void setResetPasswordToken(String resetPasswordToken) {
-        this.resetPasswordToken = resetPasswordToken;
-    }
-
-    public LocalDateTime getResetPasswordTokenExpiry() {
-        return resetPasswordTokenExpiry;
-    }
-
-    public void setResetPasswordTokenExpiry(LocalDateTime resetPasswordTokenExpiry) {
-        this.resetPasswordTokenExpiry = resetPasswordTokenExpiry;
-    }
-
-    public Role getRole() {
-        return role;
-    }
-
-    public void setRole(Role role) {
-        this.role = role;
-    }
-
-    public Boolean getEmailVerified() {
-        return emailVerified != null ? emailVerified : false;
-    }
-
-    public void setEmailVerified(Boolean emailVerified) {
-        this.emailVerified = emailVerified;
-    }
-
-    public String getEmailVerificationCodeHash() {
-        return emailVerificationCodeHash;
-    }
-
-    public void setEmailVerificationCodeHash(String emailVerificationCodeHash) {
-        this.emailVerificationCodeHash = emailVerificationCodeHash;
-    }
-
-    public LocalDateTime getEmailVerificationCodeExpiry() {
-        return emailVerificationCodeExpiry;
-    }
-
-    public void setEmailVerificationCodeExpiry(LocalDateTime emailVerificationCodeExpiry) {
-        this.emailVerificationCodeExpiry = emailVerificationCodeExpiry;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    public String getZodiacSign() {
-        return zodiacSign;
-    }
-
-    public void setZodiacSign(String zodiacSign) {
-        this.zodiacSign = zodiacSign;
-    }
-
-    public Integer getXp() {
-        return xp;
-    }
-
-    public void setXp(Integer xp) {
-        this.xp = xp;
-    }
-
-    public Integer getLevel() {
-        return level;
-    }
-
-    public void setLevel(Integer level) {
-        this.level = level;
-    }
-
-    public Integer getStreak() {
-        return streak;
-    }
-
-    public void setStreak(Integer streak) {
-        this.streak = streak;
-    }
-
-    public java.time.LocalDate getLastCheckIn() {
-        return lastCheckIn;
-    }
-
-    public void setLastCheckIn(java.time.LocalDate lastCheckIn) {
-        this.lastCheckIn = lastCheckIn;
-    }
-
-    public Boolean getActive() {
-        return isActive != null ? isActive : true;
-    }
-
-    public void setActive(Boolean active) {
-        isActive = active;
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+    public String getPasswordHash() { return passwordHash; }
+    public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
+    public String getDisplayName() { return displayName; }
+    public void setDisplayName(String displayName) { this.displayName = displayName; }
+    public String getPhoneNumber() { return phoneNumber; }
+    public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
+    public String getProfilePicture() { return profilePicture; }
+    public void setProfilePicture(String profilePicture) { this.profilePicture = profilePicture; }
+    public String getResetPasswordToken() { return resetPasswordToken; }
+    public void setResetPasswordToken(String resetPasswordToken) { this.resetPasswordToken = resetPasswordToken; }
+    public LocalDateTime getResetPasswordTokenExpiry() { return resetPasswordTokenExpiry; }
+    public void setResetPasswordTokenExpiry(LocalDateTime resetPasswordTokenExpiry) { this.resetPasswordTokenExpiry = resetPasswordTokenExpiry; }
+    public Role getRole() { return role; }
+    public void setRole(Role role) { this.role = role; }
+    public Boolean getEmailVerified() { return emailVerified != null ? emailVerified : false; }
+    public void setEmailVerified(Boolean emailVerified) { this.emailVerified = emailVerified; }
+    public String getEmailVerificationCodeHash() { return emailVerificationCodeHash; }
+    public void setEmailVerificationCodeHash(String emailVerificationCodeHash) { this.emailVerificationCodeHash = emailVerificationCodeHash; }
+    public LocalDateTime getEmailVerificationCodeExpiry() { return emailVerificationCodeExpiry; }
+    public void setEmailVerificationCodeExpiry(LocalDateTime emailVerificationCodeExpiry) { this.emailVerificationCodeExpiry = emailVerificationCodeExpiry; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+    public String getZodiacSign() { return zodiacSign; }
+    public void setZodiacSign(String zodiacSign) { this.zodiacSign = zodiacSign; }
+    public Integer getXp() { return xp != null ? xp : 0; }
+    public void setXp(Integer xp) { this.xp = xp; }
+    public Integer getSpiceXp() { return spiceXp != null ? spiceXp : 0; }
+    public void setSpiceXp(Integer spiceXp) { this.spiceXp = spiceXp; }
+    public Integer getSugarXp() { return sugarXp != null ? sugarXp : 0; }
+    public void setSugarXp(Integer sugarXp) { this.sugarXp = sugarXp; }
+    public Integer getNightOwlXp() { return nightOwlXp != null ? nightOwlXp : 0; }
+    public void setNightOwlXp(Integer nightOwlXp) { this.nightOwlXp = nightOwlXp; }
+    public Integer getLevel() { return level != null ? level : 1; }
+    public void setLevel(Integer level) { this.level = level; }
+    public Integer getStreak() { return streak != null ? streak : 0; }
+    public void setStreak(Integer streak) { this.streak = streak; }
+    public java.time.LocalDate getLastCheckIn() { return lastCheckIn; }
+    public void setLastCheckIn(java.time.LocalDate lastCheckIn) { this.lastCheckIn = lastCheckIn; }
+    public Boolean getActive() { return isActive != null ? isActive : true; }
+    public void setActive(Boolean active) { isActive = active; }
 }

@@ -74,9 +74,16 @@ public class SecurityConfig {
                         .requestMatchers(org.springframework.http.HttpMethod.PUT, "/api/reports/**").hasRole("ADMIN")
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/analytics/platform").hasRole("ADMIN")
 
-                        // Public — newsletter & health
+                        // Public — newsletter, health & recommendations
                         .requestMatchers("/api/newsletter/**").permitAll()
                         .requestMatchers("/api/health").permitAll()
+                        .requestMatchers("/api/recommend").permitAll()
+
+                        // Actuator — health is public (for Render uptime checks), metrics are admin-only
+                        .requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
+                        .requestMatchers("/actuator/prometheus").hasRole("ADMIN")
+                        .requestMatchers("/actuator/info").hasRole("ADMIN")
+                        .requestMatchers("/actuator/**").denyAll()
 
                         // Authenticated — any logged-in user
                         .requestMatchers("/api/favorites/**").authenticated()

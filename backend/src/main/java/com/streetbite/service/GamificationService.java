@@ -8,6 +8,8 @@ import com.streetbite.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 @Service
 public class GamificationService {
@@ -24,9 +26,6 @@ public class GamificationService {
     private static final int XP_WIN_GAME = 100;
     private static final int XP_COMMUNITY_POST = 10;
 
-    /**
-     * Award XP to a user for a specific action
-     */
     public User awardXp(Long userId, String actionType) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -35,25 +34,20 @@ public class GamificationService {
         int currentXp = user.getXp() != null ? user.getXp() : 0;
         user.setXp(currentXp + xpToAward);
 
-        // Update Level
         int newLevel = calculateLevel(user.getXp());
         user.setLevel(newLevel);
 
-        // Handle Daily Login Streak
         if ("daily_login".equalsIgnoreCase(actionType)) {
             java.time.LocalDate today = java.time.LocalDate.now();
             java.time.LocalDate lastCheckIn = user.getLastCheckIn();
 
             if (lastCheckIn != null) {
                 if (lastCheckIn.plusDays(1).equals(today)) {
-                    // Consecutive day
                     user.setStreak((user.getStreak() != null ? user.getStreak() : 0) + 1);
                 } else if (!lastCheckIn.equals(today)) {
-                    // Broken streak (unless it's same day)
                     user.setStreak(1);
                 }
             } else {
-                // First check-in
                 user.setStreak(1);
             }
             user.setLastCheckIn(today);
@@ -62,9 +56,6 @@ public class GamificationService {
         return userRepository.save(user);
     }
 
-    /**
-     * Get XP amount for a specific action type
-     */
     private int getXpForAction(String actionType) {
         return switch (actionType.toLowerCase()) {
             case "daily_login" -> XP_DAILY_LOGIN;
@@ -75,32 +66,59 @@ public class GamificationService {
         };
     }
 
-    /**
-     * Calculate user level from XP
-     * Formula matches frontend: XP = level * (level - 1) * 50
-     * Inverse: Level = (1 + sqrt(1 + 0.08 * XP)) / 2
-     */
     public int calculateLevel(int xp) {
-        if (xp < 0)
-            return 1;
-        // Using the quadratic formula solution for L^2 - L - (xp/50) = 0
-        // L = (1 + Math.sqrt(1 + 4 * (xp / 50.0))) / 2
+        if (xp < 0) return 1;
         double level = (1 + Math.sqrt(1 + 0.08 * xp)) / 2;
         return (int) Math.floor(level);
     }
 
-    /**
-     * Get leaderboard (top 10 users by XP) - excludes banned users
-     */
     public List<LeaderboardUserResponse> getLeaderboard() {
         return userRepository.findTop10ByRoleAndIsActiveTrueOrderByXpDesc(User.Role.USER).stream()
                 .map(user -> LeaderboardUserResponse.from(user, calculateLevel(user.getXp() != null ? user.getXp() : 0)))
                 .toList();
     }
 
-    /**
-     * Get user stats including rank
-     */
+    public Map<String, List<LeaderboardUserResponse>> getNicheLeaderboards() {
+        Map<String, List<LeaderboardUserResponse>> leaderboards = new HashMap<>();
+        
+        leaderboards.put("spice", userRepository.findTop10ByRoleAndIsActiveTrueOrderBySpiceXpDesc(User.Role.USER).stream()
+                .filter(u -> u.getSpiceXp() > 0)
+                .map(user -> LeaderboardUserResponse.fromNiche(user, user.getSpiceXp()))
+                .toList());
+                
+        leaderboards.put("sugar", userRepository.findTop10ByRoleAndIsActiveTrueOrderBySugarXpDesc(User.Role.USER).stream()
+                .filter(u -> u.getSugarXp() > 0)
+                .map(user -> LeaderboardUserResponse.fromNiche(user, user.getSugarXp()))
+                .toList());
+                
+        leaderboards.put("night", userRepository.findTop10ByRoleAndIsActiveTrueOrderByNightOwlXpDesc(User.Role.USER).stream()
+                .filter(u -> u.getNightOwlXp() > 0)
+                .map(user -> LeaderboardUserResponse.fromNiche(user, user.getNightOwlXp()))
+                .toList());
+                
+        return leaderboards;
+    }
+
+    public User awardNicheXp(Long userId, String niche, int amount) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if ("spice".equalsIgnoreCase(niche)) {
+            user.setSpiceXp(user.getSpiceXp() + amount);
+        } else if ("sugar".equalsIgnoreCase(niche)) {
+            user.setSugarXp(user.getSugarXp() + amount);
+        } else if ("night".equalsIgnoreCase(niche)) {
+            user.setNightOwlXp(user.getNightOwlXp() + amount);
+        }
+
+        // Add to global XP too so they visually level up
+        int currentXp = user.getXp() != null ? user.getXp() : 0;
+        user.setXp(currentXp + amount);
+        user.setLevel(calculateLevel(user.getXp()));
+
+        return userRepository.save(user);
+    }
+
     public UserStatsResponse getUserStats(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -120,9 +138,6 @@ public class GamificationService {
         return stats;
     }
 
-    /**
-     * Calculate user's rank based on XP
-     */
     private int calculateUserRank(Long userId) {
         List<User> allUsers = userRepository.findAllByOrderByXpDesc();
         for (int i = 0; i < allUsers.size(); i++) {
@@ -133,9 +148,6 @@ public class GamificationService {
         return allUsers.size();
     }
 
-    /**
-     * Get user by email
-     */
     public User getUserByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found with email: " + email));

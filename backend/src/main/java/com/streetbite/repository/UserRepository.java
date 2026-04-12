@@ -17,6 +17,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
     // Leaderboard query that excludes banned users (isActive = false)
     List<User> findTop10ByRoleAndIsActiveTrueOrderByXpDesc(User.Role role);
 
+    // Niche Leaderboard queries
+    List<User> findTop10ByRoleAndIsActiveTrueOrderBySpiceXpDesc(User.Role role);
+    List<User> findTop10ByRoleAndIsActiveTrueOrderBySugarXpDesc(User.Role role);
+    List<User> findTop10ByRoleAndIsActiveTrueOrderByNightOwlXpDesc(User.Role role);
+
     List<User> findAllByOrderByXpDesc();
 
     List<User> findByCreatedAtAfter(java.time.LocalDateTime date);

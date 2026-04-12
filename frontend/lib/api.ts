@@ -326,8 +326,10 @@ export const favoriteApi = {
 
 export const gamificationApi = {
   getLeaderboard: () => api.get('/gamification/leaderboard') as Promise<LeaderboardUserResponse[]>,
+  getNicheLeaderboards: () => api.get('/gamification/niche-leaderboard') as Promise<Record<string, LeaderboardUserResponse[]>>,
   getUserStats: () => api.get('/gamification/stats') as Promise<UserStatsResponse>,
   performAction: (actionType: string) => api.post(`/gamification/action/${actionType}`) as Promise<GamificationActionResponse>,
+  performNicheAction: (niche: string, amount: number) => api.post(`/gamification/niche-action/${niche}/${amount}`) as Promise<GamificationActionResponse>,
 };
 
 export const announcementApi = {
@@ -360,6 +362,43 @@ export const hotTopicApi = {
 
 export const zodiacApi = {
   getHoroscope: (sign: string) => api.get(`/zodiac/sign/${sign}`) as Promise<ZodiacHoroscopeResponse>,
+};
+
+export interface RecommendRequestPayload {
+  mood?: string
+  spiceLevel?: string
+  budget?: string
+  cuisine?: string
+}
+
+export interface RecommendedDish {
+  name: string
+  price: number
+  category: string
+}
+
+export interface RecommendResult {
+  vendorId: number
+  vendorName: string
+  vendorSlug: string
+  cuisine: string
+  rating: number
+  reviewCount: number
+  displayImageUrl?: string
+  address?: string
+  matchReason: string
+  matchScore: number
+  topDishes: RecommendedDish[]
+}
+
+export interface RecommendApiResponse {
+  results: RecommendResult[]
+  message?: string
+}
+
+export const recommendApi = {
+  getRecommendations: (data: RecommendRequestPayload) =>
+    api.post('/recommend', data) as Promise<RecommendApiResponse>,
 };
 
 export default api;

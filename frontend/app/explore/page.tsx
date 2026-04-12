@@ -271,6 +271,17 @@ function ExplorePageContent() {
             <p className="mx-auto mt-8 max-w-2xl text-lg font-bold leading-8 text-black/72 md:text-2xl">
               Search with intent, sort by what matters, and keep the best nearby vendors in view without losing the street-food energy.
             </p>
+            <div className="mt-10 flex justify-center">
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => router.push('/recommend')}
+                className="group h-16 w-full max-w-md rounded-[2rem] border-4 border-black bg-yellow-300 text-lg font-black uppercase tracking-wider text-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all hover:-translate-y-1 hover:bg-black hover:text-white"
+              >
+                <Flame className="mr-3 h-6 w-6 text-orange-500 group-hover:animate-pulse" />
+                Can't decide? Try the AI Quiz
+              </Button>
+            </div>
           </div>
         </div>
       </section>
