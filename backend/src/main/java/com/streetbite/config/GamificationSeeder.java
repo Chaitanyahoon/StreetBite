@@ -21,42 +21,21 @@ public class GamificationSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        logger.info("Checking Gamification Ghost Accounts...");
+        logger.info("Cleaning up Gamification Ghost Accounts...");
 
-        createGhostAccount("TheSpiceKing@streetbite.com", "TheSpiceKing", 1, 14200, 200, 50);
-        createGhostAccount("MidnightEater@streetbite.com", "MidnightEater", 2, 50, 400, 18500);
-        createGhostAccount("SugarRush@streetbite.com", "SugarRush", 3, 100, 15000, 200);
-        createGhostAccount("StreetBiteBot@streetbite.com", "StreetBiteBot", 4, 1000, 1000, 1000);
+        deleteGhostAccount("TheSpiceKing@streetbite.com");
+        deleteGhostAccount("MidnightEater@streetbite.com");
+        deleteGhostAccount("SugarRush@streetbite.com");
+        deleteGhostAccount("StreetBiteBot@streetbite.com");
 
-        logger.info("Gamification seeding completed.");
+        logger.info("Gamification cleanup completed.");
     }
 
-    private void createGhostAccount(String email, String displayName, int avatarId, int spiceXp, int sugarXp, int nightOwlXp) {
+    private void deleteGhostAccount(String email) {
         Optional<User> existing = userRepository.findByEmail(email);
-        if (existing.isEmpty()) {
-            User ghost = new User();
-            ghost.setEmail(email);
-            // Some random unusable password hash
-            ghost.setPasswordHash("$2a$10$xyz123abc456dummyhash......................");
-            ghost.setDisplayName(displayName);
-            ghost.setProfilePicture("https://i.pravatar.cc/100?img=" + avatarId);
-            ghost.setRole(User.Role.USER);
-            ghost.setEmailVerified(true);
-            ghost.setActive(true);
-            
-            // Set massive XP fields
-            int totalXp = spiceXp + sugarXp + nightOwlXp;
-            ghost.setXp(totalXp);
-            ghost.setSpiceXp(spiceXp);
-            ghost.setSugarXp(sugarXp);
-            ghost.setNightOwlXp(nightOwlXp);
-            
-            // Just raw math for level approximation
-            double level = (1 + Math.sqrt(1 + 0.08 * totalXp)) / 2;
-            ghost.setLevel((int) Math.floor(level));
-
-            userRepository.save(ghost);
-            logger.info("Created ghost account: {}", displayName);
+        if (existing.isPresent()) {
+            userRepository.delete(existing.get());
+            logger.info("Deleted ghost account to clean up leaderboard: {}", email);
         }
     }
 }

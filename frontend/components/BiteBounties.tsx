@@ -14,14 +14,21 @@ export function BiteBounties() {
             console.warn("Silent bounty fail", e);
         }
         
-        toast.success("Bounty Accepted!", {
-            description: `You have 48 hours to complete this quest. (+${amount} ${niche} XP unlocked just for trying!)`,
-            style: {
-                background: '#000',
-                color: '#fff',
-                border: '4px solid #fff',
+        toast.success(
+            <div className="flex flex-col gap-1">
+                <span className="font-bold text-white text-base">Bounty Accepted!</span>
+                <span className="text-white/90 text-sm">
+                    You have 48 hours to complete this quest. (+{amount} {niche} XP unlocked just for trying!)
+                </span>
+            </div>, 
+            {
+                style: {
+                    background: '#000',
+                    color: '#fff',
+                    border: '4px solid #fff',
+                }
             }
-        })
+        )
     }
 
     return (
