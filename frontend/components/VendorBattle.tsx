@@ -125,10 +125,10 @@ export function VendorBattle() {
                         Skip <X className="w-4 h-4 ml-1" />
                     </Button>
                 </div>
-                <div className="flex-1 flex flex-col sm:flex-row items-stretch justify-center gap-8 sm:gap-16 relative py-4">
+                <div className="flex-1 flex flex-col sm:flex-row items-stretch justify-center gap-4 sm:gap-6 relative py-4 overflow-hidden">
                     {/* VS Badge */}
                     <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-none">
-                        <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-black text-white font-black flex items-center justify-center border-4 border-white shadow-[0_0_0_4px_black] text-lg sm:text-xl -rotate-12 transform scale-110">
+                        <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-black text-white font-black flex items-center justify-center border-4 border-white shadow-[0_0_0_3px_black] text-base sm:text-lg -rotate-12">
                             VS
                         </div>
                     </div>
@@ -136,14 +136,14 @@ export function VendorBattle() {
                     {pair.map((vendor, index) => (
                         <motion.div
                             key={vendor.id}
-                            className={`w-full sm:flex-1 relative cursor-pointer group/card ${hasVoted && index !== selectedIndex ? "opacity-50 grayscale" : ""}`}
+                            className={`w-full sm:flex-1 min-w-0 relative cursor-pointer group/card ${hasVoted && index !== selectedIndex ? "opacity-50 grayscale" : ""}`}
                             whileHover={{ scale: hasVoted ? 1 : 1.02, y: hasVoted ? 0 : -4 }}
                             whileTap={{ scale: hasVoted ? 1 : 0.96 }}
                             onClick={() => handleVote(index as 0 | 1)}
                         >
-                            <div className={`h-full bg-white rounded-[2rem] p-6 border-4 border-black transition-all duration-300 flex flex-col justify-between ${!hasVoted ? "hover:bg-yellow-50 hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]" : "shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]"}`}>
-                                <div className="text-center flex flex-col items-center justify-center gap-4">
-                                    <div className={`w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-gradient-to-tr from-gray-100 to-gray-50 flex items-center justify-center text-4xl border-4 ${hasVoted && index === selectedIndex ? "border-green-500 bg-green-50 shadow-[0_0_20px_rgba(34,197,94,0.4)]" : "border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] group-hover/card:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-shadow"} overflow-hidden relative`}>
+                            <div className={`h-full bg-white rounded-2xl p-4 border-3 border-black transition-all duration-300 flex flex-col justify-between ${!hasVoted ? "hover:bg-yellow-50 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]" : "shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"}`}>
+                                <div className="text-center flex flex-col items-center justify-center gap-3">
+                                    <div className={`w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-tr from-gray-100 to-gray-50 flex items-center justify-center text-3xl border-3 ${hasVoted && index === selectedIndex ? "border-green-500 bg-green-50" : "border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]"} overflow-hidden relative shrink-0`}>
                                         {vendor.image ? (
                                             <Image
                                                 src={vendor.image}
@@ -158,13 +158,13 @@ export function VendorBattle() {
                                         )}
                                     </div>
                                     
-                                    <h3 className="font-black text-xl sm:text-2xl leading-tight text-black w-full min-h-[3.5rem] flex items-center justify-center uppercase tracking-tight break-words px-2">
+                                    <h3 className="font-black text-sm sm:text-base leading-tight text-black w-full flex items-center justify-center uppercase tracking-tight text-center line-clamp-2 px-1">
                                         {vendor.name}
                                     </h3>
                                     
                                     {!hasVoted && (
-                                        <div className="mt-2 text-center w-full">
-                                            <span className="inline-block rounded-xl border-4 border-black bg-emerald-400 px-6 py-2.5 text-xs font-black uppercase tracking-[0.2em] text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] group-hover/card:bg-yellow-400 group-hover/card:translate-y-1 group-hover/card:shadow-[0px_0px_0px_0px_rgba(0,0,0,1)] transition-all">
+                                        <div className="mt-1 text-center w-full">
+                                            <span className="inline-block rounded-lg border-2 border-black bg-emerald-400 px-4 py-2 text-[0.65rem] font-black uppercase tracking-wider text-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] group-hover/card:bg-yellow-400 group-hover/card:translate-y-0.5 group-hover/card:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] transition-all">
                                                 Tap to vote
                                             </span>
                                         </div>
