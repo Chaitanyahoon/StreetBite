@@ -233,7 +233,7 @@ function CommunityPageContent() {
     ])
 
     useEffect(() => {
-        fetchRandomVendor();
+        fetchDailyVendor();
         fetchHotTopics(true);
         fetchAnnouncements();
     }, []);
@@ -280,12 +280,15 @@ function CommunityPageContent() {
         }
     };
 
-    const fetchRandomVendor = async () => {
+    const fetchDailyVendor = async () => {
         try {
             const vendors = await vendorApi.getAll();
             if (vendors && vendors.length > 0) {
-                const random = vendors[Math.floor(Math.random() * vendors.length)];
-                setVendor(random);
+                // Date-seeded rotation: same vendor all day, rotates at midnight
+                const today = new Date();
+                const daysSinceEpoch = Math.floor(today.getTime() / (1000 * 60 * 60 * 24));
+                const dailyIndex = daysSinceEpoch % vendors.length;
+                setVendor(vendors[dailyIndex]);
             }
         } catch (error) {
             console.error("Failed to fetch vendor for spotlight", error);
