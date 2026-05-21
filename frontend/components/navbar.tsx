@@ -20,6 +20,7 @@ export function Navbar({ forceSolid = false }: { forceSolid?: boolean }) {
   const { user, isLoggedIn, logout } = useAuth()
   const [isOpen, setIsOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const [imgError, setImgError] = useState(false)
   const [announcement, setAnnouncement] = useState<Announcement | null>(null)
   const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8081/api'
 
@@ -52,6 +53,7 @@ export function Navbar({ forceSolid = false }: { forceSolid?: boolean }) {
 
   useEffect(() => {
     setIsOpen(false)
+    setImgError(false)
   }, [pathname])
 
   useEffect(() => {
@@ -88,7 +90,6 @@ export function Navbar({ forceSolid = false }: { forceSolid?: boolean }) {
 
   const navItems = userRole === 'VENDOR' ? vendorNavItems : customerNavItems
 
-  // Helper to resolve image URL
   const getImageUrl = (path: string) => {
     if (!path) return ''
     if (path.startsWith('http')) return path
@@ -147,7 +148,7 @@ export function Navbar({ forceSolid = false }: { forceSolid?: boolean }) {
                   <Link href="/profile">
                     <button className="flex items-center gap-3 px-2 py-1 rounded-xl hover:bg-orange-50 transition-all duration-200 group">
                       <div className="w-10 h-10 rounded-lg bg-black flex items-center justify-center text-white font-black text-sm border-2 border-black group-hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-shadow overflow-hidden">
-                        {userProfilePic ? (
+                        {userProfilePic && !imgError ? (
                           <Image
                             src={getImageUrl(userProfilePic)}
                             alt={userName}
@@ -155,10 +156,7 @@ export function Navbar({ forceSolid = false }: { forceSolid?: boolean }) {
                             height={40}
                             className="w-full h-full object-cover"
                             unoptimized
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).style.display = 'none';
-                              (e.target as HTMLImageElement).parentElement!.innerText = userName.charAt(0).toUpperCase();
-                            }}
+                            onError={() => setImgError(true)}
                           />
                         ) : (
                           userName.charAt(0).toUpperCase()
@@ -232,7 +230,7 @@ export function Navbar({ forceSolid = false }: { forceSolid?: boolean }) {
                       <Link href="/profile">
                         <button className="flex min-h-14 w-full items-center justify-center gap-3 rounded-2xl border-2 border-black bg-black px-4 py-4 font-black text-white shadow-[4px_4px_0px_0px_#9ca3af] transition-all active:translate-y-[2px]">
                           <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-white text-sm font-black text-black">
-                            {userProfilePic ? (
+                            {userProfilePic && !imgError ? (
                               <Image
                                 src={getImageUrl(userProfilePic)}
                                 alt={userName}
@@ -240,13 +238,7 @@ export function Navbar({ forceSolid = false }: { forceSolid?: boolean }) {
                                 height={36}
                                 className="h-full w-full object-cover"
                                 unoptimized
-                                onError={(e) => {
-                                  (e.target as HTMLImageElement).style.display = 'none'
-                                  const parent = (e.target as HTMLImageElement).parentElement
-                                  if (parent) {
-                                    parent.innerText = userName.charAt(0).toUpperCase()
-                                  }
-                                }}
+                                onError={() => setImgError(true)}
                               />
                             ) : (
                               userName.charAt(0).toUpperCase()

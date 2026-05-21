@@ -8,13 +8,13 @@ import { getAnalytics, Analytics } from "firebase/analytics";
  * @constant {Object}
  */
 const firebaseConfig = {
-    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-    appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-    measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
+    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyAKDqyaU7Jvk49urkUuj69dv929sI3ADto",
+    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "streetbite-go.firebaseapp.com",
+    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "streetbite-go",
+    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "streetbite-go.firebasestorage.app",
+    messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "683361671426",
+    appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "1:683361671426:web:76a5505163d225b0f8ca1b",
+    measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || "G-K3KTYWTLB2"
 };
 
 /**
@@ -28,9 +28,20 @@ let app: FirebaseApp | undefined;
 let db: Firestore | undefined;
 let analytics: Analytics | undefined;
 
-if (!firebaseConfig.apiKey) {
+const isPlaceholder = (val?: string) => {
+    if (!val) return true;
+    const lower = val.toLowerCase();
+    return lower.startsWith('your_') || 
+           lower.includes('your-project-id') || 
+           lower === 'placeholder' || 
+           val === 'AIzaSyAKDqyaU7Jvk49urkUuj69dv929sI3ADto';
+};
+
+const isConfigured = firebaseConfig.apiKey && !isPlaceholder(firebaseConfig.apiKey);
+
+if (!isConfigured) {
     if (typeof window !== 'undefined') {
-        console.error('❌ Firebase API Key is missing! Check your Vercel/Environment variables.');
+        console.warn('⚠️ Firebase is disabled: API Key is either missing or contains placeholder values.');
     }
 } else {
     try {

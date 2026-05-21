@@ -12,10 +12,15 @@ target/
 .vscode/
 *.class
 
-# Logs
+# Logs and error dumps
 *.log
+error.txt
+error_final.txt
+backend_error.txt
+build_error.txt
+startup_log.txt
+backend_log.txt
 
 # OS
 .DS_Store
 Thumbs.db
-

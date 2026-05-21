@@ -79,22 +79,21 @@ export function LiveCityBadge() {
           setManualError(null)
           setIsOpen(true)
         }}
-        className="inline-flex items-center gap-3 rounded-full border-4 border-black bg-white px-5 py-3 text-left shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:-translate-y-1 group"
+        className="inline-flex items-center gap-2.5 rounded-full border-3 border-black bg-black px-4 py-2 text-left shadow-[4px_4px_0px_0px_rgba(249,115,22,1)] spring-hover-primary group"
         aria-label="Choose your city"
       >
-        <span className="relative flex h-3 w-3">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-500 opacity-75"></span>
-          <span className="relative inline-flex h-3 w-3 rounded-full border border-black bg-green-500"></span>
+        <span className="relative flex h-2 w-2">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75"></span>
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-primary"></span>
         </span>
-        <span className="flex flex-col leading-none">
-          <span className="text-sm font-black uppercase tracking-[0.16em] text-black sm:text-base">
-            Live in{' '}
-            <span className="ml-1 inline-block rounded-md bg-black px-2.5 py-1 text-white transition-colors group-hover:bg-orange-500">
-              {badgeText}
-            </span>
+        <MapPin className="h-4 w-4 text-primary stroke-[2.8]" />
+        <span className="flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-white leading-none">
+          Live in{' '}
+          <span className="text-primary font-black">
+            {badgeText}
           </span>
-          <span className="mt-2 text-[0.58rem] font-black uppercase tracking-[0.28em] text-black/50">
-            {statusText}
+          <span className="hidden sm:inline text-gray-400 font-bold text-[10px]">
+            • {statusText}
           </span>
         </span>
       </button>

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import Script from 'next/script'
+import Image from 'next/image'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import { Button } from '@/components/ui/button'
@@ -159,10 +160,13 @@ export default function RecommendPage() {
                       {/* Image/Rank Badge */}
                       <div className="relative w-full md:w-64 h-48 md:h-auto bg-gradient-to-br from-orange-100 to-yellow-100 flex items-center justify-center shrink-0">
                         {result.displayImageUrl ? (
-                          <img
+                          <Image
                             src={result.displayImageUrl}
                             alt={result.vendorName}
+                            width={256}
+                            height={256}
                             className="w-full h-full object-cover"
+                            unoptimized
                           />
                         ) : (
                           <ChefHat className="h-16 w-16 text-black/20" />

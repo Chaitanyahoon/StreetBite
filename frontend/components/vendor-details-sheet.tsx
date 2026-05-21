@@ -12,10 +12,29 @@ import {
 } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Star, MapPin, Clock, Phone, Globe, Share2, Heart } from "lucide-react"
+import { Star, MapPin, Clock, Phone, Globe, Share2, Heart, X } from "lucide-react"
+
+interface Vendor {
+    id: string | number
+    name: string
+    slug?: string
+    cuisine?: string
+    description?: string
+    displayImageUrl?: string
+    image?: string
+    rating?: number | string
+    distance?: number | string
+    reviews?: number | string
+    location?: string
+    phone?: string
+    tags?: string[]
+    isOnline?: boolean
+    isAcceptingOrders?: boolean
+    operatingHours?: string
+}
 
 interface VendorDetailsSheetProps {
-    vendor: any | null
+    vendor: Vendor | null
     open: boolean
     onOpenChange: (open: boolean) => void
     onFavoriteToggle?: (vendorId: string | number, isFavorite: boolean) => void
@@ -33,16 +52,15 @@ export function VendorDetailsSheet({ vendor, open, onOpenChange, onFavoriteToggl
     const [isFavorite, setIsFavorite] = useState(false)
     const [loading, setLoading] = useState(false)
 
-    // Use vendor data directly (no real-time status from Firebase)
-    const isOnline = vendor.isOnline || false
-    const isAcceptingOrders = vendor.isAcceptingOrders || false
+    const isOnline = vendor?.isOnline || false
+    const isAcceptingOrders = vendor?.isAcceptingOrders || false
 
     useEffect(() => {
         const checkFavoriteStatus = async () => {
             if (!vendor?.id || !isLoggedIn) return
 
             try {
-                const response = await favoriteApi.checkFavorite(vendor.id)
+                const response = await favoriteApi.checkFavorite(String(vendor.id))
                 setIsFavorite(response.isFavorite)
             } catch (error) {
                 console.error('Error checking favorite status:', error)
@@ -146,9 +164,10 @@ export function VendorDetailsSheet({ vendor, open, onOpenChange, onFavoriteToggl
                         size="icon"
                         className="absolute top-4 right-4 text-white hover:bg-white/20 rounded-full"
                         onClick={() => onOpenChange(false)}
+                        aria-label="Close vendor details"
                     >
+                        <X className="h-5 w-5" />
                         <span className="sr-only">Close</span>
-                        {/* Close icon is handled by Sheet primitive usually, but we can add custom controls */}
                     </Button>
 
                     <div className="absolute bottom-4 left-6 right-6 text-white">
@@ -213,7 +232,7 @@ export function VendorDetailsSheet({ vendor, open, onOpenChange, onFavoriteToggl
                         </div>
                         <div className="flex items-center gap-3 text-sm">
                             <Clock className="w-4 h-4 text-primary" />
-                            <span>10:00 AM - 10:00 PM</span>
+                            <span>{vendor.operatingHours || '10:00 AM - 10:00 PM'}</span>
                         </div>
                         {vendor.phone && (
                             <div className="flex items-center gap-3 text-sm">

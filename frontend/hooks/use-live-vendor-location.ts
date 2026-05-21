@@ -21,7 +21,6 @@ export function useLiveVendorLocation(vendorId: string | number) {
 
     useEffect(() => {
         if (!vendorId || !realtimeDb) {
-            console.warn(`useLiveVendorLocation: realtimeDb not configured for vendorId=${vendorId}`)
             return
         }
 

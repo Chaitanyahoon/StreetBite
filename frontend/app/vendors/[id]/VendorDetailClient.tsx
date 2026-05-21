@@ -167,6 +167,10 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
 
     // Check favorite status once we have the resolved vendor ID
     useEffect(() => {
+        if (!isLoggedIn) {
+            setIsFavorite(false)
+            return
+        }
         if (!resolvedVendorId) return
         const checkFavoriteStatus = async () => {
             try {
@@ -177,7 +181,7 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
             }
         }
         checkFavoriteStatus()
-    }, [resolvedVendorId])
+    }, [resolvedVendorId, isLoggedIn])
 
     const handleGetDirections = () => {
         if (!displayVendor) return

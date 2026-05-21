@@ -7,7 +7,7 @@ import axios from 'axios'
 import { toast } from 'sonner'
 
 export function Footer() {
-    const [currentYear, setCurrentYear] = useState(2025)
+    const [currentYear, setCurrentYear] = useState(new Date().getFullYear())
     const [email, setEmail] = useState('')
     const [subscribing, setSubscribing] = useState(false)
 
@@ -51,11 +51,16 @@ export function Footer() {
                 toast.info(response.data.message || 'Subscription status updated')
             }
 
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Newsletter subscription error:', error)
 
-            if (error.response?.data?.message) {
-                toast.error(error.response.data.message)
+            if (error instanceof Error && 'response' in error) {
+                const axiosErr = error as { response?: { data?: { message?: string } } }
+                if (axiosErr.response?.data?.message) {
+                    toast.error(axiosErr.response.data.message)
+                } else {
+                    toast.error('Failed to subscribe. Please try again later.')
+                }
             } else {
                 toast.error('Failed to subscribe. Please try again later.')
             }
@@ -64,7 +69,7 @@ export function Footer() {
         }
     }
 
-    const handleKeyPress = (e: React.KeyboardEvent) => {
+    const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter' && !subscribing) {
             handleSubscribe()
         }
@@ -92,11 +97,13 @@ export function Footer() {
                             Get the spiciest updates, secret menu drops, and exclusive vendor offers straight to your inbox.
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4 max-w-lg mx-auto">
+                            <label htmlFor="newsletter-email" className="sr-only">Email address</label>
                             <input
+                                id="newsletter-email"
                                 type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                onKeyPress={handleKeyPress}
+                                onKeyDown={handleKeyDown}
                                 placeholder="ENTER YOUR EMAIL"
                                 disabled={subscribing}
                                 className="flex-1 px-6 py-4 rounded-xl border-4 border-black bg-white focus:outline-none focus:bg-yellow-50 transition-all text-black placeholder:text-gray-400 font-bold uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:translate-x-[2px] focus:translate-y-[2px] focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] disabled:opacity-60 disabled:cursor-not-allowed"
@@ -131,15 +138,16 @@ export function Footer() {
                         {/* Social Links */}
                         <div className="flex gap-4 pt-4">
                             {[
-                                { Icon: Instagram, href: "https://instagram.com/streetbiteeats", color: "hover:bg-pink-500" },
-                                { Icon: Twitter, href: "https://twitter.com/streetbiteeats", color: "hover:bg-sky-500" },
-                                { Icon: Linkedin, href: "https://linkedin.com/company/streetbiteeats", color: "hover:bg-blue-600" }
+                                { Icon: Instagram, href: "https://instagram.com/streetbiteeats", color: "hover:bg-pink-500", label: "Follow us on Instagram" },
+                                { Icon: Twitter, href: "https://twitter.com/streetbiteeats", color: "hover:bg-sky-500", label: "Follow us on Twitter" },
+                                { Icon: Linkedin, href: "https://linkedin.com/company/streetbiteeats", color: "hover:bg-blue-600", label: "Connect on LinkedIn" }
                             ].map((social, idx) => (
                                 <Link
                                     key={idx}
                                     href={social.href}
                                     target="_blank"
                                     rel="noopener noreferrer"
+                                    aria-label={social.label}
                                     className={`w-12 h-12 bg-white border-3 border-black flex items-center justify-center text-black hover:text-white transition-all duration-200 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 ${social.color}`}
                                 >
                                     <social.Icon className="w-6 h-6 stroke-[2.5]" />

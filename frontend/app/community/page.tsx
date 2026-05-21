@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useDeferredValue, useState, useEffect, useRef } from 'react'
+import { Suspense, useDeferredValue, useState, useEffect, useRef, useCallback } from 'react'
 import dynamic from 'next/dynamic'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { Navbar } from '@/components/navbar'
@@ -232,13 +232,7 @@ function CommunityPageContent() {
         searchParams,
     ])
 
-    useEffect(() => {
-        fetchRandomVendor();
-        fetchHotTopics(true);
-        fetchAnnouncements();
-    }, []);
-
-    const fetchHotTopics = async (showLoadingState = false) => {
+    const fetchHotTopics = useCallback(async (showLoadingState = false) => {
         const requestId = topicsRequestIdRef.current + 1;
         topicsRequestIdRef.current = requestId;
         if (showLoadingState) {
@@ -269,18 +263,18 @@ function CommunityPageContent() {
                 setIsTopicsLoading(false);
             }
         }
-    };
+    }, []);
 
-    const fetchAnnouncements = async () => {
+    const fetchAnnouncements = useCallback(async () => {
         try {
             const data = await announcementApi.getHot();
             setHotAnnouncements(data || []);
         } catch (error) {
             console.error('Failed to fetch announcements:', error);
         }
-    };
+    }, []);
 
-    const fetchRandomVendor = async () => {
+    const fetchRandomVendor = useCallback(async () => {
         try {
             const vendors = await vendorApi.getAll();
             if (vendors && vendors.length > 0) {
@@ -290,7 +284,13 @@ function CommunityPageContent() {
         } catch (error) {
             console.error("Failed to fetch vendor for spotlight", error);
         }
-    };
+    }, []);
+
+    useEffect(() => {
+        fetchRandomVendor();
+        fetchHotTopics(true);
+        fetchAnnouncements();
+    }, [fetchRandomVendor, fetchHotTopics, fetchAnnouncements]);
 
     useEffect(() => {
         const refreshTopicsInBackground = () => {
@@ -306,7 +306,7 @@ function CommunityPageContent() {
             window.clearInterval(intervalId);
             document.removeEventListener('visibilitychange', refreshTopicsInBackground);
         };
-    }, []);
+    }, [fetchHotTopics]);
 
     const handleDiscussionClick = (discussion: Discussion) => {
         uiSelectionRef.current = { id: String(discussion.id), urlSynced: false };
@@ -416,7 +416,7 @@ function CommunityPageContent() {
             toast('Please sign in to like', {
                 description: 'You need to be logged in to interact',
             });
-            setTimeout(() => window.location.href = '/signin', 1500);
+            setTimeout(() => router.push('/signin'), 1500);
             return;
         }
 
@@ -479,7 +479,7 @@ function CommunityPageContent() {
             toast('Please sign in to comment', {
                 description: 'You need to be logged in to participate in discussions',
             });
-            setTimeout(() => window.location.href = '/signin', 1500);
+            setTimeout(() => router.push('/signin'), 1500);
             return;
         }
 
@@ -554,7 +554,7 @@ function CommunityPageContent() {
                         description: 'Redirecting to sign in...'
                     });
                     await logout();
-                    setTimeout(() => window.location.href = '/signin', 1500);
+                    setTimeout(() => router.push('/signin'), 1500);
                     return;
                 }
             } else if (error?.response?.status === 403) {
@@ -563,7 +563,7 @@ function CommunityPageContent() {
                     description: 'Please try logging in again.'
                 });
                 await logout();
-                setTimeout(() => window.location.href = '/signin', 2000);
+                setTimeout(() => router.push('/signin'), 2000);
                 return;
             } else if (error?.response?.status === 400) {
                 const errorMsg = error?.response?.data?.error || 'Invalid comment';
@@ -598,7 +598,7 @@ function CommunityPageContent() {
             toast('Please sign in to start a topic', {
                 description: 'Community topics are tied to your account',
             });
-            setTimeout(() => window.location.href = '/signin', 1500);
+            setTimeout(() => router.push('/signin'), 1500);
             return;
         }
         setIsTopicDialogOpen(true);
@@ -744,7 +744,7 @@ function CommunityPageContent() {
             if (status === 401) {
                 toast.error('Session expired. Please log in again.');
                 await logout();
-                setTimeout(() => window.location.href = '/signin', 1500);
+                setTimeout(() => router.push('/signin'), 1500);
                 return;
             }
             if (status === 429) {
@@ -876,7 +876,7 @@ function CommunityPageContent() {
             setHasLiked(false)
         }
         setNewComment('')
-    }, [discussions, searchParams, hasInitializedUrlState, authUser])
+    }, [discussions, searchParams, hasInitializedUrlState, authUser, selectedDiscussion])
 
     return (
         <div className="min-h-screen">
@@ -1445,7 +1445,7 @@ function CommunityPageContent() {
                                                     </p>
                                                     <Button
                                                         className="bg-white text-black hover:bg-black hover:text-white font-black border-4 border-black text-lg py-6 px-8 rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all transform hover:-translate-y-1"
-                                                        onClick={() => window.location.href = '/signin'}
+                                                        onClick={() => router.push('/signin')}
                                                     >
                                                         Start Streak
                                                     </Button>

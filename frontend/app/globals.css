@@ -210,6 +210,78 @@
   .backface-hidden {
     backface-visibility: hidden;
   }
+
+  .text-shine-amber {
+    background: linear-gradient(
+      90deg,
+      var(--primary) 0%,
+      #f0a32f 40%,
+      var(--primary) 80%
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shineSlide 3s linear infinite;
+  }
+
+  .hover-lift {
+    transition: transform 200ms ease, box-shadow 200ms ease;
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lifted);
+  }
+
+  .bg-dot-pattern {
+    background-image: radial-gradient(#000 1px, transparent 1px);
+    background-size: 16px 16px;
+  }
+
+  .spring-hover {
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  .spring-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: 6px 6px 0px 0px rgba(0, 0, 0, 1);
+  }
+
+  .spring-hover:active {
+    transform: translateY(0px);
+    box-shadow: 2px 2px 0px 0px rgba(0, 0, 0, 1);
+  }
+
+  .spring-hover-primary {
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  .spring-hover-primary:hover {
+    transform: translateY(-4px);
+    box-shadow: 6px 6px 0px 0px var(--primary);
+  }
+
+  .spring-hover-primary:active {
+    transform: translateY(0px);
+    box-shadow: 2px 2px 0px 0px var(--primary);
+  }
+
+  .brutalist-focus:focus-visible {
+    outline: 4px solid #000;
+    outline-offset: 2px;
+  }
+
+  .text-outline-brutalist {
+    -webkit-text-stroke: 1.5px #000;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+  @media (min-width: 768px) {
+    .text-outline-brutalist {
+      -webkit-text-stroke: 3px #000;
+    }
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -260,3 +332,31 @@
     transform: scale(1);
   }
 }
+
+@keyframes shineSlide {
+  to {
+    background-position: 200% center;
+  }
+}
+
+/* Brutalist Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: #fff8ef;
+  border-left: 4px solid #000;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #f97316; /* primary theme orange */
+  border: 3px solid #000;
+  border-radius: 0px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #ea580c;
+}
+

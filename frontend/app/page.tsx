@@ -5,6 +5,7 @@ import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import { LiveCityBadge } from '@/components/live-city-badge'
 import { ScrollingTicker } from '@/components/scrolling-ticker'
+import { CravingsRoulette } from '@/components/cravings-roulette'
 
 import type { Metadata } from 'next'
 
@@ -21,16 +22,6 @@ export default function Home() {
     { value: '500+', label: 'Active vendors' },
     { value: '10K+', label: 'Foodie check-ins' },
     { value: '4.9', label: 'Average rating', icon: Star },
-  ]
-  const cravingCategories = [
-    { icon: Flame, label: 'Spicy' },
-    { icon: Soup, label: 'Momos' },
-    { icon: Sandwich, label: 'Sandwiches' },
-    { icon: CupSoda, label: 'Drinks' },
-    { icon: Leaf, label: 'Healthy' },
-    { icon: Croissant, label: 'Sweet' },
-    { icon: Drumstick, label: 'Non-Veg' },
-    { icon: CookingPot, label: 'Thali' },
   ]
 
   return (
@@ -153,40 +144,11 @@ export default function Home() {
         {/* Quick Cravings Section - Pop Art Style */}
         <section className="py-16 border-b-4 border-black bg-white overflow-hidden relative">
           <div className="absolute inset-0 bg-dot-pattern opacity-10"></div>
-
           <div className="max-w-screen-2xl mx-auto px-4 relative z-10">
-            <div className="flex flex-col md:flex-row items-center justify-between mb-10 gap-6">
-              <div className="text-left">
-                <div className="inline-block px-4 py-1 bg-black text-white text-xs font-black uppercase tracking-widest mb-2 transform -rotate-1">
-                  Hungry?
-                </div>
-                <h2 className="text-4xl md:text-5xl font-black text-foreground uppercase tracking-tight">
-                  What are you <span className="text-primary underline decoration-wavy decoration-black/20">Yearning?</span>
-                </h2>
-              </div>
-              <Link href="/explore">
-                <Button variant="ghost" className="hidden md:flex gap-2 font-bold hover:bg-black/5 hover:text-primary transition-colors text-lg group">
-                  View Full Menu <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </Link>
-            </div>
-
-            <div className="flex flex-wrap justify-center md:justify-start gap-4 animate-slide-up" style={{ animationDelay: '0.1s' }}>
-              {cravingCategories.map((item, idx) => {
-                const Icon = item.icon
-                return (
-                <Link href={`/explore?category=${item.label}`} key={idx}>
-                  <div className="flex items-center gap-3 px-6 py-4 rounded-xl bg-white border-3 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-all cursor-pointer group hover:bg-yellow-100">
-                    <span className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-black bg-yellow-200 text-black transition-transform group-hover:scale-110">
-                      <Icon className="h-5 w-5 stroke-[2.4]" />
-                    </span>
-                    <span className="font-black text-lg text-foreground uppercase tracking-wide">{item.label}</span>
-                  </div>
-                </Link>
-              )})}
-            </div>
+            <CravingsRoulette />
           </div>
         </section>
+
 
         {/* Enhanced Features Section - Street Pop Style */}
         <section className="py-24 bg-white relative overflow-hidden">

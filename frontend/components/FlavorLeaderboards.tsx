@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Crown, Flame, Cookie, Moon, Trophy, Loader2 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { gamificationApi } from '@/lib/api'
+import Image from 'next/image'
 
 type LeaderboardCategory = 'spice' | 'sugar' | 'night'
 
@@ -106,7 +107,14 @@ export function FlavorLeaderboards() {
                                     </div>
                                     <div className="relative text-black">
                                         <div className="w-12 h-12 rounded-full border-4 border-black overflow-hidden bg-gray-200">
-                                            <img src={user.profilePicture || 'https://i.pravatar.cc/100'} alt={user.displayName} />
+                                            <Image
+                                                src={user.profilePicture || 'https://i.pravatar.cc/100'}
+                                                alt={user.displayName}
+                                                width={48}
+                                                height={48}
+                                                className="w-full h-full object-cover"
+                                                unoptimized
+                                            />
                                         </div>
                                         {user.rank === 1 && (
                                             <div className="absolute -top-3 -right-2 bg-yellow-400 border-2 border-black rounded-full p-1 rotate-12">

@@ -58,6 +58,7 @@ public class SecurityConfig {
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/announcements/hot").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/zodiac/**").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/gamification/leaderboard").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/gamification/niche-leaderboard").permitAll()
 
                         // Admin Only — administrative controls
                         .requestMatchers("/api/hottopics/admin/**").hasRole("ADMIN")

@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import { gamificationApi } from '@/lib/api'
+import Image from 'next/image'
 
 export function BiteBounties() {
     const handleAccept = async (niche: string, amount: number) => {
@@ -63,7 +64,13 @@ export function BiteBounties() {
                             <div className="flex -space-x-2">
                                 {[1, 2, 3].map(i => (
                                     <div key={i} className="w-8 h-8 rounded-full border-2 border-black bg-gray-200 overflow-hidden z-10" style={{ zIndex: 10 - i }}>
-                                        <img src={`https://i.pravatar.cc/100?img=${i+10}`} alt="avatar" />
+                                        <Image
+                                            src={`https://i.pravatar.cc/100?img=${i+10}`}
+                                            alt="avatar"
+                                            width={32}
+                                            height={32}
+                                            unoptimized
+                                        />
                                     </div>
                                 ))}
                                 <div className="w-8 h-8 rounded-full border-2 border-black bg-white flex items-center justify-center z-0 text-[10px] font-black">

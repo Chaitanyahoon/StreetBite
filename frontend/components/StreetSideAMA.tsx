@@ -5,6 +5,7 @@ import { Mic2, Send } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
+import Image from 'next/image'
 
 export interface StreetSideAMAProps {
     vendor?: {
@@ -84,7 +85,14 @@ export function StreetSideAMA({ vendor }: StreetSideAMAProps) {
                     <div className="p-6 md:border-r-4 border-black flex flex-col items-center text-center">
                         <div className="relative mb-4">
                             <div className="w-24 h-24 rounded-full border-4 border-black overflow-hidden bg-white">
-                                <img src={vendorImage} alt={vendorName} className="w-full h-full object-cover" />
+                                <Image
+                                    src={vendorImage}
+                                    alt={vendorName}
+                                    width={96}
+                                    height={96}
+                                    className="w-full h-full object-cover"
+                                    unoptimized
+                                />
                             </div>
                             <div className="absolute -bottom-2 -right-2 bg-emerald-400 border-2 border-black rounded-lg px-2 py-0.5 text-[10px] font-black uppercase rotate-6">
                                 Featured
