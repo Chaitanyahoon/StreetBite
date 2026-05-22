@@ -19,7 +19,7 @@ interface AuthContextType {
   isLoading: boolean
   isLoggedIn: boolean
   login: (email: string, password: string) => Promise<LoginResult>
-  loginWithGoogle: () => Promise<LoginResult>
+  loginWithGoogle: (role?: string, businessName?: string) => Promise<LoginResult>
   logout: () => Promise<void>
   refreshUser: () => Promise<void>
   updateLocalUser: (updated: Partial<AuthUser>) => void
@@ -91,7 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const loginWithGoogle = useCallback(async (): Promise<LoginResult> => {
+  const loginWithGoogle = useCallback(async (role?: string, businessName?: string): Promise<LoginResult> => {
     try {
       if (!auth || !googleProvider) {
         return {
@@ -106,7 +106,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const result = await signInWithPopup(auth, googleProvider)
 
       const token = await result.user.getIdToken()
-      const response = await authApi.firebaseLogin(token)
+      const response = await authApi.firebaseLogin(token, role, businessName)
 
       let userData = response.user as AuthUser
 

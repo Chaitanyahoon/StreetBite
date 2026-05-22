@@ -292,11 +292,24 @@ public class AuthController {
                 }
             } else {
                 // Lazy Registration: Auto-create account in MySQL
+                String requestedRoleStr = payload.getRole();
+                User.Role finalRole = User.Role.USER;
+                if (requestedRoleStr != null && !requestedRoleStr.isBlank()) {
+                    if ("ADMIN".equalsIgnoreCase(requestedRoleStr.trim())) {
+                        return ResponseEntity.badRequest().body(Map.of("error", "Cannot register with ADMIN role"));
+                    }
+                    try {
+                        finalRole = User.Role.valueOf(requestedRoleStr.trim().toUpperCase());
+                    } catch (IllegalArgumentException e) {
+                        finalRole = User.Role.USER;
+                    }
+                }
+
                 user = new User();
                 user.setEmail(email);
                 user.setDisplayName(name != null ? name.trim() : email.split("@")[0]);
                 user.setProfilePicture(avatar != null ? avatar.trim() : "/avatars/avatar_1.png");
-                user.setRole(User.Role.USER);
+                user.setRole(finalRole);
                 user.setEmailVerified(true);
                 user.setActive(true);
                 
@@ -304,7 +317,11 @@ public class AuthController {
                 user.setPasswordHash(passwordEncoder.encode(UUID.randomUUID().toString()));
                 
                 user = userService.saveUser(user);
-                logger.info("✓ Lazy-registered new Google user in MySQL: {}", email);
+                logger.info("✓ Lazy-registered new Google user ({}) in MySQL: {}", finalRole, email);
+
+                if (finalRole == User.Role.VENDOR) {
+                    authService.createDefaultVendorProfile(user, payload.getBusinessName());
+                }
             }
 
             if (!user.getActive()) {

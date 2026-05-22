@@ -250,7 +250,8 @@ export interface ZodiacHoroscopeResponse {
 export const authApi = {
   register: (data: RegisterRequest) => api.post('/auth/register', data) as Promise<AuthResponse>,
   login: (data: LoginRequest) => api.post('/auth/login', data) as Promise<AuthResponse>,
-  firebaseLogin: (token: string) => api.post('/auth/firebase-login', { token }) as Promise<AuthResponse>,
+  firebaseLogin: (token: string, role?: string, businessName?: string) =>
+    api.post('/auth/firebase-login', { token, role, businessName }) as Promise<AuthResponse>,
   verifyEmail: (data: VerifyEmailRequest) => api.post('/auth/verify-email', data) as Promise<AuthResponse>,
   resendVerification: (email: string) => api.post('/auth/resend-verification', { email }) as Promise<AuthResponse>,
   me: () => api.get('/auth/me') as Promise<AuthUser>,
@@ -268,6 +269,8 @@ export const userApi = {
     api.put(`/users/${id}`, data) as Promise<ApiUser>,
   updateStatus: (id: string | number, isActive: boolean) =>
     api.put(`/users/${id}/status`, { isActive }) as Promise<ApiUser>,
+  upgradeToVendor: (data: { businessName: string; phoneNumber?: string }) =>
+    api.post('/users/upgrade-to-vendor', data) as Promise<ApiUser>,
 };
 
 export const vendorApi = {

@@ -210,6 +210,31 @@ public class AuthService {
         vendorService.saveVendor(vendor);
     }
 
+    @Transactional
+    public void createDefaultVendorProfile(User user, String businessName) {
+        if (user.getRole() != User.Role.VENDOR) {
+            return;
+        }
+
+        List<Vendor> existingVendors = vendorService.getVendorsByOwner(user.getId());
+        if (!existingVendors.isEmpty()) {
+            return;
+        }
+
+        Vendor vendor = new Vendor();
+        vendor.setOwner(user);
+        vendor.setName(businessName != null && !businessName.trim().isEmpty()
+                ? businessName.trim()
+                : (user.getDisplayName() != null ? user.getDisplayName() : "My") + "'s Stall");
+        vendor.setPhone(user.getPhoneNumber());
+        vendor.setDescription("New vendor");
+        vendor.setCuisine("Street Food");
+        vendor.setLatitude(null);
+        vendor.setLongitude(null);
+
+        vendorService.saveVendor(vendor);
+    }
+
     private String generateSixDigitCode() {
         return String.format("%06d", new java.security.SecureRandom().nextInt(1_000_000));
     }

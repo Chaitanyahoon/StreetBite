@@ -1,11 +1,16 @@
 package com.streetbite.controller;
 
+import com.streetbite.config.CookieSettings;
 import com.streetbite.dto.user.UserResponse;
 import com.streetbite.dto.user.UserStatusUpdateRequest;
 import com.streetbite.dto.user.UserUpdateRequest;
+import com.streetbite.dto.user.UpgradeToVendorRequest;
 import com.streetbite.model.User;
 import com.streetbite.security.AuthenticatedUserService;
+import com.streetbite.service.AuthService;
 import com.streetbite.service.UserService;
+import com.streetbite.util.JwtUtil;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -19,10 +24,21 @@ public class UserController {
 
     private final UserService userService;
     private final AuthenticatedUserService authenticatedUserService;
+    private final AuthService authService;
+    private final JwtUtil jwtUtil;
+    private final CookieSettings cookieSettings;
 
-    public UserController(UserService userService, AuthenticatedUserService authenticatedUserService) {
+    public UserController(
+            UserService userService,
+            AuthenticatedUserService authenticatedUserService,
+            AuthService authService,
+            JwtUtil jwtUtil,
+            CookieSettings cookieSettings) {
         this.userService = userService;
         this.authenticatedUserService = authenticatedUserService;
+        this.authService = authService;
+        this.jwtUtil = jwtUtil;
+        this.cookieSettings = cookieSettings;
     }
 
     @GetMapping("/{id}")
@@ -116,5 +132,55 @@ public class UserController {
 
     private ResponseEntity<Map<String, String>> forbidden(String message) {
         return ResponseEntity.status(403).body(Map.of("error", message));
+    }
+
+    @PostMapping("/upgrade-to-vendor")
+    public ResponseEntity<?> upgradeToVendor(
+            @RequestBody UpgradeToVendorRequest request,
+            Authentication authentication,
+            HttpServletResponse response) {
+        User currentUser = resolveAuthenticatedUser(authentication);
+        if (currentUser == null) {
+            return unauthorized("Invalid session");
+        }
+
+        if (currentUser.getRole() != User.Role.USER) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Only Customers can upgrade to Vendor"));
+        }
+
+        if (request.getBusinessName() == null || request.getBusinessName().trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Business Name is required"));
+        }
+
+        // Update role
+        currentUser.setRole(User.Role.VENDOR);
+        if (request.getPhoneNumber() != null && !request.getPhoneNumber().trim().isEmpty()) {
+            currentUser.setPhoneNumber(request.getPhoneNumber().trim());
+        }
+        User savedUser = userService.saveUser(currentUser);
+
+        // Create default vendor profile
+        authService.createDefaultVendorProfile(savedUser, request.getBusinessName());
+
+        // Regenerate JWT token containing VENDOR role
+        String token = jwtUtil.generateToken(savedUser.getEmail(), savedUser.getId(), savedUser.getRole().name());
+
+        // Write the cookie
+        StringBuilder header = new StringBuilder()
+                .append("sb_token")
+                .append("=")
+                .append(token)
+                .append("; Max-Age=")
+                .append(24 * 60 * 60)
+                .append("; Path=/; HttpOnly; SameSite=")
+                .append(cookieSettings.getSameSite());
+
+        if (cookieSettings.isSecure()) {
+            header.append("; Secure");
+        }
+
+        response.setHeader("Set-Cookie", header.toString());
+
+        return ResponseEntity.ok(UserResponse.from(savedUser));
     }
 }

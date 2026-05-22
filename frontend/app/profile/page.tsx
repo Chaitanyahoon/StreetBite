@@ -44,6 +44,13 @@ export default function ProfilePage() {
   const [uploading, setUploading] = useState(false)
   const [profileImageFailed, setProfileImageFailed] = useState(false)
 
+  // Upgrade Modal State
+  const [isUpgradeOpen, setIsUpgradeOpen] = useState(false)
+  const [upgradeBusinessName, setUpgradeBusinessName] = useState('')
+  const [upgradePhone, setUpgradePhone] = useState('')
+  const [upgrading, setUpgrading] = useState(false)
+  const [upgradeError, setUpgradeError] = useState<string | null>(null)
+
   const [userData, setUserData] = useState({
     userId: '',
     email: '',
@@ -70,6 +77,12 @@ export default function ProfilePage() {
     setResetEmail(authUser.email || '')
     setLoading(false)
   }, [authUser, isLoggedIn, router])
+
+  useEffect(() => {
+    if (userData.phoneNumber) {
+      setUpgradePhone(userData.phoneNumber)
+    }
+  }, [userData.phoneNumber])
 
   useEffect(() => {
     setProfileImageFailed(false)
@@ -102,6 +115,31 @@ export default function ProfilePage() {
       setError(err.message || 'Failed to update profile')
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleUpgrade = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!upgradeBusinessName.trim()) {
+      setUpgradeError('Business Name is required')
+      return
+    }
+    setUpgrading(true)
+    setUpgradeError(null)
+
+    try {
+      await userApi.upgradeToVendor({
+        businessName: upgradeBusinessName,
+        phoneNumber: upgradePhone || undefined,
+      })
+      await refreshUser()
+      setIsUpgradeOpen(false)
+      router.push('/vendor')
+    } catch (err: any) {
+      console.error('Upgrade error:', err)
+      setUpgradeError(err.response?.data?.error || err.message || 'Failed to upgrade to vendor')
+    } finally {
+      setUpgrading(false)
     }
   }
 
@@ -203,8 +241,9 @@ export default function ProfilePage() {
         )}
 
         <div className="grid gap-8 md:grid-cols-[1fr_1.5fr]">
-          {/* Left Column: Avatar Selection */}
-          <Card className="border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] bg-white overflow-hidden h-fit rounded-[2.5rem]">
+          {/* Left Column: Avatar Selection & Upgrade CTA */}
+          <div className="flex flex-col gap-8">
+            <Card className="border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] bg-white overflow-hidden h-fit rounded-[2.5rem]">
             <div className="h-36 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-orange-400 border-b-4 border-black relative overflow-hidden">
               <div className="absolute inset-0 bg-black/10"></div>
               {/* Decorative shapes */}
@@ -312,7 +351,84 @@ export default function ProfilePage() {
                 </div>
               </div>
             </CardContent>
-          </Card>
+            </Card>
+
+            {(userData.role === 'USER' || userData.role === 'CUSTOMER') && (
+              <Card className="border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] bg-amber-400 overflow-hidden h-fit rounded-[2.5rem] p-6 relative">
+                {/* Decorative background shape */}
+                <div className="absolute -bottom-8 -right-8 w-24 h-24 bg-white/20 rounded-full pointer-events-none"></div>
+                <h3 className="text-2xl font-black text-black uppercase tracking-tight">Become a Vendor</h3>
+                <p className="text-black font-bold mt-2 text-sm leading-relaxed">
+                  Start selling your amazing street food! Setup your stall, list items, and receive orders directly from customers.
+                </p>
+                <Dialog open={isUpgradeOpen} onOpenChange={setIsUpgradeOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="w-full mt-6 bg-black text-white hover:bg-zinc-800 font-black border-2 border-black rounded-xl h-12 shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] hover:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] hover:translate-y-0.5 transition-all uppercase">
+                      Upgrade to Vendor
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="border-4 border-black bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-[2.5rem] p-8 max-w-md">
+                    <DialogHeader>
+                      <DialogTitle className="text-3xl font-black uppercase tracking-tighter text-black">Upgrade to Vendor</DialogTitle>
+                      <DialogDescription className="font-bold text-zinc-600">
+                        Enter your business info to set up your food stall on StreetBite.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleUpgrade} className="space-y-6 py-4">
+                      {upgradeError && (
+                        <div className="text-sm font-bold text-red-600 bg-red-50 p-3 rounded-lg border-2 border-red-200">
+                          {upgradeError}
+                        </div>
+                      )}
+                      <div className="space-y-2">
+                        <Label htmlFor="business-name" className="text-black font-black uppercase text-xs tracking-wider">Business / Stall Name</Label>
+                        <Input
+                          id="business-name"
+                          required
+                          placeholder="e.g. Tacos del Sol"
+                          value={upgradeBusinessName}
+                          onChange={(e) => setUpgradeBusinessName(e.target.value)}
+                          className="bg-white border-2 border-black font-bold text-black rounded-xl h-12 focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:-translate-y-1 transition-all focus-visible:ring-0 focus-visible:ring-offset-0"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="upgrade-phone" className="text-black font-black uppercase text-xs tracking-wider">Business Phone Number</Label>
+                        <Input
+                          id="upgrade-phone"
+                          type="tel"
+                          placeholder="e.g. 1234567890"
+                          value={upgradePhone}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/\D/g, '').slice(0, 10)
+                            setUpgradePhone(value)
+                          }}
+                          maxLength={10}
+                          className="bg-white border-2 border-black font-bold text-black rounded-xl h-12 focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:-translate-y-1 transition-all focus-visible:ring-0 focus-visible:ring-offset-0"
+                        />
+                      </div>
+                      <DialogFooter className="pt-4 flex gap-3">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setIsUpgradeOpen(false)}
+                          className="flex-1 border-2 border-black font-black rounded-xl h-12 hover:bg-stone-100 uppercase"
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          type="submit"
+                          disabled={upgrading}
+                          className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-black border-2 border-black rounded-xl h-12 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-y-0.5 transition-all uppercase"
+                        >
+                          {upgrading ? 'Upgrading...' : 'Submit'}
+                        </Button>
+                      </DialogFooter>
+                    </form>
+                  </DialogContent>
+                </Dialog>
+              </Card>
+            )}
+          </div>
 
           {/* Right Column: Form */}
           <Card className="border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] bg-white h-fit rounded-[2.5rem] relative overflow-hidden">
