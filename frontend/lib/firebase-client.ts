@@ -2,7 +2,7 @@ import { initializeApp, getApps, FirebaseApp } from 'firebase/app'
 import { getFirestore, Firestore } from 'firebase/firestore'
 import { getMessaging, isSupported } from 'firebase/messaging'
 import { getAnalytics, Analytics } from "firebase/analytics";
-import { getAuth, GoogleAuthProvider, Auth } from 'firebase/auth'
+import { getAuth, GoogleAuthProvider, Auth, browserLocalPersistence, setPersistence } from 'firebase/auth'
 
 /**
  * Firebase configuration object containing keys and identifiers for the app.
@@ -71,6 +71,10 @@ let googleProvider: GoogleAuthProvider | null = null;
 
 if (app) {
     auth = getAuth(app);
+    // Explicitly enforce local storage persistence to prevent iframe tracking failures in privacy-focused browsers
+    setPersistence(auth, browserLocalPersistence).catch(err => {
+        console.warn("Failed to set Firebase local persistence:", err);
+    });
     googleProvider = new GoogleAuthProvider();
 }
 

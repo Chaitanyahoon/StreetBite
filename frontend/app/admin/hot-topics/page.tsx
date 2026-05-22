@@ -81,7 +81,7 @@ export default function HotTopicManagement() {
       console.error('Failed to fetch hot topics', err)
       const status = (err as any)?.response?.status
       if (status === 401 || status === 403) {
-        setError('Admin access is required. Sign in again and allow cookies for StreetBite.')
+        setError('Admin access is required. Please sign in again.')
         toast.error('Admin session required')
         if (status === 401) {
           await logout()

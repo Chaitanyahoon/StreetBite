@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Logo } from '@/components/logo'
 import { Button } from '@/components/ui/button'
-import { Mail, Lock, ArrowLeft, Eye, EyeOff, ShieldCheck, Cookie, RefreshCcw } from 'lucide-react'
+import { Mail, Lock, ArrowLeft, Eye, EyeOff } from 'lucide-react'
 import { authApi } from '@/lib/api'
 import { useAuth } from '@/context/AuthContext'
 import { motion } from 'framer-motion'
@@ -26,8 +26,6 @@ function SignInContent() {
   const [resetEmail, setResetEmail] = useState('')
   const [resetStatus, setResetStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
   const [resetError, setResetError] = useState<string | null>(null)
-  const [showCookieHelp, setShowCookieHelp] = useState(false)
-  const isCookieIssue = !!error?.toLowerCase().includes('allow cookies')
 
   const performLogin = async (emailInput: string, passwordInput: string) => {
     setIsLoading(true)
@@ -161,13 +159,6 @@ function SignInContent() {
             >
               <Logo />
             </motion.div>
-            <motion.div
-              variants={itemVariants}
-              className="mb-3 inline-flex items-center gap-2 rounded-full border-4 border-black bg-white px-3 py-1.5 text-[10px] sm:text-xs font-black uppercase tracking-[0.25em] text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
-            >
-              <ShieldCheck className="size-4" strokeWidth={3} />
-              Cookie-Secure Access
-            </motion.div>
             <motion.h1 variants={itemVariants} className="text-[2rem] sm:text-4xl md:text-5xl font-black mb-2 text-black tracking-tight">
               {showForgotPassword ? 'RESET PASSWORD' : 'WELCOME BACK!'}
             </motion.h1>
@@ -266,14 +257,7 @@ function SignInContent() {
               onSubmit={handleSignIn}
               className="bg-white rounded-[1.5rem] sm:rounded-[2rem] shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-4 sm:p-7 border-3 sm:border-4 border-black relative overflow-hidden"
             >
-              <div className="mb-3 rounded-xl border-3 border-black bg-[#FFF5D8] px-3.5 py-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] flex items-center gap-2">
-                <Cookie className="size-4 shrink-0 text-amber-600" strokeWidth={3} />
-                <p className="text-[10px] sm:text-xs font-bold text-gray-700 leading-tight">
-                  StreetBite uses 1 secure session cookie to keep you signed in.
-                </p>
-              </div>
-
-              {error && !isCookieIssue && (
+              {error && (
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -281,56 +265,6 @@ function SignInContent() {
                 >
                   <div className="w-3.5 h-3.5 bg-red-500 rounded-full border border-black flex-shrink-0" />
                   <span>{error}</span>
-                </motion.div>
-              )}
-
-              {isCookieIssue && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mb-4 rounded-xl border-3 sm:border-4 border-black bg-yellow-100 px-3.5 py-3 text-xs sm:text-sm font-bold text-black"
-                >
-                  <div className="flex items-start gap-2.5">
-                    <div className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full border-2 border-black bg-white">
-                      <Cookie className="size-3.5" strokeWidth={2.8} />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-black">Allow Cookies To Sign In</p>
-                      <p className="mt-0.5 text-xs sm:text-sm font-bold leading-relaxed text-black">
-                        Your browser blocked the StreetBite session cookie. Allow cookies for this site, then try again.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="mt-3 flex flex-col gap-2 sm:flex-row">
-                    <button
-                      type="button"
-                      onClick={() => setShowCookieHelp((current) => !current)}
-                      className="inline-flex items-center justify-center rounded-lg border-3 border-black bg-white px-3 py-2 text-[10px] font-black uppercase tracking-[0.18em] text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all hover:-translate-y-0.5"
-                    >
-                      {showCookieHelp ? 'Hide Steps' : 'How To Allow'}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => performLogin(email, password)}
-                      disabled={isLoading || !email || !password}
-                      className="inline-flex items-center justify-center gap-1.5 rounded-lg border-3 border-black bg-orange-500 px-3 py-2 text-[10px] font-black uppercase tracking-[0.18em] text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                      <RefreshCcw className="size-3" strokeWidth={2.8} />
-                      Try Again
-                    </button>
-                  </div>
-
-                  {showCookieHelp && (
-                    <div className="mt-3 rounded-lg border-3 border-black bg-white p-3 text-xs font-bold leading-normal text-black">
-                      <p className="font-black uppercase tracking-[0.18em] text-gray-500">Quick Fix</p>
-                      <p className="mt-1">Chrome/Edge: click the lock icon near address bar and enable cookies.</p>
-                      <p>Brave: disable Shields for StreetBite, then refresh.</p>
-                      <p className="mt-1 text-gray-600 text-[10px]">
-                        Press <span className="text-black font-black">Try Again</span> after enabling.
-                      </p>
-                    </div>
-                  )}
                 </motion.div>
               )}
 

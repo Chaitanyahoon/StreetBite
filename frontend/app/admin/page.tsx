@@ -46,7 +46,7 @@ export default function AdminDashboard() {
       console.error('Error fetching admin data:', error)
       const status = (error as any)?.response?.status
       if (status === 401 || status === 403) {
-        setErrorMessage('Your admin session is unavailable. Sign in again and allow cookies for StreetBite.')
+        setErrorMessage('Your admin session has expired. Please sign in again.')
         toast.error('Admin session required')
         if (status === 401) {
           await logout()
