@@ -22,6 +22,10 @@ const nextConfig = {
   async rewrites() {
     return [
       {
+        source: '/__/auth/:path*',
+        destination: 'https://streetbite-go.firebaseapp.com/__/auth/:path*',
+      },
+      {
         source: '/api/:path*',
         destination: `${backendApiUrl}/:path*`,
       },
