@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { vendorApi, type ApiVendor } from '@/lib/api'
 import { VendorCard } from '@/components/vendor-card'
-import { Card, CardContent } from '@/components/ui/card'
+import { VendorCardSkeleton } from '@/components/vendor-card-skeleton'
 import { Utensils } from 'lucide-react'
 
 const MOCK_VENDORS: ApiVendor[] = [
@@ -71,22 +71,9 @@ export function FeaturedVendors() {
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10 pb-6">
         {[1, 2, 3].map((idx) => (
-          <Card
-            key={idx}
-            className="h-[380px] w-full border-4 border-black rounded-[1.75rem] bg-gray-100 animate-pulse overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]"
-          >
-            <div className="h-48 bg-gray-200" />
-            <CardContent className="p-5 flex flex-col gap-4">
-              <div className="h-6 bg-gray-200 rounded w-2/3" />
-              <div className="h-4 bg-gray-200 rounded w-1/2" />
-              <div className="grid grid-cols-2 gap-3 mt-2">
-                <div className="h-10 bg-gray-200 rounded-xl" />
-                <div className="h-10 bg-gray-200 rounded-xl" />
-              </div>
-            </CardContent>
-          </Card>
+          <VendorCardSkeleton key={idx} />
         ))}
       </div>
     )
@@ -96,7 +83,7 @@ export function FeaturedVendors() {
   // Card 1 shifts slightly up/left tilted. Card 2 shifts down/right tilted. Card 3 shifts slightly up tilted.
   const offsetClasses = [
     'md:-rotate-1 hover:rotate-0 md:-translate-y-2',
-    'md:rotate-1 hover:rotate-0 md:translate-y-4 shadow-[8px_8px_0px_0px_rgba(249,115,22,1)]',
+    'md:rotate-1 hover:rotate-0 md:translate-y-4',
     'md:-rotate-1 hover:rotate-0 md:translate-y-1',
   ]
 
@@ -117,21 +104,19 @@ export function FeaturedVendors() {
         const image = vendor.displayImageUrl || vendor.image || ''
 
         return (
-          <div key={idStr} className={`transition-all duration-300 ${offsetClasses[idx % 3]}`}>
-            <div className="border-4 border-black rounded-[1.8rem] bg-white overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] h-full">
-              <VendorCard
-                id={idStr}
-                slug={vendor.slug}
-                name={name}
-                cuisine={cuisine}
-                rating={rating}
-                distance={rawDistance}
-                image={image}
-                reviews={reviews}
-                tags={tags}
-                status={status}
-              />
-            </div>
+          <div key={idStr} className={`h-full transition-all duration-300 ${offsetClasses[idx % 3]}`}>
+            <VendorCard
+              id={idStr}
+              slug={vendor.slug}
+              name={name}
+              cuisine={cuisine}
+              rating={rating}
+              distance={rawDistance}
+              image={image}
+              reviews={reviews}
+              tags={tags}
+              status={status}
+            />
           </div>
         )
       })}

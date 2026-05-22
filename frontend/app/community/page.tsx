@@ -52,9 +52,7 @@ const EventsCalendar = dynamic(() => import('@/components/EventsCalendar').then(
 const Leaderboard = dynamic(() => import('@/components/Leaderboard').then(m => m.Leaderboard), { ssr: false, loading: () => <WidgetSkeleton /> })
 const FoodPersonalityQuiz = dynamic(() => import('@/components/FoodPersonalityQuiz').then(m => m.FoodPersonalityQuiz), { ssr: false, loading: () => <WidgetSkeleton /> })
 const UserStats = dynamic(() => import('@/components/UserStats').then(m => m.UserStats), { ssr: false, loading: () => <WidgetSkeleton /> })
-const BiteBounties = dynamic(() => import('@/components/BiteBounties').then(m => m.BiteBounties), { ssr: false, loading: () => <WidgetSkeleton /> })
-const FlavorLeaderboards = dynamic(() => import('@/components/FlavorLeaderboards').then(m => m.FlavorLeaderboards), { ssr: false, loading: () => <WidgetSkeleton /> })
-const StreetSideAMA = dynamic(() => import('@/components/StreetSideAMA').then(m => m.StreetSideAMA), { ssr: false, loading: () => <WidgetSkeleton /> })
+
 
 function WidgetSkeleton({ h = 'h-48' }: { h?: string }) {
     return (
@@ -887,45 +885,45 @@ function CommunityPageContent() {
             <Navbar />
 
             {/* Dynamic Hero Section */}
-            <section className="relative pt-32 pb-16 overflow-hidden">
+            <section className="relative pt-24 xs:pt-28 sm:pt-32 pb-10 sm:pb-16 overflow-hidden">
                 {/* Floating Elements - keeping animations but making them bolder */}
-                <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-emerald-200/40 rounded-full mix-blend-multiply filter blur-[80px] opacity-70 animate-blob"></div>
-                <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-yellow-200/40 rounded-full mix-blend-multiply filter blur-[80px] opacity-70 animate-blob animation-delay-2000"></div>
-                <div className="absolute -bottom-8 left-20 w-[400px] h-[400px] bg-pink-200/40 rounded-full mix-blend-multiply filter blur-[80px] opacity-70 animate-blob animation-delay-4000"></div>
+                <div className="absolute top-[-10%] left-[-10%] w-[300px] sm:w-[500px] h-[300px] sm:h-[500px] bg-emerald-200/40 rounded-full mix-blend-multiply filter blur-[50px] sm:filter blur-[80px] opacity-70 animate-blob"></div>
+                <div className="absolute top-[-10%] right-[-10%] w-[300px] sm:w-[500px] h-[300px] sm:h-[500px] bg-yellow-200/40 rounded-full mix-blend-multiply filter blur-[50px] sm:filter blur-[80px] opacity-70 animate-blob animation-delay-2000"></div>
+                <div className="absolute -bottom-8 left-20 w-[240px] sm:w-[400px] h-[240px] sm:h-[400px] bg-pink-200/40 rounded-full mix-blend-multiply filter blur-[50px] sm:filter blur-[80px] opacity-70 animate-blob animation-delay-4000"></div>
 
-                <div className="max-w-6xl mx-auto px-6 relative z-10 text-center">
-                    <div className="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-black text-white border-2 border-black text-sm font-black uppercase tracking-wider mb-4 shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] -rotate-1">
-                        <Flame className="w-4 h-4 text-orange-500 animate-pulse" />
+                <div className="max-w-6xl mx-auto px-4 sm:px-6 relative z-10 text-center">
+                    <div className="inline-flex items-center gap-1.5 sm:gap-2 px-4 sm:px-6 py-1.5 sm:py-2 rounded-full bg-black text-white border-2 border-black text-[10px] sm:text-sm font-black uppercase tracking-wider mb-4 shadow-[2.5px_2.5px_0px_0px_rgba(255,255,255,1)] sm:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] -rotate-1">
+                        <Flame className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange-500 animate-pulse" />
                         {activeNowCount} Hot Topics Active
                     </div>
-                    <p className="text-xs font-black uppercase tracking-[0.22em] text-black/60 mb-6">
+                    <p className="text-[10px] sm:text-xs font-black uppercase tracking-[0.22em] text-black/60 mb-4 sm:mb-6">
                         Live in the last 24 hours
                     </p>
 
-                    <h1 className="text-6xl md:text-8xl font-black mb-6 tracking-tighter leading-[0.9] text-black">
-                        THE <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-red-600 drop-shadow-[4px_4px_0px_rgba(0,0,0,1)]">FOODIE</span> SOCIAL
+                    <h1 className="text-3xl xs:text-5xl sm:text-6xl md:text-8xl font-black mb-4 sm:mb-6 tracking-tighter leading-[0.9] text-black">
+                        THE <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-red-600 drop-shadow-[2px_2px_0px_rgba(0,0,0,1)] sm:drop-shadow-[4px_4px_0px_rgba(0,0,0,1)]">FOODIE</span> SOCIAL
                     </h1>
 
-                    <p className="text-2xl text-black font-bold max-w-2xl mx-auto mb-10 border-b-4 border-black pb-8 inline-block transform rotate-1">
+                    <p className="text-base sm:text-2xl text-black font-bold max-w-2xl mx-auto mb-8 sm:mb-10 border-b-2.5 sm:border-b-4 border-black pb-5 sm:pb-8 inline-block transform rotate-1">
                         Yap about the best bites, then jump into games to earn XP.
                     </p>
 
-                    <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 w-full max-w-md mx-auto sm:max-w-none">
                         <Button
                             size="lg"
-                            className="h-16 px-10 rounded-full text-xl font-black uppercase bg-black text-white border-4 border-black hover:bg-white hover:text-black shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all hover:-translate-y-1"
+                            className="w-full sm:w-auto h-12 xs:h-14 sm:h-16 px-6 xs:px-8 sm:px-10 rounded-full text-sm xs:text-base sm:text-xl font-black uppercase bg-black text-white border-2.5 sm:border-4 border-black hover:bg-white hover:text-black shadow-[2.5px_2.5px_0px_0px_rgba(255,255,255,1)] sm:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all hover:-translate-y-0.5 sm:hover:-translate-y-1"
                             onClick={() => scrollToSection('discussions')}
                         >
-                            <MessageSquare className="w-6 h-6 mr-3" />
+                            <MessageSquare className="w-4 h-4 sm:w-6 sm:h-6 mr-2 sm:mr-3" />
                             Start Yap
                         </Button>
                         <Button
                             size="lg"
                             variant="outline"
-                            className="h-16 px-10 rounded-full text-xl font-black uppercase bg-white text-black border-4 border-black hover:bg-orange-400 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all hover:-translate-y-1"
+                            className="w-full sm:w-auto h-12 xs:h-14 sm:h-16 px-6 xs:px-8 sm:px-10 rounded-full text-sm xs:text-base sm:text-xl font-black uppercase bg-white text-black border-2.5 sm:border-4 border-black hover:bg-orange-400 shadow-[2.5px_2.5px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all hover:-translate-y-0.5 sm:hover:-translate-y-1"
                             onClick={handlePlayGames}
                         >
-                            <Gamepad2 className="w-6 h-6 mr-3" />
+                            <Gamepad2 className="w-4 h-4 sm:w-6 sm:h-6 mr-2 sm:mr-3" />
                             Play Games
                         </Button>
                     </div>
@@ -933,21 +931,21 @@ function CommunityPageContent() {
             </section>
 
             {/* Main Content */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
-                <div className="mb-10 flex flex-wrap items-center gap-3">
+            <div className="max-w-7xl mx-auto px-0 sm:px-6 py-12">
+                <div className="mb-6 sm:mb-10 flex flex-wrap justify-center sm:justify-start items-center gap-2.5 sm:gap-3 px-4 sm:px-0">
                     <button
                         onClick={() => scrollToSection('discussions')}
-                        className="rounded-full border-2 border-black bg-black px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                        className="rounded-full border-2 border-black bg-black px-3.5 py-1.5 sm:px-4 sm:py-2 text-[10px] sm:text-xs font-black uppercase tracking-[0.18em] text-white shadow-[2.5px_2.5px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all active:translate-x-[0.5px] active:translate-y-[0.5px] active:shadow-none hover:-translate-y-0.5"
                     >
                         Jump to Yaps
                     </button>
                     <button
                         onClick={() => scrollToSection('games')}
-                        className="rounded-full border-2 border-black bg-white px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                        className="rounded-full border-2 border-black bg-white px-3.5 py-1.5 sm:px-4 sm:py-2 text-[10px] sm:text-xs font-black uppercase tracking-[0.18em] text-black shadow-[2.5px_2.5px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all active:translate-x-[0.5px] active:translate-y-[0.5px] active:shadow-none hover:-translate-y-0.5"
                     >
                         Jump to Games
                     </button>
-                    <span className="rounded-full border-2 border-black bg-yellow-300 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                    <span className="rounded-full border-2 border-black bg-yellow-300 px-3.5 py-1.5 sm:px-4 sm:py-2 text-[10px] sm:text-xs font-black uppercase tracking-[0.18em] text-black shadow-[2.5px_2.5px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                         Both live now
                     </span>
                 </div>
@@ -956,65 +954,73 @@ function CommunityPageContent() {
                     {/* Left Column - Main Feed (8 cols) */}
                     <div className="lg:col-span-8 space-y-10">
 
-                        <CommunityAnnouncementsBanner announcements={hotAnnouncements} />
+                        <div className="px-4 sm:px-0">
+                            <CommunityAnnouncementsBanner announcements={hotAnnouncements} />
+                        </div>
 
                         {/* Hot Discussions */}
-                        <Card id="discussions" className="border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white rounded-[2rem] overflow-hidden">
-                            <CardHeader className="pb-6 border-b-4 border-black bg-yellow-300 p-6">
-                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className="p-3 bg-black rounded-xl -rotate-3 shadow-md">
-                                            <MessageSquare className="w-6 h-6 text-white" />
+                        <Card id="discussions" className="max-sm:border-x-0 max-sm:rounded-none max-sm:shadow-none border-2 sm:border-4 border-black shadow-[3.5px_3.5px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden">
+                            <CardHeader className="pb-3 border-b-2 sm:border-b-4 border-black bg-yellow-300 p-3 sm:p-6">
+                                <div className="flex flex-col gap-3">
+                                    {/* Top Row: Title + Start Yap / Refresh Buttons */}
+                                    <div className="flex items-center justify-between gap-2 w-full">
+                                        <div className="flex items-center gap-2 sm:gap-3">
+                                            <div className="p-1.5 sm:p-2.5 bg-black rounded-lg sm:rounded-xl -rotate-3 shadow-md">
+                                                <MessageSquare className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-white" />
+                                            </div>
+                                            <h2 className="text-base sm:text-2xl font-black uppercase tracking-tight text-black">
+                                                Hot Topics
+                                            </h2>
                                         </div>
-                                        <h2 className="text-3xl font-black uppercase tracking-tight text-black">
-                                            Hot Topics
-                                        </h2>
+                                        <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+                                            {authUser?.role === 'ADMIN' ? (
+                                                <Button
+                                                    className="border-2 sm:border-4 border-black bg-black text-white font-black uppercase tracking-wider text-[9px] xs:text-[10px] sm:text-xs h-7 sm:h-10 px-2 sm:px-3 active:translate-x-[0.5px] active:translate-y-[0.5px] active:shadow-none transition-all"
+                                                    onClick={() => router.push('/admin/hot-topics')}
+                                                >
+                                                    Start Yap
+                                                </Button>
+                                            ) : (
+                                                <Button
+                                                    variant="outline"
+                                                    className="border-2 sm:border-4 border-black font-black uppercase tracking-wider text-[9px] xs:text-[10px] sm:text-xs h-7 sm:h-10 px-2 sm:px-3 active:translate-x-[0.5px] active:translate-y-[0.5px] active:shadow-none transition-all bg-white text-black"
+                                                    onClick={openTopicDialog}
+                                                >
+                                                    Start Yap
+                                                </Button>
+                                            )}
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                onClick={() => fetchHotTopics(true)}
+                                                disabled={isTopicsLoading}
+                                                className="border-2 sm:border-4 border-black font-black uppercase tracking-wider text-[9px] xs:text-[10px] sm:text-xs h-7 sm:h-10 px-2 sm:px-3 active:translate-x-[0.5px] active:translate-y-[0.5px] active:shadow-none transition-all bg-white text-black"
+                                            >
+                                                {isTopicsLoading ? (
+                                                    <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
+                                                ) : (
+                                                    'Refresh'
+                                                )}
+                                            </Button>
+                                        </div>
                                     </div>
-                                    {authUser?.role === 'ADMIN' ? (
-                                        <Button
-                                            className="border-4 border-black bg-black text-white font-black uppercase tracking-wider"
-                                            onClick={() => router.push('/admin/hot-topics')}
-                                        >
-                                            Start a topic
-                                        </Button>
-                                    ) : (
-                                        <Button
-                                            variant="outline"
-                                            className="border-4 border-black font-black uppercase tracking-wider"
-                                            onClick={openTopicDialog}
-                                        >
-                                            Start a topic
-                                        </Button>
-                                    )}
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        onClick={() => fetchHotTopics(true)}
-                                        disabled={isTopicsLoading}
-                                        className="border-4 border-black font-black uppercase tracking-wider"
-                                    >
-                                        {isTopicsLoading ? (
-                                            <span className="inline-flex items-center gap-2">
-                                                <Loader2 className="h-4 w-4 animate-spin" />
-                                                Refreshing
-                                            </span>
-                                        ) : (
-                                            'Refresh'
-                                        )}
-                                    </Button>
-                                    <div className="relative w-full sm:w-72">
-                                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-black" />
+
+                                    {/* Bottom Row: Full-width Search Input on Mobile, Compact on Desktop */}
+                                    <div className="relative w-full lg:max-w-xs">
+                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-black" />
                                         <Input
                                             type="text"
                                             placeholder="Search yaps..."
                                             value={searchQuery}
                                             onChange={(e) => setSearchQuery(e.target.value)}
-                                            className="pl-12 h-12 bg-white border-4 border-black rounded-xl font-bold placeholder:text-gray-400 focus:ring-0 focus:border-black focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all"
+                                            className="pl-8 sm:pl-11 h-7.5 xs:h-8.5 sm:h-10 bg-white border-2 sm:border-4 border-black rounded-lg sm:rounded-xl font-bold placeholder:text-gray-400 focus:ring-0 focus:border-black focus:shadow-[1.5px_1.5px_0px_0px_rgba(0,0,0,1)] sm:focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all text-[9px] xs:text-[10px] sm:text-xs"
                                         />
                                     </div>
                                 </div>
-                                <div className="mt-4 flex flex-wrap items-center gap-3">
-                                    <span className="rounded-full border-2 border-black bg-black px-3 py-1 text-[0.65rem] font-black uppercase tracking-[0.2em] text-emerald-300">
+
+                                {/* Filters horizontal scrolldeck */}
+                                <div className="mt-3.5 flex gap-1.5 items-center overflow-x-auto no-scrollbar pb-1 -mx-3 px-3 sm:-mx-6 sm:px-6">
+                                    <span className="shrink-0 rounded-full border border-black bg-black px-2 py-0.5 text-[8px] xs:text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-emerald-300">
                                         Mode
                                     </span>
                                     {TOPIC_MODE_OPTIONS.map((option) => (
@@ -1022,42 +1028,42 @@ function CommunityPageContent() {
                                             key={option.id}
                                             type="button"
                                             onClick={() => setTopicMode(option.id)}
-                                            className={`rounded-full border-2 px-3 py-1 text-[0.65rem] font-black uppercase tracking-[0.18em] ${
+                                            className={`shrink-0 rounded-full border px-2 py-0.5 text-[8px] xs:text-[9px] sm:text-[10px] font-black uppercase tracking-[0.18em] transition-all active:translate-x-[0.5px] active:translate-y-[0.5px] active:shadow-none ${
                                                 topicMode === option.id
-                                                    ? 'border-black bg-emerald-300 text-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]'
+                                                    ? 'border-black bg-emerald-300 text-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] sm:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
                                                     : 'border-black bg-white text-black/70'
                                             }`}
                                         >
                                             {option.label}
                                         </button>
                                     ))}
-                                    <span className="rounded-full border-2 border-black bg-white px-3 py-1 text-[0.65rem] font-black uppercase tracking-[0.14em] text-black/70 inline-flex items-center gap-1.5">
-                                        <Flame className="h-3 w-3 text-orange-500" />
-                                        {liveModeCount} live now
+                                    <span className="shrink-0 rounded-full border border-black bg-white px-2 py-0.5 text-[8px] xs:text-[9px] sm:text-[10px] font-black uppercase tracking-[0.14em] text-black/70 inline-flex items-center gap-1">
+                                        <Flame className="h-2.5 w-2.5 text-orange-500" />
+                                        {liveModeCount} live
                                     </span>
-                                    <span className="rounded-full border-2 border-black bg-white px-3 py-1 text-[0.65rem] font-black uppercase tracking-[0.14em] text-black/70 inline-flex items-center gap-1.5">
-                                        <MessageSquare className="h-3 w-3 text-blue-500" />
+                                    <span className="shrink-0 rounded-full border border-black bg-white px-2 py-0.5 text-[8px] xs:text-[9px] sm:text-[10px] font-black uppercase tracking-[0.14em] text-black/70 inline-flex items-center gap-1">
+                                        <MessageSquare className="h-2.5 w-2.5 text-blue-500" />
                                         {unansweredModeCount} unanswered
                                     </span>
-                                    <span className="rounded-full border-2 border-black bg-white px-3 py-1 text-[0.65rem] font-black uppercase tracking-[0.14em] text-black/70 inline-flex items-center gap-1.5">
-                                        <Scale className="h-3 w-3 text-red-500" />
-                                        {debateModeCount} debate-ready
+                                    <span className="shrink-0 rounded-full border border-black bg-white px-2 py-0.5 text-[8px] xs:text-[9px] sm:text-[10px] font-black uppercase tracking-[0.14em] text-black/70 inline-flex items-center gap-1">
+                                        <Scale className="h-2.5 w-2.5 text-red-500" />
+                                        {debateModeCount} debate
                                     </span>
-                                    <span className="rounded-full border-2 border-black bg-white px-3 py-1 text-[0.65rem] font-black uppercase tracking-[0.14em] text-black/70 inline-flex items-center gap-1.5">
-                                        <MapPin className="h-3 w-3 text-teal-500" />
-                                        {nearbyModeCount} nearby-signals
+                                    <span className="shrink-0 rounded-full border border-black bg-white px-2 py-0.5 text-[8px] xs:text-[9px] sm:text-[10px] font-black uppercase tracking-[0.14em] text-black/70 inline-flex items-center gap-1">
+                                        <MapPin className="h-2.5 w-2.5 text-teal-500" />
+                                        {nearbyModeCount} nearby
                                     </span>
-                                    <span className="rounded-full border-2 border-black bg-black px-3 py-1 text-[0.65rem] font-black uppercase tracking-[0.2em] text-yellow-300">
-                                        Sort by
+                                    <span className="shrink-0 rounded-full border border-black bg-black px-2 py-0.5 text-[8px] xs:text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-yellow-300">
+                                        Sort
                                     </span>
                                     {visibleSortOptions.map((option) => (
                                         <button
                                             key={option.id}
                                             type="button"
                                             onClick={() => setTopicSort(option.id)}
-                                            className={`rounded-full border-2 px-3 py-1 text-[0.65rem] font-black uppercase tracking-[0.18em] ${
+                                            className={`shrink-0 rounded-full border px-2 py-0.5 text-[8px] xs:text-[9px] sm:text-[10px] font-black uppercase tracking-[0.18em] transition-all active:translate-x-[0.5px] active:translate-y-[0.5px] active:shadow-none ${
                                                 topicSort === option.id
-                                                    ? 'border-black bg-yellow-300 text-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]'
+                                                    ? 'border-black bg-yellow-300 text-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] sm:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
                                                     : 'border-black bg-white text-black/70'
                                             }`}
                                         >
@@ -1065,15 +1071,15 @@ function CommunityPageContent() {
                                         </button>
                                     ))}
                                     {lastTopicsRefreshLabel && (
-                                        <span className="rounded-full border-2 border-black bg-white px-3 py-1 text-[0.65rem] font-black uppercase tracking-[0.14em] text-black/70">
+                                        <span className="shrink-0 rounded-full border border-black bg-white px-2 py-0.5 text-[8px] xs:text-[9px] sm:text-[10px] font-black uppercase tracking-[0.14em] text-black/70">
                                             Updated {lastTopicsRefreshLabel}
                                         </span>
                                     )}
                                 </div>
                             </CardHeader>
-                            <CardContent className="p-6 bg-white">
+                            <CardContent className="p-3.5 sm:p-6 bg-white">
                                 {topicMode === 'live' && (
-                                    <div className="mb-6 rounded-2xl border-4 border-black bg-emerald-100 px-4 py-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                                    <div className="mb-6 rounded-2xl border-2.5 sm:border-4 border-black bg-emerald-100 p-3 sm:px-4 sm:py-3 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                                         <p className="text-xs font-black uppercase tracking-[0.16em] text-black inline-flex items-center gap-2">
                                             <Flame className="h-4 w-4 text-orange-500" />
                                             Live Mode
@@ -1084,7 +1090,7 @@ function CommunityPageContent() {
                                     </div>
                                 )}
                                 {topicMode === 'unanswered' && (
-                                    <div className="mb-6 rounded-2xl border-4 border-black bg-blue-100 px-4 py-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                                    <div className="mb-6 rounded-2xl border-2.5 sm:border-4 border-black bg-blue-100 p-3 sm:px-4 sm:py-3 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                                         <p className="text-xs font-black uppercase tracking-[0.16em] text-black inline-flex items-center gap-2">
                                             <MessageSquare className="h-4 w-4 text-blue-600" />
                                             Unanswered Mode
@@ -1095,7 +1101,7 @@ function CommunityPageContent() {
                                     </div>
                                 )}
                                 {topicMode === 'debate' && (
-                                    <div className="mb-6 rounded-2xl border-4 border-black bg-rose-100 px-4 py-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                                    <div className="mb-6 rounded-2xl border-2.5 sm:border-4 border-black bg-rose-100 p-3 sm:px-4 sm:py-3 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                                         <p className="text-xs font-black uppercase tracking-[0.16em] text-black inline-flex items-center gap-2">
                                             <Scale className="h-4 w-4 text-rose-600" />
                                             Debate Mode
@@ -1106,7 +1112,7 @@ function CommunityPageContent() {
                                     </div>
                                 )}
                                 {topicMode === 'nearby' && (
-                                    <div className="mb-6 rounded-2xl border-4 border-black bg-teal-100 px-4 py-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                                    <div className="mb-6 rounded-2xl border-2.5 sm:border-4 border-black bg-teal-100 p-3 sm:px-4 sm:py-3 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                                         <p className="text-xs font-black uppercase tracking-[0.16em] text-black inline-flex items-center gap-2">
                                             <MapPin className="h-4 w-4 text-teal-600" />
                                             Nearby Mode
@@ -1122,7 +1128,7 @@ function CommunityPageContent() {
                                                 variant="outline"
                                                 onClick={requestUserLocation}
                                                 disabled={isLocationLoading}
-                                                className="h-8 border-2 border-black bg-white px-3 text-[0.65rem] font-black uppercase tracking-[0.14em] text-black"
+                                                className="h-8 border-2 border-black bg-white px-3 text-[0.65rem] font-black uppercase tracking-[0.14em] text-black active:translate-x-[0.5px] active:translate-y-[0.5px] active:shadow-none"
                                             >
                                                 {isLocationLoading ? (
                                                     <span className="inline-flex items-center gap-2">
@@ -1134,7 +1140,7 @@ function CommunityPageContent() {
                                                         <LocateFixed className="h-3.5 w-3.5" />
                                                         {userLocation ? 'Update my location' : 'Use my location'}
                                                     </span>
-                                                )}
+                                                  )}
                                             </Button>
                                             {userLocation && (
                                                 <span className="rounded-full border-2 border-black bg-white px-3 py-1 text-[0.6rem] font-black uppercase tracking-[0.14em] text-black/70">
@@ -1150,7 +1156,7 @@ function CommunityPageContent() {
                                     </div>
                                 )}
                                 {topicMode === 'all' && sortedPendingSubmissions.length > 0 && (
-                                    <div className="mb-6 rounded-2xl border-4 border-dashed border-amber-500 bg-amber-100 p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                                    <div className="mb-6 rounded-2xl border-2.5 sm:border-4 border-dashed border-amber-500 bg-amber-100 p-3 sm:p-4 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                                         <div className="mb-3 flex items-center justify-between gap-3">
                                             <p className="text-xs font-black uppercase tracking-[0.2em] text-black">
                                                 Pending Review
@@ -1179,13 +1185,13 @@ function CommunityPageContent() {
                                         {Array.from({ length: 3 }).map((_, index) => (
                                             <div
                                                 key={`topics-loading-${index}`}
-                                                className="h-40 rounded-2xl border-4 border-black bg-gray-100 animate-pulse shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                                                className="h-40 rounded-2xl border-2.5 sm:border-4 border-black bg-gray-100 animate-pulse shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
                                             />
                                         ))}
                                     </div>
                                 )}
                                 {topicsError && !isTopicsLoading && (
-                                    <div className="rounded-2xl border-4 border-black bg-red-50 p-6 text-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                                    <div className="rounded-2xl border-2.5 sm:border-4 border-black bg-red-50 p-4 sm:p-6 text-center shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                                         <p className="text-lg font-black uppercase text-black">Unable to load discussions</p>
                                         <p className="mt-2 text-sm font-bold text-black/70">{topicsError}</p>
                                         <Button
@@ -1223,120 +1229,120 @@ function CommunityPageContent() {
                                                     : '@StreetBiteTeam';
 
                                                 return (
-                                            <button
-                                                    key={discussion.id}
-                                                    onClick={() => handleDiscussionClick(discussion)}
-                                                    className="group p-5 bg-white hover:bg-orange-50 rounded-2xl border-4 border-black transition-all text-left shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 active:translate-y-0 active:shadow-none animate-slide-up"
-                                                    style={{ animationDelay: `${index * 0.1}s` }}
-                                                >
-                                                    <div className="flex justify-between items-start mb-3">
-                                                        <div className="flex gap-2 flex-wrap">
-                                                            {discussionBadges.map((badge) => (
-                                                                <span
-                                                                    key={`${discussion.id}-${badge.label}`}
-                                                                    className={`px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-wider border border-black transform group-hover:rotate-2 transition-transform ${badge.className}`}
-                                                                >
-                                                                    {badge.label}
-                                                                </span>
-                                                            ))}
-                                                        </div>
-                                                        <span className="text-xs text-gray-500 font-black uppercase tracking-wide">
-                                                            Last activity {getLastActivity(discussion)}
-                                                        </span>
-                                                    </div>
-                                                    <div className="mb-2 text-xs font-black uppercase tracking-widest text-black/60">
-                                                        {discussion.createdByDisplayName ? `By ${discussion.createdByDisplayName}` : 'Community'}
-                                                    </div>
-                                                    <h3 className="font-black text-xl text-black mb-4 group-hover:text-orange-600 transition-colors line-clamp-2">
-                                                        {discussion.title}
-                                                    </h3>
-                                                    <p className="text-sm text-gray-600 mb-4 line-clamp-2">{discussion.content}</p>
-                                                    <div className="mb-4">
-                                                        <div className="mb-1 flex items-center justify-between text-[10px] font-black uppercase tracking-[0.14em] text-black/60">
-                                                            <span>Activity level</span>
-                                                            <span>{activityScore}%</span>
-                                                        </div>
-                                                        <div className="h-2 rounded-full border-2 border-black bg-white overflow-hidden">
-                                                            <div
-                                                                className="h-full bg-gradient-to-r from-orange-400 via-amber-300 to-yellow-300 transition-all"
-                                                                style={{ width: `${activityScore}%` }}
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                    {topicMode === 'debate' && (
-                                                        <div className="mb-4 rounded-xl border-2 border-black bg-rose-50 p-3">
-                                                            <div className="mb-2 flex items-center justify-between text-[10px] font-black uppercase tracking-[0.14em] text-black/70">
-                                                                <span>Side A {debateSplit.left}%</span>
-                                                                <span>Side B {debateSplit.right}%</span>
-                                                            </div>
-                                                            <div className="h-3 overflow-hidden rounded-full border-2 border-black bg-white flex">
-                                                                <div className="h-full bg-rose-500" style={{ width: `${debateSplit.left}%` }} />
-                                                                <div className="h-full bg-blue-500" style={{ width: `${debateSplit.right}%` }} />
-                                                            </div>
-                                                            <div className="mt-2 flex items-center justify-between text-[10px] font-black uppercase tracking-[0.12em] text-black/60">
-                                                                <span>Team spice</span>
-                                                                <span>Team crunch</span>
-                                                            </div>
-                                                        </div>
-                                                    )}
-                                                    {topicMode === 'nearby' && (
-                                                        <div className="mb-4 rounded-xl border-2 border-black bg-teal-50 p-3">
-                                                            <div className="mb-2 flex items-center justify-between text-[10px] font-black uppercase tracking-[0.14em] text-black/70">
-                                                                <span>Local signal</span>
-                                                                <span>{nearbySignal}%</span>
-                                                            </div>
-                                                            <div className="h-3 overflow-hidden rounded-full border-2 border-black bg-white">
-                                                                <div className="h-full bg-gradient-to-r from-teal-500 to-cyan-400 transition-all" style={{ width: `${nearbySignal}%` }} />
-                                                            </div>
-                                                            <div className="mt-2 flex flex-wrap items-center gap-2">
-                                                                {nearbyDistanceKm !== null && (
-                                                                    <span className="rounded-full border border-black bg-white px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-black/70">
-                                                                        {nearbyDistanceKm < 1
-                                                                            ? `${Math.round(nearbyDistanceKm * 1000)}m away`
-                                                                            : `${nearbyDistanceKm.toFixed(1)}km away`}
-                                                                    </span>
-                                                                )}
-                                                                {!hasTopicCoordinates && (
-                                                                    <span className="rounded-full border border-black bg-white px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-black/70">
-                                                                        distance unavailable
-                                                                    </span>
-                                                                )}
-                                                                {nearbyTags.length > 0 ? nearbyTags.map((tag) => (
+                                                    <button
+                                                        key={discussion.id}
+                                                        onClick={() => handleDiscussionClick(discussion)}
+                                                        className="group p-3.5 sm:p-5 bg-white hover:bg-orange-50 rounded-2xl border-2 sm:border-4 border-black transition-all text-left shadow-[2.5px_2.5px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5 sm:hover:-translate-y-1 active:translate-y-0 active:shadow-none animate-slide-up"
+                                                        style={{ animationDelay: `${index * 0.1}s` }}
+                                                    >
+                                                        <div className="flex flex-col xs:flex-row xs:justify-between xs:items-start gap-2 mb-3">
+                                                            <div className="flex gap-1.5 flex-wrap">
+                                                                {discussionBadges.map((badge) => (
                                                                     <span
-                                                                        key={`${discussion.id}-nearby-${tag}`}
-                                                                        className="rounded-full border border-black bg-white px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-black/70"
+                                                                        key={`${discussion.id}-${badge.label}`}
+                                                                        className={`px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-md text-[9px] sm:text-[10px] font-black uppercase tracking-wider border border-black transform group-hover:rotate-2 transition-transform ${badge.className}`}
                                                                     >
-                                                                        {tag}
+                                                                        {badge.label}
                                                                     </span>
-                                                                )) : (
-                                                                    <span className="text-[10px] font-black uppercase tracking-[0.12em] text-black/60">
-                                                                        local intent detected
-                                                                    </span>
-                                                                )}
+                                                                ))}
+                                                            </div>
+                                                            <span className="text-[10px] sm:text-xs text-gray-500 font-black uppercase tracking-wide">
+                                                                Activity {getLastActivity(discussion)}
+                                                            </span>
+                                                        </div>
+                                                        <div className="mb-2 text-[10px] sm:text-xs font-black uppercase tracking-widest text-black/60">
+                                                            {discussion.createdByDisplayName ? `By ${discussion.createdByDisplayName}` : 'Community'}
+                                                        </div>
+                                                        <h3 className="font-black text-lg sm:text-xl text-black mb-3 group-hover:text-orange-600 transition-colors line-clamp-2">
+                                                            {discussion.title}
+                                                        </h3>
+                                                        <p className="text-xs sm:text-sm text-gray-600 mb-3 line-clamp-2">{discussion.content}</p>
+                                                        <div className="mb-4">
+                                                            <div className="mb-1 flex items-center justify-between text-[10px] font-black uppercase tracking-[0.14em] text-black/60">
+                                                                <span>Activity level</span>
+                                                                <span>{activityScore}%</span>
+                                                            </div>
+                                                            <div className="h-1.5 sm:h-2 rounded-full border-1.5 sm:border-2 border-black bg-white overflow-hidden">
+                                                                <div
+                                                                    className="h-full bg-gradient-to-r from-orange-400 via-amber-300 to-yellow-300 transition-all"
+                                                                    style={{ width: `${activityScore}%` }}
+                                                                />
                                                             </div>
                                                         </div>
-                                                    )}
-                                                    <div className="flex items-center gap-6 text-sm text-gray-600 font-bold">
-                                                        <span className="flex items-center gap-2">
-                                                            <MessageSquare className="w-4 h-4" />
-                                                            {commentsCount}
-                                                        </span>
-                                                        <span className="flex items-center gap-2">
-                                                            <Heart className="w-4 h-4" />
-                                                            {likesCount}
-                                                        </span>
-                                                        <span className="flex items-center gap-2">
-                                                            <Star className="w-4 h-4" />
-                                                            {participantsCount} participants
-                                                        </span>
-                                                        <span className="flex items-center gap-2 ml-auto text-black">
-                                                            {authorLabel}
-                                                        </span>
-                                                        <span className="hidden sm:inline-flex items-center gap-2 text-black/70 text-xs uppercase tracking-[0.12em]">
-                                                            Tap to open
-                                                        </span>
-                                                    </div>
-                                                </button>
+                                                        {topicMode === 'debate' && (
+                                                            <div className="mb-4 rounded-xl border-2 border-black bg-rose-50 p-3">
+                                                                <div className="mb-2 flex items-center justify-between text-[10px] font-black uppercase tracking-[0.14em] text-black/70">
+                                                                    <span>Side A {debateSplit.left}%</span>
+                                                                    <span>Side B {debateSplit.right}%</span>
+                                                                </div>
+                                                                <div className="h-3 overflow-hidden rounded-full border-2 border-black bg-white flex">
+                                                                    <div className="h-full bg-rose-500" style={{ width: `${debateSplit.left}%` }} />
+                                                                    <div className="h-full bg-blue-500" style={{ width: `${debateSplit.right}%` }} />
+                                                                </div>
+                                                                <div className="mt-2 flex items-center justify-between text-[10px] font-black uppercase tracking-[0.12em] text-black/60">
+                                                                    <span>Team spice</span>
+                                                                    <span>Team crunch</span>
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                        {topicMode === 'nearby' && (
+                                                            <div className="mb-4 rounded-xl border-2 border-black bg-teal-50 p-3">
+                                                                <div className="mb-2 flex items-center justify-between text-[10px] font-black uppercase tracking-[0.14em] text-black/70">
+                                                                    <span>Local signal</span>
+                                                                    <span>{nearbySignal}%</span>
+                                                                </div>
+                                                                <div className="h-3 overflow-hidden rounded-full border-2 border-black bg-white">
+                                                                    <div className="h-full bg-gradient-to-r from-teal-500 to-cyan-400 transition-all" style={{ width: `${nearbySignal}%` }} />
+                                                                </div>
+                                                                <div className="mt-2 flex flex-wrap items-center gap-2">
+                                                                    {nearbyDistanceKm !== null && (
+                                                                        <span className="rounded-full border border-black bg-white px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-black/70">
+                                                                            {nearbyDistanceKm < 1
+                                                                                ? `${Math.round(nearbyDistanceKm * 1000)}m away`
+                                                                                : `${nearbyDistanceKm.toFixed(1)}km away`}
+                                                                        </span>
+                                                                    )}
+                                                                    {!hasTopicCoordinates && (
+                                                                        <span className="rounded-full border border-black bg-white px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-black/70">
+                                                                            distance unavailable
+                                                                        </span>
+                                                                    )}
+                                                                    {nearbyTags.length > 0 ? nearbyTags.map((tag) => (
+                                                                        <span
+                                                                            key={`${discussion.id}-nearby-${tag}`}
+                                                                            className="rounded-full border border-black bg-white px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-black/70"
+                                                                        >
+                                                                            {tag}
+                                                                        </span>
+                                                                    )) : (
+                                                                        <span className="text-[10px] font-black uppercase tracking-[0.12em] text-black/60">
+                                                                            local intent detected
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs sm:text-sm text-gray-600 font-bold w-full">
+                                                            <span className="flex items-center gap-1.5">
+                                                                <MessageSquare className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                                                                {commentsCount}
+                                                            </span>
+                                                            <span className="flex items-center gap-1.5">
+                                                                <Heart className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                                                                {likesCount}
+                                                            </span>
+                                                            <span className="flex items-center gap-1.5">
+                                                                <Star className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                                                                <span>{participantsCount} <span className="hidden xs:inline">participants</span></span>
+                                                            </span>
+                                                            <span className="flex items-center gap-1.5 ml-auto text-black text-[10px] sm:text-xs">
+                                                                {authorLabel}
+                                                            </span>
+                                                            <span className="hidden md:inline-flex items-center gap-1.5 text-black/70 text-[10px] sm:text-xs uppercase tracking-[0.12em]">
+                                                                Tap to open
+                                                            </span>
+                                                        </div>
+                                                    </button>
                                                 );
                                             })()
                                         ))}
@@ -1404,27 +1410,27 @@ function CommunityPageContent() {
                         </Card>
 
                         {/* Games Hub */}
-                        <Card id="games" className="border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white rounded-[2rem] overflow-hidden">
-                            <CardHeader className="border-b-4 border-black bg-[#fff3d2] p-6">
-                                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                        <Card id="games" className="max-sm:border-x-0 max-sm:rounded-none max-sm:shadow-none border-2 sm:border-4 border-black shadow-[3.5px_3.5px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden">
+                            <CardHeader className="border-b-2 sm:border-b-4 border-black bg-[#fff3d2] p-3.5 sm:p-6">
+                                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                     <div className="flex items-center gap-3">
-                                        <div className="p-3 bg-black rounded-xl -rotate-2 shadow-md">
-                                            <Gamepad2 className="w-6 h-6 text-white" />
+                                        <div className="p-2 sm:p-3 bg-black rounded-xl -rotate-2 shadow-md">
+                                            <Gamepad2 className="w-4.5 h-4.5 sm:w-6 sm:h-6 text-white" />
                                         </div>
                                         <div>
-                                            <h2 className="text-3xl font-black uppercase tracking-tight text-black">
-                                                Games & Challenges
+                                            <h2 className="text-xl sm:text-3xl font-black uppercase tracking-tight text-black">
+                                                Games Hub
                                             </h2>
-                                            <p className="text-sm font-bold text-black/70">Earn XP, unlock streaks, and compete.</p>
+                                            <p className="text-[10px] sm:text-sm font-bold text-black/70">Earn XP, unlock streaks, and compete.</p>
                                         </div>
                                     </div>
-                                    <span className="rounded-full border-2 border-black bg-white px-3 py-1 text-xs font-black uppercase tracking-[0.2em] text-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
+                                    <span className="self-start sm:self-auto rounded-full border-2 border-black bg-white px-3 py-1 text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-black shadow-[1.5px_1.5px_0px_0px_rgba(0,0,0,1)] sm:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
                                         Fresh each day
                                     </span>
                                 </div>
                             </CardHeader>
-                            <CardContent className="p-6 space-y-8">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <CardContent className="p-3.5 sm:p-6 space-y-6 sm:space-y-8">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
                                     <div className="transform hover:-translate-y-2 transition-transform duration-300">
                                         <VendorBattle />
                                     </div>
@@ -1432,19 +1438,18 @@ function CommunityPageContent() {
                                         {authIsLoggedIn ? (
                                             <StreakTracker />
                                         ) : (
-                                            <Card className="h-full border-4 border-black rounded-[2rem] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-orange-500 text-white flex flex-col items-center justify-center p-8 text-center relative overflow-hidden group">
+                                            <Card className="h-full border-2 sm:border-4 border-black rounded-[1.5rem] sm:rounded-[2rem] shadow-[3.5px_3.5px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-orange-500 text-white flex flex-col items-center justify-center p-5 sm:p-8 text-center relative overflow-hidden group">
                                                 <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
-
                                                 <div className="relative z-10 flex flex-col items-center">
-                                                    <div className="p-4 bg-black rounded-full mb-6 shadow-xl group-hover:scale-110 transition-transform duration-300 border-4 border-white">
-                                                        <Flame className="w-10 h-10 text-orange-500 fill-orange-500 animate-pulse" />
+                                                    <div className="p-2.5 sm:p-4 bg-black rounded-full mb-4 sm:mb-6 shadow-xl group-hover:scale-110 transition-transform duration-300 border-2 sm:border-4 border-white">
+                                                        <Flame className="w-8 h-8 sm:w-10 sm:h-10 text-orange-500 fill-orange-500 animate-pulse" />
                                                     </div>
-                                                    <h3 className="font-black text-3xl mb-2 tracking-tight uppercase">Ignite Your Streak</h3>
-                                                    <p className="text-black font-bold mb-8 text-lg leading-relaxed max-w-[200px]">
+                                                    <h3 className="font-black text-xl sm:text-3xl mb-2 tracking-tight uppercase">Ignite Your Streak</h3>
+                                                    <p className="text-black font-bold mb-5 sm:mb-8 text-xs sm:text-lg leading-relaxed max-w-[200px]">
                                                         Log in daily to build your flame and earn spicy rewards.
                                                     </p>
                                                     <Button
-                                                        className="bg-white text-black hover:bg-black hover:text-white font-black border-4 border-black text-lg py-6 px-8 rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all transform hover:-translate-y-1"
+                                                        className="bg-white text-black hover:bg-black hover:text-white font-black border-2 sm:border-4 border-black text-xs sm:text-lg py-3 sm:py-6 px-4 sm:px-8 rounded-xl shadow-[2.5px_2.5px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all transform hover:-translate-y-1 active:translate-x-[0.5px] active:translate-y-[0.5px] active:shadow-none"
                                                         onClick={() => router.push('/signin')}
                                                     >
                                                         Start Streak
@@ -1457,21 +1462,15 @@ function CommunityPageContent() {
 
 
 
-                                                                <div className="space-y-6">
-                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                                        <BiteBounties />
-                                        <FlavorLeaderboards />
-                                    </div>
-                                    <StreetSideAMA vendor={vendor} />
-                                </div>
 
-                                <div className="border-4 border-black rounded-3xl overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white mt-8">
+
+                                <div className="border-2 sm:border-4 border-black rounded-3xl overflow-hidden shadow-[3.5px_3.5px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white mt-4 sm:mt-6">
                                     <ZodiacCard />
                                 </div>
                             </CardContent>
 
-                            <div className="border-b-4 border-black bg-black p-4">
-                                <div className="flex gap-4 overflow-x-auto no-scrollbar justify-center">
+                            <div className="border-b-2 sm:border-b-4 border-black bg-black p-2 sm:p-4">
+                                <div className="flex gap-2 sm:gap-4 overflow-x-auto no-scrollbar justify-start sm:justify-center">
                                     {COMMUNITY_TABS.map(tab => {
                                         const Icon = tab.icon;
                                         const isActive = activeTab === tab.id;
@@ -1479,40 +1478,46 @@ function CommunityPageContent() {
                                             <button
                                                 key={tab.id}
                                                 onClick={() => setActiveTab(tab.id)}
-                                                className={`flex items-center gap-2 px-6 py-3 rounded-xl font-black text-sm uppercase tracking-wider transition-all whitespace-nowrap border-2 ${isActive
-                                                    ? 'bg-yellow-400 text-black border-black shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] transform -translate-y-1'
-                                                    : 'bg-black text-gray-400 border-transparent hover:text-white'
+                                                className={`flex items-center gap-1 sm:gap-2 px-2.5 py-1 sm:px-6 sm:py-3 rounded-lg sm:rounded-xl font-black text-[9px] xs:text-[10px] sm:text-sm uppercase tracking-wider transition-all whitespace-nowrap border-2 ${isActive
+                                                    ? 'bg-yellow-400 text-black border-black shadow-[1.5px_1.5px_0px_0px_rgba(255,255,255,1)] sm:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] transform -translate-y-0.5 sm:-translate-y-1 active:translate-x-[0.5px] active:translate-y-[0.5px] active:shadow-none'
+                                                    : 'bg-black text-gray-400 border-transparent hover:text-white active:translate-x-[0.5px] active:translate-y-[0.5px]'
                                                     }`}
                                             >
-                                                <Icon className="w-4 h-4" />
+                                                <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                                                 {tab.label}
                                             </button>
                                         );
                                     })}
                                 </div>
                             </div>
-                            <CardContent className="p-6 min-h-[400px]">
+                            <CardContent className="p-3.5 sm:p-6 min-h-[300px] sm:min-h-[400px] max-sm:px-0">
                                 <div key={activeTab} className="animate-fade-in">
                                     {activeTab === 'games' && (
-                                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                            <DailyPoll />
-                                            <FoodPersonalityQuiz />
-                                            <Card className="border-4 border-black rounded-2xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] bg-white">
-                                                <CardContent className="p-6 space-y-4">
-                                                    <div className="inline-flex items-center gap-2 rounded-full border-2 border-black bg-yellow-300 px-3 py-1 text-xs font-black uppercase tracking-[0.2em] text-black">
-                                                        Challenge deck
-                                                    </div>
-                                                    <h3 className="text-2xl font-black text-black">Daily XP boosters</h3>
-                                                    <p className="text-sm font-bold text-black/60">
-                                                        Vote in battles, keep streaks alive, and finish a poll to stack XP faster.
-                                                    </p>
-                                                    <div className="flex flex-wrap gap-2">
-                                                        <span className="rounded-full border-2 border-black bg-white px-3 py-1 text-xs font-black uppercase tracking-[0.16em] text-black">Battle</span>
-                                                        <span className="rounded-full border-2 border-black bg-white px-3 py-1 text-xs font-black uppercase tracking-[0.16em] text-black">Streak</span>
-                                                        <span className="rounded-full border-2 border-black bg-white px-3 py-1 text-xs font-black uppercase tracking-[0.16em] text-black">Poll</span>
-                                                    </div>
-                                                </CardContent>
-                                            </Card>
+                                        <div className="flex md:grid md:grid-cols-2 lg:grid-cols-2 gap-4 md:gap-6 overflow-x-auto pb-4 md:pb-0 snap-x snap-mandatory no-scrollbar -mx-3.5 px-3.5 sm:mx-0 sm:px-0">
+                                            <div className="w-[85vw] xs:w-[75vw] md:w-auto shrink-0 snap-center">
+                                                <DailyPoll />
+                                            </div>
+                                            <div className="w-[85vw] xs:w-[75vw] md:w-auto shrink-0 snap-center">
+                                                <FoodPersonalityQuiz />
+                                            </div>
+                                            <div className="w-[85vw] xs:w-[75vw] md:w-auto shrink-0 snap-center h-full">
+                                                <Card className="h-full border-2 sm:border-4 border-black rounded-2xl shadow-[3.5px_3.5px_0px_0px_rgba(0,0,0,1)] sm:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] bg-white">
+                                                    <CardContent className="p-4 sm:p-6 space-y-3 h-full flex flex-col justify-center">
+                                                        <div className="inline-flex w-fit items-center gap-1.5 rounded-full border-2 border-black bg-yellow-300 px-2 py-0.5 text-[9px] xs:text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-black">
+                                                            Challenge deck
+                                                        </div>
+                                                        <h3 className="text-xl sm:text-2xl font-black text-black">Daily XP boosters</h3>
+                                                        <p className="text-xs sm:text-sm font-bold text-black/60">
+                                                            Vote in battles, keep streaks alive, and finish a poll to stack XP faster.
+                                                        </p>
+                                                        <div className="flex flex-wrap gap-1.5">
+                                                            <span className="rounded-full border border-black bg-white px-2 py-0.5 text-[10px] sm:text-xs font-black uppercase tracking-[0.16em] text-black">Battle</span>
+                                                            <span className="rounded-full border border-black bg-white px-2 py-0.5 text-[10px] sm:text-xs font-black uppercase tracking-[0.16em] text-black">Streak</span>
+                                                            <span className="rounded-full border border-black bg-white px-2 py-0.5 text-[10px] sm:text-xs font-black uppercase tracking-[0.16em] text-black">Poll</span>
+                                                        </div>
+                                                    </CardContent>
+                                                </Card>
+                                            </div>
                                         </div>
                                     )}
                                     {activeTab === 'photos' && <PhotoWall />}

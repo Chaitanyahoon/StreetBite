@@ -53,7 +53,7 @@ export default function Home() {
                 Find the best food fast
               </div>
 
-              <h1 className="mt-8 text-5xl leading-[0.9] font-black tracking-[-0.06em] text-black sm:text-6xl md:text-8xl lg:text-9xl animate-slide-up">
+              <h1 className="mt-8 text-[2.5rem] leading-[1] font-black tracking-[-0.06em] text-black xs:text-5xl sm:text-6xl md:text-8xl lg:text-9xl animate-slide-up">
                 FIND THE
                 <br />
                 <span className="relative inline-block mt-2 text-primary drop-shadow-[4px_4px_0px_rgba(0,0,0,1)]">
@@ -68,61 +68,61 @@ export default function Home() {
                 Discover hidden gems, trending stalls, and authentic flavors right in your neighborhood.
               </p>
 
-              <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row animate-slide-up">
-                <Link href="/explore">
+              <div className="mt-8 flex flex-row items-center justify-center gap-2.5 sm:gap-4 animate-slide-up w-full max-w-md mx-auto sm:max-w-none">
+                <Link href="/explore" className="flex-1 sm:flex-initial">
                   <Button
                     size="lg"
-                    className="h-16 w-full sm:w-auto rounded-full border-4 border-black bg-black px-10 text-lg font-black uppercase tracking-[0.12em] text-white shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] hover:bg-primary hover:shadow-[10px_10px_0px_0px_rgba(0,0,0,1)]"
+                    className="h-10.5 sm:h-16 w-full px-3.5 sm:px-10 text-[11px] xs:text-xs sm:text-lg font-black uppercase tracking-[0.08em] sm:tracking-[0.12em] text-white rounded-full border-2 sm:border-4 border-black bg-black shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] sm:shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] hover:bg-primary sm:hover:shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-[1px_1px_0px_0px_rgba(255,255,255,1)] sm:active:translate-x-[2px] sm:active:translate-y-[2px] sm:active:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] transition-all duration-150"
                   >
-                    <Search className="mr-2 h-6 w-6 stroke-[2.6]" />
+                    <Search className="mr-1 h-3.5 w-3.5 sm:mr-2 sm:h-6 sm:w-6 stroke-[2.6]" />
                     Find food
                   </Button>
                 </Link>
-                <Link href="/signup?type=vendor">
+                <Link href="/signup?type=vendor" className="flex-1 sm:flex-initial">
                   <Button
                     size="lg"
                     variant="outline"
-                    className="h-16 w-full sm:w-auto rounded-full border-4 border-black bg-white px-10 text-lg font-black uppercase tracking-[0.12em] text-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:bg-yellow-300 hover:shadow-[10px_10px_0px_0px_rgba(0,0,0,1)]"
+                    className="h-10.5 sm:h-16 w-full px-3.5 sm:px-10 text-[11px] xs:text-xs sm:text-lg font-black uppercase tracking-[0.08em] sm:tracking-[0.12em] text-black rounded-full border-2 sm:border-4 border-black bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:bg-yellow-300 hover:shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] sm:active:translate-x-[2px] sm:active:translate-y-[2px] sm:active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all duration-150"
                   >
-                    <ChefHat className="mr-2 h-6 w-6 stroke-[2.6]" />
+                    <ChefHat className="mr-1 h-3.5 w-3.5 sm:mr-2 sm:h-6 sm:w-6 stroke-[2.6]" />
                     List stall
                   </Button>
                 </Link>
               </div>
 
-              <div className="mt-8 flex flex-col gap-3 text-sm font-semibold text-black/70 sm:flex-row sm:flex-wrap sm:justify-center sm:items-center animate-fade-in">
-                <div className="inline-flex items-center justify-center gap-2 rounded-full bg-black px-4 py-2 text-white shadow-[var(--shadow-soft)]">
-                  <MapPin className="h-4 w-4" />
-                  Live vendor discovery
+              <div className="mt-6 flex flex-row flex-wrap justify-center gap-2 text-xs font-semibold text-black/70 animate-fade-in">
+                <div className="inline-flex items-center justify-center gap-1.5 rounded-full bg-black px-2.5 py-1 text-white shadow-[var(--shadow-soft)] text-[10px] sm:text-xs">
+                  <MapPin className="h-3.5 w-3.5" />
+                  Live discovery
                 </div>
-                <div className="inline-flex items-center justify-center gap-2 rounded-full border border-black/10 bg-white/80 px-4 py-2 shadow-[var(--shadow-soft)]">
-                  <Clock className="h-4 w-4 text-primary" />
-                  Open-now filtering
+                <div className="inline-flex items-center justify-center gap-1.5 rounded-full border border-black/10 bg-white/80 px-2.5 py-1 shadow-[var(--shadow-soft)] text-[10px] sm:text-xs">
+                  <Clock className="h-3.5 w-3.5 text-primary" />
+                  Open-now filter
                 </div>
-                <div className="inline-flex items-center justify-center gap-2 rounded-full border border-black/10 bg-white/80 px-4 py-2 shadow-[var(--shadow-soft)]">
-                  <TrendingUp className="h-4 w-4 text-primary" />
-                  Trending local picks
+                <div className="inline-flex items-center justify-center gap-1.5 rounded-full border border-black/10 bg-white/80 px-2.5 py-1 shadow-[var(--shadow-soft)] text-[10px] sm:text-xs">
+                  <TrendingUp className="h-3.5 w-3.5 text-primary" />
+                  Trending picks
                 </div>
               </div>
 
-              <div className="mt-16 grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-8 max-w-4xl mx-auto animate-fade-in">
+              <div className="mt-12 grid grid-cols-3 gap-2 sm:gap-8 max-w-4xl mx-auto animate-fade-in">
                 {heroStats.map((stat, index) => {
                   const Icon = stat.icon
                   const cardClassName =
                     index === 1
-                      ? 'bg-yellow-300 md:translate-y-6'
+                      ? 'bg-yellow-300 sm:translate-y-6 animate-pulse-subtle'
                       : 'bg-white'
 
                   return (
                     <div
                       key={stat.label}
-                      className={`rounded-[1.8rem] border-4 border-black px-5 py-5 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-transform hover:-translate-y-1 ${cardClassName}`}
+                      className={`rounded-xl sm:rounded-[1.8rem] border-2 sm:border-4 border-black px-1.5 py-2.5 sm:px-5 sm:py-5 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-transform hover:-translate-y-1 ${cardClassName}`}
                     >
-                      <div className="flex items-center justify-center gap-2 text-4xl font-black text-black md:text-5xl">
+                      <div className="flex items-center justify-center gap-1 sm:gap-2 text-sm xs:text-base sm:text-4xl font-black text-black md:text-5xl">
                         <span>{stat.value}</span>
-                        {Icon ? <Icon className="h-6 w-6 fill-primary text-primary md:h-7 md:w-7" /> : null}
+                        {Icon ? <Icon className="h-3 w-3 fill-primary text-primary sm:h-6 sm:w-6 md:h-7 md:w-7" /> : null}
                       </div>
-                      <p className="mt-3 text-[0.72rem] font-black uppercase tracking-[0.2em] text-black/55 md:text-xs">
+                      <p className="mt-1 text-[8px] xs:text-[9px] sm:text-[0.72rem] font-black uppercase tracking-[0.05em] xs:tracking-[0.16em] sm:tracking-[0.2em] text-black/55 md:text-xs">
                         {stat.label}
                       </p>
                     </div>
@@ -164,7 +164,7 @@ export default function Home() {
               <div className="inline-block px-4 py-2 border-2 border-black bg-white text-black text-sm font-black uppercase tracking-widest mb-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transform rotate-1">
                 Why StreetBite
               </div>
-              <h2 className="text-5xl md:text-6xl font-black mb-6 text-foreground leading-tight">
+              <h2 className="text-3xl sm:text-5xl md:text-6xl font-black mb-6 text-foreground leading-tight">
                 Your <span className="text-shine-amber">Ultimate Food Guide</span>
               </h2>
               <p className="text-xl font-bold text-muted-foreground max-w-2xl mx-auto">
@@ -172,36 +172,36 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-8">
+            <div className="flex md:grid md:grid-cols-3 gap-4 sm:gap-8 overflow-x-auto pb-6 pt-2 px-4 -mx-4 scrollbar-none snap-x snap-mandatory">
               {/* Feature 1 - Live Tracking - Primary Orange */}
-              <div className="group bg-white p-8 border-4 border-black rounded-3xl shadow-[8px_8px_0px_0px_rgba(249,115,22,1)] hover:shadow-[12px_12px_0px_0px_rgba(249,115,22,1)] transition-all hover:-translate-y-1">
-                <div className="w-16 h-16 bg-black text-white flex items-center justify-center rounded-xl mb-6 shadow-[4px_4px_0px_0px_rgba(100,100,100,1)] group-hover:rotate-3 transition-transform">
-                  <MapPin className="h-8 w-8 text-primary" />
+              <div className="group bg-white pt-3 pb-3.5 px-3.5 sm:p-8 border-[2px] sm:border-4 border-black rounded-xl sm:rounded-3xl shadow-[2.5px_2.5px_0px_0px_rgba(249,115,22,1)] sm:shadow-[8px_8px_0px_0px_rgba(249,115,22,1)] hover:shadow-[4px_4px_0px_0px_rgba(249,115,22,1)] sm:hover:shadow-[12px_12px_0px_0px_rgba(249,115,22,1)] transition-all hover:-translate-y-0.5 w-[220px] xs:w-[255px] sm:w-auto flex-shrink-0 snap-center">
+                <div className="w-7 h-7 sm:w-14 sm:h-14 bg-black text-white flex items-center justify-center rounded-md mb-1.5 sm:mb-6 shadow-[1px_1px_0px_0px_rgba(100,100,100,1)] sm:shadow-[4px_4px_0px_0px_rgba(100,100,100,1)] group-hover:rotate-3 transition-transform">
+                  <MapPin className="h-3.5 w-3.5 sm:h-7 sm:w-7 text-primary" />
                 </div>
-                <h3 className="text-2xl font-black mb-3 text-black">Live Tracking</h3>
-                <p className="text-lg font-medium text-gray-600 leading-relaxed">
+                <h3 className="text-xs xs:text-[13px] sm:text-2xl font-black mb-1 sm:mb-3 text-black">Live Tracking</h3>
+                <p className="text-[10px] xs:text-[11px] sm:text-lg font-semibold sm:font-medium text-gray-600 leading-snug">
                   Real-time location updates. Never miss the pani puri guy again.
                 </p>
               </div>
 
               {/* Feature 2 - Trusted Reviews - Secondary Teal */}
-              <div className="group bg-white p-8 border-4 border-black rounded-3xl shadow-[8px_8px_0px_0px_rgba(20,184,166,1)] hover:shadow-[12px_12px_0px_0px_rgba(20,184,166,1)] transition-all hover:-translate-y-1 md:-mt-8">
-                <div className="w-16 h-16 bg-black text-white flex items-center justify-center rounded-xl mb-6 shadow-[4px_4px_0px_0px_rgba(100,100,100,1)] group-hover:-rotate-3 transition-transform">
-                  <Star className="h-8 w-8 text-secondary" />
+              <div className="group bg-white pt-3 pb-3.5 px-3.5 sm:p-8 border-[2px] sm:border-4 border-black rounded-xl sm:rounded-3xl shadow-[2.5px_2.5px_0px_0px_rgba(20,184,166,1)] sm:shadow-[8px_8px_0px_0px_rgba(20,184,166,1)] hover:shadow-[4px_4px_0px_0px_rgba(20,184,166,1)] sm:hover:shadow-[12px_12px_0px_0px_rgba(20,184,166,1)] transition-all hover:-translate-y-0.5 md:-mt-8 w-[220px] xs:w-[255px] sm:w-auto flex-shrink-0 snap-center">
+                <div className="w-7 h-7 sm:w-14 sm:h-14 bg-black text-white flex items-center justify-center rounded-md mb-1.5 sm:mb-6 shadow-[1px_1px_0px_0px_rgba(100,100,100,1)] sm:shadow-[4px_4px_0px_0px_rgba(100,100,100,1)] group-hover:-rotate-3 transition-transform">
+                  <Star className="h-3.5 w-3.5 sm:h-7 sm:w-7 text-secondary" />
                 </div>
-                <h3 className="text-2xl font-black mb-3 text-black">Trusted Reviews</h3>
-                <p className="text-lg font-medium text-gray-600 leading-relaxed">
+                <h3 className="text-xs xs:text-[13px] sm:text-2xl font-black mb-1 sm:mb-3 text-black">Trusted Reviews</h3>
+                <p className="text-[10px] xs:text-[11px] sm:text-lg font-semibold sm:font-medium text-gray-600 leading-snug">
                   Authentic ratings from real foodies. No fake 5-star bots here.
                 </p>
               </div>
 
               {/* Feature 3 - Vendor Tools - Accent/Neutral */}
-              <div className="group bg-white p-8 border-4 border-black rounded-3xl shadow-[8px_8px_0px_0px_rgba(24,24,27,1)] hover:shadow-[12px_12px_0px_0px_rgba(24,24,27,1)] transition-all hover:-translate-y-1">
-                <div className="w-16 h-16 bg-black text-white flex items-center justify-center rounded-xl mb-6 shadow-[4px_4px_0px_0px_rgba(100,100,100,1)] group-hover:rotate-3 transition-transform">
-                  <ChefHat className="h-8 w-8 text-white" />
+              <div className="group bg-white pt-3 pb-3.5 px-3.5 sm:p-8 border-[2px] sm:border-4 border-black rounded-xl sm:rounded-3xl shadow-[2.5px_2.5px_0px_0px_rgba(24,24,27,1)] sm:shadow-[8px_8px_0px_0px_rgba(24,24,27,1)] hover:shadow-[4px_4px_0px_0px_rgba(24,24,27,1)] sm:hover:shadow-[12px_12px_0px_0px_rgba(24,24,27,1)] transition-all hover:-translate-y-0.5 w-[220px] xs:w-[255px] sm:w-auto flex-shrink-0 snap-center">
+                <div className="w-7 h-7 sm:w-14 sm:h-14 bg-black text-white flex items-center justify-center rounded-md mb-1.5 sm:mb-6 shadow-[1px_1px_0px_0px_rgba(100,100,100,1)] sm:shadow-[4px_4px_0px_0px_rgba(100,100,100,1)] group-hover:rotate-3 transition-transform">
+                  <ChefHat className="h-3.5 w-3.5 sm:h-7 sm:w-7 text-white" />
                 </div>
-                <h3 className="text-2xl font-black mb-3 text-black">Vendor Tools</h3>
-                <p className="text-lg font-medium text-gray-600 leading-relaxed">
+                <h3 className="text-xs xs:text-[13px] sm:text-2xl font-black mb-1 sm:mb-3 text-black">Vendor Tools</h3>
+                <p className="text-[10px] xs:text-[11px] sm:text-lg font-semibold sm:font-medium text-gray-600 leading-snug">
                   Powerful dashboard for stall owners to manage menus & growth.
                 </p>
               </div>
@@ -220,54 +220,54 @@ export default function Home() {
               <div className="inline-block px-6 py-2 bg-black text-white text-lg font-black uppercase tracking-wider mb-6 transform -rotate-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                 Street Logic
               </div>
-              <h2 className="text-5xl md:text-7xl font-black mb-6 uppercase leading-[0.9]">
+              <h2 className="text-3xl sm:text-5xl md:text-7xl font-black mb-6 uppercase leading-[1.0] sm:leading-[0.9]">
                 From Screen<br />To <span className="text-shine-amber">Street</span>
               </h2>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-12 max-w-5xl mx-auto">
+            <div className="flex md:grid md:grid-cols-3 gap-4 md:gap-12 max-w-5xl mx-auto overflow-x-auto pb-6 pt-2 px-4 -mx-4 scrollbar-none snap-x snap-mandatory">
               {/* Step 1 - Cyan Pop */}
-              <div className="group relative">
-                <div className="absolute inset-0 bg-black translate-x-3 translate-y-3 rounded-xl transition-transform group-hover:translate-x-4 group-hover:translate-y-4"></div>
-                <div className="relative bg-white border-4 border-black p-8 rounded-xl transform transition-transform group-hover:-translate-y-1 group-hover:-translate-x-1">
-                  <div className="w-16 h-16 bg-cyan-400 border-4 border-black rounded-full flex items-center justify-center text-3xl font-black mb-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+              <div className="group relative w-[220px] xs:w-[255px] sm:w-auto flex-shrink-0 snap-center">
+                <div className="absolute inset-0 bg-black translate-x-1 translate-y-1 sm:translate-x-3 sm:translate-y-3 rounded-xl transition-transform group-hover:translate-x-4 group-hover:translate-y-4"></div>
+                <div className="relative bg-white border-2 sm:border-4 border-black pt-3 pb-3.5 px-3 sm:p-8 rounded-xl transform transition-transform group-hover:-translate-y-0.5 group-hover:-translate-x-0.5">
+                  <div className="w-7 h-7 sm:w-16 sm:h-16 bg-cyan-400 border-2 sm:border-4 border-black rounded-full flex items-center justify-center text-[10px] sm:text-3xl font-black mb-1.5 sm:mb-6 shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                     1
                   </div>
-                  <h3 className="text-3xl font-black mb-3 uppercase italic transform -skew-x-6">Spot It</h3>
-                  <p className="text-lg font-bold text-gray-700 leading-tight">
+                  <h3 className="text-xs xs:text-[13px] sm:text-3xl font-black mb-1 sm:mb-3 uppercase italic transform -skew-x-6">Spot It</h3>
+                  <p className="text-[10px] xs:text-[11px] sm:text-lg font-bold text-gray-700 leading-tight">
                     Hunting mode on. Find hidden gems on the live map.
                   </p>
-                  <MapPin className="absolute top-4 right-4 w-10 h-10 text-cyan-500/20 transform -rotate-12 group-hover:scale-125 transition-transform" />
+                  <MapPin className="absolute top-3 right-3 w-5 h-5 sm:w-10 sm:h-10 text-cyan-500/20 transform -rotate-12 group-hover:scale-125 transition-transform" />
                 </div>
               </div>
 
               {/* Step 2 - Pink Pop */}
-              <div className="group relative md:mt-12">
-                <div className="absolute inset-0 bg-black translate-x-3 translate-y-3 rounded-xl transition-transform group-hover:translate-x-4 group-hover:translate-y-4"></div>
-                <div className="relative bg-white border-4 border-black p-8 rounded-xl transform transition-transform group-hover:-translate-y-1 group-hover:-translate-x-1">
-                  <div className="w-16 h-16 bg-pink-400 border-4 border-black rounded-full flex items-center justify-center text-3xl font-black mb-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+              <div className="group relative md:mt-12 w-[220px] xs:w-[255px] sm:w-auto flex-shrink-0 snap-center">
+                <div className="absolute inset-0 bg-black translate-x-1 translate-y-1 sm:translate-x-3 sm:translate-y-3 rounded-xl transition-transform group-hover:translate-x-4 group-hover:translate-y-4"></div>
+                <div className="relative bg-white border-2 sm:border-4 border-black pt-3 pb-3.5 px-3 sm:p-8 rounded-xl transform transition-transform group-hover:-translate-y-0.5 group-hover:-translate-x-0.5">
+                  <div className="w-7 h-7 sm:w-16 sm:h-16 bg-pink-400 border-2 sm:border-4 border-black rounded-full flex items-center justify-center text-[10px] sm:text-3xl font-black mb-1.5 sm:mb-6 shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                     2
                   </div>
-                  <h3 className="text-3xl font-black mb-3 uppercase italic transform -skew-x-6">Verify It</h3>
-                  <p className="text-lg font-bold text-gray-700 leading-tight">
+                  <h3 className="text-xs xs:text-[13px] sm:text-3xl font-black mb-1 sm:mb-3 uppercase italic transform -skew-x-6">Verify It</h3>
+                  <p className="text-[10px] xs:text-[11px] sm:text-lg font-bold text-gray-700 leading-tight">
                     No sketchy food. Check hygiene & real reviews first.
                   </p>
-                  <ScanEye className="absolute top-4 right-4 w-10 h-10 text-pink-500/20 transform rotate-12 group-hover:scale-125 transition-transform" />
+                  <ScanEye className="absolute top-3 right-3 w-5 h-5 sm:w-10 sm:h-10 text-pink-500/20 transform rotate-12 group-hover:scale-125 transition-transform" />
                 </div>
               </div>
 
               {/* Step 3 - Orange Pop */}
-              <div className="group relative">
-                <div className="absolute inset-0 bg-black translate-x-3 translate-y-3 rounded-xl transition-transform group-hover:translate-x-4 group-hover:translate-y-4"></div>
-                <div className="relative bg-white border-4 border-black p-8 rounded-xl transform transition-transform group-hover:-translate-y-1 group-hover:-translate-x-1">
-                  <div className="w-16 h-16 bg-orange-400 border-4 border-black rounded-full flex items-center justify-center text-3xl font-black mb-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+              <div className="group relative w-[220px] xs:w-[255px] sm:w-auto flex-shrink-0 snap-center">
+                <div className="absolute inset-0 bg-black translate-x-1 translate-y-1 sm:translate-x-3 sm:translate-y-3 rounded-xl transition-transform group-hover:translate-x-4 group-hover:translate-y-4"></div>
+                <div className="relative bg-white border-2 sm:border-4 border-black pt-3 pb-3.5 px-3 sm:p-8 rounded-xl transform transition-transform group-hover:-translate-y-0.5 group-hover:-translate-x-0.5">
+                  <div className="w-7 h-7 sm:w-16 sm:h-16 bg-orange-400 border-2 sm:border-4 border-black rounded-full flex items-center justify-center text-[10px] sm:text-3xl font-black mb-1.5 sm:mb-6 shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                     3
                   </div>
-                  <h3 className="text-3xl font-black mb-3 uppercase italic transform -skew-x-6">Devour It</h3>
-                  <p className="text-lg font-bold text-gray-700 leading-tight">
+                  <h3 className="text-xs xs:text-[13px] sm:text-3xl font-black mb-1 sm:mb-3 uppercase italic transform -skew-x-6">Devour It</h3>
+                  <p className="text-[10px] xs:text-[11px] sm:text-lg font-bold text-gray-700 leading-tight">
                     Go there, eat, and repeat. Satisfaction guaranteed.
                   </p>
-                  <Utensils className="absolute top-4 right-4 w-10 h-10 text-orange-500/20 transform -rotate-6 group-hover:scale-125 transition-transform" />
+                  <Utensils className="absolute top-3 right-3 w-5 h-5 sm:w-10 sm:h-10 text-orange-500/20 transform -rotate-6 group-hover:scale-125 transition-transform" />
                 </div>
               </div>
             </div>
@@ -277,7 +277,7 @@ export default function Home() {
         {/* Enhanced CTA Section - Dark Theme Pop */}
         <section className="py-24 relative overflow-hidden">
           <div className="max-w-screen-2xl mx-auto px-4">
-            <div className="relative bg-black rounded-[3rem] p-12 md:p-24 text-center text-white overflow-hidden shadow-[16px_16px_0px_0px_rgba(249,115,22,1)] transform hover:-translate-y-2 transition-transform duration-500">
+            <div className="relative bg-black rounded-[1.75rem] sm:rounded-[3rem] p-5 py-10 sm:p-12 md:p-24 text-center text-white overflow-hidden shadow-[4px_4px_0px_0px_rgba(249,115,22,1)] sm:shadow-[16px_16px_0px_0px_rgba(249,115,22,1)] transform hover:-translate-y-2 transition-transform duration-500">
               {/* Background Pattern */}
               <div className="absolute inset-0 opacity-20">
                 <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(#ffffff_2px,transparent_2px)] [background-size:24px_24px]"></div>
@@ -288,22 +288,22 @@ export default function Home() {
                   <TrendingUp className="h-5 w-5 text-primary animate-bounce-slow" />
                   <span className="text-gray-100 tracking-wide uppercase">Join the Night Market</span>
                 </div>
-                <h2 className="text-5xl md:text-7xl font-black mb-8 leading-[0.9] tracking-tight">
+                <h2 className="text-2xl xs:text-3xl sm:text-5xl md:text-7xl font-black mb-6 sm:mb-8 leading-[1.0] sm:leading-[0.9] tracking-tight">
                   Ready to Satisfy Your<br />
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-yellow-400">Late Night Cravings?</span>
                 </h2>
-                <p className="text-xl md:text-2xl text-gray-300 mb-12 max-w-2xl mx-auto font-medium leading-relaxed">
+                <p className="text-sm xs:text-base sm:text-lg md:text-2xl text-gray-300 mb-8 sm:mb-12 max-w-2xl mx-auto font-medium leading-relaxed">
                   Join <span className="text-white font-black underline decoration-primary decoration-4">10,000+ foodies</span> finding the best open stalls right now.
                 </p>
-                <div className="flex flex-col sm:flex-row justify-center gap-6">
-                  <Link href="/signup">
-                    <Button size="lg" className="h-20 px-16 rounded-full text-2xl font-black bg-primary text-white hover:bg-orange-500 shadow-[0_10px_40px_rgba(249,115,22,0.5)] hover:shadow-[0_15px_50px_rgba(249,115,22,0.7)] hover:-translate-y-2 hover:scale-105 transition-all duration-300 border-none group">
+                <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6 max-w-md mx-auto sm:max-w-none">
+                  <Link href="/signup" className="w-full sm:w-auto">
+                    <Button size="lg" className="h-12 xs:h-14 sm:h-20 w-full px-5 xs:px-6 sm:px-16 rounded-full text-sm xs:text-lg sm:text-2xl font-black bg-primary text-white hover:bg-orange-500 shadow-[0_6px_20px_rgba(249,115,22,0.4)] sm:shadow-[0_10px_40px_rgba(249,115,22,0.5)] hover:-translate-y-2 hover:scale-105 transition-all duration-300 border-none group">
                       Get Started Free
-                      <ArrowRight className="ml-3 h-8 w-8 group-hover:translate-x-2 transition-transform stroke-[3]" />
+                      <ArrowRight className="ml-1.5 sm:ml-3 h-4.5 w-4.5 sm:h-8 sm:w-8 group-hover:translate-x-2 transition-transform stroke-[3]" />
                     </Button>
                   </Link>
-                  <Link href="/about">
-                    <Button size="lg" variant="outline" className="h-20 px-16 rounded-full text-xl font-black bg-transparent text-white border-2 border-white/30 hover:border-white hover:bg-white/10 transition-all duration-300">
+                  <Link href="/about" className="w-full sm:w-auto">
+                    <Button size="lg" variant="outline" className="h-12 xs:h-14 sm:h-20 w-full px-5 xs:px-6 sm:px-16 rounded-full text-xs xs:text-base sm:text-xl font-black bg-transparent text-white border-2 border-white/30 hover:border-white hover:bg-white/10 transition-all duration-300">
                       Our Story
                     </Button>
                   </Link>

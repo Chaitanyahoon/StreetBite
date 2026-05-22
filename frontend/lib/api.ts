@@ -250,6 +250,7 @@ export interface ZodiacHoroscopeResponse {
 export const authApi = {
   register: (data: RegisterRequest) => api.post('/auth/register', data) as Promise<AuthResponse>,
   login: (data: LoginRequest) => api.post('/auth/login', data) as Promise<AuthResponse>,
+  firebaseLogin: (token: string) => api.post('/auth/firebase-login', { token }) as Promise<AuthResponse>,
   verifyEmail: (data: VerifyEmailRequest) => api.post('/auth/verify-email', data) as Promise<AuthResponse>,
   resendVerification: (email: string) => api.post('/auth/resend-verification', { email }) as Promise<AuthResponse>,
   me: () => api.get('/auth/me') as Promise<AuthUser>,

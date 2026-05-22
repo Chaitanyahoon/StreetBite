@@ -99,27 +99,27 @@ export function LiveCityBadge() {
       </button>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="max-h-[calc(100vh-1.5rem)] max-w-[calc(100%-1rem)] overflow-hidden rounded-[1.75rem] border-4 border-black bg-[#FFFBF0] p-0 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] sm:max-w-[40rem]">
-          <DialogHeader className="border-b-4 border-black bg-yellow-300 px-5 py-5 sm:px-6">
+        <DialogContent className="max-h-[calc(100vh-3rem)] max-w-[calc(100%-2rem)] sm:max-h-[calc(100vh-1.5rem)] sm:max-w-[40rem] overflow-hidden rounded-[1.75rem] border-4 border-black bg-[#FFFBF0] p-0 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+          <DialogHeader className="border-b-4 border-black bg-yellow-300 px-4.5 py-4 sm:px-6 sm:py-5">
             <DialogTitle className="text-2xl font-black uppercase tracking-[-0.04em] text-black sm:text-3xl">
               Set your city
             </DialogTitle>
-            <DialogDescription className="max-w-xl text-sm font-bold leading-6 text-black/70 sm:text-base">
+            <DialogDescription className="max-w-xl text-[13px] sm:text-base font-bold leading-5 sm:leading-6 text-black/70">
               Use your current location or pick a city manually for better discovery.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="max-h-[calc(100vh-10rem)] overflow-y-auto px-5 py-5 sm:px-6 sm:py-6">
+          <div className="max-h-[calc(100vh-12rem)] sm:max-h-[calc(100vh-10rem)] overflow-y-auto px-4.5 py-4 sm:px-6 sm:py-6">
             <div className="space-y-5">
-              <div className="rounded-[1.5rem] border-4 border-black bg-white p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                <p className="text-[0.68rem] font-black uppercase tracking-[0.24em] text-black/45">Current city</p>
-                <div className="mt-3 flex items-center gap-3">
-                  <MapPin className="h-5 w-5 text-primary" />
-                  <span className="text-xl font-black uppercase text-black sm:text-2xl">
+              <div className="rounded-[1.25rem] sm:rounded-[1.5rem] border-[2.5px] sm:border-4 border-black bg-white p-3.5 sm:p-5 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                <p className="text-[0.62rem] sm:text-[0.68rem] font-black uppercase tracking-[0.2em] sm:tracking-[0.24em] text-black/45">Current city</p>
+                <div className="mt-2.5 flex items-center gap-2.5">
+                  <MapPin className="h-4.5 w-4.5 sm:h-5 sm:w-5 text-primary" />
+                  <span className="text-lg font-black uppercase text-black sm:text-2xl">
                     {cityName || 'Not set'}
                   </span>
                 </div>
-                <p className="mt-3 text-sm font-semibold leading-6 text-black/62">
+                <p className="mt-2.5 text-xs sm:text-sm font-semibold leading-5 sm:leading-6 text-black/62">
                   {error === 'Location permission denied'
                     ? 'Browser location is blocked. You can still choose your city manually.'
                     : isManualLocation
@@ -128,39 +128,39 @@ export function LiveCityBadge() {
                 </p>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+              <div className="grid gap-3.5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
                 <div className="space-y-2">
-                  <label className="block text-[0.68rem] font-black uppercase tracking-[0.24em] text-black/45">
+                  <label className="block text-[0.62rem] sm:text-[0.68rem] font-black uppercase tracking-[0.2em] sm:tracking-[0.24em] text-black/45">
                     Type your city
                   </label>
                   <Input
                     value={manualCity}
                     onChange={(event) => setManualCity(event.target.value)}
                     placeholder="Enter city name"
-                    className="h-14 rounded-2xl border-4 border-black bg-white px-4 text-base font-bold text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] placeholder:text-black/35 focus-visible:ring-0 sm:text-lg"
+                    className="h-12 sm:h-14 rounded-xl sm:rounded-2xl border-3 sm:border-4 border-black bg-white px-3.5 sm:px-4 text-sm sm:text-lg font-bold text-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] placeholder:text-black/35 focus-visible:ring-0"
                   />
                 </div>
                 <Button
                   type="button"
                   onClick={() => handleSaveCity()}
                   disabled={isSubmitting}
-                  className="h-14 rounded-2xl border-4 border-black bg-black px-5 text-sm font-black uppercase tracking-[0.14em] text-white shadow-[4px_4px_0px_0px_rgba(249,115,22,1)] hover:bg-primary sm:px-6"
+                  className="h-12 sm:h-14 rounded-xl sm:rounded-2xl border-3 sm:border-4 border-black bg-black px-5 text-xs sm:text-sm font-black uppercase tracking-[0.12em] sm:tracking-[0.14em] text-white shadow-[3px_3px_0px_0px_rgba(249,115,22,1)] sm:shadow-[4px_4px_0px_0px_rgba(249,115,22,1)] hover:bg-primary sm:px-6"
                 >
-                  <PencilLine className="mr-2 h-4 w-4" />
+                  <PencilLine className="mr-1.5 h-4 w-4 sm:mr-2" />
                   Save city
                 </Button>
               </div>
 
-              <div className="space-y-3">
-                <p className="text-[0.68rem] font-black uppercase tracking-[0.24em] text-black/45">Quick picks</p>
-                <div className="flex flex-wrap gap-2.5">
+              <div className="space-y-2.5">
+                <p className="text-[0.62rem] sm:text-[0.68rem] font-black uppercase tracking-[0.2em] sm:tracking-[0.24em] text-black/45">Quick picks</p>
+                <div className="flex flex-wrap gap-2 sm:gap-2.5">
                   {QUICK_CITIES.map((city) => (
                     <button
                       key={city}
                       type="button"
                       onClick={() => handleSaveCity(city)}
                       disabled={isSubmitting}
-                      className="rounded-full border-2 border-black bg-white px-4 py-2 text-sm font-black uppercase tracking-[0.14em] text-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-transform hover:-translate-y-0.5 hover:bg-yellow-200 disabled:opacity-60"
+                      className="rounded-full border-2 border-black bg-white px-3.5 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-black uppercase tracking-[0.12em] sm:tracking-[0.14em] text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-transform hover:-translate-y-0.5 hover:bg-yellow-200 disabled:opacity-60"
                     >
                       {city}
                     </button>
@@ -176,15 +176,15 @@ export function LiveCityBadge() {
             </div>
           </div>
 
-          <DialogFooter className="border-t-4 border-black bg-white px-5 py-4 sm:px-6">
+          <DialogFooter className="border-t-4 border-black bg-white px-4.5 py-3 sm:px-6 sm:py-4">
             <Button
               type="button"
               variant="outline"
               onClick={handleUseCurrentLocation}
               disabled={isSubmitting}
-              className="h-12 rounded-full border-4 border-black bg-white px-5 font-black uppercase tracking-[0.14em] text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-yellow-200 sm:ml-auto"
+              className="h-11 sm:h-12 rounded-full border-3 sm:border-4 border-black bg-white px-4 sm:px-5 text-xs sm:text-sm font-black uppercase tracking-[0.12em] sm:tracking-[0.14em] text-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-yellow-200 sm:ml-auto w-full sm:w-auto"
             >
-              <Crosshair className="mr-2 h-4 w-4" />
+              <Crosshair className="mr-1.5 h-4 w-4 sm:mr-2" />
               Use current location
             </Button>
           </DialogFooter>

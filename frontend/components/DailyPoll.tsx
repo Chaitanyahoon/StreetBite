@@ -109,17 +109,17 @@ export function DailyPoll() {
     const totalVotes = votes.reduce((a, b) => a + b, 0);
 
     return (
-        <Card className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden ring-0 rounded-[2rem]">
-            <CardHeader className="pb-4 pt-6 px-6">
-                <CardTitle className="flex items-center gap-3 text-xl text-black">
-                    <div className="p-2 bg-black rounded-lg transform -rotate-2">
-                        <BarChart2 className="w-6 h-6 text-white" />
+        <Card className="bg-white border-2 sm:border-4 border-black shadow-[3.5px_3.5px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden ring-0 rounded-[1.5rem] sm:rounded-[2rem]">
+            <CardHeader className="pb-2.5 pt-4 px-4 sm:pb-4 sm:pt-6 sm:px-6">
+                <CardTitle className="flex items-center gap-2 sm:gap-3 text-base sm:text-xl text-black">
+                    <div className="p-1.5 sm:p-2 bg-black rounded-lg transform -rotate-2">
+                        <BarChart2 className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
                     </div>
                     <span className="font-black uppercase tracking-tight">Daily Poll</span>
                 </CardTitle>
             </CardHeader>
-            <CardContent className="pt-2 px-6 pb-6 relative z-10">
-                <h3 className="text-xl font-black text-black mb-6 leading-tight uppercase">
+            <CardContent className="pt-1.5 px-4 pb-4 sm:pt-2 sm:px-6 sm:pb-6 relative z-10 min-h-[340px] sm:min-h-[450px] flex flex-col justify-between">
+                <h3 className="text-base xs:text-lg sm:text-xl font-black text-black mb-4 leading-tight uppercase">
                     {currentPoll.question}
                 </h3>
                 <div className="space-y-3">
@@ -132,11 +132,11 @@ export function DailyPoll() {
                                 key={index}
                                 onClick={() => handleVote(index)}
                                 disabled={hasVoted}
-                                className={`w-full text-left p-0 rounded-xl border-2 transition-all relative overflow-hidden group ${hasVoted
+                                className={`w-full text-left p-0 rounded-xl border-2 transition-all relative overflow-hidden group active:translate-x-[0.5px] active:translate-y-[0.5px] active:shadow-none ${hasVoted
                                     ? isSelected
                                         ? "border-black bg-orange-100 ring-2 ring-black ring-offset-2"
                                         : "border-black bg-white opacity-60"
-                                    : "border-black bg-white hover:bg-orange-50 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5 cursor-pointer shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                                    : "border-black bg-white hover:bg-orange-50 hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5 cursor-pointer shadow-[1.5px_1.5px_0px_0px_rgba(0,0,0,1)] sm:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
                                     }`}
                             >
                                 {/* Progress Bar Background */}
@@ -148,14 +148,14 @@ export function DailyPoll() {
                                     />
                                 )}
 
-                                <div className="relative z-10 p-4 flex justify-between items-center">
-                                    <span className={`font-bold text-sm ${isSelected ? "text-orange-900" : "text-black"}`}>
+                                <div className="relative z-10 p-2.5 xs:p-3 sm:p-4 flex justify-between items-center">
+                                    <span className={`font-bold text-xs sm:text-sm ${isSelected ? "text-orange-900" : "text-black"}`}>
                                         {option.text}
                                     </span>
                                     {hasVoted && (
-                                        <div className="flex items-center gap-2">
-                                            <span className="font-black text-sm text-black">{percentage}%</span>
-                                            {isSelected && <CheckCircle2 className="w-4 h-4 text-orange-600 fill-orange-100" />}
+                                        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                                            <span className="font-black text-xs sm:text-sm text-black">{percentage}%</span>
+                                            {isSelected && <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange-600 fill-orange-100" />}
                                         </div>
                                     )}
                                 </div>

@@ -22,6 +22,11 @@ public class OriginValidationFilter extends OncePerRequestFilter {
             HttpMethod.OPTIONS.name(),
             HttpMethod.TRACE.name());
 
+    /** Public POST endpoints that don't perform authenticated mutations */
+    private static final Set<String> PUBLIC_POST_PATHS = Set.of(
+            "/api/recommend",
+            "/api/newsletter/subscribe");
+
     private final AllowedOrigins allowedOrigins;
 
     public OriginValidationFilter(AllowedOrigins allowedOrigins) {
@@ -32,6 +37,13 @@ public class OriginValidationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         if (SAFE_METHODS.contains(request.getMethod()) || !hasAuthCookie(request)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        // Skip origin check for public POST endpoints that don't mutate user state
+        String requestPath = request.getRequestURI();
+        if (PUBLIC_POST_PATHS.contains(requestPath)) {
             filterChain.doFilter(request, response);
             return;
         }

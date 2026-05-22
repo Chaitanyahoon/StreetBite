@@ -148,7 +148,7 @@ export function VendorDetailsSheet({ vendor, open, onOpenChange, onFavoriteToggl
                 </SheetHeader>
 
                 {/* Cover Image */}
-                <div className="relative h-64 w-full bg-muted">
+                <div className="relative h-48 sm:h-64 w-full bg-muted">
                     <Image
                         src={vendor.displayImageUrl || vendor.image || "/placeholder.svg?height=300&width=500&query=street+food"}
                         alt={vendor.name}
@@ -162,7 +162,7 @@ export function VendorDetailsSheet({ vendor, open, onOpenChange, onFavoriteToggl
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="absolute top-4 right-4 text-white hover:bg-white/20 rounded-full"
+                        className="absolute top-3 sm:top-4 right-3 sm:right-4 text-white hover:bg-white/20 rounded-full"
                         onClick={() => onOpenChange(false)}
                         aria-label="Close vendor details"
                     >
@@ -170,45 +170,45 @@ export function VendorDetailsSheet({ vendor, open, onOpenChange, onFavoriteToggl
                         <span className="sr-only">Close</span>
                     </Button>
 
-                    <div className="absolute bottom-4 left-6 right-6 text-white">
+                    <div className="absolute bottom-3 sm:bottom-4 left-4 sm:left-6 right-4 sm:right-6 text-white">
                         <Badge className={`mb-2 ${isOnline ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-500 hover:bg-gray-600'}`}>
                             {isOnline ? (isAcceptingOrders ? 'Open Now' : 'Busy') : 'Closed'}
                         </Badge>
-                        <h2 className="text-3xl font-black mb-1">{vendor.name}</h2>
-                        <p className="text-white/90 font-medium">{vendor.cuisine}</p>
+                        <h2 className="text-xl xs:text-2xl sm:text-3xl font-black mb-1">{vendor.name}</h2>
+                        <p className="text-white/90 text-sm sm:text-base font-medium">{vendor.cuisine}</p>
                     </div>
                 </div>
 
-                <div className="p-6 space-y-6">
+                <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
                     {/* Stats Row */}
-                    <div className="flex items-center justify-between py-4 border-b border-border">
+                    <div className="flex items-center justify-between py-3 sm:py-4 border-b border-border">
                         <div className="flex flex-col items-center">
-                            <div className="flex items-center gap-1 font-bold text-lg">
-                                <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
+                            <div className="flex items-center gap-1 font-bold text-sm xs:text-base sm:text-lg">
+                                <Star className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500 fill-yellow-500" />
                                 {vendor.rating || 'New'}
                             </div>
-                            <span className="text-xs text-muted-foreground">Rating</span>
+                            <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider font-semibold">Rating</span>
                         </div>
-                        <div className="w-px h-10 bg-border" />
+                        <div className="w-px h-8 sm:h-10 bg-border" />
                         <div className="flex flex-col items-center">
-                            <div className="font-bold text-lg">
+                            <div className="font-bold text-sm xs:text-base sm:text-lg">
                                 {typeof vendor.distance === 'number'
                                     ? `${vendor.distance.toFixed(1)} km`
                                     : (vendor.distance || '0.5 km')}
                             </div>
-                            <span className="text-xs text-muted-foreground">Distance</span>
+                            <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider font-semibold">Distance</span>
                         </div>
-                        <div className="w-px h-10 bg-border" />
+                        <div className="w-px h-8 sm:h-10 bg-border" />
                         <div className="flex flex-col items-center">
-                            <div className="font-bold text-lg">{vendor.reviews || '0'}</div>
-                            <span className="text-xs text-muted-foreground">Reviews</span>
+                            <div className="font-bold text-sm xs:text-base sm:text-lg">{vendor.reviews || '0'}</div>
+                            <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider font-semibold">Reviews</span>
                         </div>
                     </div>
 
                     {/* Description */}
                     <div>
-                        <h3 className="font-bold text-lg mb-2">About</h3>
-                        <p className="text-muted-foreground leading-relaxed">
+                        <h3 className="font-bold text-base sm:text-lg mb-1 sm:mb-2">About</h3>
+                        <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
                             {vendor.description || "Experience authentic street food flavors with our specially curated menu. Fresh ingredients, hygienic preparation, and the true taste of the streets."}
                         </p>
                     </div>
@@ -217,7 +217,7 @@ export function VendorDetailsSheet({ vendor, open, onOpenChange, onFavoriteToggl
                     {vendor.tags && vendor.tags.length > 0 && (
                         <div className="flex flex-wrap gap-2">
                             {vendor.tags.map((tag: string) => (
-                                <Badge key={tag} variant="secondary" className="px-3 py-1">
+                                <Badge key={tag} variant="secondary" className="px-2.5 py-0.5 sm:px-3 sm:py-1 text-xs font-semibold">
                                     {tag}
                                 </Badge>
                             ))}
@@ -225,18 +225,18 @@ export function VendorDetailsSheet({ vendor, open, onOpenChange, onFavoriteToggl
                     )}
 
                     {/* Info List */}
-                    <div className="space-y-3 bg-muted/30 p-4 rounded-xl">
-                        <div className="flex items-center gap-3 text-sm">
-                            <MapPin className="w-4 h-4 text-primary" />
+                    <div className="space-y-2 sm:space-y-3 bg-muted/30 p-3 sm:p-4 rounded-xl">
+                        <div className="flex items-center gap-3 text-xs sm:text-sm">
+                            <MapPin className="w-4 h-4 text-primary shrink-0" />
                             <span>{vendor.location || "Location available on map"}</span>
                         </div>
-                        <div className="flex items-center gap-3 text-sm">
-                            <Clock className="w-4 h-4 text-primary" />
+                        <div className="flex items-center gap-3 text-xs sm:text-sm">
+                            <Clock className="w-4 h-4 text-primary shrink-0" />
                             <span>{vendor.operatingHours || '10:00 AM - 10:00 PM'}</span>
                         </div>
                         {vendor.phone && (
-                            <div className="flex items-center gap-3 text-sm">
-                                <Phone className="w-4 h-4 text-primary" />
+                            <div className="flex items-center gap-3 text-xs sm:text-sm">
+                                <Phone className="w-4 h-4 text-primary shrink-0" />
                                 <span>{vendor.phone}</span>
                             </div>
                         )}
@@ -244,19 +244,19 @@ export function VendorDetailsSheet({ vendor, open, onOpenChange, onFavoriteToggl
 
                     {/* Actions */}
                     <div className="grid grid-cols-2 gap-3">
-                        <Button variant="outline" className="w-full gap-2" onClick={handleShare}>
+                        <Button variant="outline" className="w-full h-11 sm:h-12 text-xs sm:text-sm gap-1.5 sm:gap-2" onClick={handleShare}>
                             <Share2 className="w-4 h-4" />
                             Share
                         </Button>
-                        <Button variant="outline" className="w-full gap-2" onClick={handleFavorite} disabled={loading}>
+                        <Button variant="outline" className="w-full h-11 sm:h-12 text-xs sm:text-sm gap-1.5 sm:gap-2" onClick={handleFavorite} disabled={loading}>
                             <Heart className={`w-4 h-4 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
                             {isFavorite ? 'Favorited' : 'Favorite'}
                         </Button>
                     </div>
 
-                    <SheetFooter className="pt-4">
+                    <SheetFooter className="pt-2 sm:pt-4">
                         <Link href={`/vendors/${vendor.slug || vendor.id}`} className="w-full" onClick={() => onOpenChange(false)}>
-                            <Button className="w-full h-12 text-lg font-bold shadow-primary hover-lift" size="lg">
+                            <Button className="w-full h-11 sm:h-12 text-base sm:text-lg font-bold shadow-primary hover-lift" size="lg">
                                 View Full Menu
                             </Button>
                         </Link>

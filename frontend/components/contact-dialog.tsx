@@ -20,8 +20,8 @@ export function ContactDialog() {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button variant="outline" size="lg" className="h-14 px-8 rounded-xl border-4 border-black bg-white text-black hover:bg-yellow-400 text-lg font-black gap-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all hover:-translate-y-1">
-                    <MessageSquarePlus size={24} strokeWidth={2.5} />
+                <Button variant="outline" size="lg" className="h-11 sm:h-14 px-5 sm:px-8 rounded-xl border-3 sm:border-4 border-black bg-white text-black hover:bg-yellow-400 text-xs sm:text-lg font-black gap-1.5 sm:gap-2 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none hover:-translate-y-0.5">
+                    <MessageSquarePlus className="size-4 sm:size-6" strokeWidth={2.5} />
                     Open Support Ticket
                 </Button>
             </DialogTrigger>

@@ -1,5 +1,10 @@
 package com.streetbite.service;
 
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.cloud.StorageClient;
+import com.google.cloud.storage.Blob;
+import com.google.cloud.storage.Bucket;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
@@ -8,6 +13,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -24,6 +31,9 @@ public class FileStorageService {
             "image/webp",
             "image/gif"
     );
+
+    @Value("${firebase.storage.bucket:}")
+    private String firebaseBucket;
 
     private final Path fileStorageLocation;
 
@@ -46,6 +56,30 @@ public class FileStorageService {
         }
 
         String fileName = UUID.randomUUID() + fileExtension;
+
+        // Check if Firebase is active and a storage bucket is configured
+        boolean isFirebaseConfigured = !FirebaseApp.getApps().isEmpty() && 
+                firebaseBucket != null && !firebaseBucket.trim().isEmpty();
+
+        if (isFirebaseConfigured) {
+            try {
+                String blobName = "uploads/" + fileName;
+                Bucket bucket = StorageClient.getInstance().bucket(firebaseBucket);
+                if (bucket != null) {
+                    Blob blob = bucket.create(blobName, file.getInputStream(), file.getContentType());
+                    System.out.println("✓ Uploaded file to Firebase Storage: " + blobName);
+                    // Return the direct standard Firebase Storage Alt Media URL:
+                    return String.format("https://firebasestorage.googleapis.com/v0/b/%s/o/%s?alt=media",
+                            bucket.getName(), URLEncoder.encode(blobName, StandardCharsets.UTF_8));
+                } else {
+                    System.err.println("Firebase Storage Bucket '" + firebaseBucket + "' not found.");
+                }
+            } catch (Exception ex) {
+                System.err.println("Firebase Storage upload failed, falling back to local storage. Error: " + ex.getMessage());
+            }
+        }
+
+        // Local storage fallback
         Path targetLocation = fileStorageLocation.resolve(fileName).normalize();
 
         try {

@@ -1,4 +1,5 @@
 import { Metadata } from 'next'
+import Script from 'next/script'
 import VendorDetailClient from './VendorDetailClient'
 import { BreadcrumbListSchema } from '@/components/seo/breadcrumb-schema'
 
@@ -136,8 +137,9 @@ export default async function VendorDetailServerPage({ params }: Props) {
 
     return (
         <>
-            {jsonLd && (
-                <script
+            {jsonLd && vendor && (
+                <Script
+                    id={`vendor-jsonld-${vendor.id}`}
                     type="application/ld+json"
                     dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
                 />

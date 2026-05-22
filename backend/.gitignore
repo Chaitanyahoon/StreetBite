@@ -21,6 +21,9 @@ build_error.txt
 startup_log.txt
 backend_log.txt
 
+# Local Database Backups
+backups/
+
 # OS
 .DS_Store
 Thumbs.db

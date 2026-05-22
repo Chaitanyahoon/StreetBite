@@ -69,6 +69,7 @@ export function Footer() {
         }
     }
 
+
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter' && !subscribing) {
             handleSubscribe()
@@ -85,18 +86,18 @@ export function Footer() {
 
             <div className="max-w-screen-2xl px-4 md:px-6 mx-auto relative z-10">
                 {/* Newsletter Section */}
-                <div className="py-16 border-b-4 border-black">
+                <div className="py-10 sm:py-16 border-b-4 border-black">
                     <div className="max-w-4xl mx-auto text-center">
                         <div className="inline-block px-4 py-2 bg-black text-white text-sm font-black uppercase tracking-widest mb-6 transform -rotate-2 shadow-[4px_4px_0px_0px_#fbbf24]">
                             Updates & Deals
                         </div>
-                        <h3 className="text-4xl md:text-6xl font-black text-black mb-6 uppercase leading-[0.9] tracking-tighter">
+                        <h3 className="text-3xl xs:text-4xl md:text-6xl font-black text-black mb-6 uppercase leading-[0.9] tracking-tighter">
                             Don't Miss a <span className="text-orange-500 inline-block transform rotate-1 decoration-4 underline decoration-black">Bite!</span>
                         </h3>
-                        <p className="text-black font-bold mb-10 text-xl max-w-2xl mx-auto leading-relaxed">
+                        <p className="text-black font-bold mb-6 sm:mb-10 text-sm xs:text-base sm:text-xl max-w-2xl mx-auto leading-relaxed">
                             Get the spiciest updates, secret menu drops, and exclusive vendor offers straight to your inbox.
                         </p>
-                        <div className="flex flex-col sm:flex-row gap-4 max-w-lg mx-auto">
+                        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 max-w-lg mx-auto">
                             <label htmlFor="newsletter-email" className="sr-only">Email address</label>
                             <input
                                 id="newsletter-email"
@@ -106,37 +107,37 @@ export function Footer() {
                                 onKeyDown={handleKeyDown}
                                 placeholder="ENTER YOUR EMAIL"
                                 disabled={subscribing}
-                                className="flex-1 px-6 py-4 rounded-xl border-4 border-black bg-white focus:outline-none focus:bg-yellow-50 transition-all text-black placeholder:text-gray-400 font-bold uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:translate-x-[2px] focus:translate-y-[2px] focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] disabled:opacity-60 disabled:cursor-not-allowed"
+                                className="flex-1 px-4 py-3 sm:px-6 sm:py-4 rounded-xl border-3 sm:border-4 border-black bg-white focus:outline-none focus:bg-yellow-50 transition-all text-black placeholder:text-gray-400 font-bold uppercase text-sm sm:text-base shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:translate-x-[2px] focus:translate-y-[2px] focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] disabled:opacity-60 disabled:cursor-not-allowed"
                             />
                             <button
                                 onClick={handleSubscribe}
                                 disabled={subscribing}
-                                className="px-8 py-4 rounded-xl bg-black text-white font-black uppercase tracking-wider border-4 border-black shadow-[4px_4px_0px_0px_#fbbf24] hover:shadow-[6px_6px_0px_0px_#fbbf24] hover:-translate-y-1 transition-all hover:bg-orange-500 active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                className="px-5 py-3 sm:px-8 sm:py-4 rounded-xl bg-black text-white font-black uppercase tracking-wider text-sm sm:text-base border-3 sm:border-4 border-black shadow-[3px_3px_0px_0px_#fbbf24] sm:shadow-[4px_4px_0px_0px_#fbbf24] hover:shadow-[5px_5px_0px_0px_#fbbf24] sm:hover:shadow-[6px_6px_0px_0px_#fbbf24] hover:-translate-y-1 transition-all hover:bg-orange-500 active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                             >
                                 {subscribing ? 'JOINING...' : 'JOIN CLUB'}
-                                {!subscribing && <ArrowRight className="h-6 w-6 stroke-[3]" />}
+                                {!subscribing && <ArrowRight className="h-4.5 w-4.5 sm:h-6 sm:w-6 stroke-[3]" />}
                             </button>
                         </div>
                     </div>
                 </div>
 
                 {/* Main Footer Content */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 py-16">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 sm:gap-12 py-10 sm:py-16">
                     {/* Brand Section */}
                     <div className="lg:col-span-2 space-y-6">
                         <div>
                             <Link href="/" className="inline-block">
-                                <h3 className="text-5xl font-black text-black tracking-tighter uppercase mb-2 leading-none hover:text-orange-500 transition-colors">
+                                <h3 className="text-4xl sm:text-5xl font-black text-black tracking-tighter uppercase mb-2 leading-none hover:text-orange-500 transition-colors">
                                     Street<br />Bite.
                                 </h3>
                             </Link>
                         </div>
-                        <p className="text-black font-bold text-lg leading-relaxed max-w-sm border-l-4 border-black pl-4">
+                        <p className="text-black font-bold text-base sm:text-lg leading-relaxed max-w-sm border-l-4 border-black pl-4">
                             Your ultimate guide to the streets. Discover, eat, and support local vendors with style.
                         </p>
 
                         {/* Social Links */}
-                        <div className="flex gap-4 pt-4">
+                        <div className="flex gap-3 sm:gap-4 pt-2 sm:pt-4">
                             {[
                                 { Icon: Instagram, href: "https://instagram.com/streetbiteeats", color: "hover:bg-pink-500", label: "Follow us on Instagram" },
                                 { Icon: Twitter, href: "https://twitter.com/streetbiteeats", color: "hover:bg-sky-500", label: "Follow us on Twitter" },
@@ -148,9 +149,9 @@ export function Footer() {
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     aria-label={social.label}
-                                    className={`w-12 h-12 bg-white border-3 border-black flex items-center justify-center text-black hover:text-white transition-all duration-200 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 ${social.color}`}
+                                    className={`w-10 h-10 sm:w-12 sm:h-12 bg-white border-2 sm:border-3 border-black flex items-center justify-center text-black hover:text-white transition-all duration-200 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 ${social.color}`}
                                 >
-                                    <social.Icon className="w-6 h-6 stroke-[2.5]" />
+                                    <social.Icon className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.5]" />
                                 </Link>
                             ))}
                         </div>
@@ -190,10 +191,10 @@ export function Footer() {
                 {/* Bottom Bar */}
                 <div className="border-t-4 border-black py-8">
                     <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-                        <p className="text-black font-bold text-sm flex items-center gap-2">
+                        <p className="text-black font-bold text-xs sm:text-sm flex items-center gap-1.5 sm:gap-2">
                             © {currentYear} STREETBITE. MADE WITH <Heart className="w-4 h-4 fill-red-500 text-black stroke-[2]" /> IN INDIA.
                         </p>
-                        <div className="flex gap-6 text-sm font-black uppercase">
+                        <div className="flex gap-4 sm:gap-6 text-[10px] sm:text-xs font-black uppercase">
                             <span className="bg-black text-white px-2 py-1">Eat Local</span>
                             <span className="bg-yellow-400 text-black px-2 py-1 border-2 border-black">Support Vendors</span>
                         </div>
@@ -213,7 +214,7 @@ function FooterSection({ title, links }: { title: string, links: { label: string
                 onClick={() => setIsOpen(!isOpen)}
                 className="w-full flex items-center justify-between md:cursor-default md:pointer-events-none group py-2 md:py-0"
             >
-                <h4 className="font-black text-black text-xl uppercase tracking-wide md:mb-6 border-b-4 border-transparent md:border-black inline-block pb-1 transition-all">
+                <h4 className="font-black text-black text-lg sm:text-xl uppercase tracking-wide md:mb-6 border-b-4 border-transparent md:border-black inline-block pb-1 transition-all">
                     {title}
                 </h4>
                 <ChevronDown className={`w-6 h-6 md:hidden transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
@@ -221,7 +222,7 @@ function FooterSection({ title, links }: { title: string, links: { label: string
             <ul className={`space-y-4 overflow-hidden transition-all duration-300 md:h-auto px-1 ${isOpen ? 'max-h-96 mt-4 opacity-100' : 'max-h-0 md:max-h-none opacity-0 md:opacity-100'}`}>
                 {links.map((link, linkIdx) => (
                     <li key={linkIdx}>
-                        <Link href={link.href} className="text-gray-600 font-bold hover:text-black hover:underline decoration-4 decoration-yellow-400 underline-offset-4 transition-all flex items-center group">
+                        <Link href={link.href} className="text-gray-600 font-bold text-sm sm:text-base hover:text-black hover:underline decoration-4 decoration-yellow-400 underline-offset-4 transition-all flex items-center group">
                             <ArrowRight className="w-4 h-4 mr-2 opacity-0 group-hover:opacity-100 transition-opacity stroke-[3]" />
                             {link.label}
                         </Link>

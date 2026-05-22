@@ -13,10 +13,11 @@ import { motion } from 'framer-motion'
 function SignInContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { login } = useAuth()
+  const { login, loginWithGoogle } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showPassword, setShowPassword] = useState(false)
 
@@ -54,11 +55,43 @@ function SignInContent() {
       } else if (role === 'ADMIN') {
         router.push('/admin')
       } else {
-        router.push('/community')
+        router.push('/explore')
       }
     } else {
       setError(result.error || 'Login failed.')
       setIsLoading(false)
+    }
+  }
+
+  const handleGoogleSignIn = async () => {
+    setIsGoogleLoading(true)
+    setError(null)
+    try {
+      const result = await loginWithGoogle()
+      if (result.success && result.user) {
+        const nextPath = searchParams.get('next')
+        if (nextPath && nextPath.startsWith('/')) {
+          router.push(nextPath)
+          return
+        }
+
+        // Redirect based on user role
+        const role = result.user.role?.toUpperCase()
+        if (role === 'VENDOR') {
+          router.push('/vendor')
+        } else if (role === 'ADMIN') {
+          router.push('/admin')
+        } else {
+          router.push('/explore')
+        }
+      } else {
+        setError(result.error || 'Google Sign-In failed.')
+        setIsGoogleLoading(false)
+      }
+    } catch (err: any) {
+      console.error('Google Sign-In handler error:', err)
+      setError('An unexpected error occurred during Google Sign-In.')
+      setIsGoogleLoading(false)
     }
   }
 
@@ -113,7 +146,7 @@ function SignInContent() {
       </div>
 
       {/* Sign In Form */}
-      <div className="flex-1 flex items-start md:items-center justify-center px-4 pt-2 pb-5 sm:pt-3 sm:pb-6 relative z-10">
+      <div className="flex-1 flex items-center justify-center px-4 pt-2 pb-5 sm:pt-3 sm:pb-6 relative z-10">
         <motion.div
           className="w-full max-w-md"
           variants={containerVariants}
@@ -231,12 +264,12 @@ function SignInContent() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
               onSubmit={handleSignIn}
-              className="bg-white rounded-[2rem] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-5 sm:p-7 border-4 border-black relative overflow-hidden"
+              className="bg-white rounded-[1.5rem] sm:rounded-[2rem] shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-4 sm:p-7 border-3 sm:border-4 border-black relative overflow-hidden"
             >
-              <div className="mb-4 rounded-[1.25rem] border-4 border-black bg-[#FFF5D8] px-4 py-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                <p className="text-[11px] font-black uppercase tracking-[0.26em] text-gray-500">Email + Password</p>
-                <p className="mt-1 text-sm font-bold text-gray-700">
-                  StreetBite uses one secure session cookie to keep you signed in.
+              <div className="mb-3 rounded-xl border-3 border-black bg-[#FFF5D8] px-3.5 py-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] flex items-center gap-2">
+                <Cookie className="size-4 shrink-0 text-amber-600" strokeWidth={3} />
+                <p className="text-[10px] sm:text-xs font-bold text-gray-700 leading-tight">
+                  StreetBite uses 1 secure session cookie to keep you signed in.
                 </p>
               </div>
 
@@ -244,10 +277,10 @@ function SignInContent() {
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="bg-red-100 border-4 border-black text-black px-4 py-3 rounded-xl font-bold flex items-center gap-3 mb-6 animate-shake"
+                  className="bg-red-100 border-3 sm:border-4 border-black text-black px-3 py-2 rounded-xl font-bold flex items-center gap-2 mb-4 text-xs sm:text-sm animate-shake"
                 >
-                  <div className="w-4 h-4 bg-red-500 rounded-full border border-black flex-shrink-0" />
-                  {error}
+                  <div className="w-3.5 h-3.5 bg-red-500 rounded-full border border-black flex-shrink-0" />
+                  <span>{error}</span>
                 </motion.div>
               )}
 
@@ -255,25 +288,25 @@ function SignInContent() {
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="mb-6 rounded-xl border-4 border-black bg-yellow-100 px-4 py-4 text-sm font-bold text-black"
+                  className="mb-4 rounded-xl border-3 sm:border-4 border-black bg-yellow-100 px-3.5 py-3 text-xs sm:text-sm font-bold text-black"
                 >
-                  <div className="flex items-start gap-3">
-                    <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-full border-2 border-black bg-white">
-                      <Cookie className="size-4" strokeWidth={2.8} />
+                  <div className="flex items-start gap-2.5">
+                    <div className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full border-2 border-black bg-white">
+                      <Cookie className="size-3.5" strokeWidth={2.8} />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-xs font-black uppercase tracking-[0.2em] text-black">Allow Cookies To Sign In</p>
-                      <p className="mt-1 text-sm font-bold leading-6 text-black">
+                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-black">Allow Cookies To Sign In</p>
+                      <p className="mt-0.5 text-xs sm:text-sm font-bold leading-relaxed text-black">
                         Your browser blocked the StreetBite session cookie. Allow cookies for this site, then try again.
                       </p>
                     </div>
                   </div>
 
-                  <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+                  <div className="mt-3 flex flex-col gap-2 sm:flex-row">
                     <button
                       type="button"
                       onClick={() => setShowCookieHelp((current) => !current)}
-                      className="inline-flex items-center justify-center rounded-xl border-4 border-black bg-white px-4 py-3 text-[11px] font-black uppercase tracking-[0.18em] text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:-translate-y-1"
+                      className="inline-flex items-center justify-center rounded-lg border-3 border-black bg-white px-3 py-2 text-[10px] font-black uppercase tracking-[0.18em] text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all hover:-translate-y-0.5"
                     >
                       {showCookieHelp ? 'Hide Steps' : 'How To Allow'}
                     </button>
@@ -281,21 +314,20 @@ function SignInContent() {
                       type="button"
                       onClick={() => performLogin(email, password)}
                       disabled={isLoading || !email || !password}
-                      className="inline-flex items-center justify-center gap-2 rounded-xl border-4 border-black bg-orange-500 px-4 py-3 text-[11px] font-black uppercase tracking-[0.18em] text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:-translate-y-1 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
+                      className="inline-flex items-center justify-center gap-1.5 rounded-lg border-3 border-black bg-orange-500 px-3 py-2 text-[10px] font-black uppercase tracking-[0.18em] text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                      <RefreshCcw className="size-4" strokeWidth={2.8} />
+                      <RefreshCcw className="size-3" strokeWidth={2.8} />
                       Try Again
                     </button>
                   </div>
 
                   {showCookieHelp && (
-                    <div className="mt-4 rounded-xl border-4 border-black bg-white p-4 text-sm font-bold leading-6 text-black">
+                    <div className="mt-3 rounded-lg border-3 border-black bg-white p-3 text-xs font-bold leading-normal text-black">
                       <p className="font-black uppercase tracking-[0.18em] text-gray-500">Quick Fix</p>
-                      <p className="mt-2">Chrome or Edge: click the site settings icon near the address bar and allow cookies.</p>
-                      <p>Brave: turn Shields off for StreetBite, then refresh.</p>
-                      <p>Safari or strict privacy mode: allow cross-site cookies for this login.</p>
-                      <p className="mt-2 text-gray-600">
-                        If you changed the browser setting already, press <span className="text-black">Try Again</span>.
+                      <p className="mt-1">Chrome/Edge: click the lock icon near address bar and enable cookies.</p>
+                      <p>Brave: disable Shields for StreetBite, then refresh.</p>
+                      <p className="mt-1 text-gray-600 text-[10px]">
+                        Press <span className="text-black font-black">Try Again</span> after enabling.
                       </p>
                     </div>
                   )}
@@ -306,55 +338,89 @@ function SignInContent() {
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="mb-6 rounded-xl border-4 border-black bg-yellow-100 px-4 py-4 text-sm font-bold text-black"
+                  className="mb-4 rounded-xl border-3 sm:border-4 border-black bg-yellow-100 px-3 py-2.5 text-xs sm:text-sm font-bold text-black"
                 >
                   Your account needs email verification first. Complete it from the signup page.
                 </motion.div>
               )}
 
+              {/* Google Sign In Button */}
+              <motion.div variants={itemVariants} className="mb-3">
+                <button
+                  type="button"
+                  onClick={handleGoogleSignIn}
+                  disabled={isLoading || isGoogleLoading}
+                  className="w-full h-11 sm:h-14 bg-white hover:bg-yellow-50 text-black rounded-lg sm:rounded-xl border-3 sm:border-4 border-black font-black text-sm sm:text-base flex items-center justify-center gap-2.5 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-70 disabled:hover:translate-y-0"
+                >
+                  {isGoogleLoading ? (
+                    <span className="flex items-center gap-2">
+                      <span className="animate-spin rounded-full h-4.5 w-4.5 border-3 border-black border-t-transparent" />
+                      CONNECTING...
+                    </span>
+                  ) : (
+                    <>
+                      <svg className="h-4.5 w-4.5 shrink-0" viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
+                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                      </svg>
+                      CONTINUE WITH GOOGLE
+                    </>
+                  )}
+                </button>
+              </motion.div>
+
+              {/* Neo-brutalist OR Divider */}
+              <motion.div variants={itemVariants} className="flex items-center gap-2.5 my-3">
+                <div className="flex-1 h-0.5 bg-black" />
+                <span className="text-[10px] text-black font-black uppercase tracking-wider bg-[#FFF5D8] px-2 py-0.5 border-2 border-black rounded-md shadow-[1.5px_1.5px_0px_0px_rgba(0,0,0,1)]">OR</span>
+                <div className="flex-1 h-0.5 bg-black" />
+              </motion.div>
+
               {/* Email Input */}
-              <motion.div variants={itemVariants} className="space-y-3 mb-4">
-                <label className="block text-sm font-black text-black uppercase tracking-wider ml-1">Email Address</label>
+              <motion.div variants={itemVariants} className="space-y-1.5 mb-3.5">
+                <label className="block text-xs sm:text-sm font-black text-black uppercase tracking-wider ml-1">Email Address</label>
                 <div className="relative group">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-black transition-colors size-6" strokeWidth={2.5} />
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-black transition-colors size-5" strokeWidth={2.5} />
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@example.com"
-                      className="w-full pl-14 pr-4 py-3.5 border-4 border-black rounded-xl text-base sm:text-lg font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400 bg-gray-50 transition-all placeholder:text-gray-400"
-                      required
-                    />
-                  </div>
+                    className="w-full pl-11 pr-4 py-2.5 sm:py-3.5 border-3 sm:border-4 border-black rounded-lg sm:rounded-xl text-sm sm:text-base font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400 bg-gray-50 transition-all placeholder:text-gray-400"
+                    required
+                  />
+                </div>
               </motion.div>
 
               {/* Password Input */}
-              <motion.div variants={itemVariants} className="space-y-3 mb-6">
-                <label className="block text-sm font-black text-black uppercase tracking-wider ml-1">Password</label>
+              <motion.div variants={itemVariants} className="space-y-1.5 mb-4.5">
+                <label className="block text-xs sm:text-sm font-black text-black uppercase tracking-wider ml-1">Password</label>
                 <div className="relative group">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-black transition-colors size-6" strokeWidth={2.5} />
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-black transition-colors size-5" strokeWidth={2.5} />
                   <input
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
                     autoComplete="current-password"
-                    className="w-full pl-14 pr-14 py-3.5 border-4 border-black rounded-xl text-base sm:text-lg font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400 bg-gray-50 transition-all placeholder:text-gray-400"
+                    className="w-full pl-11 pr-11 py-2.5 sm:py-3.5 border-3 sm:border-4 border-black rounded-lg sm:rounded-xl text-sm sm:text-base font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400 bg-gray-50 transition-all placeholder:text-gray-400"
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-black transition-colors p-1"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-black transition-colors p-1"
                   >
-                    {showPassword ? <EyeOff size={24} /> : <Eye size={24} />}
+                    {showPassword ? <EyeOff className="size-5" /> : <Eye className="size-5" />}
                   </button>
                 </div>
-                <div className="flex justify-end">
+                <div className="flex justify-end pt-1">
                   <button
                     type="button"
                     onClick={() => setShowForgotPassword(true)}
-                    className="text-sm font-bold text-gray-500 hover:text-black hover:underline transition-all"
+                    className="text-xs font-bold text-gray-500 hover:text-black hover:underline transition-all"
                   >
                     FORGOT PASSWORD?
                   </button>
@@ -366,11 +432,11 @@ function SignInContent() {
                 <Button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full h-14 sm:h-16 bg-orange-500 hover:bg-orange-600 text-white rounded-xl border-4 border-black font-black text-xl sm:text-2xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all disabled:opacity-70 disabled:hover:translate-y-0"
+                  className="w-full h-12 sm:h-16 bg-orange-500 hover:bg-orange-600 text-white rounded-lg sm:rounded-xl border-3 sm:border-4 border-black font-black text-base sm:text-xl shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5 transition-all"
                 >
                   {isLoading ? (
-                    <span className="flex items-center gap-3">
-                      <span className="animate-spin rounded-full h-6 w-6 border-4 border-white border-t-transparent" />
+                    <span className="flex items-center gap-2">
+                      <span className="animate-spin rounded-full h-5 w-5 border-3 border-white border-t-transparent" />
                       COOKING...
                     </span>
                   ) : (
@@ -380,16 +446,16 @@ function SignInContent() {
               </motion.div>
 
               {/* Divider */}
-              <motion.div variants={itemVariants} className="flex items-center gap-3 my-5">
-                <div className="flex-1 h-1 bg-gray-200 rounded-full" />
-                <span className="text-xs text-gray-400 font-black uppercase tracking-widest">NEW HERE?</span>
-                <div className="flex-1 h-1 bg-gray-200 rounded-full" />
+              <motion.div variants={itemVariants} className="flex items-center gap-2.5 my-3.5">
+                <div className="flex-1 h-0.5 bg-gray-200" />
+                <span className="text-[10px] text-gray-400 font-black uppercase tracking-wider">NEW HERE?</span>
+                <div className="flex-1 h-0.5 bg-gray-200" />
               </motion.div>
 
               {/* Sign Up Link */}
-              <motion.p variants={itemVariants} className="text-center text-base sm:text-lg font-medium text-gray-600">
+              <motion.p variants={itemVariants} className="text-center text-sm sm:text-base font-bold text-gray-600">
                 New to StreetBite?{' '}
-                <Link href="/signup" className="text-black font-black decoration-4 underline decoration-yellow-400 hover:bg-yellow-400 transition-colors px-1">
+                <Link href="/signup" className="text-black font-black decoration-2 underline decoration-yellow-400 hover:bg-yellow-400 transition-colors px-1">
                   CREATE ACCOUNT
                 </Link>
               </motion.p>

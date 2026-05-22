@@ -2,6 +2,7 @@ import { initializeApp, getApps, FirebaseApp } from 'firebase/app'
 import { getFirestore, Firestore } from 'firebase/firestore'
 import { getMessaging, isSupported } from 'firebase/messaging'
 import { getAnalytics, Analytics } from "firebase/analytics";
+import { getAuth, GoogleAuthProvider, Auth } from 'firebase/auth'
 
 /**
  * Firebase configuration object containing keys and identifiers for the app.
@@ -33,8 +34,7 @@ const isPlaceholder = (val?: string) => {
     const lower = val.toLowerCase();
     return lower.startsWith('your_') || 
            lower.includes('your-project-id') || 
-           lower === 'placeholder' || 
-           val === 'AIzaSyAKDqyaU7Jvk49urkUuj69dv929sI3ADto';
+           lower === 'placeholder';
 };
 
 const isConfigured = firebaseConfig.apiKey && !isPlaceholder(firebaseConfig.apiKey);
@@ -66,11 +66,21 @@ if (typeof window !== 'undefined') {
     }).catch(err => console.error('FCM not supported:', err))
 }
 
+let auth: Auth | null = null;
+let googleProvider: GoogleAuthProvider | null = null;
+
+if (app) {
+    auth = getAuth(app);
+    googleProvider = new GoogleAuthProvider();
+}
+
 /**
  * Exported Firebase service instances.
  * @property {Messaging|null} messaging - Firebase Cloud Messaging instance
  * @property {FirebaseApp} app - Initialized Firebase Application instance
  * @property {Firestore} db - Cloud Firestore database instance
  * @property {Analytics|undefined} analytics - Google Analytics instance
+ * @property {Auth|null} auth - Firebase Authentication instance
+ * @property {GoogleAuthProvider|null} googleProvider - Firebase Google Auth Provider
  */
-export { messaging, app, db, analytics }
+export { messaging, app, db, analytics, auth, googleProvider }

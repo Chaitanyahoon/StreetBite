@@ -17,20 +17,20 @@ export function MapListToggle({ value = 'list', onViewChange }: MapListTogglePro
   }
 
   return (
-    <div className="inline-flex rounded-2xl border border-black/10 bg-white/80 p-1 shadow-[var(--shadow-soft)] backdrop-blur">
+    <div className="inline-flex rounded-xl sm:rounded-2xl border-2 sm:border-4 border-black bg-white p-1 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex-row justify-center items-center gap-1">
       <Button
         type="button"
         onClick={() => handleViewChange('list')}
         variant={activeView === 'list' ? 'default' : 'ghost'}
         size="sm"
         className={cn(
-          'rounded-xl px-4 text-xs font-black uppercase tracking-[0.14em] sm:text-sm',
+          'h-8 sm:h-10 rounded-lg sm:rounded-xl px-3 sm:px-4 text-[10px] sm:text-xs font-black uppercase tracking-[0.14em] flex items-center gap-1.5 transition-all',
           activeView === 'list'
-            ? 'bg-black text-white hover:bg-black'
-            : 'text-black/60 hover:bg-accent hover:text-black',
+            ? 'bg-black text-white hover:bg-black border-2 border-black shadow-[1.5px_1.5px_0px_0px_var(--primary)] sm:shadow-[2px_2px_0px_0px_var(--primary)]'
+            : 'text-black/60 bg-transparent hover:bg-orange-50 hover:text-black border-2 border-transparent',
         )}
       >
-        <List size={18} />
+        <List size={14} className="sm:size-[18px]" />
         List
       </Button>
       <Button
@@ -39,13 +39,13 @@ export function MapListToggle({ value = 'list', onViewChange }: MapListTogglePro
         variant={activeView === 'map' ? 'default' : 'ghost'}
         size="sm"
         className={cn(
-          'rounded-xl px-4 text-xs font-black uppercase tracking-[0.14em] sm:text-sm',
+          'h-8 sm:h-10 rounded-lg sm:rounded-xl px-3 sm:px-4 text-[10px] sm:text-xs font-black uppercase tracking-[0.14em] flex items-center gap-1.5 transition-all',
           activeView === 'map'
-            ? 'bg-black text-white hover:bg-black'
-            : 'text-black/60 hover:bg-accent hover:text-black',
+            ? 'bg-black text-white hover:bg-black border-2 border-black shadow-[1.5px_1.5px_0px_0px_var(--primary)] sm:shadow-[2px_2px_0px_0px_var(--primary)]'
+            : 'text-black/60 bg-transparent hover:bg-orange-50 hover:text-black border-2 border-transparent',
         )}
       >
-        <Map size={18} />
+        <Map size={14} className="sm:size-[18px]" />
         Map
       </Button>
     </div>

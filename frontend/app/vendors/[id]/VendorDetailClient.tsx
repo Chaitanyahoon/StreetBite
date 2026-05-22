@@ -520,39 +520,6 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
         <div className="min-h-screen bg-[linear-gradient(180deg,#fffaf4_0%,#fff7ef_18%,#f8fafc_50%,#ffffff_100%)]">
             <Navbar />
 
-            {/* Structured Schema Data for SEO */}
-            <script
-                type="application/ld+json"
-                dangerouslySetInnerHTML={{
-                    __html: JSON.stringify({
-                        "@context": "https://schema.org",
-                        "@type": vendor.cuisine ? "Restaurant" : "LocalBusiness",
-                        "name": vendor.name,
-                        "image": vendor.bannerImageUrl || vendor.imageUrl || "https://streetbite.app/og-image.jpg",
-                        "description": vendor.description,
-                        "address": {
-                            "@type": "PostalAddress",
-                            "streetAddress": vendor.address,
-                            "addressCountry": "IN"
-                        },
-                        "geo": {
-                            "@type": "GeoCoordinates",
-                            "latitude": vendor.latitude,
-                            "longitude": vendor.longitude
-                        },
-                        "aggregateRating": vendor.rating > 0 ? {
-                            "@type": "AggregateRating",
-                            "ratingValue": vendor.rating,
-                            "reviewCount": reviews.length || 1
-                        } : undefined,
-                        "servesCuisine": vendor.cuisine || "Street Food",
-                        "telephone": vendor.phone || undefined,
-                        "priceRange": "₹",
-                        "openingHours": vendor.hours || undefined
-                    })
-                }}
-            />
-
             {/* Directions Modal */}
             <Dialog open={showDirections} onOpenChange={setShowDirections}>
                 <DialogContent className="sm:max-w-[700px] h-[85vh] p-0 overflow-hidden flex flex-col">
@@ -579,7 +546,7 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
                     src={displayVendor?.bannerImageUrl || displayVendor?.imageUrl || "/placeholder-vendor.jpg"}
                     fallbackSrc="https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=2070&auto=format&fit=crop"
                     alt={displayVendor?.name}
-                    className="h-[480px] w-full object-cover opacity-65 md:h-[560px]"
+                    className="h-[280px] xs:h-[360px] sm:h-[480px] md:h-[560px] w-full object-cover opacity-65"
                     sizes="100vw"
                 />
 
@@ -633,7 +600,7 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
                                         </div>
                                     )}
                                 </div>
-                                <h1 className="max-w-4xl text-4xl font-black leading-[0.95] tracking-tight text-white md:text-6xl lg:text-7xl">
+                                <h1 className="max-w-4xl text-[2.25rem] xs:text-4xl font-black leading-[0.95] tracking-tight text-white sm:text-6xl lg:text-7xl">
                                     {displayVendor?.name}
                                 </h1>
                                 <p className="mt-4 max-w-2xl text-sm leading-7 text-white/78 md:text-base">
@@ -699,37 +666,37 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
             </div>
 
             <div className="relative z-20 mx-auto -mt-10 max-w-7xl px-4 md:px-6 lg:hidden">
-                <div className="grid gap-3 rounded-[2rem] border border-white/80 bg-white/92 p-4 shadow-[0_18px_50px_-28px_rgba(15,23,42,0.35)] backdrop-blur sm:grid-cols-3">
+                <div className="grid gap-3 rounded-2xl border-2 sm:border-3 border-black bg-white p-4 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:grid-cols-3">
                     {quickStats.map((stat) => (
-                        <div key={stat.label} className="rounded-2xl bg-[#fff8f1] px-4 py-4">
-                            <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-orange-700/80">{stat.label}</p>
-                            <p className="mt-1 text-2xl font-black text-gray-950">{stat.value}</p>
+                        <div key={stat.label} className="rounded-xl border-2 border-black bg-white px-4 py-4 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                            <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.22em] text-orange-700/80">{stat.label}</p>
+                            <p className="mt-1 text-xl sm:text-2xl font-black text-gray-950">{stat.value}</p>
                         </div>
                     ))}
                 </div>
             </div>
 
             {/* Enhanced Tabs */}
-            <div className="sticky top-16 z-30 mt-8 border-y border-orange-100/80 bg-white/90 shadow-sm backdrop-blur">
+            <div className="sticky top-16 z-30 mt-8 border-y-3 border-black bg-yellow-300">
                 <div className="max-w-7xl mx-auto px-4 md:px-6">
                     <div className="flex gap-3 overflow-x-auto py-3 no-scrollbar">
                         {VENDOR_DETAIL_TABS.map((tab) => (
                             <button
                                 key={tab}
                                 onClick={() => setActiveTab(tab.toLowerCase())}
-                                className={`relative rounded-full px-4 py-2.5 text-sm font-bold transition-all whitespace-nowrap ${activeTab === tab.toLowerCase()
-                                    ? 'bg-gray-950 text-white shadow-lg'
-                                    : 'bg-[#fff7ef] text-gray-600 hover:bg-orange-100 hover:text-gray-950'
+                                className={`relative rounded-xl px-4 py-2 text-xs sm:text-sm font-black uppercase tracking-wider transition-all whitespace-nowrap border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5 active:translate-y-0 ${activeTab === tab.toLowerCase()
+                                    ? 'bg-black text-white'
+                                    : 'bg-white text-black hover:bg-orange-100'
                                     }`}
                             >
                                 {tab}
                                 {tab === 'Reviews' && reviews.length > 0 && (
-                                    <span className="ml-2 rounded-full bg-white/85 px-2 py-0.5 text-xs text-gray-700">
+                                    <span className={`ml-2 rounded-lg border border-black px-1.5 py-0.5 text-[10px] font-black ${activeTab === 'reviews' ? 'bg-white text-black' : 'bg-yellow-300 text-black'}`}>
                                         {reviews.length}
                                     </span>
                                 )}
                                 {tab === 'Offers' && promotions.length > 0 && (
-                                    <span className="ml-2 rounded-full bg-red-500 px-2 py-0.5 text-xs text-white shadow-sm">
+                                    <span className={`ml-2 rounded-lg border border-black px-1.5 py-0.5 text-[10px] font-black ${activeTab === 'offers' ? 'bg-white text-black' : 'bg-red-500 text-white'}`}>
                                         {promotions.length}
                                     </span>
                                 )}
@@ -1190,8 +1157,8 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
 
                             {/* Review Form */}
                             {showReviewForm && (
-                                <div className="bg-white border-2 border-primary/20 rounded-2xl p-6 shadow-lg">
-                                    <h3 className="text-xl font-bold mb-4">Write Your Review</h3>
+                                <div className="bg-white border-3 border-black rounded-2xl p-5 sm:p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+                                    <h3 className="text-xl font-black mb-4 uppercase tracking-tight">Write Your Review</h3>
 
                                     {/* Star Rating */}
                                     <div className="mb-4">
@@ -1205,8 +1172,7 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
                                                     className="transition-transform hover:scale-110"
                                                 >
                                                     <Star
-                                                        size={32}
-                                                        className={`${star <= reviewRating
+                                                        className={`w-6 h-6 sm:w-8 sm:h-8 ${star <= reviewRating
                                                             ? 'text-yellow-400 fill-yellow-400'
                                                             : 'text-gray-300'
                                                             }`}
@@ -1276,7 +1242,7 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
                                         const isOwner = authUser && review.user?.id === authUser.id
 
                                         return (
-                                            <div key={review.id} className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                                            <div key={review.id} className="bg-white border-2 border-black rounded-2xl p-4 sm:p-6 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-transform hover:-translate-y-0.5">
                                                 {editingReviewId === review.id ? (
                                                     // Edit mode
                                                     <div className="space-y-4">
@@ -1298,8 +1264,7 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
                                                                     className="transition-transform hover:scale-110"
                                                                 >
                                                                     <Star
-                                                                        size={24}
-                                                                        className={`${star <= editRating
+                                                                        className={`w-5 h-5 sm:w-6 sm:h-6 ${star <= editRating
                                                                             ? 'text-yellow-400 fill-yellow-400'
                                                                             : 'text-gray-300'
                                                                             }`}
@@ -1382,30 +1347,30 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
             </div >
 
             <div className="sticky bottom-4 z-30 mx-auto mt-4 w-full max-w-7xl px-4 pb-[max(env(safe-area-inset-bottom),0.5rem)] md:hidden">
-                <div className="grid grid-cols-3 gap-2 rounded-[1.75rem] border border-white/80 bg-white/92 p-2 shadow-[0_18px_50px_-26px_rgba(15,23,42,0.4)] backdrop-blur">
+                <div className="grid grid-cols-3 gap-2 rounded-2xl border-3 border-black bg-white p-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                     <Button
                         onClick={handleGetDirections}
-                        className="h-12 rounded-2xl bg-gray-950 text-xs font-bold text-white hover:bg-orange-600"
+                        className="h-10 sm:h-12 rounded-xl bg-[#fb923c] text-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-[10px] sm:text-xs font-black uppercase tracking-wider hover:bg-[#f97316] transition-all flex items-center justify-center gap-1.5"
                     >
-                        <Navigation size={16} />
+                        <Navigation size={14} className="stroke-[2.5]" />
                         Route
                     </Button>
                     <Button
                         variant="outline"
                         onClick={toggleFavorite}
-                        className={`h-12 rounded-2xl text-xs font-bold ${isFavorite ? 'border-red-200 bg-red-50 text-red-600 hover:bg-red-100' : 'border-gray-200 bg-white text-gray-700 hover:bg-orange-50'}`}
+                        className={`h-10 sm:h-12 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-wider border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all flex items-center justify-center gap-1.5 ${isFavorite ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-white text-black hover:bg-orange-50'}`}
                     >
-                        <Heart size={16} className={isFavorite ? 'fill-current' : ''} />
+                        <Heart size={14} className={`${isFavorite ? 'fill-current' : ''} stroke-[2.5]`} />
                         Save
                     </Button>
                     {displayVendor?.phone ? (
                         <Button
                             asChild
                             variant="outline"
-                            className="h-12 rounded-2xl border-gray-200 bg-white text-xs font-bold text-gray-700 hover:bg-orange-50"
+                            className="h-10 sm:h-12 rounded-xl border-2 border-black bg-white text-[10px] sm:text-xs font-black uppercase tracking-wider text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:bg-orange-50 transition-all flex items-center justify-center gap-1.5"
                         >
                             <a href={`tel:${displayVendor.phone}`}>
-                                <Phone size={16} />
+                                <Phone size={14} className="stroke-[2.5]" />
                                 Call
                             </a>
                         </Button>
@@ -1413,9 +1378,9 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
                         <Button
                             variant="outline"
                             onClick={handleShare}
-                            className="h-12 rounded-2xl border-gray-200 bg-white text-xs font-bold text-gray-700 hover:bg-orange-50"
+                            className="h-10 sm:h-12 rounded-xl border-2 border-black bg-white text-[10px] sm:text-xs font-black uppercase tracking-wider text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:bg-orange-50 transition-all flex items-center justify-center gap-1.5"
                         >
-                            <Share2 size={16} />
+                            <Share2 size={14} className="stroke-[2.5]" />
                             Share
                         </Button>
                     )}

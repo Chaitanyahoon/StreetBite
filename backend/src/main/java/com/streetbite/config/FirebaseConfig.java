@@ -21,7 +21,18 @@ public class FirebaseConfig {
     public void initialize() {
         try {
             if (FirebaseApp.getApps().isEmpty()) {
-                InputStream serviceAccount = new FileInputStream(firebaseConfigPath);
+                InputStream serviceAccount = null;
+                String base64Credentials = System.getenv("FIREBASE_CREDENTIALS_BASE64");
+
+                if (base64Credentials != null && !base64Credentials.trim().isEmpty()) {
+                    System.out.println("Loading Firebase credentials from FIREBASE_CREDENTIALS_BASE64 environment variable...");
+                    byte[] decoded = java.util.Base64.getDecoder().decode(base64Credentials.trim());
+                    serviceAccount = new java.io.ByteArrayInputStream(decoded);
+                } else {
+                    System.out.println("Loading Firebase credentials from path: " + firebaseConfigPath);
+                    serviceAccount = new FileInputStream(firebaseConfigPath);
+                }
+
                 FirebaseOptions options = FirebaseOptions.builder()
                         .setCredentials(GoogleCredentials.fromStream(serviceAccount))
                         .build();
@@ -34,6 +45,9 @@ public class FirebaseConfig {
             // We intentionally do not throw an exception here to ensure the main
             // application (MySQL/Spring Boot) continues to function even if Firebase is
             // misconfigured.
+        } catch (IllegalArgumentException e) {
+            System.err.println("WARNING: Failed to decode Base64 credentials for Firebase. Error: "
+                    + e.getMessage());
         }
     }
 }

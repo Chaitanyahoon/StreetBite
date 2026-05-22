@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Archivo, Space_Grotesk } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
+import Script from 'next/script'
 import './globals.css'
 
 const archivo = Archivo({
@@ -20,6 +21,12 @@ import { CookieConsentBanner } from '@/components/cookie-consent-banner'
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://streetbitego.vercel.app'),
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'StreetBite',
+  },
   title: {
     default: 'StreetBite — Fast, Local & Authentic Street Food Discovery',
     template: '%s | StreetBite',
@@ -93,6 +100,23 @@ export default function RootLayout({
           </GamificationProvider>
         </AuthProvider>
         <Analytics />
+        <Script
+          id="register-sw"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js').then(function(reg) {
+                    console.log('StreetBite ServiceWorker registered successfully:', reg.scope);
+                  }).catch(function(err) {
+                    console.log('StreetBite ServiceWorker registration failed:', err);
+                  });
+                });
+              }
+            `
+          }}
+        />
       </body>
     </html>
   )

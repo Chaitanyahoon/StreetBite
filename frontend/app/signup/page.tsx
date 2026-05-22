@@ -174,37 +174,37 @@ export default function SignUpPage() {
       </AnimatePresence>
 
       {/* Back button */}
-      <div className="px-4 pt-3 pb-1 sm:px-6 sm:pt-5 sm:pb-2 relative z-10">
-        <Link href="/" className="inline-flex items-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl bg-white text-black font-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-all text-sm">
-          <ArrowLeft size={18} strokeWidth={3} />
+      <div className="px-3 pt-2.5 pb-0.5 sm:px-6 sm:pt-5 sm:pb-2 relative z-10">
+        <Link href="/" className="inline-flex items-center gap-1.5 px-3.5 py-1.5 sm:px-5 sm:py-2.5 rounded-lg sm:rounded-xl bg-white text-black font-black border-3 sm:border-4 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-all text-xs sm:text-sm">
+          <ArrowLeft size={16} strokeWidth={3} />
           BACK TO HOME
         </Link>
       </div>
 
       {/* Sign Up Form */}
-      <div className="flex-1 flex items-start md:items-center justify-center px-4 pt-2 pb-5 sm:pt-3 sm:pb-6 relative z-10">
+      <div className="flex-1 flex items-center justify-center px-3 pt-1 pb-4 sm:pt-3 sm:pb-6 relative z-10">
         <div className="w-full max-w-2xl">
           {/* Logo and Heading */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-4 sm:mb-6"
+            className="text-center mb-3 sm:mb-5"
           >
             <motion.div
-              className="flex justify-center mb-2 sm:mb-3 transform"
+              className="flex justify-center mb-1.5 sm:mb-3 transform"
               whileHover={{ rotate: [0, -10, 10, 0] }}
             >
               <Logo />
             </motion.div>
-            <div className="mb-3 inline-flex items-center gap-2 rounded-full border-4 border-black bg-white px-3 py-1.5 text-[10px] sm:text-xs font-black uppercase tracking-[0.25em] text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-              <ShieldCheck className="size-4" strokeWidth={3} />
+            <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border-3 sm:border-4 border-black bg-white px-2.5 py-1 text-[9px] sm:text-xs font-black uppercase tracking-[0.2em] sm:tracking-[0.25em] text-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+              <ShieldCheck className="size-3.5" strokeWidth={3} />
               Quick Secure Setup
             </div>
-            <h1 className="text-[2rem] sm:text-4xl md:text-5xl font-black mb-2 text-black tracking-tight uppercase">
+            <h1 className="text-[1.75rem] sm:text-4xl md:text-5xl font-black mb-1 sm:mb-2 text-black tracking-tight uppercase">
               Join the Feast
             </h1>
-            <p className="text-sm sm:text-lg font-bold text-gray-700">Create your account and get into StreetBite fast.</p>
-            <p className="mt-2 text-[11px] sm:text-sm font-bold uppercase tracking-[0.2em] text-gray-500">
+            <p className="text-xs sm:text-lg font-bold text-gray-700">Create your account and get into StreetBite fast.</p>
+            <p className="mt-1.5 text-[9px] sm:text-sm font-bold uppercase tracking-[0.2em] text-gray-500 hidden xs:block">
               Pick your role, enter the basics, verify once
             </p>
           </motion.div>
@@ -216,25 +216,25 @@ export default function SignUpPage() {
                 initial={{ opacity: 0, x: -50 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -50 }}
-                className="grid md:grid-cols-2 gap-3 sm:gap-4"
+                className="grid grid-cols-2 gap-2.5 sm:gap-4"
               >
                 {/* Customer Card */}
                 <motion.div
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setUserType('customer')}
-                    className={`p-4 sm:p-5 rounded-[2rem] border-4 cursor-pointer transition-all ${userType === 'customer'
-                    ? 'bg-yellow-400 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] z-10'
-                    : 'bg-white border-black hover:bg-yellow-50 hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]'
+                    className={`p-3 sm:p-5 rounded-[1.25rem] sm:rounded-[2rem] border-3 sm:border-4 cursor-pointer transition-all ${userType === 'customer'
+                    ? 'bg-yellow-400 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] z-10'
+                    : 'bg-white border-black hover:bg-yellow-50 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]'
                     }`}
                 >
-                  <div className="mb-3 flex size-14 items-center justify-center rounded-[1rem] border-4 border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                    <UtensilsCrossed className="size-7 text-orange-500" strokeWidth={2.7} />
+                  <div className="mb-2 flex size-10 sm:size-14 items-center justify-center rounded-lg sm:rounded-[1rem] border-3 sm:border-4 border-black bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                    <UtensilsCrossed className="size-5 sm:size-7 text-orange-500" strokeWidth={2.7} />
                   </div>
-                  <p className="mb-3 inline-flex rounded-full border-2 border-black bg-white px-3 py-1 text-[11px] font-black uppercase tracking-[0.25em] text-gray-600">Customer</p>
-                  <h2 className="text-2xl font-black text-black mb-2 uppercase">Foodie</h2>
-                  <p className="text-gray-700 font-medium mb-3 leading-relaxed text-sm sm:text-base">Save favorite vendors, track offers, and discover what is nearby.</p>
-                  <div className="space-y-1.5 font-bold text-xs sm:text-sm text-black/80">
+                  <p className="mb-1.5 sm:mb-3 inline-flex rounded-full border-2 border-black bg-white px-2 py-0.5 sm:px-3 sm:py-1 text-[9px] sm:text-[11px] font-black uppercase tracking-[0.2em] sm:tracking-[0.25em] text-gray-600">Customer</p>
+                  <h2 className="text-base sm:text-2xl font-black text-black mb-1 sm:mb-2 uppercase">Foodie</h2>
+                  <p className="text-gray-700 font-medium mb-1 sm:mb-3 leading-tight sm:leading-relaxed text-[11px] sm:text-base line-clamp-2 sm:line-clamp-none">Save favorite vendors, track offers, and discover what is nearby.</p>
+                  <div className="hidden sm:block space-y-1.5 font-bold text-xs sm:text-sm text-black/80">
                     <div>Save favorites</div>
                     <div>Join community posts</div>
                     <div>Track live vendors</div>
@@ -246,18 +246,18 @@ export default function SignUpPage() {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setUserType('vendor')}
-                    className={`p-4 sm:p-5 rounded-[2rem] border-4 cursor-pointer transition-all ${userType === 'vendor'
-                    ? 'bg-orange-500 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] z-10'
-                    : 'bg-white border-black hover:bg-orange-50 hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]'
+                    className={`p-3 sm:p-5 rounded-[1.25rem] sm:rounded-[2rem] border-3 sm:border-4 cursor-pointer transition-all ${userType === 'vendor'
+                    ? 'bg-orange-500 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] z-10'
+                    : 'bg-white border-black hover:bg-orange-50 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]'
                     }`}
                 >
-                  <div className="mb-3 flex size-14 items-center justify-center rounded-[1rem] border-4 border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                    <Store className="size-7 text-orange-500" strokeWidth={2.7} />
+                  <div className="mb-2 flex size-10 sm:size-14 items-center justify-center rounded-lg sm:rounded-[1rem] border-3 sm:border-4 border-black bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                    <Store className="size-5 sm:size-7 text-orange-500" strokeWidth={2.7} />
                   </div>
-                  <p className="mb-3 inline-flex rounded-full border-2 border-black bg-white px-3 py-1 text-[11px] font-black uppercase tracking-[0.25em] text-gray-600">Vendor</p>
-                  <h2 className="text-2xl font-black text-black mb-2 uppercase">Vendor</h2>
-                  <p className="text-black/80 font-medium mb-3 leading-relaxed text-sm sm:text-base">Launch your stall profile, publish offers, and manage your dashboard.</p>
-                  <div className="space-y-1.5 font-bold text-xs sm:text-sm text-black/80">
+                  <p className="mb-1.5 sm:mb-3 inline-flex rounded-full border-2 border-black bg-white px-2 py-0.5 sm:px-3 sm:py-1 text-[9px] sm:text-[11px] font-black uppercase tracking-[0.2em] sm:tracking-[0.25em] text-gray-600">Vendor</p>
+                  <h2 className="text-base sm:text-2xl font-black text-black mb-1 sm:mb-2 uppercase">Vendor</h2>
+                  <p className="text-black/80 font-medium mb-1 sm:mb-3 leading-tight sm:leading-relaxed text-[11px] sm:text-base line-clamp-2 sm:line-clamp-none">Launch your stall profile, publish offers, and manage your dashboard.</p>
+                  <div className="hidden sm:block space-y-1.5 font-bold text-xs sm:text-sm text-black/80">
                     <div>Vendor dashboard</div>
                     <div>Menu and offer control</div>
                     <div>Location visibility</div>
@@ -274,63 +274,63 @@ export default function SignUpPage() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 50 }}
                 onSubmit={handleSubmit}
-                className="bg-white rounded-[2rem] shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] p-5 sm:p-7 md:p-8 space-y-4 border-4 border-black relative overflow-hidden"
+                className="bg-white rounded-[1.25rem] sm:rounded-[2rem] shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] sm:shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] p-4 sm:p-7 md:p-8 space-y-3 sm:space-y-4 border-3 sm:border-4 border-black relative overflow-hidden"
               >
                 {/* Decorative Element */}
                 <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-400 rounded-bl-[100%] z-0 opacity-20"></div>
 
-                <div className="relative z-10 rounded-[1.25rem] border-4 border-black bg-[#FFF5D8] p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="relative z-10 rounded-xl border-3 sm:border-4 border-black bg-[#FFF5D8] p-3 sm:p-4 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                  <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                      <p className="text-xs font-black uppercase tracking-[0.3em] text-gray-500">Account Setup</p>
-                      <h2 className="mt-2 text-xl sm:text-2xl font-black uppercase text-black">
+                      <p className="text-[10px] font-black uppercase tracking-[0.25em] text-gray-500">Account Setup</p>
+                      <h2 className="mt-1 text-base sm:text-2xl font-black uppercase text-black">
                         {userType === 'vendor' ? 'Launch Your Vendor Profile' : 'Build Your Foodie Profile'}
                       </h2>
                     </div>
-                    <div className="inline-flex items-center gap-2 rounded-full border-4 border-black bg-white px-4 py-2 text-xs font-black uppercase tracking-[0.25em] text-black">
-                      {location ? <MapPin className="size-4" strokeWidth={3} /> : <Sparkles className="size-4" strokeWidth={3} />}
+                    <div className="inline-flex items-center gap-1.5 rounded-full border-3 sm:border-4 border-black bg-white px-2.5 py-1 sm:px-4 sm:py-2 text-[9px] sm:text-xs font-black uppercase tracking-[0.2em] sm:tracking-[0.25em] text-black">
+                      {location ? <MapPin className="size-3.5" strokeWidth={3} /> : <Sparkles className="size-3.5" strokeWidth={3} />}
                       {location ? 'City picked up' : 'City optional'}
                     </div>
                   </div>
-                  <p className="mt-2 text-xs sm:text-sm font-bold text-gray-700">
+                  <p className="mt-1.5 text-[11px] sm:text-sm font-bold text-gray-700 hidden xs:block">
                     Add the basics now. You can finish the rest after you sign in.
                   </p>
                 </div>
 
                 {error && (
-                  <div className="bg-red-100 border-4 border-black text-black px-4 py-3 rounded-xl font-bold flex items-center gap-3 relative z-10 animate-shake">
-                    <div className="w-4 h-4 bg-red-500 rounded-full border border-black flex-shrink-0" />
+                  <div className="bg-red-100 border-3 sm:border-4 border-black text-black px-3 py-2 rounded-xl font-bold flex items-center gap-2 mb-3 text-xs sm:text-sm relative z-10 animate-shake">
+                    <div className="w-3.5 h-3.5 bg-red-500 rounded-full border border-black flex-shrink-0" />
                     {error}
                   </div>
                 )}
 
-                <div className="grid md:grid-cols-2 gap-4 relative z-10">
-                  <div className="space-y-2">
-                    <label className="block text-sm font-black text-black uppercase tracking-wider ml-1">First Name</label>
+                <div className="grid md:grid-cols-2 gap-3 sm:gap-4 relative z-10">
+                  <div className="space-y-1">
+                    <label className="block text-xs sm:text-sm font-black text-black uppercase tracking-wider ml-1">First Name</label>
                     <input
                       type="text"
                       placeholder="JOHN"
                       value={formData.firstName}
                       onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                       required
-                      className="w-full px-4 py-3.5 border-4 border-black rounded-xl text-base sm:text-lg font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400 bg-gray-50 transition-all placeholder:text-gray-300 uppercase"
+                      className="w-full px-3 py-2.5 sm:px-4 sm:py-3.5 border-3 sm:border-4 border-black rounded-lg sm:rounded-xl text-sm sm:text-base font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400 bg-gray-50 transition-all placeholder:text-gray-300 uppercase"
                     />
                   </div>
-                  <div className="space-y-2">
-                    <label className="block text-sm font-black text-black uppercase tracking-wider ml-1">Last Name</label>
+                  <div className="space-y-1">
+                    <label className="block text-xs sm:text-sm font-black text-black uppercase tracking-wider ml-1">Last Name</label>
                     <input
                       type="text"
                       placeholder="DOE"
                       value={formData.lastName}
                       onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                       required
-                      className="w-full px-4 py-3.5 border-4 border-black rounded-xl text-base sm:text-lg font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400 bg-gray-50 transition-all placeholder:text-gray-300 uppercase"
+                      className="w-full px-3 py-2.5 sm:px-4 sm:py-3.5 border-3 sm:border-4 border-black rounded-lg sm:rounded-xl text-sm sm:text-base font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400 bg-gray-50 transition-all placeholder:text-gray-300 uppercase"
                     />
                   </div>
                 </div>
 
-                <div className="space-y-2 relative z-10">
-                  <label className="block text-sm font-black text-black uppercase tracking-wider ml-1">Email Address</label>
+                <div className="space-y-1 relative z-10">
+                  <label className="block text-xs sm:text-sm font-black text-black uppercase tracking-wider ml-1">Email Address</label>
                   <input
                     type="email"
                     placeholder="you@example.com"
@@ -338,13 +338,13 @@ export default function SignUpPage() {
                     onChange={(e) => setFormData({ ...formData, email: e.target.value.toLowerCase() })}
                     required
                     autoComplete="username"
-                    className="w-full px-4 py-3.5 border-4 border-black rounded-xl text-base sm:text-lg font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400 bg-gray-50 transition-all placeholder:text-gray-300 lowercase"
+                    className="w-full px-3 py-2.5 sm:px-4 sm:py-3.5 border-3 sm:border-4 border-black rounded-lg sm:rounded-xl text-sm sm:text-base font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400 bg-gray-50 transition-all placeholder:text-gray-300 lowercase"
                   />
-                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-gray-500">Use the email you want to keep on this account.</p>
+                  <p className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] text-gray-500 hidden xs:block">Use the email you want to keep on this account.</p>
                 </div>
 
-                <div className="space-y-2 relative z-10">
-                  <label className="block text-sm font-black text-black uppercase tracking-wider ml-1">Password</label>
+                <div className="space-y-1 relative z-10">
+                  <label className="block text-xs sm:text-sm font-black text-black uppercase tracking-wider ml-1">Password</label>
                   <div className="relative">
                     <input
                       type={showPassword ? "text" : "password"}
@@ -368,21 +368,21 @@ export default function SignUpPage() {
                       required
                       minLength={8}
                       autoComplete="new-password"
-                      className="w-full px-4 py-3.5 pr-14 border-4 border-black rounded-xl text-base sm:text-lg font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400 bg-gray-50 transition-all placeholder:text-gray-300"
+                      className="w-full px-3 py-2.5 sm:px-4 sm:py-3.5 pr-11 sm:pr-14 border-3 sm:border-4 border-black rounded-lg sm:rounded-xl text-sm sm:text-base font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400 bg-gray-50 transition-all placeholder:text-gray-300"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-black transition-colors p-1"
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-black transition-colors p-1"
                     >
-                      {showPassword ? <EyeOff size={24} /> : <Eye size={24} />}
+                      {showPassword ? <EyeOff className="size-5" /> : <Eye className="size-5" />}
                     </button>
                   </div>
 
                   {/* Password Strength Meter */}
                   {formData.password && (
-                    <div className="space-y-2 pt-2">
-                      <div className="flex gap-2 h-3">
+                    <div className="space-y-1.5 pt-1.5">
+                      <div className="flex gap-1.5 h-2">
                         {[1, 2, 3, 4, 5].map((level) => (
                           <div
                             key={level}
@@ -393,7 +393,7 @@ export default function SignUpPage() {
                           />
                         ))}
                       </div>
-                      <p className={`text-xs text-right font-black uppercase tracking-wider ${passwordStrength <= 2 ? 'text-red-600' : passwordStrength <= 3 ? 'text-yellow-600' : 'text-green-600'
+                      <p className={`text-[10px] text-right font-black uppercase tracking-wider ${passwordStrength <= 2 ? 'text-red-600' : passwordStrength <= 3 ? 'text-yellow-600' : 'text-green-600'
                         }`}>
                         {passwordStrength <= 2 ? 'Weak' : passwordStrength <= 3 ? 'Medium' : 'Strong'}
                       </p>
@@ -402,41 +402,41 @@ export default function SignUpPage() {
                 </div>
 
                 {userType === 'vendor' && (
-                  <div className="space-y-2 relative z-10">
-                    <label className="block text-sm font-black text-black uppercase tracking-wider ml-1">Business Name</label>
+                  <div className="space-y-1 relative z-10">
+                    <label className="block text-xs sm:text-sm font-black text-black uppercase tracking-wider ml-1">Business Name</label>
                     <input
                       type="text"
                       placeholder="YOUR FOOD STAND NAME"
                       value={formData.businessName}
                       onChange={(e) => setFormData({ ...formData, businessName: e.target.value })}
-                      className="w-full px-4 py-3.5 border-4 border-black rounded-xl text-base sm:text-lg font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400 bg-gray-50 transition-all placeholder:text-gray-300 uppercase"
+                      className="w-full px-3 py-2.5 sm:px-4 sm:py-3.5 border-3 sm:border-4 border-black rounded-lg sm:rounded-xl text-sm sm:text-base font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400 bg-gray-50 transition-all placeholder:text-gray-300 uppercase"
                     />
-                    <p className="text-xs font-bold uppercase tracking-[0.2em] text-gray-500">You can edit this later from the vendor dashboard.</p>
+                    <p className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] text-gray-500 hidden xs:block">You can edit this later from the vendor dashboard.</p>
                   </div>
                 )}
 
-                <div className="flex flex-col-reverse gap-3 pt-4 relative z-10 sm:flex-row">
+                <div className="flex flex-col-reverse gap-3 pt-2 sm:pt-4 relative z-10 sm:flex-row">
                   <Button
                     type="button"
                     variant="outline"
                     onClick={() => setStep(1)}
                     disabled={isLoading}
-                    className="flex-1 rounded-xl h-14 border-4 border-black font-black text-lg hover:bg-gray-100"
+                    className="flex-1 rounded-lg sm:rounded-xl h-11 sm:h-14 border-3 sm:border-4 border-black font-black text-sm sm:text-lg hover:bg-gray-100"
                   >
                     BACK
                   </Button>
                   <Button
                     type="submit"
                     disabled={isLoading}
-                    className="flex-[2] bg-orange-500 hover:bg-orange-600 text-white rounded-xl h-14 border-4 border-black font-black text-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all disabled:opacity-70 disabled:hover:translate-y-0"
+                    className="flex-[2] bg-orange-500 hover:bg-orange-600 text-white rounded-lg sm:rounded-xl h-11 sm:h-14 border-3 sm:border-4 border-black font-black text-base sm:text-xl shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5 hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] sm:hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all disabled:opacity-70 disabled:hover:translate-y-0"
                   >
                     {isLoading ? 'COOKING...' : 'CREATE ACCOUNT'}
                   </Button>
                 </div>
 
-                <p className="text-center text-base sm:text-lg font-medium text-gray-600 relative z-10">
+                <p className="text-center text-sm sm:text-base font-bold text-gray-600 relative z-10">
                   Already part of the crew?{' '}
-                  <Link href="/signin" className="text-black font-black decoration-4 underline decoration-yellow-400 hover:bg-yellow-400 transition-colors px-1">
+                  <Link href="/signin" className="text-black font-black decoration-2 underline decoration-yellow-400 hover:bg-yellow-400 transition-colors px-1">
                     SIGN IN
                   </Link>
                 </p>
@@ -450,41 +450,41 @@ export default function SignUpPage() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 50 }}
                 onSubmit={handleVerifyEmail}
-                className="bg-white rounded-[2rem] shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] p-5 sm:p-7 md:p-8 space-y-4 border-4 border-black relative overflow-hidden"
+                className="bg-white rounded-[1.25rem] sm:rounded-[2rem] shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] sm:shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] p-4 sm:p-7 md:p-8 space-y-3 sm:space-y-4 border-3 sm:border-4 border-black relative overflow-hidden"
               >
-                <div className="relative z-10 rounded-[1.25rem] border-4 border-black bg-[#FFF5D8] p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="relative z-10 rounded-xl border-3 sm:border-4 border-black bg-[#FFF5D8] p-3 sm:p-4 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                  <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                      <p className="text-xs font-black uppercase tracking-[0.3em] text-gray-500">Email Verification</p>
-                      <h2 className="mt-2 text-xl sm:text-2xl font-black uppercase text-black">Unlock Your Account</h2>
+                      <p className="text-[10px] font-black uppercase tracking-[0.25em] text-gray-500">Email Verification</p>
+                      <h2 className="mt-1 text-base sm:text-2xl font-black uppercase text-black">Unlock Your Account</h2>
                     </div>
-                    <div className="inline-flex items-center gap-2 rounded-full border-4 border-black bg-white px-4 py-2 text-xs font-black uppercase tracking-[0.25em] text-black">
-                      <Mail className="size-4" strokeWidth={3} />
+                    <div className="inline-flex items-center gap-1.5 rounded-full border-3 sm:border-4 border-black bg-white px-2.5 py-1 sm:px-4 sm:py-2 text-[9px] sm:text-xs font-black uppercase tracking-[0.2em] sm:tracking-[0.25em] text-black">
+                      <Mail className="size-3.5" strokeWidth={3} />
                       6-digit code
                     </div>
                   </div>
-                  <p className="mt-2 text-xs sm:text-sm font-bold text-gray-700 break-all">
+                  <p className="mt-1.5 text-[11px] sm:text-sm font-bold text-gray-700 break-all leading-normal">
                     Enter the 6-digit code sent to <span className="text-black">{verificationEmail}</span>.
                   </p>
                 </div>
 
                 {error && (
-                  <div className="bg-red-100 border-4 border-black text-black px-4 py-3 rounded-xl font-bold flex items-center gap-3">
-                    <div className="w-4 h-4 bg-red-500 rounded-full border border-black flex-shrink-0" />
+                  <div className="bg-red-100 border-3 sm:border-4 border-black text-black px-3 py-2 rounded-xl font-bold flex items-center gap-2 text-xs sm:text-sm">
+                    <div className="w-3.5 h-3.5 bg-red-500 rounded-full border border-black flex-shrink-0" />
                     {error}
                   </div>
                 )}
 
                 {verificationMessage && (
-                  <div className="bg-yellow-100 border-4 border-black text-black px-4 py-3 rounded-xl font-bold">
+                  <div className="bg-yellow-100 border-3 sm:border-4 border-black text-black px-3 py-2 rounded-xl font-bold text-xs sm:text-sm">
                     {verificationMessage}
                   </div>
                 )}
 
-                <div className="space-y-2">
-                  <label className="block text-sm font-black text-black uppercase tracking-wider ml-1">Verification Code</label>
+                <div className="space-y-1">
+                  <label className="block text-xs sm:text-sm font-black text-black uppercase tracking-wider ml-1">Verification Code</label>
                   <div className="relative">
-                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-black size-6" strokeWidth={2.5} />
+                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-black size-5" strokeWidth={2.5} />
                     <input
                       type="text"
                       inputMode="numeric"
@@ -493,26 +493,26 @@ export default function SignUpPage() {
                       value={verificationCode}
                       onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                       placeholder="123456"
-                      className="w-full pl-14 pr-4 py-3.5 border-4 border-black rounded-xl text-base sm:text-lg font-bold tracking-[0.35em] focus:outline-none focus:ring-4 focus:ring-yellow-400 bg-gray-50 transition-all placeholder:text-gray-300"
+                      className="w-full pl-11 pr-4 py-2.5 sm:pl-14 sm:py-3.5 border-3 sm:border-4 border-black rounded-lg sm:rounded-xl text-sm sm:text-lg font-bold tracking-[0.3em] sm:tracking-[0.35em] focus:outline-none focus:ring-4 focus:ring-yellow-400 bg-gray-50 transition-all placeholder:text-gray-300"
                       required
                     />
                   </div>
                 </div>
 
-                <div className="flex flex-col-reverse gap-4 pt-2 sm:flex-row">
+                <div className="flex flex-col-reverse gap-3 pt-2 sm:pt-4 sm:flex-row">
                   <Button
                     type="button"
                     variant="outline"
                     onClick={() => setStep(2)}
                     disabled={isLoading}
-                    className="flex-1 rounded-xl h-14 border-4 border-black font-black text-lg hover:bg-gray-100"
+                    className="flex-1 rounded-lg sm:rounded-xl h-11 sm:h-14 border-3 sm:border-4 border-black font-black text-sm sm:text-lg hover:bg-gray-100"
                   >
                     BACK
                   </Button>
                   <Button
                     type="submit"
                     disabled={isLoading || verificationCode.length !== 6}
-                    className="flex-[2] bg-orange-500 hover:bg-orange-600 text-white rounded-xl h-14 border-4 border-black font-black text-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all disabled:opacity-70 disabled:hover:translate-y-0"
+                    className="flex-[2] bg-orange-500 hover:bg-orange-600 text-white rounded-lg sm:rounded-xl h-11 sm:h-14 border-3 sm:border-4 border-black font-black text-base sm:text-xl shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5 hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] sm:hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all disabled:opacity-70 disabled:hover:translate-y-0"
                   >
                     {isLoading ? 'VERIFYING...' : 'VERIFY ACCOUNT'}
                   </Button>
@@ -523,7 +523,7 @@ export default function SignUpPage() {
                   variant="ghost"
                   onClick={handleResendVerification}
                   disabled={isLoading || !verificationEmail}
-                  className="w-full text-gray-600 font-black uppercase tracking-wide hover:text-black hover:bg-transparent"
+                  className="w-full text-xs sm:text-sm font-black uppercase tracking-wide hover:text-black hover:bg-transparent"
                 >
                   Resend verification code
                 </Button>
@@ -537,14 +537,14 @@ export default function SignUpPage() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mt-6 flex justify-center"
+              className="mt-4 sm:mt-6 flex justify-center"
             >
               <Button
                 onClick={handleContinue}
-                className="w-full max-w-md bg-black text-white rounded-full px-8 py-6 text-lg sm:px-10 sm:py-7 sm:text-xl font-black flex items-center justify-center gap-3 shadow-[8px_8px_0px_0px_#fbbf24] border-4 border-black hover:-translate-y-2 hover:shadow-[12px_12px_0px_0px_#fbbf24] transition-all"
+                className="w-full max-w-xs sm:max-w-md bg-black text-white rounded-lg sm:rounded-full h-11 sm:h-16 px-6 py-3 text-sm sm:text-xl font-black flex items-center justify-center gap-2 sm:gap-3 shadow-[4px_4px_0px_0px_#fbbf24] sm:shadow-[8px_8px_0px_0px_#fbbf24] border-3 sm:border-4 border-black hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_#fbbf24] sm:hover:shadow-[12px_12px_0px_0px_#fbbf24] transition-all"
               >
                 CONTINUE
-                <ChevronRight size={26} strokeWidth={4} />
+                <ChevronRight className="size-5 sm:size-6.5" strokeWidth={4} />
               </Button>
             </motion.div>
           )}

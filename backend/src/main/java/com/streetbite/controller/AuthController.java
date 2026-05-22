@@ -18,6 +18,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseToken;
+import com.streetbite.dto.auth.FirebaseLoginRequest;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +42,7 @@ public class AuthController {
     private final JwtUtil jwtUtil;
     private final CookieSettings cookieSettings;
     private final AuthRateLimitService authRateLimitService;
+    private final PasswordEncoder passwordEncoder;
 
     private static final Duration LOGIN_WINDOW = Duration.ofMinutes(10);
     private static final Duration LOGIN_BLOCK = Duration.ofMinutes(15);
@@ -54,12 +60,14 @@ public class AuthController {
             AuthService authService,
             JwtUtil jwtUtil,
             CookieSettings cookieSettings,
-            AuthRateLimitService authRateLimitService) {
+            AuthRateLimitService authRateLimitService,
+            PasswordEncoder passwordEncoder) {
         this.userService = userService;
         this.authService = authService;
         this.jwtUtil = jwtUtil;
         this.cookieSettings = cookieSettings;
         this.authRateLimitService = authRateLimitService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     /**
@@ -236,6 +244,82 @@ public class AuthController {
         } catch (Exception e) {
             logger.error("Error during user login", e);
             return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/firebase-login")
+    public ResponseEntity<?> firebaseLogin(
+            @RequestBody FirebaseLoginRequest payload,
+            HttpServletResponse response,
+            HttpServletRequest request) {
+        try {
+            String idToken = payload.getToken();
+            if (idToken == null || idToken.isBlank()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Firebase ID token is required"));
+            }
+
+            // 1. Verify token with Firebase Admin SDK
+            FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(idToken);
+            String email = authService.normalizeEmail(decodedToken.getEmail());
+            String name = decodedToken.getName();
+            String avatar = decodedToken.getPicture();
+
+            if (email == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Token does not contain a valid email address"));
+            }
+
+            // 2. Lookup/Sync user in MySQL
+            Optional<User> userOpt = userService.getUserByEmail(email);
+            User user;
+
+            if (userOpt.isPresent()) {
+                user = userOpt.get();
+                boolean needsSave = false;
+                if ((user.getDisplayName() == null || user.getDisplayName().isBlank()) && name != null) {
+                    user.setDisplayName(name.trim());
+                    needsSave = true;
+                }
+                if ((user.getProfilePicture() == null || user.getProfilePicture().isBlank()) && avatar != null) {
+                    user.setProfilePicture(avatar.trim());
+                    needsSave = true;
+                }
+                if (!user.getEmailVerified()) {
+                    user.setEmailVerified(true);
+                    needsSave = true;
+                }
+                if (needsSave) {
+                    user = userService.saveUser(user);
+                }
+            } else {
+                // Lazy Registration: Auto-create account in MySQL
+                user = new User();
+                user.setEmail(email);
+                user.setDisplayName(name != null ? name.trim() : email.split("@")[0]);
+                user.setProfilePicture(avatar != null ? avatar.trim() : "/avatars/avatar_1.png");
+                user.setRole(User.Role.USER);
+                user.setEmailVerified(true);
+                user.setActive(true);
+                
+                // Encode a random password hash for JPA compliance
+                user.setPasswordHash(passwordEncoder.encode(UUID.randomUUID().toString()));
+                
+                user = userService.saveUser(user);
+                logger.info("✓ Lazy-registered new Google user in MySQL: {}", email);
+            }
+
+            if (!user.getActive()) {
+                return ResponseEntity.status(403).body(Map.of("error", "Account is banned or inactive"));
+            }
+
+            // 3. Issue local session cookie & response
+            String token = jwtUtil.generateToken(user.getEmail(), user.getId(), user.getRole().name());
+            setTokenCookie(response, token);
+
+            AuthUserResponse userData = authService.buildUserData(user);
+            return ResponseEntity.ok(new AuthSuccessResponse(true, userData));
+        } catch (Exception e) {
+            logger.error("Error during Firebase Google login", e);
+            return ResponseEntity.status(401).body(Map.of("error", "Invalid Google session: " + e.getMessage()));
         }
     }
 

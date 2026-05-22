@@ -1,0 +1,22 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Live Vendors status & location updates: public reads; writes blocked from client apps (Server Admin SDK only)
+    match /live_vendors/{vendorId} {
+      allow read: if true;
+      allow write: if false;
+    }
+    
+    // Live Menu Items availability updates: public reads; writes blocked from client apps (Server Admin SDK only)
+    match /live_menu_items/{itemId} {
+      allow read: if true;
+      allow write: if false;
+    }
+    
+    // Default fallback rules (secure everything else)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

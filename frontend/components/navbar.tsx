@@ -56,6 +56,24 @@ export function Navbar({ forceSolid = false }: { forceSolid?: boolean }) {
     setImgError(false)
   }, [pathname])
 
+  // Silent Render cold-start warmer (debounced per session)
+  useEffect(() => {
+    try {
+      const alreadyWarmed = sessionStorage.getItem('sb_backend_warmed')
+      if (alreadyWarmed) return
+
+      fetch(`${BACKEND_URL}/health`)
+        .then(() => {
+          sessionStorage.setItem('sb_backend_warmed', 'true')
+        })
+        .catch(() => {
+          // Silent catch for local development or offline states
+        })
+    } catch (e) {
+      // Safe fallback for browsers with disabled storage/cookies
+    }
+  }, [BACKEND_URL])
+
   useEffect(() => {
     if (!isOpen) {
       document.body.style.overflow = ''
@@ -101,7 +119,7 @@ export function Navbar({ forceSolid = false }: { forceSolid?: boolean }) {
   return (
     <>
       {announcement && (
-        <div className={`w-full py-3 px-4 text-center text-sm font-black uppercase tracking-wider border-b-4 border-black ${announcement.type === 'WARNING' ? 'bg-red-500 text-white' :
+        <div className={`w-full py-3 px-4 text-center text-sm font-black uppercase tracking-wider border-b-2 sm:border-b-4 border-black ${announcement.type === 'WARNING' ? 'bg-red-500 text-white' :
           announcement.type === 'ALERT' ? 'bg-yellow-400 text-black' :
             'bg-black text-white'
           }`}>
@@ -110,8 +128,8 @@ export function Navbar({ forceSolid = false }: { forceSolid?: boolean }) {
       )}
       <nav className={`sticky top-0 z-50 transition-all duration-300 ${
         scrolled || forceSolid
-          ? 'bg-white border-b-4 border-black shadow-[0px_4px_0px_0px_rgba(0,0,0,0.1)]'
-          : (pathname === '/' ? 'bg-transparent border-b-transparent' : 'bg-white border-b-4 border-black')
+          ? 'bg-white border-b-2.5 sm:border-b-4 border-black shadow-[0px_2.5px_0px_0px_rgba(0,0,0,0.1)] sm:shadow-[0px_4px_0px_0px_rgba(0,0,0,0.1)]'
+          : (pathname === '/' ? 'bg-transparent border-b-transparent' : 'bg-white border-b-2.5 sm:border-b-4 border-black')
       } ${announcement ? '' : ''}`}>
         <div className="max-w-screen-2xl mx-auto px-4 md:px-6">
           <div className="flex justify-between items-center h-16 md:h-20">
@@ -190,19 +208,19 @@ export function Navbar({ forceSolid = false }: { forceSolid?: boolean }) {
 
             {/* Mobile Menu Button */}
             <button
-              className="flex h-11 w-11 items-center justify-center rounded-xl border-2 border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all duration-200 hover:bg-yellow-400 active:translate-y-[2px] active:shadow-none lg:hidden"
+              className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-xl border-2 border-black bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all duration-200 hover:bg-yellow-400 active:translate-y-[2px] active:shadow-none lg:hidden"
               onClick={() => setIsOpen(!isOpen)}
               aria-label="Toggle menu"
               aria-expanded={isOpen}
               aria-controls="mobile-navigation"
             >
-              {isOpen ? <X size={24} className="text-black stroke-[3px]" /> : <Menu size={24} className="text-black stroke-[3px]" />}
+              {isOpen ? <X size={20} className="text-black stroke-[3px] sm:size-6" /> : <Menu size={20} className="text-black stroke-[3px] sm:size-6" />}
             </button>
           </div>
 
           {/* Mobile Menu */}
           {isOpen && (
-            <div className="absolute inset-x-0 top-full z-40 border-y-4 border-black bg-white/95 shadow-2xl backdrop-blur lg:hidden">
+            <div className="absolute inset-x-0 top-full z-40 border-y-2.5 sm:border-y-4 border-black bg-white/95 shadow-2xl backdrop-blur lg:hidden">
               <div
                 id="mobile-navigation"
                 className="max-h-[calc(100vh-5rem)] space-y-4 overflow-y-auto px-4 py-4 pb-[max(env(safe-area-inset-bottom),1rem)]"
@@ -214,9 +232,9 @@ export function Navbar({ forceSolid = false }: { forceSolid?: boolean }) {
                       <Link
                         key={item.href}
                         href={item.href}
-                        className={`block rounded-2xl border-2 px-5 py-4 text-base font-black uppercase tracking-[0.14em] transition-all duration-200 ${isActive
-                          ? 'border-black bg-yellow-400 text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
-                          : 'border-black/15 bg-[#fff8ef] text-black hover:border-black hover:bg-orange-50'
+                        className={`block rounded-xl sm:rounded-2xl border-2 px-4 py-3 sm:px-5 sm:py-4 text-sm sm:text-base font-black uppercase tracking-[0.14em] transition-all duration-200 ${isActive
+                          ? 'border-black bg-yellow-400 text-black shadow-[2.5px_2.5px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
+                          : 'border-black bg-white text-black shadow-[2.5px_2.5px_0px_0px_rgba(0,0,0,0.15)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.15)] hover:bg-orange-50'
                           }`}
                       >
                         {item.label}
@@ -224,12 +242,12 @@ export function Navbar({ forceSolid = false }: { forceSolid?: boolean }) {
                     )
                   })}
                 </div>
-                <div className="space-y-4 border-t-4 border-black pt-4">
+                <div className="space-y-4 border-t-2.5 sm:border-t-4 border-black pt-4">
                   {isLoggedIn ? (
                     <>
                       <Link href="/profile">
-                        <button className="flex min-h-14 w-full items-center justify-center gap-3 rounded-2xl border-2 border-black bg-black px-4 py-4 font-black text-white shadow-[4px_4px_0px_0px_#9ca3af] transition-all active:translate-y-[2px]">
-                          <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-white text-sm font-black text-black">
+                        <button className="flex min-h-12 sm:min-h-14 w-full items-center justify-center gap-3 rounded-xl sm:rounded-2xl border-2 border-black bg-black px-4 py-3 sm:py-4 font-black text-white shadow-[2.5px_2.5px_0px_0px_#9ca3af] sm:shadow-[4px_4px_0px_0px_#9ca3af] transition-all active:translate-y-[2px] active:translate-x-[2px] active:shadow-none">
+                          <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center overflow-hidden rounded-full bg-white text-xs sm:text-sm font-black text-black">
                             {userProfilePic && !imgError ? (
                               <Image
                                 src={getImageUrl(userProfilePic)}
@@ -244,26 +262,26 @@ export function Navbar({ forceSolid = false }: { forceSolid?: boolean }) {
                               userName.charAt(0).toUpperCase()
                             )}
                           </div>
-                          <span className="line-clamp-1">{userName}</span>
+                          <span className="line-clamp-1 text-xs sm:text-sm">{userName}</span>
                         </button>
                       </Link>
                       <button
                         onClick={handleLogout}
-                        className="flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl border-2 border-black bg-white px-4 py-4 font-black uppercase text-red-600 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all active:translate-y-[2px]"
+                        className="flex min-h-12 sm:min-h-14 w-full items-center justify-center gap-2 rounded-xl sm:rounded-2xl border-2 border-black bg-white px-4 py-3 sm:py-4 font-black uppercase text-red-600 shadow-[2.5px_2.5px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all active:translate-y-[2px] active:translate-x-[2px] active:shadow-none"
                       >
-                        <LogOut size={20} className="stroke-[3px]" />
+                        <LogOut size={16} className="stroke-[3px] sm:size-5" />
                         Logout
                       </button>
                     </>
                   ) : (
                     <div className="grid gap-3 sm:grid-cols-2">
                       <Link href="/signin">
-                        <Button variant="outline" className="h-12 w-full font-black uppercase border-2 border-black bg-white text-black hover:bg-gray-100 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-y-[2px] transition-all">
+                        <Button variant="outline" className="h-10 sm:h-12 w-full font-black uppercase border-2 border-black bg-white text-black hover:bg-gray-100 shadow-[2.5px_2.5px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all">
                           Sign In
                         </Button>
                       </Link>
                       <Link href="/signup">
-                        <Button className="h-12 w-full font-black uppercase border-2 border-black bg-orange-500 text-white hover:bg-orange-600 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-y-[2px] transition-all">
+                        <Button className="h-10 sm:h-12 w-full font-black uppercase border-2 border-black bg-orange-500 text-white hover:bg-orange-600 shadow-[2.5px_2.5px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all">
                           Register
                         </Button>
                       </Link>

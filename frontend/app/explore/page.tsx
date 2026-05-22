@@ -8,6 +8,7 @@ import { useDeferredValue, useEffect, useRef, useState } from 'react'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import { VendorCard } from '@/components/vendor-card'
+import { VendorCardSkeleton } from '@/components/vendor-card-skeleton'
 import { MapListToggle } from '@/components/map-list-toggle'
 import { BreadcrumbListSchema } from '@/components/seo/breadcrumb-schema'
 import { CollectionPageSchema } from '@/components/seo/collection-page-schema'
@@ -246,7 +247,7 @@ function ExplorePageContent() {
       />
       <Navbar />
 
-      <section className="relative overflow-hidden px-4 pb-20 pt-24 md:px-6 md:pb-24 md:pt-28">
+      <section className="relative overflow-hidden px-4 pb-16 pt-20 md:px-6 md:pb-24 md:pt-28">
         <div className="absolute inset-0 -z-10">
           <div className="absolute left-[-8%] top-8 h-56 w-56 rounded-[4rem] border-4 border-black/12 bg-orange-300/20 blur-2xl md:h-72 md:w-72" />
           <div className="absolute right-[6%] top-14 h-28 w-28 rotate-12 rounded-[2rem] border-4 border-black/12 bg-yellow-300/35 shadow-[var(--shadow-soft)] md:h-40 md:w-40" />
@@ -257,28 +258,28 @@ function ExplorePageContent() {
 
         <div className="relative z-10 mx-auto max-w-7xl">
           <div className="text-center animate-slide-up">
-            <div className="inline-flex items-center gap-2 rounded-full border-2 border-black bg-white px-4 py-2 text-[0.72rem] font-black uppercase tracking-[0.24em] text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+            <div className="mt-8 inline-flex items-center gap-1.5 sm:gap-2 rounded-full border-2 border-black bg-white px-3 py-1.5 sm:px-4 sm:py-2 text-[0.62rem] sm:text-[0.72rem] font-black uppercase tracking-[0.2em] sm:tracking-[0.24em] text-black shadow-[2.5px_2.5px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
               <Sparkles className="h-4 w-4 text-yellow-400" />
               Explore the streets
             </div>
-            <h1 className="mt-8 text-5xl leading-[0.9] font-black tracking-[-0.06em] text-black sm:text-6xl md:text-8xl lg:text-9xl">
+            <h1 className="mt-6 sm:mt-8 text-[2.2rem] xs:text-4xl leading-[1.0] sm:leading-[0.9] font-black tracking-[-0.06em] text-black sm:text-6xl md:text-8xl lg:text-9xl">
               FIND YOUR
               <br />
-              <span className="relative inline-block mt-2 text-primary drop-shadow-[4px_4px_0px_rgba(0,0,0,1)]">
+              <span className="relative inline-block mt-2 text-primary drop-shadow-[2px_2px_0px_rgba(0,0,0,1)] sm:drop-shadow-[4px_4px_0px_rgba(0,0,0,1)]">
                 NEXT BITE
               </span>
             </h1>
-            <p className="mx-auto mt-8 max-w-2xl text-lg font-bold leading-8 text-black/72 md:text-2xl">
+            <p className="mx-auto mt-4 sm:mt-8 max-w-2xl text-xs xs:text-sm sm:text-lg md:text-2xl font-bold leading-relaxed sm:leading-8 text-black/72">
               Search with intent, sort by what matters, and keep the best nearby vendors in view without losing the street-food energy.
             </p>
-            <div className="mt-10 flex justify-center">
+            <div className="mt-6 sm:mt-10 flex justify-center px-2">
               <Button
                 variant="outline"
                 size="lg"
                 onClick={() => router.push('/recommend')}
-                className="group h-16 w-full max-w-md rounded-[2rem] border-4 border-black bg-yellow-300 text-lg font-black uppercase tracking-wider text-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all hover:-translate-y-1 hover:bg-black hover:text-white"
+                className="group h-11 sm:h-16 w-full max-w-md rounded-xl sm:rounded-[2rem] border-[2.5px] sm:border-4 border-black bg-yellow-300 text-xs sm:text-lg font-black uppercase tracking-wider text-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all hover:-translate-y-0.5 hover:bg-black hover:text-white"
               >
-                <Flame className="mr-3 h-6 w-6 text-orange-500 group-hover:animate-pulse" />
+                <Flame className="mr-1.5 sm:mr-3 h-4 w-4 sm:h-6 sm:w-6 text-orange-500 group-hover:animate-pulse" />
                 Can't decide? Try the AI Quiz
               </Button>
             </div>
@@ -286,19 +287,19 @@ function ExplorePageContent() {
         </div>
       </section>
 
-      <section className="-mt-8 px-4 pb-10 md:-mt-10 md:px-6">
+      <section className="-mt-6 sm:-mt-10 px-3 sm:px-6 pb-10">
         <div className="mx-auto max-w-7xl">
-          <div className="rounded-[2rem] border-4 border-black bg-[#fff8ef] p-4 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] md:p-5">
+          <div className="rounded-2xl sm:rounded-[2rem] border-[2.5px] sm:border-4 border-black bg-[#fff8ef] p-3 sm:p-5 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
             <Form
               action={pathname}
               onSubmit={() => {
                 setViewMode('list')
                 resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
               }}
-              className="flex flex-col gap-3 lg:flex-row lg:items-center"
+              className="flex flex-col gap-2.5 sm:gap-3 lg:flex-row lg:items-center"
             >
               <div className="relative flex-1">
-                <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-black/45" />
+                <Search className="pointer-events-none absolute left-2.5 sm:left-4 top-1/2 h-4 w-4 sm:h-5 sm:w-5 -translate-y-1/2 text-black/45" />
                 <Input
                   name="q"
                   placeholder="Search vendors, cuisines, or tags"
@@ -311,7 +312,7 @@ function ExplorePageContent() {
                       replaceExploreQuery({ q: undefined })
                     }
                   }}
-                  className="h-13 rounded-2xl border-4 border-black bg-white pl-12 pr-11 text-base font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                  className="h-11 sm:h-13 rounded-xl sm:rounded-2xl border-2 sm:border-4 border-black bg-white pl-8 sm:pl-12 pr-8 sm:pr-11 text-xs sm:text-base font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
                 />
                 <input type="hidden" name="cuisine" value={selectedCuisine === 'all' ? '' : selectedCuisine} />
                 <input type="hidden" name="filter" value={selectedQuickFilter === 'all' ? '' : selectedQuickFilter} />
@@ -325,16 +326,16 @@ function ExplorePageContent() {
                       setSearchTerm('')
                       replaceExploreQuery({ q: undefined })
                     }}
-                    className="absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-black/45 hover:bg-black/5 hover:text-black"
+                    className="absolute right-2 sm:right-3 top-1/2 flex h-7 w-7 sm:h-8 sm:w-8 -translate-y-1/2 items-center justify-center rounded-full text-black/45 hover:bg-black/5 hover:text-black"
                     aria-label="Clear search"
                   >
-                    <X className="h-4 w-4" />
+                    <X className="h-3.5 w-3.5" />
                   </button>
                 ) : null}
               </div>
 
-              <div className="flex flex-col gap-3 sm:flex-row">
-                <Button type="submit" size="lg" className="h-13 rounded-2xl border-4 border-black bg-black px-6 font-black uppercase tracking-[0.14em] text-white shadow-[4px_4px_0px_0px_rgba(249,115,22,1)] hover:bg-primary">
+              <div className="flex flex-row gap-2 w-full lg:w-auto items-center justify-between sm:justify-start">
+                <Button type="submit" size="lg" className="h-11 sm:h-13 rounded-xl sm:rounded-2xl border-2 sm:border-4 border-black bg-black px-4 sm:px-6 text-xs sm:text-sm font-black uppercase tracking-[0.14em] text-white shadow-[2px_2px_0px_0px_var(--primary)] sm:shadow-[4px_4px_0px_0px_var(--primary)] hover:bg-primary flex-1 sm:flex-initial shrink-0 hover:translate-y-[-2px] active:translate-y-[2px] active:shadow-none transition-all">
                   Search
                 </Button>
                 <MapListToggle
@@ -347,33 +348,33 @@ function ExplorePageContent() {
               </div>
             </Form>
 
-            <div className="mt-4 flex flex-col gap-4 border-t-2 border-black/15 pt-4">
-              <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-black/55">
-                  <MapPin className="h-4 w-4 text-primary" />
+            <div className="mt-3.5 flex flex-col gap-3.5 border-t-2 border-black/15 pt-3.5">
+              <div className="flex flex-col gap-2.5 lg:flex-row lg:items-center lg:justify-between">
+                <div className="flex items-center gap-1.5 text-[9px] xs:text-xs font-bold uppercase tracking-[0.16em] text-black/60">
+                  <MapPin className="h-3.5 w-3.5 text-primary" />
                   {locationSummary}
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                   <button
                     type="button"
                     onClick={() => setShowAdvancedFilters((value) => !value)}
-                    className="inline-flex items-center gap-2 rounded-full border-2 border-black bg-white px-4 py-2 text-xs font-black uppercase tracking-[0.16em] text-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-transform hover:-translate-y-0.5"
+                    className="inline-flex items-center gap-1.5 rounded-full border-2 border-black bg-white px-3 py-1.5 sm:px-4 sm:py-2 text-[10px] xs:text-xs font-black uppercase tracking-[0.16em] text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all hover:-translate-y-0.5 active:translate-y-[2px] active:translate-x-[2px] active:shadow-none"
                   >
-                    <SlidersHorizontal className="h-4 w-4" />
+                    <SlidersHorizontal className="h-3.5 w-3.5" />
                     {showAdvancedFilters ? 'Hide filters' : 'Filters'}
                     {activeFilterCount > 0 ? (
-                      <span className="inline-flex min-w-6 items-center justify-center rounded-full bg-yellow-300 px-1.5 py-0.5 text-[0.65rem] text-black">
+                      <span className="inline-flex min-w-5 h-5 items-center justify-center rounded-full bg-yellow-300 px-1 py-0.5 text-[0.6rem] text-black font-black">
                         {activeFilterCount}
                       </span>
                     ) : null}
-                    <ChevronDown className={`h-4 w-4 transition-transform ${showAdvancedFilters ? 'rotate-180' : ''}`} />
+                    <ChevronDown className={`h-3.5 w-3.5 transition-transform ${showAdvancedFilters ? 'rotate-180' : ''}`} />
                   </button>
 
-                  <div className="flex items-center gap-2 rounded-full border-2 border-black bg-white px-3 py-2 text-xs font-black uppercase tracking-[0.16em] text-black/55">
-                    <ArrowUpDown className="h-4 w-4" />
+                  <div className="flex items-center gap-1 sm:gap-1.5 rounded-full border-2 border-black bg-white px-2.5 py-1 sm:px-3 sm:py-2 text-[10px] xs:text-xs font-black uppercase tracking-[0.16em] text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all hover:-translate-y-0.5 active:translate-y-[2px] active:translate-x-[2px] active:shadow-none">
+                    <ArrowUpDown className="h-3.5 w-3.5 text-black" />
                     <select
-                      className="bg-transparent text-xs font-black uppercase tracking-[0.16em] text-black/70 outline-none"
+                      className="bg-transparent text-[10px] xs:text-xs font-black uppercase tracking-[0.16em] text-black outline-none cursor-pointer"
                       value={selectedSort}
                       onChange={(event) => {
                         const nextSort = event.target.value as SortMode
@@ -382,7 +383,7 @@ function ExplorePageContent() {
                       }}
                     >
                       {SORT_OPTIONS.map((option) => (
-                        <option key={option.id} value={option.id}>
+                        <option key={option.id} value={option.id} className="bg-white text-black font-semibold">
                           {option.label}
                         </option>
                       ))}
@@ -394,7 +395,7 @@ function ExplorePageContent() {
                       type="button"
                       variant="outline"
                       onClick={handleResetFilters}
-                      className="h-10 rounded-full border-2 border-black px-4 text-[0.68rem] font-black uppercase tracking-[0.16em]"
+                      className="h-8 sm:h-10 rounded-full border-2 border-black px-3 sm:px-4 text-[9px] xs:text-[10px] sm:text-[0.68rem] font-black uppercase tracking-[0.16em] shadow-[1.5px_1.5px_0px_0px_rgba(0,0,0,1)] sm:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all hover:-translate-y-0.5 active:translate-y-[2px] active:translate-x-[2px] active:shadow-none"
                     >
                       Reset
                     </Button>
@@ -403,14 +404,14 @@ function ExplorePageContent() {
               </div>
 
               {showAdvancedFilters ? (
-                <div className="rounded-[1.5rem] border-2 border-black/15 bg-white/70 p-4 md:p-5">
-                  <div className="flex flex-col gap-4">
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2 text-[0.68rem] font-black uppercase tracking-[0.18em] text-black/55">
-                        <ArrowUpDown className="h-4 w-4" />
+                <div className="rounded-xl sm:rounded-2xl border-2 sm:border-3 border-black bg-white p-3.5 sm:p-5 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all">
+                  <div className="flex flex-col gap-3.5">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-1.5 text-[0.62rem] sm:text-[0.68rem] font-black uppercase tracking-[0.18em] text-black/70">
+                        <ArrowUpDown className="h-3.5 w-3.5" />
                         Sort by
                       </div>
-                      <div className="flex gap-2 overflow-x-auto pb-1">
+                      <div className="flex gap-1.5 overflow-x-auto pb-1.5 scrollbar-none snap-x">
                         {SORT_OPTIONS.map((option) => (
                           <button
                             key={option.id}
@@ -419,10 +420,10 @@ function ExplorePageContent() {
                               setSelectedSort(option.id)
                               replaceExploreQuery({ sort: option.id })
                             }}
-                            className={`rounded-full border px-4 py-2 text-xs font-black uppercase tracking-[0.16em] transition-all ${
+                            className={`rounded-full px-3 py-1 sm:px-4 sm:py-2 text-[9px] xs:text-xs font-black uppercase tracking-[0.16em] transition-all shrink-0 whitespace-nowrap snap-center ${
                               selectedSort === option.id
-                                ? 'border-2 border-black bg-black text-white shadow-[3px_3px_0px_0px_rgba(249,115,22,1)]'
-                                : 'border-2 border-black bg-white text-black/60 hover:bg-yellow-100 hover:text-black'
+                                ? 'border-2 border-black bg-black text-white shadow-[2px_2px_0px_0px_var(--primary)] sm:shadow-[3px_3px_0px_0px_var(--primary)]'
+                                : 'border-2 border-black bg-white text-black/70 hover:bg-orange-50 hover:text-black hover:shadow-[1.5px_1.5px_0px_0px_rgba(0,0,0,1)] sm:hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[-1px] active:translate-y-[1px] active:translate-x-[1px] active:shadow-none'
                             }`}
                           >
                             {option.label}
@@ -431,12 +432,12 @@ function ExplorePageContent() {
                       </div>
                     </div>
 
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2 text-[0.68rem] font-black uppercase tracking-[0.18em] text-black/55">
-                        <Flame className="h-4 w-4" />
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-1.5 text-[0.62rem] sm:text-[0.68rem] font-black uppercase tracking-[0.18em] text-black/70">
+                        <Flame className="h-3.5 w-3.5" />
                         Quick filters
                       </div>
-                      <div className="flex gap-2 overflow-x-auto pb-1">
+                      <div className="flex gap-1.5 overflow-x-auto pb-1.5 scrollbar-none snap-x">
                         {QUICK_FILTERS.map((filter) => (
                           <button
                             key={filter.id}
@@ -445,10 +446,10 @@ function ExplorePageContent() {
                               setSelectedQuickFilter(filter.id)
                               replaceExploreQuery({ filter: filter.id })
                             }}
-                            className={`rounded-full border px-4 py-2 text-xs font-black uppercase tracking-[0.16em] transition-all ${
+                            className={`rounded-full px-3 py-1 sm:px-4 sm:py-2 text-[9px] xs:text-xs font-black uppercase tracking-[0.16em] transition-all shrink-0 whitespace-nowrap snap-center ${
                               selectedQuickFilter === filter.id
-                                ? 'border-2 border-black bg-yellow-300 text-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]'
-                                : 'border-2 border-black bg-white text-black/60 hover:bg-yellow-100'
+                                ? 'border-2 border-black bg-yellow-300 text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]'
+                                : 'border-2 border-black bg-white text-black/70 hover:bg-orange-50 hover:text-black hover:shadow-[1.5px_1.5px_0px_0px_rgba(0,0,0,1)] sm:hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[-1px] active:translate-y-[1px] active:translate-x-[1px] active:shadow-none'
                             }`}
                           >
                             {filter.label}
@@ -457,12 +458,12 @@ function ExplorePageContent() {
                       </div>
                     </div>
 
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2 text-[0.68rem] font-black uppercase tracking-[0.18em] text-black/55">
-                        <Sparkles className="h-4 w-4" />
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-1.5 text-[0.62rem] sm:text-[0.68rem] font-black uppercase tracking-[0.18em] text-black/70">
+                        <Sparkles className="h-3.5 w-3.5" />
                         Cuisines
                       </div>
-                      <div className="flex gap-2 overflow-x-auto pb-1">
+                      <div className="flex gap-1.5 overflow-x-auto pb-1.5 scrollbar-none snap-x">
                         {cuisineFilters.map((filter) => (
                           <button
                             key={filter}
@@ -471,10 +472,10 @@ function ExplorePageContent() {
                               setSelectedCuisine(filter)
                               replaceExploreQuery({ cuisine: filter })
                             }}
-                            className={`rounded-full border px-4 py-2 text-xs font-black uppercase tracking-[0.16em] transition-all ${
+                            className={`rounded-full px-3 py-1 sm:px-4 sm:py-2 text-[9px] xs:text-xs font-black uppercase tracking-[0.16em] transition-all shrink-0 whitespace-nowrap snap-center ${
                               selectedCuisine === filter
-                                ? 'border-2 border-black bg-black text-yellow-300 shadow-[3px_3px_0px_0px_rgba(251,191,36,1)]'
-                                : 'border-2 border-black bg-white text-black/55 hover:bg-white hover:text-black'
+                                ? 'border-2 border-black bg-black text-yellow-300 shadow-[2px_2px_0px_0px_rgba(251,191,36,1)] sm:shadow-[3px_3px_0px_0px_rgba(251,191,36,1)]'
+                                : 'border-2 border-black bg-white text-black/70 hover:bg-orange-50 hover:text-black hover:shadow-[1.5px_1.5px_0px_0px_rgba(0,0,0,1)] sm:hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[-1px] active:translate-y-[1px] active:translate-x-[1px] active:shadow-none'
                             }`}
                           >
                             {filter === 'all' ? 'All cuisines' : filter}
@@ -490,25 +491,25 @@ function ExplorePageContent() {
         </div>
       </section>
 
-      <section ref={resultsRef} className="px-4 pb-32 md:px-6">
+      <section ref={resultsRef} className="px-3 sm:px-6 pb-24 sm:pb-32">
         <div className="mx-auto max-w-7xl">
           {showFavoritesPreview ? (
-            <div className="mb-14">
-              <div className="mb-8 flex items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                  <div className="rounded-2xl bg-red-500 p-3 text-white shadow-[var(--shadow-soft)]">
-                    <Heart className="h-6 w-6 fill-white" />
+            <div className="mb-10 sm:mb-14">
+              <div className="mb-6 sm:mb-8 flex items-center justify-between gap-4">
+                <div className="flex items-center gap-2.5 sm:gap-4">
+                  <div className="rounded-xl sm:rounded-2xl bg-red-500 p-1.5 sm:p-3 text-white shadow-[var(--shadow-soft)] shrink-0">
+                    <Heart className="h-4.5 w-4.5 sm:h-6 sm:w-6 fill-white" />
                   </div>
                   <div>
-                    <h2 className="text-3xl font-black text-black">Your favorites</h2>
-                    <p className="mt-1 text-sm font-semibold uppercase tracking-[0.14em] text-black/55">
+                    <h2 className="text-xl xs:text-2xl sm:text-3xl font-black text-black leading-tight">Your favorites</h2>
+                    <p className="mt-0.5 sm:mt-1 text-[9px] xs:text-xs sm:text-sm font-semibold uppercase tracking-[0.12em] sm:tracking-[0.14em] text-black/55 leading-tight">
                       Quick access to the stalls you keep coming back to
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+              <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 xl:grid-cols-4">
                 {favoritesPreview.map((vendor, index) => (
                   <div key={vendor.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.06}s` }}>
                     <VendorCard
@@ -531,15 +532,15 @@ function ExplorePageContent() {
             </div>
           ) : null}
 
-          <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+          <div className="mb-6 sm:mb-8 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
             <div>
-              <h2 className="text-3xl font-black text-black md:text-4xl">
+              <h2 className="text-xl xs:text-2xl sm:text-3xl font-black text-black md:text-4xl flex flex-wrap items-center gap-1.5 sm:gap-2 leading-tight">
                 Top spots
-                <span className="ml-3 rounded-full border-2 border-black bg-black px-3 py-1 text-xs font-black uppercase tracking-[0.18em] text-white shadow-[3px_3px_0px_0px_rgba(251,191,36,1)]">
+                <span className="rounded-full border-2 border-black bg-black px-2 py-0.5 text-[0.62rem] xs:text-[0.68rem] sm:text-xs font-black uppercase tracking-[0.14em] sm:tracking-[0.18em] text-white shadow-[1.5px_1.5px_0px_0px_rgba(251,191,36,1)] sm:shadow-[3px_3px_0px_0px_rgba(251,191,36,1)] inline-flex items-center shrink-0">
                   {sortedVendors.length} results
                 </span>
               </h2>
-              <p className="mt-2 text-sm font-semibold uppercase tracking-[0.14em] text-black/55">
+              <p className="mt-1 sm:mt-2 text-[10px] xs:text-xs sm:text-sm font-semibold uppercase tracking-[0.12em] sm:tracking-[0.14em] text-black/55 leading-tight">
                 {selectedSort === 'recommended'
                   ? 'Balanced by favorites, open status, rating, and proof'
                   : `Sorted by ${selectedSort.replace('-', ' ')}`}
@@ -551,7 +552,7 @@ function ExplorePageContent() {
                 type="button"
                 variant="outline"
                 onClick={handleResetFilters}
-                className="h-11 rounded-full px-5 text-xs font-black uppercase tracking-[0.16em]"
+                className="h-9 rounded-full px-4 text-xs font-black uppercase tracking-[0.16em]"
               >
                 Reset filters
               </Button>
@@ -563,13 +564,9 @@ function ExplorePageContent() {
               <VendorMap vendors={sortedVendors} onVendorSelect={(vendor) => setSelectedVendor(vendor as ExploreVendor)} />
             </div>
           ) : loadingVendors ? (
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+            <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 xl:grid-cols-4">
               {Array.from({ length: 8 }).map((_, index) => (
-                <div
-                  key={index}
-                  className="h-80 rounded-[1.75rem] border border-black/8 bg-white/60 animate-pulse"
-                  style={{ animationDelay: `${index * 0.08}s` }}
-                />
+                <VendorCardSkeleton key={index} />
               ))}
             </div>
           ) : sortedVendors.length === 0 ? (
@@ -593,7 +590,7 @@ function ExplorePageContent() {
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+            <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 xl:grid-cols-4">
               {sortedVendors.map((vendor, index) => (
                 <div
                   key={vendor.id}
