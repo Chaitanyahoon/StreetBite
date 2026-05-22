@@ -136,59 +136,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      let result
-      try {
-        result = await signInWithPopup(auth, googleProvider)
-      } catch (popupErr: any) {
-        console.warn('Google Sign-In popup failed, trying redirect fallback...', popupErr)
-        
-        const isPopupIssue = popupErr.code === 'auth/popup-blocked' || 
-                             popupErr.code === 'auth/popup-closed-by-user' || 
-                             popupErr.code === 'auth/cancelled-popup-request' ||
-                             (popupErr.message && popupErr.message.toLowerCase().includes('popup'))
-                             
-        if (isPopupIssue) {
-          await signInWithRedirect(auth, googleProvider)
-          return { success: true, redirecting: true }
-        }
-        
-        throw popupErr
-      }
-
-      const token = await result.user.getIdToken()
-      const response = await authApi.firebaseLogin(token)
-
-      // Verify the cookie-backed session actually persisted before treating login as successful.
-      let userData = response.user as AuthUser
-
-      try {
-        const me = await authApi.me()
-        userData = me as AuthUser
-      } catch (meError: any) {
-        setUser(null)
-        const sessionError =
-          meError?.response?.status === 401
-            ? 'Please allow cookies for StreetBite and try signing in again.'
-            : 'Please allow cookies and try signing in again.'
-
-        return { success: false, error: sessionError }
-      }
-
-      setUser(userData)
-
-      // Notify other components (e.g. Navbar in other tabs)
-      window.dispatchEvent(new Event('user-updated'))
-
-      return { success: true, user: userData }
+      // Directly use redirect sign-in to completely bypass cross-origin iframe blocks and popup hangs
+      await signInWithRedirect(auth, googleProvider)
+      return { success: true, redirecting: true }
     } catch (err: any) {
-      console.error('Google Sign-In error:', err)
+      console.error('Google Sign-In redirect error:', err)
       
       let errorMessage = 'Google Sign-In failed.'
-      if (err.code === 'auth/popup-blocked') {
-        errorMessage = 'Sign-in popup was blocked by your browser. Please allow popups and try again.'
-      } else if (err.code === 'auth/popup-closed-by-user') {
-        errorMessage = 'Sign-in window was closed before completing authentication.'
-      } else if (err.code === 'auth/configuration-not-found' || err.code === 'auth/operation-not-allowed') {
+      if (err.code === 'auth/configuration-not-found' || err.code === 'auth/operation-not-allowed') {
         errorMessage = 'Google Sign-In is not enabled for your Firebase project. Please enable "Google" under Build > Authentication > Sign-in method in your Firebase Console.'
       } else if (err.code === 'auth/unauthorized-domain') {
         errorMessage = 'This domain is not authorized for OAuth sign-in. Please add this domain to the Authorized Domains list in Firebase Console > Authentication > Settings.'
