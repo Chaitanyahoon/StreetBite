@@ -3,7 +3,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react'
 import { authApi, type AuthUser } from '@/lib/api'
 import { auth, googleProvider } from '@/lib/firebase-client'
-import { signInWithPopup } from 'firebase/auth'
+import { signInWithPopup, signInWithRedirect, getRedirectResult } from 'firebase/auth'
 
 interface LoginResult {
   success: boolean
@@ -11,6 +11,7 @@ interface LoginResult {
   user?: AuthUser
   requiresEmailVerification?: boolean
   email?: string
+  redirecting?: boolean
 }
 
 interface AuthContextType {
@@ -41,9 +42,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  // On mount, check if user is authenticated via cookie
+  // On mount, check if user is authenticated via cookie or redirect result
   useEffect(() => {
-    refreshUser()
+    const handleRedirectAuth = async () => {
+      try {
+        if (!auth) {
+          await refreshUser()
+          return
+        }
+
+        // Check if there is a pending redirect sign-in result
+        const result = await getRedirectResult(auth)
+        if (result) {
+          setIsLoading(true)
+          const token = await result.user.getIdToken()
+          const response = await authApi.firebaseLogin(token)
+          let userData = response.user as AuthUser
+
+          try {
+            const me = await authApi.me()
+            userData = me as AuthUser
+          } catch (meError) {
+            console.error('Failed to verify session after redirect login:', meError)
+          }
+
+          setUser(userData)
+          window.dispatchEvent(new Event('user-updated'))
+          setIsLoading(false)
+        } else {
+          // If no redirect result, fall back to current cookie session
+          await refreshUser()
+        }
+      } catch (err) {
+        console.error('Error handling redirect auth:', err)
+        // Fall back to current cookie session if redirect check fails
+        await refreshUser()
+      }
+    }
+
+    handleRedirectAuth()
   }, [refreshUser])
 
   const login = useCallback(async (email: string, password: string) => {
@@ -99,9 +136,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      const result = await signInWithPopup(auth, googleProvider)
-      const token = await result.user.getIdToken()
+      let result
+      try {
+        result = await signInWithPopup(auth, googleProvider)
+      } catch (popupErr: any) {
+        console.warn('Google Sign-In popup failed, trying redirect fallback...', popupErr)
+        
+        const isPopupIssue = popupErr.code === 'auth/popup-blocked' || 
+                             popupErr.code === 'auth/popup-closed-by-user' || 
+                             popupErr.code === 'auth/cancelled-popup-request' ||
+                             (popupErr.message && popupErr.message.toLowerCase().includes('popup'))
+                             
+        if (isPopupIssue) {
+          await signInWithRedirect(auth, googleProvider)
+          return { success: true, redirecting: true }
+        }
+        
+        throw popupErr
+      }
 
+      const token = await result.user.getIdToken()
       const response = await authApi.firebaseLogin(token)
 
       // Verify the cookie-backed session actually persisted before treating login as successful.

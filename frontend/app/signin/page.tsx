@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useState } from 'react'
+import { Suspense, useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Logo } from '@/components/logo'
@@ -13,7 +13,7 @@ import { motion } from 'framer-motion'
 function SignInContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { login, loginWithGoogle } = useAuth()
+  const { user, isLoading: authLoading, login, loginWithGoogle } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -26,6 +26,26 @@ function SignInContent() {
   const [resetEmail, setResetEmail] = useState('')
   const [resetStatus, setResetStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
   const [resetError, setResetError] = useState<string | null>(null)
+
+  // Auto-route user to dashboard if they are already logged in
+  useEffect(() => {
+    if (!authLoading && user) {
+      const nextPath = searchParams.get('next')
+      if (nextPath && nextPath.startsWith('/')) {
+        router.push(nextPath)
+        return
+      }
+
+      const role = user.role?.toUpperCase()
+      if (role === 'VENDOR') {
+        router.push('/vendor')
+      } else if (role === 'ADMIN') {
+        router.push('/admin')
+      } else {
+        router.push('/explore')
+      }
+    }
+  }, [user, authLoading, router, searchParams])
 
   const performLogin = async (emailInput: string, passwordInput: string) => {
     setIsLoading(true)
@@ -66,21 +86,28 @@ function SignInContent() {
     setError(null)
     try {
       const result = await loginWithGoogle()
-      if (result.success && result.user) {
-        const nextPath = searchParams.get('next')
-        if (nextPath && nextPath.startsWith('/')) {
-          router.push(nextPath)
+      if (result.success) {
+        if (result.redirecting) {
+          // Google Sign-In is redirecting. Keep loading state active as the browser navigates away.
           return
         }
 
-        // Redirect based on user role
-        const role = result.user.role?.toUpperCase()
-        if (role === 'VENDOR') {
-          router.push('/vendor')
-        } else if (role === 'ADMIN') {
-          router.push('/admin')
-        } else {
-          router.push('/explore')
+        if (result.user) {
+          const nextPath = searchParams.get('next')
+          if (nextPath && nextPath.startsWith('/')) {
+            router.push(nextPath)
+            return
+          }
+
+          // Redirect based on user role
+          const role = result.user.role?.toUpperCase()
+          if (role === 'VENDOR') {
+            router.push('/vendor')
+          } else if (role === 'ADMIN') {
+            router.push('/admin')
+          } else {
+            router.push('/explore')
+          }
         }
       } else {
         setError(result.error || 'Google Sign-In failed.')
@@ -283,13 +310,18 @@ function SignInContent() {
                 <button
                   type="button"
                   onClick={handleGoogleSignIn}
-                  disabled={isLoading || isGoogleLoading}
+                  disabled={isLoading || isGoogleLoading || authLoading}
                   className="w-full h-11 sm:h-14 bg-white hover:bg-yellow-50 text-black rounded-lg sm:rounded-xl border-3 sm:border-4 border-black font-black text-sm sm:text-base flex items-center justify-center gap-2.5 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-70 disabled:hover:translate-y-0"
                 >
                   {isGoogleLoading ? (
                     <span className="flex items-center gap-2">
                       <span className="animate-spin rounded-full h-4.5 w-4.5 border-3 border-black border-t-transparent" />
                       CONNECTING...
+                    </span>
+                  ) : authLoading ? (
+                    <span className="flex items-center gap-2">
+                      <span className="animate-spin rounded-full h-4.5 w-4.5 border-3 border-black border-t-transparent" />
+                      AUTHORIZING...
                     </span>
                   ) : (
                     <>
