@@ -3,7 +3,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react'
 import { authApi, type AuthUser } from '@/lib/api'
 import { auth, googleProvider } from '@/lib/firebase-client'
-import { signInWithPopup, signInWithRedirect, getRedirectResult } from 'firebase/auth'
+import { signInWithPopup } from 'firebase/auth'
 
 interface LoginResult {
   success: boolean
@@ -42,45 +42,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  // On mount, check if user is authenticated via cookie or redirect result
+  // On mount, check if user is authenticated via existing cookie session
   useEffect(() => {
-    const handleRedirectAuth = async () => {
-      try {
-        if (!auth) {
-          await refreshUser()
-          return
-        }
-
-        // Check if there is a pending redirect sign-in result
-        const result = await getRedirectResult(auth)
-        if (result) {
-          setIsLoading(true)
-          const token = await result.user.getIdToken()
-          const response = await authApi.firebaseLogin(token)
-          let userData = response.user as AuthUser
-
-          try {
-            const me = await authApi.me()
-            userData = me as AuthUser
-          } catch (meError) {
-            console.error('Failed to verify session after redirect login:', meError)
-          }
-
-          setUser(userData)
-          window.dispatchEvent(new Event('user-updated'))
-          setIsLoading(false)
-        } else {
-          // If no redirect result, fall back to current cookie session
-          await refreshUser()
-        }
-      } catch (err) {
-        console.error('Error handling redirect auth:', err)
-        // Fall back to current cookie session if redirect check fails
-        await refreshUser()
-      }
-    }
-
-    handleRedirectAuth()
+    refreshUser()
   }, [refreshUser])
 
   const login = useCallback(async (email: string, password: string) => {
@@ -127,7 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const loginWithGoogle = useCallback(async () => {
+  const loginWithGoogle = useCallback(async (): Promise<LoginResult> => {
     try {
       if (!auth || !googleProvider) {
         return {
@@ -136,17 +100,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      // Directly use redirect sign-in to completely bypass cross-origin iframe blocks and popup hangs
-      await signInWithRedirect(auth, googleProvider)
-      return { success: true, redirecting: true }
+      // Use popup sign-in. With authDomain set to our own Vercel domain and
+      // all /__/* paths proxied to Firebase, the popup runs on the same origin
+      // — no cross-origin iframe blocks, no INVALID_SESSION_ID errors.
+      const result = await signInWithPopup(auth, googleProvider)
+
+      const token = await result.user.getIdToken()
+      const response = await authApi.firebaseLogin(token)
+
+      let userData = response.user as AuthUser
+
+      try {
+        const me = await authApi.me()
+        userData = me as AuthUser
+      } catch (meError) {
+        console.error('Failed to verify session after Google login:', meError)
+      }
+
+      setUser(userData)
+      window.dispatchEvent(new Event('user-updated'))
+
+      return { success: true, user: userData }
     } catch (err: any) {
-      console.error('Google Sign-In redirect error:', err)
+      console.error('Google Sign-In error:', err)
       
       let errorMessage = 'Google Sign-In failed.'
-      if (err.code === 'auth/configuration-not-found' || err.code === 'auth/operation-not-allowed') {
-        errorMessage = 'Google Sign-In is not enabled for your Firebase project. Please enable "Google" under Build > Authentication > Sign-in method in your Firebase Console.'
+      if (err.code === 'auth/popup-closed-by-user') {
+        errorMessage = 'Sign-in window was closed. Please try again.'
+      } else if (err.code === 'auth/popup-blocked') {
+        errorMessage = 'Sign-in popup was blocked by your browser. Please allow popups and try again.'
+      } else if (err.code === 'auth/configuration-not-found' || err.code === 'auth/operation-not-allowed') {
+        errorMessage = 'Google Sign-In is not enabled for your Firebase project.'
       } else if (err.code === 'auth/unauthorized-domain') {
-        errorMessage = 'This domain is not authorized for OAuth sign-in. Please add this domain to the Authorized Domains list in Firebase Console > Authentication > Settings.'
+        errorMessage = 'This domain is not authorized for OAuth sign-in.'
       } else if (err.response?.data?.error) {
         errorMessage = err.response.data.error
       } else if (err.message) {
