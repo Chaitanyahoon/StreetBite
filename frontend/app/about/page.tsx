@@ -176,10 +176,14 @@ export default function AboutPage() {
             whileInView="visible"
             viewport={{ once: true, amount: 0.2 }}
             variants={staggerContainer}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 xs:gap-6 sm:gap-8"
+            className="flex md:grid overflow-x-auto md:overflow-x-visible snap-x snap-mandatory no-scrollbar gap-5 pb-6 md:pb-0 -mx-4 px-4 md:mx-0 md:px-0 md:grid-cols-2 lg:grid-cols-4"
           >
             {teamMembers.map((member, idx) => (
-              <motion.div variants={fadeInUp} key={idx} className="hover:-translate-y-2 transition-transform duration-300 max-w-[340px] sm:max-w-none mx-auto w-full">
+              <motion.div
+                variants={fadeInUp}
+                key={idx}
+                className="shrink-0 w-[280px] xs:w-[320px] sm:w-[340px] md:w-auto snap-center hover:-translate-y-2 transition-transform duration-300"
+              >
                 <TeamCard member={member} />
               </motion.div>
             ))}
