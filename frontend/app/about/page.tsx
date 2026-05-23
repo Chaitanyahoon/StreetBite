@@ -248,7 +248,7 @@ export default function AboutPage() {
       </section>
 
       {/* MERGED CTA + IMPACT SECTION */}
-      <section className="py-24 px-4 bg-black text-white overflow-hidden relative border-t-4 border-black">
+      <section className="py-12 md:py-24 px-4 bg-black text-white overflow-hidden relative border-t-4 border-black">
         <div className="absolute inset-0 bg-[radial-gradient(#333_1px,transparent_1px)] [background-size:20px_20px] opacity-30"></div>
 
         <motion.div
@@ -258,43 +258,43 @@ export default function AboutPage() {
           variants={fadeInUp}
           className="max-w-7xl mx-auto relative z-10"
         >
-          <div className="text-center mb-16">
-            <div className="inline-block px-6 py-2 rounded-full bg-white/10 text-yellow-400 border-2 border-yellow-400/50 font-bold mb-8 animate-pulse">
+          <div className="text-center mb-8 md:mb-16">
+            <div className="inline-block px-4 py-1.5 md:px-6 md:py-2 rounded-full bg-white/10 text-yellow-400 border-2 border-yellow-400/50 text-xs md:text-sm font-bold mb-4 md:mb-8 animate-pulse">
               JOIN THE REVOLUTION
             </div>
-            <h2 className="text-5xl md:text-8xl font-black mb-8 leading-[0.9] tracking-tighter">
+            <h2 className="text-3xl sm:text-5xl md:text-8xl font-black mb-4 md:mb-8 leading-[0.9] tracking-tighter">
               Ready to <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">Eat the Street?</span>
             </h2>
-            <p className="text-2xl mb-12 font-bold text-gray-400 max-w-2xl mx-auto">
+            <p className="text-sm sm:text-lg md:text-2xl mb-6 md:mb-12 font-bold text-gray-400 max-w-2xl mx-auto">
               Don't just read about the food revolution. Be a part of it.
             </p>
           </div>
 
           {/* Integrated Impact Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 mb-8 md:mb-16">
             {[
               { number: 2000, suffix: '+', label: 'Street Vendors' },
               { number: 50000, suffix: '+', label: 'Food Lovers' },
               { number: 25, suffix: '+', label: 'Cities' },
               { number: 100000, suffix: '+', label: 'Meals Discovered' },
             ].map((stat, idx) => (
-              <div key={idx} className="text-center p-6 rounded-2xl bg-white/5 border-2 border-white/10 backdrop-blur-md hover:bg-white/10 transition-all hover:-translate-y-1">
-                <div className="text-4xl md:text-5xl font-black text-yellow-400 mb-2">
+              <div key={idx} className="text-center p-3 md:p-6 rounded-xl md:rounded-2xl bg-white/5 border border-white/10 md:border-2 md:border-white/10 backdrop-blur-md hover:bg-white/10 transition-all hover:-translate-y-0.5 md:hover:-translate-y-1">
+                <div className="text-xl sm:text-3xl md:text-5xl font-black text-yellow-400 mb-1 md:mb-2">
                   <Counter value={stat.number} suffix={stat.suffix} />
                 </div>
-                <p className="text-gray-300 font-bold uppercase tracking-wider text-sm">{stat.label}</p>
+                <p className="text-gray-300 font-bold uppercase tracking-wider text-[9px] sm:text-xs md:text-sm">{stat.label}</p>
               </div>
             ))}
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+          <div className="flex flex-col sm:flex-row gap-3 md:gap-6 justify-center items-center">
             <Link href="/explore">
-              <Button size="lg" className="h-20 px-12 rounded-full text-2xl font-black bg-orange-500 text-white border-4 border-white hover:bg-orange-600 shadow-[0_0_40px_rgba(249,115,22,0.4)] hover:shadow-[0_0_60px_rgba(249,115,22,0.6)] transition-all transform hover:-translate-y-2 hover:scale-105">
+              <Button size="lg" className="h-12 md:h-20 px-6 md:px-12 rounded-full text-sm md:text-2xl font-black bg-orange-500 text-white border-2 md:border-4 border-white hover:bg-orange-600 shadow-[0_0_20px_rgba(249,115,22,0.3)] md:shadow-[0_0_40px_rgba(249,115,22,0.4)] hover:shadow-[0_0_30px_rgba(249,115,22,0.5)] md:hover:shadow-[0_0_60px_rgba(249,115,22,0.6)] transition-all transform hover:-translate-y-1 md:hover:-translate-y-2 hover:scale-105 active:translate-y-0">
                 Start Eating Now
               </Button>
             </Link>
             <Link href="/signup">
-              <span className="text-xl font-bold text-gray-500 hover:text-white transition-colors cursor-pointer border-b-2 border-gray-500 hover:border-white pb-1">
+              <span className="text-xs md:text-xl font-bold text-gray-500 hover:text-white transition-colors cursor-pointer border-b-2 border-gray-500 hover:border-white pb-0.5 md:pb-1">
                 Or Join as a Vendor
               </span>
             </Link>
@@ -303,47 +303,47 @@ export default function AboutPage() {
       </section>
 
       {/* MINIMALIST CONTACT SECTION */}
-      <section className="py-24 px-4 bg-[#FADFA1]">
+      <section className="py-12 md:py-24 px-4 bg-[#FADFA1]">
         <motion.div
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
           variants={fadeInUp}
-          className="max-w-5xl mx-auto bg-white rounded-[2.5rem] p-12 text-center border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]"
+          className="max-w-4xl md:max-w-5xl mx-auto bg-white rounded-2xl md:rounded-[2.5rem] p-6 md:p-12 text-center border-3 md:border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] md:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]"
         >
-          <div className="mb-10">
-            <h2 className="text-4xl font-black text-black mb-4 uppercase">Still got questions?</h2>
-            <p className="text-xl text-black/70 font-bold max-w-xl mx-auto">
+          <div className="mb-6 md:mb-10">
+            <h2 className="text-2xl md:text-4xl font-black text-black mb-2 md:mb-4 uppercase">Still got questions?</h2>
+            <p className="text-sm md:text-xl text-black/70 font-bold max-w-sm md:max-w-xl mx-auto">
               We're here to help. Whether you're a vendor looking to get listed or a foodie with a feature request.
             </p>
           </div>
 
-          <div className="flex flex-col md:flex-row items-center justify-center gap-10 mb-12">
-            <div className="flex items-center gap-4 text-left group">
-              <div className="w-16 h-16 rounded-full bg-black text-white flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(200,200,200,1)] group-hover:-translate-y-1 transition-transform">
-                <MapPin size={28} />
+          <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-10 mb-8 md:mb-12">
+            <div className="flex items-center gap-3 md:gap-4 text-left group">
+              <div className="w-10 h-10 md:w-16 md:h-16 rounded-full bg-black text-white flex items-center justify-center shadow-[2px_2px_0px_0px_rgba(200,200,200,1)] md:shadow-[4px_4px_0px_0px_rgba(200,200,200,1)] group-hover:-translate-y-0.5 md:group-hover:-translate-y-1 transition-transform border border-black">
+                <MapPin size={18} className="md:w-[28px] md:h-[28px]" />
               </div>
               <div>
-                <p className="font-black text-black text-xl uppercase">Headquarters</p>
-                <p className="text-lg font-bold text-gray-500">Nashik, Maharashtra</p>
+                <p className="font-black text-black text-sm md:text-xl uppercase leading-tight">Headquarters</p>
+                <p className="text-xs md:text-lg font-bold text-gray-500">Nashik, Maharashtra</p>
               </div>
             </div>
 
-            <div className="w-px h-16 bg-black hidden md:block opacity-20"></div>
+            <div className="w-px h-8 bg-black hidden md:block opacity-20"></div>
 
-            <div className="flex items-center gap-4 text-left group">
-              <div className="w-16 h-16 rounded-full bg-black text-white flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(200,200,200,1)] group-hover:-translate-y-1 transition-transform">
-                <Mail size={28} />
+            <div className="flex items-center gap-3 md:gap-4 text-left group">
+              <div className="w-10 h-10 md:w-16 md:h-16 rounded-full bg-black text-white flex items-center justify-center shadow-[2px_2px_0px_0px_rgba(200,200,200,1)] md:shadow-[4px_4px_0px_0px_rgba(200,200,200,1)] group-hover:-translate-y-0.5 md:group-hover:-translate-y-1 transition-transform border border-black">
+                <Mail size={18} className="md:w-[28px] md:h-[28px]" />
               </div>
               <div>
-                <p className="font-black text-black text-xl uppercase">Email Us</p>
-                <p className="text-lg font-bold text-gray-500">teamstreetbite@gmail.com</p>
+                <p className="font-black text-black text-sm md:text-xl uppercase leading-tight">Email Us</p>
+                <p className="text-xs md:text-lg font-bold text-gray-500">teamstreetbite@gmail.com</p>
               </div>
             </div>
           </div>
 
           <ContactDialog />
-          <div className="mt-8 text-sm font-bold text-gray-400 uppercase tracking-widest">
+          <div className="mt-4 md:mt-8 text-xs md:text-sm font-bold text-gray-400 uppercase tracking-widest">
             Always listening • Always hungry
           </div>
         </motion.div>
