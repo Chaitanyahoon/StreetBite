@@ -188,7 +188,7 @@ function CommunityPageContent() {
     }, [searchParams, hasInitializedUrlState])
 
     useEffect(() => {
-        if (!hasInitializedUrlState) {
+        if (!hasInitializedUrlState || pathname !== '/community') {
             return
         }
 
@@ -315,7 +315,19 @@ function CommunityPageContent() {
         } else {
             setHasLiked(false);
         }
-        setNewComment('');
+        
+        // Restore draft comment if any
+        if (typeof window !== 'undefined') {
+            const draft = sessionStorage.getItem(`sb_draft_comment_${discussion.id}`);
+            if (draft) {
+                setNewComment(draft);
+                sessionStorage.removeItem(`sb_draft_comment_${discussion.id}`);
+            } else {
+                setNewComment('');
+            }
+        } else {
+            setNewComment('');
+        }
     };
 
     const handleMapDiscussionSelect = (discussionId: Discussion['id']) => {
@@ -414,7 +426,8 @@ function CommunityPageContent() {
             toast('Please sign in to like', {
                 description: 'You need to be logged in to interact',
             });
-            setTimeout(() => router.push('/signin'), 1500);
+            const nextUrl = typeof window !== 'undefined' ? encodeURIComponent(window.location.pathname + window.location.search) : '';
+            setTimeout(() => router.push(`/signin?next=${nextUrl}`), 1500);
             return;
         }
 
@@ -477,7 +490,11 @@ function CommunityPageContent() {
             toast('Please sign in to comment', {
                 description: 'You need to be logged in to participate in discussions',
             });
-            setTimeout(() => router.push('/signin'), 1500);
+            if (typeof window !== 'undefined') {
+                sessionStorage.setItem(`sb_draft_comment_${selectedDiscussion.id}`, trimmedComment);
+            }
+            const nextUrl = typeof window !== 'undefined' ? encodeURIComponent(window.location.pathname + window.location.search) : '';
+            setTimeout(() => router.push(`/signin?next=${nextUrl}`), 1500);
             return;
         }
 
@@ -552,7 +569,8 @@ function CommunityPageContent() {
                         description: 'Redirecting to sign in...'
                     });
                     await logout();
-                    setTimeout(() => router.push('/signin'), 1500);
+                    const nextUrl = typeof window !== 'undefined' ? encodeURIComponent(window.location.pathname + window.location.search) : '';
+                    setTimeout(() => router.push(`/signin?next=${nextUrl}`), 1500);
                     return;
                 }
             } else if (error?.response?.status === 403) {
@@ -561,7 +579,8 @@ function CommunityPageContent() {
                     description: 'Please try logging in again.'
                 });
                 await logout();
-                setTimeout(() => router.push('/signin'), 2000);
+                const nextUrl = typeof window !== 'undefined' ? encodeURIComponent(window.location.pathname + window.location.search) : '';
+                setTimeout(() => router.push(`/signin?next=${nextUrl}`), 2000);
                 return;
             } else if (error?.response?.status === 400) {
                 const errorMsg = error?.response?.data?.error || 'Invalid comment';
@@ -596,7 +615,8 @@ function CommunityPageContent() {
             toast('Please sign in to start a topic', {
                 description: 'Community topics are tied to your account',
             });
-            setTimeout(() => router.push('/signin'), 1500);
+            const nextUrl = typeof window !== 'undefined' ? encodeURIComponent(window.location.pathname + window.location.search) : '';
+            setTimeout(() => router.push(`/signin?next=${nextUrl}`), 1500);
             return;
         }
         setIsTopicDialogOpen(true);
@@ -742,7 +762,8 @@ function CommunityPageContent() {
             if (status === 401) {
                 toast.error('Session expired. Please log in again.');
                 await logout();
-                setTimeout(() => router.push('/signin'), 1500);
+                const nextUrl = typeof window !== 'undefined' ? encodeURIComponent(window.location.pathname + window.location.search) : '';
+                setTimeout(() => router.push(`/signin?next=${nextUrl}`), 1500);
                 return;
             }
             if (status === 429) {
@@ -826,7 +847,7 @@ function CommunityPageContent() {
     };
 
     useEffect(() => {
-        if (!hasInitializedUrlState) {
+        if (!hasInitializedUrlState || pathname !== '/community') {
             return
         }
 
@@ -873,8 +894,20 @@ function CommunityPageContent() {
         } else {
             setHasLiked(false)
         }
-        setNewComment('')
-    }, [discussions, searchParams, hasInitializedUrlState, authUser, selectedDiscussion])
+        
+        // Restore draft comment if any
+        if (typeof window !== 'undefined') {
+            const draft = sessionStorage.getItem(`sb_draft_comment_${matchedDiscussion.id}`);
+            if (draft) {
+                setNewComment(draft);
+                sessionStorage.removeItem(`sb_draft_comment_${matchedDiscussion.id}`);
+            } else {
+                setNewComment('');
+            }
+        } else {
+            setNewComment('');
+        }
+    }, [discussions, searchParams, hasInitializedUrlState, authUser, selectedDiscussion, pathname])
 
     return (
         <div className="min-h-screen">
