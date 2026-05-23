@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { ArrowRight, Sparkles, Flame, Soup, Sandwich, CupSoda, Leaf, Drumstick, Croissant, CookingPot } from 'lucide-react'
 import { toast } from 'sonner'
+import { playTick, playSuccess, triggerHaptic } from '@/lib/sound-effects'
 
 export function CravingsRoulette() {
   const categories = [
@@ -28,6 +29,7 @@ export function CravingsRoulette() {
     if (isSpinning) return
     setIsSpinning(true)
     setSelectedCategory(null)
+    triggerHaptic(60)
 
     let currentIdx = 0
     let speed = 60 // Initial fast speed (ms)
@@ -36,6 +38,8 @@ export function CravingsRoulette() {
 
     const run = () => {
       setSpinningIndex(currentIdx)
+      playTick()
+      triggerHaptic(15)
       currentIdx = (currentIdx + 1) % categories.length
       iterations++
 
@@ -55,6 +59,8 @@ export function CravingsRoulette() {
           setSelectedCategory(winner)
           setSpinningIndex(null)
           setIsSpinning(false)
+          playSuccess()
+          triggerHaptic([80, 50, 150])
 
           toast.success(`🎰 Roulette Result: ${winner}!`, {
             description: `Destiny suggests eating ${winner} today!`,

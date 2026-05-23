@@ -10,19 +10,26 @@ import { motion, AnimatePresence } from "framer-motion";
 
 import { useGamification } from "@/context/GamificationContext";
 import { vendorApi, type ApiVendor } from "@/lib/api";
+import { useOnlineStatus } from "@/hooks/use-online-status";
+import { playSelect, playSuccess, triggerHaptic } from "@/lib/sound-effects";
 
 interface Vendor extends Pick<ApiVendor, 'id' | 'name' | 'description' | 'rating' | 'image'> {}
 
 export function VendorBattle() {
     const { performAction } = useGamification();
+    const isOnline = useOnlineStatus();
     const [pair, setPair] = useState<[Vendor, Vendor] | null>(null);
     const [hasVoted, setHasVoted] = useState(false);
     const [selectedIndex, setSelectedIndex] = useState<0 | 1 | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        generateNewBattle();
-    }, []);
+        if (isOnline) {
+            generateNewBattle();
+        } else {
+            setLoading(false);
+        }
+    }, [isOnline]);
 
     const generateNewBattle = async () => {
         setLoading(true);
@@ -49,7 +56,18 @@ export function VendorBattle() {
     };
 
     const handleVote = (index: 0 | 1) => {
+        if (!isOnline) {
+            toast.error("Offline Mode: Reconnect to internet to cast your vote!", {
+                style: { background: '#EF4444', color: 'white' }
+            });
+            return;
+        }
+
         if (hasVoted || !pair) return;
+
+        // Play feedback sounds and vibration ticks
+        playSuccess();
+        triggerHaptic(80);
 
         setSelectedIndex(index);
         setHasVoted(true);
@@ -68,6 +86,15 @@ export function VendorBattle() {
     };
 
     const handleSkip = () => {
+        if (!isOnline) {
+            toast.error("Offline Mode: Cannot load a new battle while offline!", {
+                style: { background: '#EF4444', color: 'white' }
+            });
+            return;
+        }
+
+        playSelect();
+        triggerHaptic(40);
         generateNewBattle();
     };
 
@@ -101,6 +128,17 @@ export function VendorBattle() {
     return (
         <Card className="overflow-hidden border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white relative group h-full flex flex-col rounded-[2rem]">
             <div className="absolute inset-0 bg-[radial-gradient(#f3f4f6_1px,transparent_1px)] [background-size:18px_18px] opacity-60" />
+
+            {/* Offline Block Card Overlay */}
+            {!isOnline && (
+                <div className="absolute inset-0 bg-white/95 backdrop-blur-[1px] z-30 flex flex-col items-center justify-center p-6 text-center border-4 border-black rounded-[2rem] transition-all duration-300">
+                    <span className="text-5xl mb-3 animate-bounce">⚡</span>
+                    <h4 className="font-black text-xl text-black uppercase tracking-tight">Arena is Offline</h4>
+                    <p className="text-xs text-gray-600 max-w-[240px] mt-2 font-bold leading-relaxed">
+                        Connect to the internet to enter the food arena, cast your vote, and earn massive XP rewards!
+                    </p>
+                </div>
+            )}
 
             <CardContent className="p-6 relative z-10 flex flex-col h-full">
                 <div className="flex flex-wrap items-start justify-between gap-4 mb-6">

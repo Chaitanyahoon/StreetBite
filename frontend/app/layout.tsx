@@ -79,6 +79,7 @@ import { NotificationProvider } from '@/components/notification-provider'
 import { Toaster } from 'sonner'
 import { GamificationProvider } from '@/context/GamificationContext'
 import { AuthProvider } from '@/context/AuthContext'
+import { PwaPortal } from '@/components/pwa-portal'
 
 export default function RootLayout({
   children,
@@ -98,6 +99,7 @@ export default function RootLayout({
               <main id="main-content">
                 {children}
               </main>
+              <PwaPortal />
               <Toaster position="top-center" />
             </NotificationProvider>
           </GamificationProvider>

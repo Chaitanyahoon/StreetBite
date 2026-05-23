@@ -7,6 +7,7 @@ import { Sparkles, Share2, RefreshCw, Star, Moon, Sun } from "lucide-react";
 import { toast } from "sonner";
 import { zodiacApi } from "@/lib/api";
 import { ZodiacSelector } from "./ZodiacSelector";
+import { playSelect, playSuccess, triggerHaptic } from "@/lib/sound-effects";
 
 interface ZodiacData {
     zodiacSign: string;
@@ -62,17 +63,23 @@ export function ZodiacCard() {
     };
 
     const handleChangeDate = () => {
+        playSelect();
+        triggerHaptic(50);
         setSelectedSign(null);
         setData(null);
         setXpClaimed(false);
     };
 
     const handleClaimXP = () => {
+        playSuccess();
+        triggerHaptic([100, 50, 150]);
         setXpClaimed(true);
         toast.success("Challenge Completed! +10 XP 🌟");
     };
 
     const handleShare = async () => {
+        playSelect();
+        triggerHaptic(30);
         if (navigator.share && data) {
             try {
                 await navigator.share({

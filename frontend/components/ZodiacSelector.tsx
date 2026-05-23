@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { playSelect, playSuccess, triggerHaptic } from "@/lib/sound-effects";
 
 interface ZodiacSelectorProps {
     onSelect: (sign: string) => void;
@@ -46,6 +47,10 @@ export function ZodiacSelector({ onSelect }: ZodiacSelectorProps) {
             return;
         }
 
+        // Play positive sound and triple haptic vibrations for successful sign discovery
+        playSuccess();
+        triggerHaptic([80, 50, 80]);
+
         // No backend save - just return the sign
         onSelect(sign);
         toast.success(`You are a ${sign}! 🌟`);
@@ -73,7 +78,10 @@ export function ZodiacSelector({ onSelect }: ZodiacSelectorProps) {
                             min="1"
                             max="31"
                             value={day}
-                            onChange={(e) => setDay(e.target.value)}
+                            onChange={(e) => {
+                                setDay(e.target.value);
+                                triggerHaptic(20);
+                            }}
                             className="h-14 border-4 border-black rounded-[1rem] text-xl font-black text-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus-visible:ring-0 focus-visible:ring-offset-0 focus:translate-x-[2px] focus:translate-y-[2px] focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all bg-[#fafafa]"
                         />
                     </div>
@@ -86,7 +94,10 @@ export function ZodiacSelector({ onSelect }: ZodiacSelectorProps) {
                             min="1"
                             max="12"
                             value={month}
-                            onChange={(e) => setMonth(e.target.value)}
+                            onChange={(e) => {
+                                setMonth(e.target.value);
+                                triggerHaptic(20);
+                            }}
                             className="h-14 border-4 border-black rounded-[1rem] text-xl font-black text-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus-visible:ring-0 focus-visible:ring-offset-0 focus:translate-x-[2px] focus:translate-y-[2px] focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all bg-[#fafafa]"
                         />
                     </div>

@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { useGamification } from "@/context/GamificationContext";
+import { playSelect, playBingoWinner, triggerHaptic } from "@/lib/sound-effects";
 
 interface BingoItem {
     id: number;
@@ -70,6 +71,8 @@ export function FoodBingo() {
     }, []);
 
     const resetBingo = () => {
+        playSelect();
+        triggerHaptic(50);
         const shuffled = [...FOOD_ITEMS].sort(() => Math.random() - 0.5);
         const newGrid = shuffled.map(item => ({ ...item, completed: false }));
         setGrid(newGrid);
@@ -80,6 +83,11 @@ export function FoodBingo() {
     };
 
     const toggleItem = (id: number) => {
+        const itemToToggle = grid.find(item => item.id === id);
+        // Play click feedback on toggle
+        playSelect();
+        triggerHaptic(itemToToggle?.completed ? 40 : 60);
+
         const newGrid = grid.map(item =>
             item.id === id ? { ...item, completed: !item.completed } : item
         );
@@ -92,6 +100,10 @@ export function FoodBingo() {
             const newXP = totalXP + xpGained;
             setTotalXP(newXP);
             localStorage.setItem("bingoXP", newXP.toString());
+
+            // Play celebratory sound and heavy haptic vibrations for completing a line
+            playBingoWinner();
+            triggerHaptic([150, 80, 150, 80, 250]);
 
             // Award XP via backend
             performAction('complete_challenge');
