@@ -181,7 +181,27 @@ Full API docs: `/swagger-ui/index.html`
 
 ## 🧪 Testing
 
-No centralized test suite is configured yet. Add frontend unit tests with Vitest or Jest, and backend tests with Spring Boot Test + Testcontainers.
+StreetBite includes automated test suites for both the frontend and backend to verify the stability of the platform.
+
+### Backend Testing
+The backend uses Spring Boot Test and JUnit 5 for unit and integration testing.
+- **Run all backend tests**:
+  ```bash
+  cd backend
+  ./mvnw clean test
+  ```
+- **Context Mocking**: In-memory rate limiting context is mocked during controller slice tests (`@WebMvcTest(AuthController.class)`) via a mocked `RateLimitService` to ensure builds pass in environments without full runtime service requirements (e.g. CI environments).
+
+### Frontend Testing
+The frontend uses Jest and React Testing Library to verify UI components, custom hooks, and utility functions.
+- **Run all frontend tests**:
+  ```bash
+  cd frontend
+  npm test
+  ```
+- **Included Tests**:
+  - `cravings-roulette.test.tsx`: Tests the Cravings Roulette micro-interaction component (verifying wheel rotation states, selecting random cuisines, and rendering custom actions).
+  - `utils.test.ts`: Tests utility functions (URL resolvers, coordinate parsers).
 
 ## 📖 Documentation
 

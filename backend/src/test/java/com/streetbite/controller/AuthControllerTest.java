@@ -8,10 +8,16 @@ import com.streetbite.dto.auth.AuthUserResponse;
 import com.streetbite.model.User;
 import com.streetbite.service.AuthRateLimitService;
 import com.streetbite.service.AuthService;
+import com.streetbite.service.RateLimitService;
 import com.streetbite.service.UserService;
 import com.streetbite.util.JwtUtil;
+import io.github.bucket4j.Bandwidth;
+import io.github.bucket4j.Bucket;
+import io.github.bucket4j.Refill;
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import java.time.Duration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -52,7 +58,17 @@ class AuthControllerTest {
     private AuthRateLimitService authRateLimitService;
 
     @MockBean
+    private RateLimitService rateLimitService;
+
+    @MockBean
     private JwtUtil jwtUtil;
+
+    @BeforeEach
+    void setUp() {
+        Bandwidth limit = Bandwidth.classic(100, Refill.greedy(100, Duration.ofMinutes(1)));
+        Bucket bucket = Bucket.builder().addLimit(limit).build();
+        when(rateLimitService.resolveBucket(anyString())).thenReturn(bucket);
+    }
 
     @MockBean
     private CookieSettings cookieSettings;
