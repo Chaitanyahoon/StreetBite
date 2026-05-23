@@ -51,7 +51,7 @@ const VendorMap = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="flex h-[70vh] w-full items-center justify-center rounded-[1.75rem] border border-black/10 bg-white/70">
+      <div className="flex h-[350px] sm:h-[450px] md:h-[600px] w-full items-center justify-center rounded-[1.75rem] border border-black/10 bg-white/70">
         <div className="flex items-center gap-3 text-sm font-semibold uppercase tracking-[0.16em] text-black/55">
           <LoaderCircle className="h-5 w-5 animate-spin text-primary" />
           Loading map
@@ -560,7 +560,7 @@ function ExplorePageContent() {
           </div>
 
           {viewMode === 'map' ? (
-            <div className="overflow-hidden rounded-[1.75rem] border-4 border-black bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+            <div className="overflow-hidden rounded-[1.75rem] border-[3px] sm:border-4 border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
               <VendorMap vendors={sortedVendors} onVendorSelect={(vendor) => setSelectedVendor(vendor as ExploreVendor)} />
             </div>
           ) : loadingVendors ? (

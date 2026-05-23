@@ -319,7 +319,7 @@ export function VendorMap({ vendors = [], onVendorSelect }: { vendors: Vendor[],
         </div>
       ) : (
         <>
-          <div ref={mapRef} style={{ width: '100%', height: 600 }} className="rounded-lg overflow-hidden border border-border" />
+          <div ref={mapRef} style={{ width: '100%' }} className="h-[350px] sm:h-[450px] md:h-[600px] rounded-lg overflow-hidden border border-border" />
           {!loaded && <div className="text-center text-sm text-muted-foreground mt-2">Loading map...</div>}
         </>
       )}
