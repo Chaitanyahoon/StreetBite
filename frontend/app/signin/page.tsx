@@ -110,8 +110,13 @@ function SignInContent() {
           }
         }
       } else {
-        setError(result.error || 'Google Sign-In failed.')
-        setIsGoogleLoading(false)
+        if (result.error === 'USER_NOT_FOUND') {
+          setIsGoogleLoading(false)
+          router.push('/signup?error=google_not_registered')
+        } else {
+          setError(result.error || 'Google Sign-In failed.')
+          setIsGoogleLoading(false)
+        }
       }
     } catch (err: any) {
       console.error('Google Sign-In handler error:', err)

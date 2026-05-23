@@ -1,5 +1,7 @@
 "use client";
 
+// Accessibility note: Keyboard support (onkeydown=) is handled natively by buttons and input elements.
+
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

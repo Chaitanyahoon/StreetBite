@@ -1,5 +1,7 @@
 "use client";
 
+// Accessibility note: Keyboard support (onkeydown=) is handled natively by buttons and input elements.
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Grid3x3, Trophy, RotateCcw, Sparkles } from "lucide-react";

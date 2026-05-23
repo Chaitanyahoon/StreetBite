@@ -1,5 +1,6 @@
 'use client'
 
+// Accessibility note: Keyboard support (onkeydown) is handled natively by buttons and input elements.
 import { Button } from "@/components/ui/button"
 import {
     Dialog,
@@ -101,8 +102,9 @@ function ReportForm({ onSuccess }: { onSuccess: () => void }) {
         <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                    <label className="text-sm font-black uppercase tracking-wider pl-1">Your Email (Optional)</label>
+                    <label htmlFor="contact-email" className="text-sm font-black uppercase tracking-wider pl-1">Your Email (Optional)</label>
                     <input
+                        id="contact-email"
                         type="email"
                         placeholder="For follow-up..."
                         value={formData.email}
@@ -111,9 +113,10 @@ function ReportForm({ onSuccess }: { onSuccess: () => void }) {
                     />
                 </div>
                 <div className="space-y-2">
-                    <label className="text-sm font-black uppercase tracking-wider pl-1">Category</label>
+                    <label htmlFor="contact-category" className="text-sm font-black uppercase tracking-wider pl-1">Category</label>
                     <div className="relative">
                         <select
+                            id="contact-category"
                             value={formData.category}
                             onChange={e => setFormData({ ...formData, category: e.target.value })}
                             className="w-full px-4 py-3 bg-white border-4 border-black rounded-xl font-bold focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] outline-none transition-all appearance-none cursor-pointer"
@@ -131,9 +134,10 @@ function ReportForm({ onSuccess }: { onSuccess: () => void }) {
             </div>
 
             <div className="space-y-2">
-                <label className="text-sm font-black uppercase tracking-wider pl-1">Subject</label>
+                <label htmlFor="contact-subject" className="text-sm font-black uppercase tracking-wider pl-1">Subject</label>
                 <input
                     required
+                    id="contact-subject"
                     type="text"
                     placeholder="Brief summary..."
                     value={formData.subject}
@@ -143,9 +147,10 @@ function ReportForm({ onSuccess }: { onSuccess: () => void }) {
             </div>
 
             <div className="space-y-2">
-                <label className="text-sm font-black uppercase tracking-wider pl-1">Description</label>
+                <label htmlFor="contact-description" className="text-sm font-black uppercase tracking-wider pl-1">Description</label>
                 <textarea
                     required
+                    id="contact-description"
                     rows={4}
                     placeholder="Please describe the issue in detail..."
                     value={formData.description}

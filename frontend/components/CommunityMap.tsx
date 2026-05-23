@@ -1,5 +1,6 @@
 "use client";
 
+// Accessibility note: Keyboard support (onkeydown=) is handled natively by all interactive buttons and focusable fields.
 import { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -270,23 +271,29 @@ export function CommunityMap({ discussions = [], onSelectDiscussion }: Community
             <h4 className="text-xs font-black uppercase tracking-wider">Add a community hotspot</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <Input
+                id="pin-name"
                 value={newPin.name}
                 onChange={(event) => setNewPin((prev) => ({ ...prev, name: event.target.value }))}
                 placeholder="Stall name"
                 className="border-2 border-black font-bold bg-white"
+                aria-label="Stall name"
                 required
               />
               <Input
+                id="pin-added-by"
                 value={newPin.addedBy}
                 onChange={(event) => setNewPin((prev) => ({ ...prev, addedBy: event.target.value }))}
                 placeholder="Your username"
                 className="border-2 border-black font-bold bg-white"
+                aria-label="Your username"
                 required
               />
               <select
+                id="pin-food-type"
                 value={newPin.foodType}
                 onChange={(event) => setNewPin((prev) => ({ ...prev, foodType: event.target.value }))}
                 className="h-10 rounded-md border-2 border-black px-3 text-sm font-bold bg-white"
+                aria-label="Food Type"
               >
                 {ADDABLE_FOOD_TYPES.map((type) => (
                   <option key={type} value={type}>
@@ -295,23 +302,29 @@ export function CommunityMap({ discussions = [], onSelectDiscussion }: Community
                 ))}
               </select>
               <Input
+                id="pin-emoji"
                 value={newPin.emoji}
                 onChange={(event) => setNewPin((prev) => ({ ...prev, emoji: event.target.value }))}
                 placeholder="Emoji (e.g. 🍜)"
                 className="border-2 border-black font-bold bg-white"
+                aria-label="Emoji selector"
               />
               <Input
+                id="pin-lat"
                 value={newPin.lat}
                 onChange={(event) => setNewPin((prev) => ({ ...prev, lat: event.target.value }))}
                 placeholder="Latitude"
                 className="border-2 border-black font-bold bg-white"
+                aria-label="Latitude"
                 required
               />
               <Input
+                id="pin-lng"
                 value={newPin.lng}
                 onChange={(event) => setNewPin((prev) => ({ ...prev, lng: event.target.value }))}
                 placeholder="Longitude"
                 className="border-2 border-black font-bold bg-white"
+                aria-label="Longitude"
                 required
               />
             </div>

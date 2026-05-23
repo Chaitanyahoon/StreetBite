@@ -88,11 +88,16 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body suppressHydrationWarning className={`${spaceGrotesk.variable} ${archivo.variable} font-sans antialiased text-foreground selection:bg-primary/20 selection:text-primary`}>
+        <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-yellow-300 focus:text-black focus:border-2 focus:border-black focus:font-black focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:rounded-xl">
+          Skip to main content
+        </a>
         <OrganizationSchema />
         <AuthProvider>
           <GamificationProvider>
             <NotificationProvider>
-              {children}
+              <main id="main-content">
+                {children}
+              </main>
               <Toaster position="top-center" />
             </NotificationProvider>
           </GamificationProvider>

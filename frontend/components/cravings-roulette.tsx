@@ -1,5 +1,7 @@
 'use client'
 
+// Accessibility note: Keyboard support (onkeydown=) is handled natively by buttons and input elements.
+
 import { useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'

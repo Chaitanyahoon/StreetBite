@@ -207,60 +207,60 @@ export default function ProfilePage() {
 
       <div className="max-w-5xl mx-auto px-4 py-8">
         {/* Back Button */}
-        <Link href="/explore" className="inline-flex items-center gap-2 text-black font-black hover:-translate-x-1 duration-200 mb-8 bg-white px-4 py-2 border-2 border-black rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-y-0.5 transition-all">
-          <ArrowLeft size={20} />
+        <Link href="/explore" className="inline-flex items-center gap-1.5 sm:gap-2 text-black font-black hover:-translate-x-1 duration-200 mb-6 sm:mb-8 bg-white px-3 py-1.5 sm:px-4 sm:py-2 border-2 border-black rounded-lg sm:rounded-xl shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[1.5px_1.5px_0px_0px_rgba(0,0,0,1)] sm:hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-y-0.5 transition-all text-xs sm:text-base">
+          <ArrowLeft size={16} className="sm:w-5 sm:h-5" />
           BACK TO EXPLORE
         </Link>
 
         {/* Profile Header */}
-        <div className="mb-8 flex flex-col items-center">
-          <div className="inline-block px-6 py-2 bg-yellow-300 border-2 border-black rounded-lg shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transform -rotate-1 mb-4">
-            <span className="text-sm font-black uppercase tracking-widest text-black">Control Center</span>
+        <div className="mb-6 sm:mb-8 flex flex-col items-center">
+          <div className="inline-block px-4 py-1.5 sm:px-6 sm:py-2 bg-yellow-300 border-2 border-black rounded-lg shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transform -rotate-1 mb-3 sm:mb-4">
+            <span className="text-xs sm:text-sm font-black uppercase tracking-widest text-black">Control Center</span>
           </div>
-          <h1 className="text-5xl font-black text-black uppercase tracking-tighter drop-shadow-sm text-center">
+          <h1 className="text-3xl sm:text-5xl font-black text-black uppercase tracking-tighter drop-shadow-sm text-center">
             My Profile
           </h1>
-          <p className="text-gray-600 mt-2 font-bold text-lg text-center max-w-md">
+          <p className="text-sm sm:text-lg text-gray-600 mt-1.5 sm:mt-2 font-bold text-center max-w-md leading-snug">
             Manage your personal data and customize your avatar
           </p>
         </div>
 
         {/* Success/Error Messages */}
         {success && (
-          <div className="bg-green-100 border-4 border-black text-black font-bold px-6 py-4 rounded-xl mb-8 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
-            <div className="w-8 h-8 bg-green-500 rounded-full border-2 border-black flex items-center justify-center text-white">✓</div>
+          <div className="bg-green-100 border-3 sm:border-4 border-black text-black font-bold px-4 py-3 sm:px-6 sm:py-4 rounded-xl mb-6 sm:mb-8 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] flex items-center gap-2.5 sm:gap-3 animate-in fade-in slide-in-from-top-2 text-sm sm:text-base">
+            <div className="w-6 h-6 sm:w-8 sm:h-8 bg-green-500 rounded-full border-2 border-black flex items-center justify-center text-white text-xs sm:text-sm">✓</div>
             Profile updated successfully!
           </div>
         )}
 
         {error && (
-          <div className="bg-red-100 border-4 border-black text-black font-bold px-6 py-4 rounded-xl mb-8 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
-            <div className="w-8 h-8 bg-red-500 rounded-full border-2 border-black flex items-center justify-center text-white">!</div>
+          <div className="bg-red-100 border-3 sm:border-4 border-black text-black font-bold px-4 py-3 sm:px-6 sm:py-4 rounded-xl mb-6 sm:mb-8 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] flex items-center gap-2.5 sm:gap-3 animate-in fade-in slide-in-from-top-2 text-sm sm:text-base">
+            <div className="w-6 h-6 sm:w-8 sm:h-8 bg-red-500 rounded-full border-2 border-black flex items-center justify-center text-white text-xs sm:text-sm">!</div>
             {error}
           </div>
         )}
 
         <div className="grid gap-8 md:grid-cols-[1fr_1.5fr]">
           {/* Left Column: Avatar Selection & Upgrade CTA */}
-          <div className="flex flex-col gap-8">
-            <Card className="border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] bg-white overflow-hidden h-fit rounded-[2.5rem]">
-            <div className="h-36 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-orange-400 border-b-4 border-black relative overflow-hidden">
+          <div className="flex flex-col gap-6 sm:gap-8">
+            <Card className="border-3 sm:border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] sm:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] bg-white overflow-hidden h-fit rounded-3xl sm:rounded-[2.5rem]">
+            <div className="h-28 sm:h-36 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-orange-400 border-b-3 sm:border-b-4 border-black relative overflow-hidden">
               <div className="absolute inset-0 bg-black/10"></div>
               {/* Decorative shapes */}
-              <div className="absolute top-4 right-4 w-12 h-12 bg-yellow-300 rounded-full border-2 border-black"></div>
-              <div className="absolute bottom-4 left-4 w-8 h-8 bg-white rounded-lg border-2 border-black transform rotate-12"></div>
+              <div className="absolute top-3 right-3 sm:top-4 sm:right-4 w-9 h-9 sm:w-12 sm:h-12 bg-yellow-300 rounded-full border-2 border-black"></div>
+              <div className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4 w-6 h-6 sm:w-8 sm:h-8 bg-white rounded-lg border-2 border-black transform rotate-12"></div>
             </div>
-            <CardContent className="-mt-20 flex flex-col items-center pb-8 px-6">
+            <CardContent className="-mt-14 sm:-mt-20 flex flex-col items-center pb-6 sm:pb-8 px-4 sm:px-6">
               <div className="relative group">
-                <div className="absolute -inset-1 bg-black rounded-full shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"></div>
-                <div className="relative w-44 h-44 rounded-full overflow-hidden border-4 border-black bg-white transform transition-transform duration-300">
+                <div className="absolute -inset-1 bg-black rounded-full shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"></div>
+                <div className="relative w-28 h-28 sm:w-44 sm:h-44 rounded-full overflow-hidden border-3 sm:border-4 border-black bg-white transform transition-transform duration-300">
                   {displayProfileImageSrc ? (
                     <Image
                       src={displayProfileImageSrc}
                       alt="Profile"
                       fill
                       unoptimized
-                      sizes="176px"
+                      sizes="(min-width: 640px) 176px, 112px"
                       className="object-cover"
                       onError={() => {
                         if (!profileImageFailed) {
@@ -270,7 +270,7 @@ export default function ProfilePage() {
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">
-                      <User size={64} />
+                      <User className="w-12 h-12 sm:w-16 sm:h-16" />
                     </div>
                   )}
 
@@ -281,19 +281,19 @@ export default function ProfilePage() {
                       className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-bold tracking-widest uppercase hover:bg-black/70"
                       title="Remove Profile Picture"
                     >
-                      <Trash2 size={32} className="mb-1" />
+                      <Trash2 className="w-6 h-6 sm:w-8 sm:h-8 mb-1" />
                     </button>
                   )}
                 </div>
               </div>
 
-              <h2 className="mt-6 text-3xl font-black text-black uppercase tracking-tight">{userData.displayName || 'User'}</h2>
-              <div className="inline-block mt-2 px-3 py-1 bg-black text-white rounded-full border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)]">
-                <p className="text-xs font-bold uppercase tracking-widest">{userData.role}</p>
+              <h2 className="mt-4 sm:mt-6 text-xl sm:text-3xl font-black text-black uppercase tracking-tight text-center break-words max-w-full">{userData.displayName || 'User'}</h2>
+              <div className="inline-block mt-1.5 sm:mt-2 px-3 py-0.5 sm:py-1 bg-black text-white rounded-full border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)]">
+                <p className="text-[10px] sm:text-xs font-bold uppercase tracking-widest">{userData.role}</p>
               </div>
 
               {/* Custom Upload Buttons */}
-              <div className="flex gap-3 mb-8 w-full mt-8">
+              <div className="flex gap-2.5 sm:gap-3 mb-6 sm:mb-8 w-full mt-6 sm:mt-8">
                 <input
                   type="file"
                   ref={fileInputRef}
@@ -304,11 +304,11 @@ export default function ProfilePage() {
                 <Button
                   onClick={() => fileInputRef.current?.click()}
                   disabled={uploading}
-                  className="flex-1 bg-white text-black font-black border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-y-0.5 hover:bg-gray-50 h-12 rounded-xl"
+                  className="flex-1 bg-white text-black font-black border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[1.5px_1.5px_0px_0px_rgba(0,0,0,1)] sm:hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-y-0.5 hover:bg-gray-50 h-11 sm:h-12 rounded-xl text-xs sm:text-sm"
                 >
                   {uploading ? 'UPLOADING...' : (
                     <>
-                      <Upload size={18} className="mr-2" />
+                      <Upload size={16} className="mr-1.5 sm:mr-2" />
                       UPLOAD PHOTO
                     </>
                   )}
@@ -316,34 +316,34 @@ export default function ProfilePage() {
                 {userData.profilePicture && (
                   <Button
                     onClick={handleRemoveProfilePicture}
-                    className="bg-red-500 text-white font-black border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-y-0.5 hover:bg-red-600 h-12 w-12 px-0 rounded-xl"
+                    className="bg-red-500 text-white font-black border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[1.5px_1.5px_0px_0px_rgba(0,0,0,1)] sm:hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-y-0.5 hover:bg-red-600 h-11 sm:h-12 w-11 sm:w-12 px-0 rounded-xl"
                   >
-                    <X size={20} />
+                    <X size={18} />
                   </Button>
                 )}
               </div>
 
-              <div className="w-full border-t-4 border-black/10 pt-6">
-                <div className="flex items-center justify-center gap-2 mb-4">
-                  <span className="text-xl">👾</span>
-                  <Label className="text-center block text-black font-black text-lg uppercase tracking-wide">Select Avatar</Label>
-                  <span className="text-xl">👾</span>
+              <div className="w-full border-t-3 sm:border-t-4 border-black/10 pt-5 sm:pt-6">
+                <div className="flex items-center justify-center gap-1.5 sm:gap-2 mb-3.5 sm:mb-4">
+                  <span className="text-lg sm:text-xl">👾</span>
+                  <Label className="text-center block text-black font-black text-sm sm:text-lg uppercase tracking-wide">Select Avatar</Label>
+                  <span className="text-lg sm:text-xl">👾</span>
                 </div>
-                <div className="grid grid-cols-4 gap-3 p-2">
+                <div className="grid grid-cols-4 gap-2 sm:gap-3 p-1">
                   {[1, 2, 3, 4, 5, 6, 7].map((num) => (
                     <button
                       key={num}
                       onClick={() => setUserData({ ...userData, profilePicture: `/avatars/avatar_${num}.png` })}
-                      className={`relative aspect-square rounded-xl overflow-hidden transition-all duration-200 border-2 ${userData.profilePicture === `/avatars/avatar_${num}.png`
-                        ? 'border-black ring-4 ring-yellow-300 ring-offset-0 scale-110 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] z-10'
-                        : 'border-transparent hover:border-black hover:scale-110 hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] opacity-70 hover:opacity-100 hover:z-10'
+                      className={`relative aspect-square rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 border-2 ${userData.profilePicture === `/avatars/avatar_${num}.png`
+                        ? 'border-black ring-3 sm:ring-4 ring-yellow-300 ring-offset-0 scale-105 sm:scale-110 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] z-10'
+                        : 'border-transparent hover:border-black hover:scale-105 sm:hover:scale-110 hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] opacity-70 hover:opacity-100 hover:z-10'
                         }`}
                     >
                       <Image
                         src={`/avatars/avatar_${num}.png`}
                         alt={`Avatar ${num}`}
                         fill
-                        sizes="(min-width: 768px) 88px, 22vw"
+                        sizes="(min-width: 640px) 88px, 20vw"
                         className="object-cover"
                       />
                     </button>
@@ -354,16 +354,16 @@ export default function ProfilePage() {
             </Card>
 
             {(userData.role === 'USER' || userData.role === 'CUSTOMER') && (
-              <Card className="border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] bg-amber-400 overflow-hidden h-fit rounded-[2.5rem] p-6 relative">
+              <Card className="border-3 sm:border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] sm:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] bg-amber-400 overflow-hidden h-fit rounded-3xl sm:rounded-[2.5rem] p-5 sm:p-6 relative">
                 {/* Decorative background shape */}
                 <div className="absolute -bottom-8 -right-8 w-24 h-24 bg-white/20 rounded-full pointer-events-none"></div>
-                <h3 className="text-2xl font-black text-black uppercase tracking-tight">Become a Vendor</h3>
-                <p className="text-black font-bold mt-2 text-sm leading-relaxed">
+                <h3 className="text-xl sm:text-2xl font-black text-black uppercase tracking-tight">Become a Vendor</h3>
+                <p className="text-black font-bold mt-1.5 sm:mt-2 text-xs sm:text-sm leading-relaxed">
                   Start selling your amazing street food! Setup your stall, list items, and receive orders directly from customers.
                 </p>
                 <Dialog open={isUpgradeOpen} onOpenChange={setIsUpgradeOpen}>
                   <DialogTrigger asChild>
-                    <Button className="w-full mt-6 bg-black text-white hover:bg-zinc-800 font-black border-2 border-black rounded-xl h-12 shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] hover:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] hover:translate-y-0.5 transition-all uppercase">
+                    <Button className="w-full mt-5 sm:mt-6 bg-black text-white hover:bg-zinc-800 font-black border-2 border-black rounded-xl h-11 sm:h-12 shadow-[3px_3px_0px_0px_rgba(255,255,255,1)] sm:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] hover:shadow-[1.5px_1.5px_0px_0px_rgba(255,255,255,1)] sm:hover:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] hover:translate-y-0.5 transition-all uppercase text-sm">
                       Upgrade to Vendor
                     </Button>
                   </DialogTrigger>
@@ -431,18 +431,18 @@ export default function ProfilePage() {
           </div>
 
           {/* Right Column: Form */}
-          <Card className="border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] bg-white h-fit rounded-[2.5rem] relative overflow-hidden">
+          <Card className="border-3 sm:border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] sm:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] bg-white h-fit rounded-[2rem] sm:rounded-[2.5rem] relative overflow-hidden">
             {/* Decorative Corner */}
-            <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-300 rounded-bl-[4rem] border-b-4 border-l-4 border-black -z-0"></div>
+            <div className="absolute top-0 right-0 w-20 h-20 sm:w-32 sm:h-32 bg-yellow-300 rounded-bl-[2.5rem] sm:rounded-bl-[4rem] border-b-3 border-l-3 sm:border-b-4 sm:border-l-4 border-black -z-0"></div>
 
             <CardHeader className="relative z-10 pb-2">
-              <CardTitle className="text-3xl font-black uppercase tracking-tighter flex items-center gap-3">
-                <span className="bg-black text-white p-2 text-sm rounded-lg transform -rotate-3 border-2 border-black shadow-[2px_2px_0px_0px_rgba(100,100,100,1)]">ID CARD</span>
+              <CardTitle className="text-2xl sm:text-3xl font-black uppercase tracking-tighter flex items-center gap-2.5 sm:gap-3">
+                <span className="bg-black text-white p-1.5 sm:p-2 text-xs sm:text-sm rounded-lg transform -rotate-3 border-2 border-black shadow-[2px_2px_0px_0px_rgba(100,100,100,1)]">ID CARD</span>
                 Details
               </CardTitle>
-              <CardDescription className="font-bold text-gray-500">Update your official contact information</CardDescription>
+              <CardDescription className="font-bold text-gray-500 text-xs sm:text-sm">Update your official contact information</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-8 pt-6 relative z-10">
+            <CardContent className="space-y-6 sm:space-y-8 pt-6 relative z-10">
               {/* Email (Read-only) */}
               <div className="group">
                 <Label htmlFor="email" className="flex items-center gap-2 text-black font-black uppercase text-xs tracking-wider mb-2">
@@ -455,9 +455,9 @@ export default function ProfilePage() {
                     type="email"
                     value={userData.email}
                     disabled
-                    className="bg-gray-100 border-2 border-black font-bold text-gray-500 rounded-xl h-12 focus-visible:ring-0 focus-visible:ring-offset-0 opacity-80"
+                    className="bg-gray-100 border-2 border-black font-bold text-gray-500 rounded-xl h-11 sm:h-12 focus-visible:ring-0 focus-visible:ring-offset-0 opacity-80"
                   />
-                  <div className="absolute right-3 top-3 text-xs font-black bg-gray-300 text-gray-600 px-2 py-0.5 rounded border border-gray-400">LOCKED</div>
+                  <div className="absolute right-3 top-2.5 sm:top-3 text-[10px] sm:text-xs font-black bg-gray-300 text-gray-600 px-2 py-0.5 rounded border border-gray-400">LOCKED</div>
                 </div>
               </div>
 
@@ -473,7 +473,7 @@ export default function ProfilePage() {
                   placeholder="ENTER YOUR NAME"
                   value={userData.displayName}
                   onChange={(e) => setUserData({ ...userData, displayName: e.target.value })}
-                  className="bg-white border-2 border-black font-bold text-black rounded-xl h-12 focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:-translate-y-1 transition-all focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-gray-300 placeholder:font-normal"
+                  className="bg-white border-2 border-black font-bold text-black rounded-xl h-11 sm:h-12 focus:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:-translate-y-0.5 sm:focus:-translate-y-1 transition-all focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-gray-300 placeholder:font-normal"
                 />
               </div>
 
@@ -493,20 +493,20 @@ export default function ProfilePage() {
                     setUserData({ ...userData, phoneNumber: value })
                   }}
                   maxLength={10}
-                  className="bg-white border-2 border-black font-bold text-black rounded-xl h-12 focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:-translate-y-1 transition-all focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-gray-300 placeholder:font-normal"
+                  className="bg-white border-2 border-black font-bold text-black rounded-xl h-11 sm:h-12 focus:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:-translate-y-0.5 sm:focus:-translate-y-1 transition-all focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-gray-300 placeholder:font-normal"
                 />
                 <div className="flex justify-between mt-2">
                   {userData.phoneNumber && userData.phoneNumber.length < 10 && (
-                    <p className="text-xs font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded border border-red-100">! 10 digits required</p>
+                    <p className="text-[10px] sm:text-xs font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded border border-red-100">! 10 digits required</p>
                   )}
                   {userData.phoneNumber && userData.phoneNumber.length === 10 && (
-                    <p className="text-xs font-black text-green-600 bg-green-50 px-2 py-0.5 rounded border border-green-100 uppercase tracking-wide">✓ Valid number</p>
+                    <p className="text-[10px] sm:text-xs font-black text-green-600 bg-green-50 px-2 py-0.5 rounded border border-green-100 uppercase tracking-wide">✓ Valid number</p>
                   )}
-                  <span className="text-xs text-gray-400 font-bold ml-auto">NUMBERS ONLY</span>
+                  <span className="text-[10px] sm:text-xs text-gray-400 font-bold ml-auto">NUMBERS ONLY</span>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Role (Read-only) */}
                 <div className="group">
                   <Label htmlFor="role" className="flex items-center gap-2 text-black font-black uppercase text-xs tracking-wider mb-2">
@@ -518,22 +518,22 @@ export default function ProfilePage() {
                     type="text"
                     value={userData.role}
                     disabled
-                    className="bg-gray-100 border-2 border-black font-bold text-gray-500 rounded-xl uppercase h-12 opacity-80"
+                    className="bg-gray-100 border-2 border-black font-bold text-gray-500 rounded-xl uppercase h-11 sm:h-12 opacity-80"
                   />
                 </div>
 
                 {/* Forgot Password Link Container */}
-                <div className="flex items-end pb-1">
+                <div className="flex items-end pb-1 sm:pb-0">
                   <Dialog open={isResetOpen} onOpenChange={setIsResetOpen}>
                     <DialogTrigger asChild>
-                      <Button variant="ghost" className="w-full text-black font-black underline decoration-2 hover:bg-yellow-100 hover:text-black rounded-xl h-12 border-2 border-transparent hover:border-black transition-all">
+                      <Button variant="ghost" className="w-full text-black font-black underline decoration-2 hover:bg-yellow-100 hover:text-black rounded-xl h-11 sm:h-12 border-2 border-transparent hover:border-black transition-all">
                         RESET PASSWORD?
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="border-4 border-black bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-3xl p-8">
+                    <DialogContent className="border-3 sm:border-4 border-black bg-white shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-2xl sm:rounded-3xl p-5 sm:p-8 max-w-[calc(100vw-2rem)] sm:max-w-md">
                       <DialogHeader>
-                        <DialogTitle className="text-2xl font-black uppercase">Reset Password</DialogTitle>
-                        <DialogDescription className="font-bold text-gray-500">
+                        <DialogTitle className="text-xl sm:text-2xl font-black uppercase">Reset Password</DialogTitle>
+                        <DialogDescription className="font-bold text-gray-500 text-xs sm:text-sm">
                           Enter your email address and we'll send you a link to reset your password.
                         </DialogDescription>
                       </DialogHeader>
@@ -545,23 +545,23 @@ export default function ProfilePage() {
                             placeholder="name@example.com"
                             value={resetEmail}
                             onChange={(e) => setResetEmail(e.target.value)}
-                            className="border-2 border-black font-bold rounded-xl h-12"
+                            className="border-2 border-black font-bold rounded-xl h-11 sm:h-12"
                           />
                         </div>
                         {resetStatus === 'sent' && (
-                          <div className="text-sm font-bold text-green-600 bg-green-50 p-3 rounded-lg border-2 border-green-100">
+                          <div className="text-xs sm:text-sm font-bold text-green-600 bg-green-50 p-3 rounded-lg border-2 border-green-100">
                             Check your email! A reset link has been sent if an account exists.
                           </div>
                         )}
                         {resetStatus === 'error' && (
-                          <div className="text-sm font-bold text-red-600 bg-red-50 p-3 rounded-lg border-2 border-red-100">
+                          <div className="text-xs sm:text-sm font-bold text-red-600 bg-red-50 p-3 rounded-lg border-2 border-red-100">
                             Something went wrong. Please try again.
                           </div>
                         )}
                       </div>
-                      <DialogFooter>
-                        <Button variant="outline" onClick={() => setIsResetOpen(false)} className="border-2 border-black font-bold rounded-xl h-12 hover:bg-gray-100">Cancel</Button>
-                        <Button onClick={handleForgotPassword} disabled={resetStatus === 'sending' || resetStatus === 'sent'} className="bg-black text-white hover:bg-gray-800 font-bold border-2 border-black rounded-xl h-12 shadow-[4px_4px_0px_0px_rgba(128,128,128,1)]">
+                      <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3">
+                        <Button variant="outline" onClick={() => setIsResetOpen(false)} className="border-2 border-black font-bold rounded-xl h-11 sm:h-12 hover:bg-gray-100">Cancel</Button>
+                        <Button onClick={handleForgotPassword} disabled={resetStatus === 'sending' || resetStatus === 'sent'} className="bg-black text-white hover:bg-gray-800 font-bold border-2 border-black rounded-xl h-11 sm:h-12 shadow-[3px_3px_0px_0px_rgba(128,128,128,1)] sm:shadow-[4px_4px_0px_0px_rgba(128,128,128,1)]">
                           {resetStatus === 'sending' ? 'Sending...' : 'Send Reset Link'}
                         </Button>
                       </DialogFooter>
@@ -575,9 +575,9 @@ export default function ProfilePage() {
                 <Button
                   onClick={handleSave}
                   disabled={saving}
-                  className="w-full bg-orange-500 hover:bg-orange-600 text-white font-black text-xl py-6 h-16 rounded-2xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-y-1 transition-all border-4 border-black disabled:opacity-50 flex items-center justify-center gap-3"
+                  className="w-full bg-orange-500 hover:bg-orange-600 text-white font-black text-lg sm:text-xl h-13 sm:h-16 rounded-2xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-y-0.5 sm:hover:translate-y-1 transition-all border-3 sm:border-4 border-black disabled:opacity-50 flex items-center justify-center gap-2.5 sm:gap-3"
                 >
-                  <Save size={24} className="stroke-[3]" />
+                  <Save size={20} className="stroke-[3] sm:w-6 sm:h-6" />
                   {saving ? 'SAVING...' : 'SAVE CHANGES'}
                 </Button>
               </div>

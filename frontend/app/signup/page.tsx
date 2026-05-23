@@ -37,10 +37,15 @@ export default function SignUpPage() {
 
   useEffect(() => {
     if (typeof window === 'undefined') return
-    const verify = new URLSearchParams(window.location.search).get('verify')
+    const params = new URLSearchParams(window.location.search)
+    const verify = params.get('verify')
     if (verify) {
       setStep(3)
       setVerificationEmail(verify.toLowerCase())
+    }
+    const errorParam = params.get('error')
+    if (errorParam === 'google_not_registered') {
+      setError('No StreetBite account found with that Google email. Please select your role and sign up below.')
     }
   }, [])
 
@@ -239,6 +244,17 @@ export default function SignUpPage() {
               Pick your role, enter the basics, verify once
             </p>
           </motion.div>
+
+          {error && step === 1 && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-red-100 border-3 sm:border-4 border-black text-black px-3.5 py-2.5 rounded-xl font-bold flex items-center gap-2.5 mb-4 text-xs sm:text-sm relative z-10 animate-shake"
+            >
+              <div className="w-3.5 h-3.5 bg-red-500 rounded-full border border-black flex-shrink-0" />
+              <span>{error}</span>
+            </motion.div>
+          )}
 
           <AnimatePresence mode="wait">
             {step === 1 && (

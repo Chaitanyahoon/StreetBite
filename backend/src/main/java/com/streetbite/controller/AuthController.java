@@ -291,18 +291,24 @@ public class AuthController {
                     user = userService.saveUser(user);
                 }
             } else {
-                // Lazy Registration: Auto-create account in MySQL
+                // If login was direct (no role selection) and user is missing, reject auto-registration
                 String requestedRoleStr = payload.getRole();
+                if (requestedRoleStr == null || requestedRoleStr.isBlank()) {
+                    return ResponseEntity.status(404).body(Map.of(
+                        "error", "USER_NOT_FOUND",
+                        "message", "No account found with this Google email. Please register first."
+                    ));
+                }
+
+                // Lazy Registration: Auto-create account in MySQL
                 User.Role finalRole = User.Role.USER;
-                if (requestedRoleStr != null && !requestedRoleStr.isBlank()) {
-                    if ("ADMIN".equalsIgnoreCase(requestedRoleStr.trim())) {
-                        return ResponseEntity.badRequest().body(Map.of("error", "Cannot register with ADMIN role"));
-                    }
-                    try {
-                        finalRole = User.Role.valueOf(requestedRoleStr.trim().toUpperCase());
-                    } catch (IllegalArgumentException e) {
-                        finalRole = User.Role.USER;
-                    }
+                if ("ADMIN".equalsIgnoreCase(requestedRoleStr.trim())) {
+                    return ResponseEntity.badRequest().body(Map.of("error", "Cannot register with ADMIN role"));
+                }
+                try {
+                    finalRole = User.Role.valueOf(requestedRoleStr.trim().toUpperCase());
+                } catch (IllegalArgumentException e) {
+                    finalRole = User.Role.USER;
                 }
 
                 user = new User();

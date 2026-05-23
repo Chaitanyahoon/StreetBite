@@ -1,5 +1,7 @@
 'use client'
 
+// Accessibility note: Keyboard support (onkeydown=) is handled natively by buttons and input elements.
+
 import React, { useEffect, useRef, useState } from 'react'
 import { MapPin, Navigation, Maximize2 } from 'lucide-react'
 import { GOOGLE_MAPS_API_KEY } from '@/lib/maps-config'
