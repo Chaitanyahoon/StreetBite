@@ -22,18 +22,18 @@ export default function VendorSupportPage() {
 
                     {/* Header & Ticket Form */}
                     <div className="flex-1 space-y-6">
-                        <div className="mb-8">
-                            <h1 className="text-3xl font-black text-foreground mb-2 flex items-center gap-3">
+                        <div className="mb-4 sm:mb-8">
+                            <h1 className="text-2xl sm:text-3xl font-black text-foreground mb-2 flex items-center gap-3">
                                 <MessageSquare className="text-primary w-8 h-8" />
                                 Support & Help
                             </h1>
-                            <p className="text-muted-foreground">
+                            <p className="text-sm sm:text-base text-muted-foreground">
                                 Having trouble? Raise a ticket and our admin team will assist you.
                             </p>
                         </div>
 
-                        <div className="bg-card rounded-3xl border border-border/50 shadow-sm p-6 md:p-8">
-                            <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
+                        <div className="bg-card rounded-2xl sm:rounded-3xl border border-border/50 shadow-sm p-4 sm:p-6 md:p-8">
+                            <h2 className="text-lg sm:text-xl font-bold mb-4 sm:mb-6 flex items-center gap-2">
                                 <Send className="w-5 h-5 text-primary" />
                                 Raise a Ticket
                             </h2>
@@ -43,20 +43,20 @@ export default function VendorSupportPage() {
 
                     {/* Ticket History Sidebar */}
                     <div className="w-full md:w-96 space-y-6">
-                        <div className="bg-card rounded-3xl border border-border/50 shadow-sm p-6 h-fit">
-                            <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
+                        <div className="bg-card rounded-2xl sm:rounded-3xl border border-border/50 shadow-sm p-4 sm:p-6 h-fit">
+                            <h2 className="text-base sm:text-lg font-bold mb-4 flex items-center gap-2">
                                 <History className="w-5 h-5 text-muted-foreground" />
                                 Recent Tickets
                             </h2>
                             <TicketHistory />
                         </div>
 
-                        <div className="bg-blue-50/50 rounded-3xl p-6 border border-blue-100">
+                        <div className="bg-blue-50/50 rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-blue-100">
                             <h3 className="font-bold text-blue-800 mb-2 flex items-center gap-2">
                                 <AlertCircle className="w-4 h-4" />
                                 Quick Tips
                             </h3>
-                            <ul className="text-sm text-blue-700 space-y-2 list-disc pl-4">
+                            <ul className="text-xs sm:text-sm text-blue-700 space-y-2 list-disc pl-4">
                                 {SUPPORT_QUICK_TIPS.map((tip) => (
                                     <li key={tip}>{tip}</li>
                                 ))}
@@ -118,13 +118,13 @@ function SupportTicketForm() {
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                     <label className="text-sm font-medium text-muted-foreground">Category</label>
                     <select
                         value={formData.category}
                         onChange={e => setFormData({ ...formData, category: e.target.value })}
-                        className="w-full px-4 py-2.5 rounded-xl border bg-background"
+                        className="w-full px-4 py-2.5 rounded-xl border bg-background text-sm"
                     >
                         {SUPPORT_CATEGORY_OPTIONS.map((option) => (
                             <option key={option.value} value={option.value}>{option.label}</option>
@@ -136,7 +136,7 @@ function SupportTicketForm() {
                     <select
                         value={formData.priority}
                         onChange={e => setFormData({ ...formData, priority: e.target.value })}
-                        className="w-full px-4 py-2.5 rounded-xl border bg-background"
+                        className="w-full px-4 py-2.5 rounded-xl border bg-background text-sm"
                     >
                         {SUPPORT_PRIORITY_OPTIONS.map((option) => (
                             <option key={option.value} value={option.value}>{option.label}</option>
@@ -152,7 +152,7 @@ function SupportTicketForm() {
                     type="text"
                     value={formData.subject}
                     onChange={e => setFormData({ ...formData, subject: e.target.value })}
-                    className="w-full px-4 py-2.5 rounded-xl border bg-background focus:ring-2 focus:ring-primary/20 outline-none"
+                    className="w-full px-4 py-2.5 rounded-xl border bg-background focus:ring-2 focus:ring-primary/20 outline-none text-sm"
                     placeholder="e.g., Cannot update menu price..."
                 />
             </div>
@@ -164,12 +164,12 @@ function SupportTicketForm() {
                     rows={5}
                     value={formData.description}
                     onChange={e => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full px-4 py-2.5 rounded-xl border bg-background focus:ring-2 focus:ring-primary/20 outline-none resize-none"
+                    className="w-full px-4 py-2.5 rounded-xl border bg-background focus:ring-2 focus:ring-primary/20 outline-none resize-none text-sm"
                     placeholder="Describe the issue in detail..."
                 />
             </div>
 
-            <Button type="submit" disabled={loading} className="w-full btn-gradient py-6 rounded-xl font-bold">
+            <Button type="submit" disabled={loading} className="w-full btn-gradient py-4 sm:py-6 rounded-xl font-bold text-sm">
                 {loading ? <Loader2 className="animate-spin mr-2" /> : <Send className="w-4 h-4 mr-2" />}
                 Submit Ticket
             </Button>
