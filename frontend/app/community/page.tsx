@@ -933,7 +933,7 @@ function CommunityPageContent() {
                         Live in the last 24 hours
                     </p>
 
-                    <h1 className="text-3xl xs:text-5xl sm:text-6xl md:text-8xl font-black mb-4 sm:mb-6 tracking-tighter leading-[0.9] text-black">
+                    <h1 className="text-[2.25rem] xs:text-5xl sm:text-6xl md:text-8xl font-black mb-4 sm:mb-6 tracking-tighter leading-[1.05] sm:leading-[0.9] text-black">
                         THE <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-red-600 drop-shadow-[2px_2px_0px_rgba(0,0,0,1)] sm:drop-shadow-[4px_4px_0px_rgba(0,0,0,1)]">FOODIE</span> SOCIAL
                     </h1>
 
@@ -1008,7 +1008,7 @@ function CommunityPageContent() {
                                         <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
                                             {authUser?.role === 'ADMIN' ? (
                                                 <Button
-                                                    className="border-2 sm:border-4 border-black bg-black text-white font-black uppercase tracking-wider text-[9px] xs:text-[10px] sm:text-xs h-7 sm:h-10 px-2 sm:px-3 active:translate-x-[0.5px] active:translate-y-[0.5px] active:shadow-none transition-all"
+                                                    className="border-2 border-black bg-black text-white font-black uppercase tracking-wider text-[11px] xs:text-xs sm:text-xs h-9 sm:h-10 px-2.5 sm:px-3.5 active:translate-x-[0.5px] active:translate-y-[0.5px] active:shadow-none transition-all"
                                                     onClick={() => router.push('/admin/hot-topics')}
                                                 >
                                                     Start Yap
@@ -1016,7 +1016,7 @@ function CommunityPageContent() {
                                             ) : (
                                                 <Button
                                                     variant="outline"
-                                                    className="border-2 sm:border-4 border-black font-black uppercase tracking-wider text-[9px] xs:text-[10px] sm:text-xs h-7 sm:h-10 px-2 sm:px-3 active:translate-x-[0.5px] active:translate-y-[0.5px] active:shadow-none transition-all bg-white text-black"
+                                                    className="border-2 border-black font-black uppercase tracking-wider text-[11px] xs:text-xs sm:text-xs h-9 sm:h-10 px-2.5 sm:px-3.5 active:translate-x-[0.5px] active:translate-y-[0.5px] active:shadow-none transition-all bg-white text-black"
                                                     onClick={openTopicDialog}
                                                 >
                                                     Start Yap
@@ -1027,7 +1027,7 @@ function CommunityPageContent() {
                                                 variant="outline"
                                                 onClick={() => fetchHotTopics(true)}
                                                 disabled={isTopicsLoading}
-                                                className="border-2 sm:border-4 border-black font-black uppercase tracking-wider text-[9px] xs:text-[10px] sm:text-xs h-7 sm:h-10 px-2 sm:px-3 active:translate-x-[0.5px] active:translate-y-[0.5px] active:shadow-none transition-all bg-white text-black"
+                                                className="border-2 border-black font-black uppercase tracking-wider text-[11px] xs:text-xs sm:text-xs h-9 sm:h-10 px-2.5 sm:px-3.5 active:translate-x-[0.5px] active:translate-y-[0.5px] active:shadow-none transition-all bg-white text-black"
                                             >
                                                 {isTopicsLoading ? (
                                                     <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
@@ -1040,20 +1040,18 @@ function CommunityPageContent() {
 
                                     {/* Bottom Row: Full-width Search Input on Mobile, Compact on Desktop */}
                                     <div className="relative w-full lg:max-w-xs">
-                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-black" />
+                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-black" />
                                         <Input
                                             type="text"
                                             placeholder="Search yaps..."
                                             value={searchQuery}
                                             onChange={(e) => setSearchQuery(e.target.value)}
-                                            className="pl-8 sm:pl-11 h-7.5 xs:h-8.5 sm:h-10 bg-white border-2 sm:border-4 border-black rounded-lg sm:rounded-xl font-bold placeholder:text-gray-400 focus:ring-0 focus:border-black focus:shadow-[1.5px_1.5px_0px_0px_rgba(0,0,0,1)] sm:focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all text-[9px] xs:text-[10px] sm:text-xs"
+                                            className="pl-9 h-10 bg-white border-2 border-black rounded-lg sm:rounded-xl font-bold placeholder:text-gray-400 focus:ring-0 focus:border-black focus:shadow-[1.5px_1.5px_0px_0px_rgba(0,0,0,1)] sm:focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all text-xs"
                                         />
                                     </div>
-                                </div>
-
-                                {/* Filters horizontal scrolldeck */}
-                                <div className="mt-3.5 flex gap-1.5 items-center overflow-x-auto no-scrollbar pb-1 -mx-3 px-3 sm:-mx-6 sm:px-6">
-                                    <span className="shrink-0 rounded-full border border-black bg-black px-2 py-0.5 text-[8px] xs:text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-emerald-300">
+                                                       {/* Filters horizontal scrolldeck */}
+                                <div className="mt-3.5 flex gap-2 items-center overflow-x-auto no-scrollbar pb-1.5 -mx-3 px-3 sm:-mx-6 sm:px-6">
+                                    <span className="shrink-0 rounded-full border border-black bg-black px-2.5 py-1 text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-emerald-300">
                                         Mode
                                     </span>
                                     {TOPIC_MODE_OPTIONS.map((option) => (
@@ -1061,32 +1059,32 @@ function CommunityPageContent() {
                                             key={option.id}
                                             type="button"
                                             onClick={() => setTopicMode(option.id)}
-                                            className={`shrink-0 rounded-full border px-2 py-0.5 text-[8px] xs:text-[9px] sm:text-[10px] font-black uppercase tracking-[0.18em] transition-all active:translate-x-[0.5px] active:translate-y-[0.5px] active:shadow-none ${
+                                            className={`shrink-0 rounded-full border px-3 py-1.5 text-[10px] xs:text-[11px] sm:text-xs font-black uppercase tracking-[0.18em] transition-all active:translate-x-[0.5px] active:translate-y-[0.5px] active:shadow-none ${
                                                 topicMode === option.id
-                                                    ? 'border-black bg-emerald-300 text-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] sm:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
+                                                    ? 'border-black bg-emerald-300 text-black shadow-[1.5px_1.5px_0px_0px_rgba(0,0,0,1)] sm:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
                                                     : 'border-black bg-white text-black/70'
                                             }`}
                                         >
                                             {option.label}
                                         </button>
                                     ))}
-                                    <span className="shrink-0 rounded-full border border-black bg-white px-2 py-0.5 text-[8px] xs:text-[9px] sm:text-[10px] font-black uppercase tracking-[0.14em] text-black/70 inline-flex items-center gap-1">
-                                        <Flame className="h-2.5 w-2.5 text-orange-500" />
+                                    <span className="shrink-0 rounded-full border border-black bg-white px-3 py-1.5 text-[10px] xs:text-[11px] sm:text-xs font-black uppercase tracking-[0.14em] text-black/70 inline-flex items-center gap-1.5">
+                                        <Flame className="h-3.5 w-3.5 text-orange-500" />
                                         {liveModeCount} live
                                     </span>
-                                    <span className="shrink-0 rounded-full border border-black bg-white px-2 py-0.5 text-[8px] xs:text-[9px] sm:text-[10px] font-black uppercase tracking-[0.14em] text-black/70 inline-flex items-center gap-1">
-                                        <MessageSquare className="h-2.5 w-2.5 text-blue-500" />
+                                    <span className="shrink-0 rounded-full border border-black bg-white px-3 py-1.5 text-[10px] xs:text-[11px] sm:text-xs font-black uppercase tracking-[0.14em] text-black/70 inline-flex items-center gap-1.5">
+                                        <MessageSquare className="h-3.5 w-3.5 text-blue-500" />
                                         {unansweredModeCount} unanswered
                                     </span>
-                                    <span className="shrink-0 rounded-full border border-black bg-white px-2 py-0.5 text-[8px] xs:text-[9px] sm:text-[10px] font-black uppercase tracking-[0.14em] text-black/70 inline-flex items-center gap-1">
-                                        <Scale className="h-2.5 w-2.5 text-red-500" />
+                                    <span className="shrink-0 rounded-full border border-black bg-white px-3 py-1.5 text-[10px] xs:text-[11px] sm:text-xs font-black uppercase tracking-[0.14em] text-black/70 inline-flex items-center gap-1.5">
+                                        <Scale className="h-3.5 w-3.5 text-red-500" />
                                         {debateModeCount} debate
                                     </span>
-                                    <span className="shrink-0 rounded-full border border-black bg-white px-2 py-0.5 text-[8px] xs:text-[9px] sm:text-[10px] font-black uppercase tracking-[0.14em] text-black/70 inline-flex items-center gap-1">
-                                        <MapPin className="h-2.5 w-2.5 text-teal-500" />
+                                    <span className="shrink-0 rounded-full border border-black bg-white px-3 py-1.5 text-[10px] xs:text-[11px] sm:text-xs font-black uppercase tracking-[0.14em] text-black/70 inline-flex items-center gap-1.5">
+                                        <MapPin className="h-3.5 w-3.5 text-teal-500" />
                                         {nearbyModeCount} nearby
                                     </span>
-                                    <span className="shrink-0 rounded-full border border-black bg-black px-2 py-0.5 text-[8px] xs:text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-yellow-300">
+                                    <span className="shrink-0 rounded-full border border-black bg-black px-2.5 py-1 text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-yellow-300">
                                         Sort
                                     </span>
                                     {visibleSortOptions.map((option) => (
@@ -1094,9 +1092,9 @@ function CommunityPageContent() {
                                             key={option.id}
                                             type="button"
                                             onClick={() => setTopicSort(option.id)}
-                                            className={`shrink-0 rounded-full border px-2 py-0.5 text-[8px] xs:text-[9px] sm:text-[10px] font-black uppercase tracking-[0.18em] transition-all active:translate-x-[0.5px] active:translate-y-[0.5px] active:shadow-none ${
+                                            className={`shrink-0 rounded-full border px-3 py-1.5 text-[10px] xs:text-[11px] sm:text-xs font-black uppercase tracking-[0.18em] transition-all active:translate-x-[0.5px] active:translate-y-[0.5px] active:shadow-none ${
                                                 topicSort === option.id
-                                                    ? 'border-black bg-yellow-300 text-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] sm:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
+                                                    ? 'border-black bg-yellow-300 text-black shadow-[1.5px_1.5px_0px_0px_rgba(0,0,0,1)] sm:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
                                                     : 'border-black bg-white text-black/70'
                                             }`}
                                         >
@@ -1104,11 +1102,12 @@ function CommunityPageContent() {
                                         </button>
                                     ))}
                                     {lastTopicsRefreshLabel && (
-                                        <span className="shrink-0 rounded-full border border-black bg-white px-2 py-0.5 text-[8px] xs:text-[9px] sm:text-[10px] font-black uppercase tracking-[0.14em] text-black/70">
+                                        <span className="shrink-0 rounded-full border border-black bg-white px-3 py-1.5 text-[10px] xs:text-[11px] sm:text-xs font-black uppercase tracking-[0.14em] text-black/70">
                                             Updated {lastTopicsRefreshLabel}
                                         </span>
                                     )}
                                 </div>
+                            </div>
                             </CardHeader>
                             <CardContent className="p-3.5 sm:p-6 bg-white">
                                 {topicMode === 'live' && (

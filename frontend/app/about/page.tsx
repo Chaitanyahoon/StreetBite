@@ -90,10 +90,10 @@ export default function AboutPage() {
           <div className="inline-block px-6 py-2 bg-black text-white font-black text-sm uppercase tracking-widest mb-6 transform -rotate-2 rounded-lg shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
             EST. 2025
           </div>
-          <h1 className="text-6xl md:text-8xl font-black text-black mb-8 leading-[0.9] tracking-tighter">
-            The <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-600 drop-shadow-[4px_4px_0px_rgba(0,0,0,1)]">StreetBite</span><br /> Revolution
+          <h1 className="text-4xl xs:text-5xl md:text-8xl font-black text-black mb-6 leading-[1.05] md:leading-[0.9] tracking-tighter">
+            The <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-600 drop-shadow-[2.5px_2.5px_0px_rgba(0,0,0,1)] md:drop-shadow-[4px_4px_0px_rgba(0,0,0,1)]">StreetBite</span><br /> Revolution
           </h1>
-          <p className="text-2xl text-black font-bold max-w-3xl mx-auto leading-relaxed border-l-8 border-black pl-6 text-left md:text-center md:border-l-0 md:pl-0">
+          <p className="text-lg sm:text-2xl text-black font-bold max-w-3xl mx-auto leading-relaxed border-l-4 sm:border-l-0 border-black pl-4 sm:pl-0 text-left md:text-center">
             We're not just an app. We're a movement. Championing the culinary heroes who feed our cities, one plate at a time.
           </p>
         </motion.div>
@@ -112,8 +112,8 @@ export default function AboutPage() {
             <div className="bg-white p-8 rounded-[2rem] border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-transform">
               <div>
                 <p className="text-black font-black text-lg uppercase tracking-widest mb-4 bg-yellow-300 inline-block px-2 transform -rotate-1">Our Mission</p>
-                <h2 className="text-4xl font-black text-black mb-6 leading-tight">Democratizing Technology for Street Vendors</h2>
-                <p className="text-lg text-black/80 font-medium leading-relaxed mb-6">
+                <h2 className="text-2xl xs:text-3xl sm:text-4xl font-black text-black mb-6 leading-tight">Democratizing Technology for Street Vendors</h2>
+                <p className="text-base sm:text-lg text-black/80 font-medium leading-relaxed mb-6">
                   In a world of digital-first giants, the humble street vendor was left behind. <strong className="bg-orange-200 px-1">We said "No more."</strong> We built StreetBite to give the best vada pav and roll stalls the same power as the big chains.
                 </p>
               </div>
@@ -140,7 +140,7 @@ export default function AboutPage() {
                 </div>
               </div>
             </div>
-            <div className="relative h-[500px] w-full rounded-[2rem] overflow-hidden border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white">
+            <div className="relative h-[300px] sm:h-[400px] md:h-[500px] w-full rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white">
               <MissionMap />
             </div>
           </motion.div>
@@ -165,7 +165,7 @@ export default function AboutPage() {
             className="text-center mb-16"
           >
             <p className="text-black font-black text-sm uppercase tracking-widest mb-4 inline-block bg-white px-4 py-1 border-2 border-black rounded-full shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">The Creators</p>
-            <h2 className="text-5xl font-black text-black mb-4">MEET THE SQUAD</h2>
+            <h2 className="text-3xl sm:text-5xl font-black text-black mb-4">MEET THE SQUAD</h2>
             <p className="text-xl text-black/70 font-bold max-w-2xl mx-auto">
               Foodies, coders, and dreamers building the future of street food.
             </p>
@@ -179,7 +179,7 @@ export default function AboutPage() {
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
           >
             {teamMembers.map((member, idx) => (
-              <motion.div variants={fadeInUp} key={idx} className="hover:-translate-y-2 transition-transform duration-300">
+              <motion.div variants={fadeInUp} key={idx} className="hover:-translate-y-2 transition-transform duration-300 max-w-[340px] sm:max-w-none mx-auto w-full">
                 <TeamCard member={member} />
               </motion.div>
             ))}
@@ -198,7 +198,7 @@ export default function AboutPage() {
             className="text-center mb-16"
           >
             <p className="text-black font-black text-sm uppercase tracking-widest mb-4 bg-yellow-300 inline-block px-3 py-1 border-2 border-black rounded shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">Core Values</p>
-            <h2 className="text-5xl font-black text-black">THE STREETBITE PROMISE</h2>
+            <h2 className="text-3xl sm:text-5xl font-black text-black">THE STREETBITE PROMISE</h2>
           </motion.div>
           <motion.div
             initial="hidden"
@@ -207,40 +207,40 @@ export default function AboutPage() {
             variants={staggerContainer}
             className="grid grid-cols-1 md:grid-cols-3 gap-8"
           >
-            <motion.div variants={fadeInUp} className="md:col-span-2 p-8 rounded-[2rem] bg-orange-100 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] transition-all flex flex-col justify-center group">
-              <div className="text-black mb-4"><Lightbulb size={48} strokeWidth={2.5} className="group-hover:text-orange-500 transition-colors" /></div>
-              <h3 className="text-3xl font-black text-black mb-3">Innovation for All</h3>
-              <p className="text-black/80 text-xl font-bold">Advanced tech shouldn't be a luxury. We bring enterprise-grade tools to the street corner.</p>
+            <motion.div variants={fadeInUp} className="md:col-span-2 p-5 sm:p-8 rounded-[1.5rem] sm:rounded-[2rem] bg-orange-100 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] transition-all flex flex-col justify-center group">
+              <div className="text-black mb-3 sm:mb-4"><Lightbulb strokeWidth={2.5} className="w-10 h-10 sm:w-12 sm:h-12 group-hover:text-orange-500 transition-colors" /></div>
+              <h3 className="text-xl sm:text-3xl font-black text-black mb-2 sm:mb-3">Innovation for All</h3>
+              <p className="text-black/80 text-sm sm:text-xl font-bold leading-snug sm:leading-normal">Advanced tech shouldn't be a luxury. We bring enterprise-grade tools to the street corner.</p>
             </motion.div>
 
-            <motion.div variants={fadeInUp} className="p-8 rounded-[2rem] bg-pink-100 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] transition-all">
-              <div className="text-black mb-4"><Users size={40} strokeWidth={2.5} /></div>
-              <h3 className="text-2xl font-black text-black mb-2">Community First</h3>
-              <p className="text-black/80 font-medium">Strengthening bonds between local vendors and food lovers.</p>
+            <motion.div variants={fadeInUp} className="p-5 sm:p-8 rounded-[1.5rem] sm:rounded-[2rem] bg-pink-100 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] transition-all">
+              <div className="text-black mb-3 sm:mb-4"><Users strokeWidth={2.5} className="w-8 h-8 sm:w-10 sm:h-10" /></div>
+              <h3 className="text-xl sm:text-2xl font-black text-black mb-2">Community First</h3>
+              <p className="text-black/80 text-sm sm:text-base font-bold leading-snug sm:leading-normal">Strengthening bonds between local vendors and food lovers.</p>
             </motion.div>
 
-            <motion.div variants={fadeInUp} className="p-8 rounded-[2rem] bg-blue-100 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] transition-all">
-              <div className="text-black mb-4"><Globe size={40} strokeWidth={2.5} /></div>
-              <h3 className="text-2xl font-black text-black mb-2">Authenticity</h3>
-              <p className="text-black/80 font-medium">Real street food. No gourmet makeovers. Just pure flavor.</p>
+            <motion.div variants={fadeInUp} className="p-5 sm:p-8 rounded-[1.5rem] sm:rounded-[2rem] bg-blue-100 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] transition-all">
+              <div className="text-black mb-3 sm:mb-4"><Globe strokeWidth={2.5} className="w-8 h-8 sm:w-10 sm:h-10" /></div>
+              <h3 className="text-xl sm:text-2xl font-black text-black mb-2">Authenticity</h3>
+              <p className="text-black/80 text-sm sm:text-base font-bold leading-snug sm:leading-normal">Real street food. No gourmet makeovers. Just pure flavor.</p>
             </motion.div>
 
-            <motion.div variants={fadeInUp} className="md:col-span-2 p-8 rounded-[2rem] bg-black text-white border-4 border-black shadow-[6px_6px_0px_0px_rgba(100,100,100,1)] hover:shadow-[10px_10px_0px_0px_rgba(100,100,100,1)] transition-all flex flex-col justify-center relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-10 opacity-20"><Shield size={120} /></div>
+            <motion.div variants={fadeInUp} className="md:col-span-2 p-5 sm:p-8 rounded-[1.5rem] sm:rounded-[2rem] bg-black text-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(100,100,100,1)] sm:shadow-[6px_6px_0px_0px_rgba(100,100,100,1)] hover:shadow-[10px_10px_0px_0px_rgba(100,100,100,1)] transition-all flex flex-col justify-center relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-8 sm:p-10 opacity-20"><Shield className="w-[90px] h-[90px] sm:w-[120px] sm:h-[120px]" /></div>
               <div className="relative z-10">
-                <div className="mb-4 text-yellow-400"><Shield size={48} strokeWidth={2.5} /></div>
-                <h3 className="text-3xl font-black mb-3">Trust & Transparency</h3>
-                <p className="text-gray-300 text-xl font-bold">Real prices, real reviews, and verified locations. No hidden fees.</p>
+                <div className="mb-3 sm:mb-4 text-yellow-400"><Shield strokeWidth={2.5} className="w-10 h-10 sm:w-12 sm:h-12" /></div>
+                <h3 className="text-xl sm:text-3xl font-black mb-2 sm:mb-3">Trust & Transparency</h3>
+                <p className="text-gray-300 text-sm sm:text-xl font-bold leading-snug sm:leading-normal">Real prices, real reviews, and verified locations. No hidden fees.</p>
               </div>
             </motion.div>
 
-            <motion.div variants={fadeInUp} className="md:col-span-3 p-8 rounded-[2rem] bg-green-100 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] transition-all flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
-              <div className="text-black p-4 bg-white rounded-full border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] shrink-0">
-                <Heart size={40} strokeWidth={2.5} className="fill-current text-green-500" />
+            <motion.div variants={fadeInUp} className="md:col-span-3 p-5 sm:p-8 rounded-[1.5rem] sm:rounded-[2rem] bg-green-100 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] transition-all flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
+              <div className="text-black p-3 sm:p-4 bg-white rounded-full border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] shrink-0">
+                <Heart strokeWidth={2.5} className="w-8 h-8 sm:w-10 sm:h-10 fill-current text-green-500" />
               </div>
               <div>
-                <h3 className="text-3xl font-black text-black mb-2">Empowerment</h3>
-                <p className="text-black/80 font-bold text-lg">Giving families the tools, data, and platform to grow their legacy and reach new customers.</p>
+                <h3 className="text-xl sm:text-3xl font-black text-black mb-2">Empowerment</h3>
+                <p className="text-black/80 text-sm sm:text-lg font-bold leading-snug sm:leading-normal">Giving families the tools, data, and platform to grow their legacy and reach new customers.</p>
               </div>
             </motion.div>
           </motion.div>

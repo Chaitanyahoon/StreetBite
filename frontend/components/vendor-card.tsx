@@ -54,11 +54,11 @@ export function VendorCard({
   return (
     <Link
       href={vendorUrl}
-      className="block h-full group active:scale-[0.98] transition-transform duration-100"
+      className="block h-full group active:scale-[0.98] transition-transform duration-100 max-w-[380px] sm:max-w-none mx-auto w-full"
       aria-label={`View ${name}, ${cuisine} street food vendor`}
     >
-      <article className="surface-panel flex h-full flex-col overflow-hidden rounded-[1.75rem] border-[3px] sm:border-4 border-black bg-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all duration-300 group-hover:-translate-y-1 group-hover:-translate-x-1 group-hover:shadow-[4.5px_4.5px_0px_0px_rgba(0,0,0,1)] sm:group-hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]">
-        <div className="relative h-44 overflow-hidden bg-muted border-b-[3px] sm:border-b-4 border-black sm:h-52 md:h-56">
+      <article className="surface-panel flex h-full flex-col overflow-hidden rounded-[1.5rem] sm:rounded-[1.75rem] border-[2.5px] sm:border-4 border-black bg-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all duration-300 group-hover:-translate-y-1 group-hover:-translate-x-1 group-hover:shadow-[4.5px_4.5px_0px_0px_rgba(0,0,0,1)] sm:group-hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]">
+        <div className="relative h-36 xs:h-40 overflow-hidden bg-muted border-b-[2.5px] sm:border-b-4 border-black sm:h-52 md:h-56">
           <Image
             src={displayImageUrl || image || '/placeholder.svg?height=224&width=400&query=street+food+vendor'}
             alt={`${name} - ${cuisine} street food stall in your local area`}
@@ -83,7 +83,7 @@ export function VendorCard({
 
           <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between gap-3">
             <div className="min-w-0">
-              <h3 className="line-clamp-2 text-lg font-black leading-tight text-white md:text-xl">
+              <h3 className="line-clamp-2 text-base sm:text-lg font-black leading-tight text-white md:text-xl">
                 {name}
               </h3>
             </div>
@@ -101,7 +101,7 @@ export function VendorCard({
           </div>
         </div>
 
-        <div className="flex flex-1 flex-col gap-4 p-4 md:p-5">
+        <div className="flex flex-1 flex-col gap-4 p-3.5 sm:p-4 md:p-5">
           <div className="flex flex-wrap gap-2">
             {(tags || []).slice(0, 2).map((tag, index) => (
               <span
@@ -139,7 +139,7 @@ export function VendorCard({
               <p className="text-[0.68rem] font-black uppercase tracking-[0.16em] text-orange-500">
                 StreetBite pick
               </p>
-              <p className="mt-1 text-xs sm:text-sm font-semibold text-black/70">
+              <p className="mt-1 text-[10px] sm:text-xs sm:text-sm font-semibold text-black/70">
                 Tap for menu, map, reviews, and live stall details
               </p>
             </div>

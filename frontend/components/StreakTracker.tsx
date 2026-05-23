@@ -7,6 +7,7 @@ import { Flame, CheckCircle2, Trophy, Star, Zap } from "lucide-react";
 import { motion } from "framer-motion";
 
 import { useGamification } from "@/context/GamificationContext";
+import { playSuccess, triggerHaptic } from "@/lib/sound-effects";
 
 export function StreakTracker() {
     const { streak, checkIn, hasCheckedInToday, level } = useGamification();
@@ -15,15 +16,17 @@ export function StreakTracker() {
     const handleCheckIn = () => {
         checkIn();
         setProgress(prev => Math.min(prev + 20, 100));
+        playSuccess();
+        triggerHaptic(80);
     };
 
     return (
-        <Card className="overflow-hidden border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-gradient-to-br from-orange-500 via-orange-400 to-amber-300 relative group rounded-[2rem]">
+        <Card className="overflow-hidden border-[3px] sm:border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-gradient-to-br from-orange-500 via-orange-400 to-amber-300 relative group rounded-[1.5rem] sm:rounded-[2rem]">
             <div className="absolute inset-0 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:18px_18px] opacity-15" />
 
-            <CardContent className="p-6 relative z-10 text-white">
+            <CardContent className="p-4 sm:p-6 relative z-10 text-white">
                 {/* Header */}
-                <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
+                <div className="flex flex-wrap items-start justify-between gap-4 mb-4 sm:mb-6">
                     <div>
                         <div className="flex items-center gap-2 mb-2">
                             <div className="bg-black p-2 rounded-lg border-2 border-white shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] -rotate-2">
@@ -42,7 +45,7 @@ export function StreakTracker() {
                 </div>
 
                 {/* Main Counter */}
-                <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center justify-between mb-6 sm:mb-8">
                     <div className="flex items-center gap-4">
                         <div className="relative group/flame">
                             <motion.div
@@ -50,8 +53,8 @@ export function StreakTracker() {
                                 transition={{ repeat: Infinity, duration: 2 }}
                                 className="absolute inset-0 bg-yellow-300 rounded-full blur-md"
                             />
-                            <div className={`relative w-20 h-20 flex items-center justify-center rounded-full border-4 border-black transition-all duration-300 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] ${hasCheckedInToday ? "bg-white" : "bg-black"}`}>
-                                <Flame className={`w-10 h-10 ${hasCheckedInToday ? "text-orange-500 fill-orange-500" : "text-white fill-gray-800"}`} />
+                            <div className={`relative w-14 h-14 xs:w-16 xs:h-16 sm:w-20 sm:h-20 flex items-center justify-center rounded-full border-3 sm:border-4 border-black transition-all duration-300 shadow-[2.5px_2.5px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] ${hasCheckedInToday ? "bg-white" : "bg-black"}`}>
+                                <Flame className={`w-7 h-7 xs:w-8 xs:h-8 sm:w-10 sm:h-10 ${hasCheckedInToday ? "text-orange-500 fill-orange-500" : "text-white fill-gray-800"}`} />
                             </div>
                         </div>
                         <div>
@@ -60,13 +63,13 @@ export function StreakTracker() {
                                     key={streak}
                                     initial={{ y: 20, opacity: 0 }}
                                     animate={{ y: 0, opacity: 1 }}
-                                    className="text-6xl font-black tracking-tighter drop-shadow-[4px_4px_0px_rgba(0,0,0,0.5)]"
+                                    className="text-4xl xs:text-5xl sm:text-6xl font-black tracking-tighter drop-shadow-[2.5px_2.5px_0px_rgba(0,0,0,0.5)] sm:drop-shadow-[4px_4px_0px_rgba(0,0,0,0.5)]"
                                 >
                                     {streak}
                                 </motion.span>
-                                <span className="text-lg font-black text-black">DAYS</span>
+                                <span className="text-sm xs:text-base sm:text-lg font-black text-black">DAYS</span>
                             </div>
-                            <p className="text-xs font-black uppercase tracking-[0.2em] text-black/70">Personal best: 12</p>
+                            <p className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-black/70">Personal best: 12</p>
                         </div>
                     </div>
                 </div>
@@ -77,7 +80,7 @@ export function StreakTracker() {
                 </div>
 
                 {/* Progress Bar */}
-                <div className="h-6 w-full bg-black/20 rounded-full overflow-hidden border-4 border-black mb-6 relative">
+                <div className="h-5 sm:h-6 w-full bg-black/20 rounded-full overflow-hidden border-[3px] sm:border-4 border-black mb-4 sm:mb-6 relative">
                     <motion.div
                         initial={{ width: 0 }}
                         animate={{ width: `${progress}%` }}
@@ -91,7 +94,7 @@ export function StreakTracker() {
                 <Button
                     onClick={handleCheckIn}
                     disabled={hasCheckedInToday}
-                    className={`w-full h-14 rounded-xl font-black text-lg uppercase tracking-[0.18em] border-4 border-black transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 active:translate-y-0 active:shadow-none ${hasCheckedInToday
+                    className={`w-full h-11 xs:h-12 sm:h-14 rounded-xl font-black text-sm xs:text-base sm:text-lg uppercase tracking-[0.18em] border-[3px] sm:border-4 border-black transition-all shadow-[2.5px_2.5px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5 sm:hover:-translate-y-1 active:translate-y-0 active:shadow-none ${hasCheckedInToday
                         ? "bg-green-500 text-white hover:bg-green-500"
                         : "bg-white text-black hover:bg-gray-100"
                         }`}
@@ -100,14 +103,14 @@ export function StreakTracker() {
                         <motion.div
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}
-                            className="flex items-center"
+                            className="flex items-center justify-center w-full"
                         >
-                            <CheckCircle2 className="w-6 h-6 mr-2" />
+                            <CheckCircle2 className="w-5 h-5 mr-2" />
                             Checked In
                         </motion.div>
                     ) : (
-                        <div className="flex items-center">
-                            <Zap className="w-5 h-5 mr-2 fill-current" />
+                        <div className="flex items-center justify-center w-full">
+                            <Zap className="w-4 h-4 mr-2 fill-current" />
                             Check In Now
                         </div>
                     )}

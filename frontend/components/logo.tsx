@@ -14,7 +14,7 @@ export function Logo() {
           className="object-contain"
         />
       </div>
-      <span className="font-black text-3xl tracking-tighter uppercase text-black" style={{ textShadow: '2px 2px 0px #fff' }}>
+      <span className="font-black text-xl sm:text-3xl tracking-tighter uppercase text-black" style={{ textShadow: '2px 2px 0px #fff' }}>
         STREET<span className="text-orange-600 inline-block transform -rotate-2 bg-black text-white px-1 ml-0.5 border-2 border-transparent" style={{ textShadow: 'none' }}>BITE</span>
       </span>
     </div>

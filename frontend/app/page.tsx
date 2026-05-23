@@ -53,10 +53,10 @@ export default function Home() {
                 Find the best food fast
               </div>
 
-              <h1 className="mt-8 text-[2.5rem] leading-[1] font-black tracking-[-0.06em] text-black xs:text-5xl sm:text-6xl md:text-8xl lg:text-9xl animate-slide-up">
+              <h1 className="mt-8 text-[2.75rem] leading-[1.05] sm:leading-[1] font-black tracking-[-0.06em] text-black xs:text-5xl sm:text-6xl md:text-8xl lg:text-9xl animate-slide-up">
                 FIND THE
                 <br />
-                <span className="relative inline-block mt-2 text-primary drop-shadow-[4px_4px_0px_rgba(0,0,0,1)]">
+                <span className="relative inline-block mt-2 text-primary drop-shadow-[2.5px_2.5px_0px_rgba(0,0,0,1)] sm:drop-shadow-[4px_4px_0px_rgba(0,0,0,1)]">
                   BEST FOOD
                   <span className="absolute -right-8 -top-8 hidden md:block">
                     <Sparkles className="h-12 w-12 fill-yellow-300 text-yellow-300 stroke-black stroke-2 animate-spin-slow" />
@@ -142,7 +142,7 @@ export default function Home() {
         <ScrollingTicker />
 
         {/* Quick Cravings Section - Pop Art Style */}
-        <section className="py-16 border-b-4 border-black bg-white overflow-hidden relative">
+        <section className="py-10 sm:py-16 border-b-4 border-black bg-white overflow-hidden relative">
           <div className="absolute inset-0 bg-dot-pattern opacity-10"></div>
           <div className="max-w-screen-2xl mx-auto px-4 relative z-10">
             <CravingsRoulette />
@@ -151,7 +151,7 @@ export default function Home() {
 
 
         {/* Enhanced Features Section - Street Pop Style */}
-        <section className="py-24 bg-white relative overflow-hidden">
+        <section className="py-12 sm:py-24 bg-white relative overflow-hidden">
           {/* Background Pattern */}
           <div className="absolute inset-0 opacity-[0.03]" style={{
             backgroundImage: 'linear-gradient(45deg, #000 25%, transparent 25%), linear-gradient(-45deg, #000 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #000 75%), linear-gradient(-45deg, transparent 75%, #000 75%)',
@@ -160,11 +160,11 @@ export default function Home() {
           }}></div>
 
           <div className="max-w-screen-2xl mx-auto px-4 relative z-10">
-            <div className="text-center mb-16">
+            <div className="text-center mb-10 sm:mb-16">
               <div className="inline-block px-4 py-2 border-2 border-black bg-white text-black text-sm font-black uppercase tracking-widest mb-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transform rotate-1">
                 Why StreetBite
               </div>
-              <h2 className="text-3xl sm:text-5xl md:text-6xl font-black mb-6 text-foreground leading-tight">
+              <h2 className="text-[2.25rem] sm:text-5xl md:text-6xl font-black mb-6 text-foreground leading-[1.05] sm:leading-tight">
                 Your <span className="text-shine-amber">Ultimate Food Guide</span>
               </h2>
               <p className="text-xl font-bold text-muted-foreground max-w-2xl mx-auto">
@@ -211,16 +211,16 @@ export default function Home() {
 
 
         {/* How It Works Section - Street Pop / Neo-Brutalism */}
-        <section className="py-32 bg-white relative overflow-hidden">
+        <section className="py-16 sm:py-32 bg-white relative overflow-hidden">
           {/* Background Texture */}
           <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '16px 16px' }}></div>
 
           <div className="max-w-screen-2xl mx-auto px-4 relative z-10">
-            <div className="text-center mb-20">
+            <div className="text-center mb-12 sm:mb-20">
               <div className="inline-block px-6 py-2 bg-black text-white text-lg font-black uppercase tracking-wider mb-6 transform -rotate-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                 Street Logic
               </div>
-              <h2 className="text-3xl sm:text-5xl md:text-7xl font-black mb-6 uppercase leading-[1.0] sm:leading-[0.9]">
+              <h2 className="text-[2.5rem] xs:text-5xl sm:text-6xl md:text-7xl font-black mb-6 uppercase leading-[1.05] sm:leading-[0.9]">
                 From Screen<br />To <span className="text-shine-amber">Street</span>
               </h2>
             </div>
