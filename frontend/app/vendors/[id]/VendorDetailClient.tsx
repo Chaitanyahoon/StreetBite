@@ -526,6 +526,22 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
                     <DialogHeader className="p-6 pb-4 border-b">
                         <DialogTitle className="text-xl font-bold">Directions to {vendor.name}</DialogTitle>
                     </DialogHeader>
+                    {userLocation && (
+                        <div className="p-4 bg-yellow-100 border-b-2 border-black shrink-0">
+                            <Button
+                                onClick={() => {
+                                    window.open(`https://www.google.com/maps/dir/?api=1&origin=${userLocation.lat},${userLocation.lng}&destination=${vendor.latitude},${vendor.longitude}&travelmode=driving`, '_blank')
+                                }}
+                                className="w-full h-12 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-black border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5 transition-all text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2"
+                            >
+                                <Navigation className="h-4.5 w-4.5 animate-pulse" />
+                                START LIVE GPS NAVIGATION
+                            </Button>
+                            <p className="text-[10px] text-center text-gray-500 font-bold uppercase tracking-wider mt-2">
+                                Launch native maps app for real-time turn directions
+                            </p>
+                        </div>
+                    )}
                     <div className="flex-1 w-full relative">
                         {userLocation && (
                             <DirectionsMap
@@ -537,8 +553,123 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
                 </DialogContent>
             </Dialog>
 
-            {/* Enhanced Hero Section */}
-            <div className="relative overflow-hidden bg-[#120f0d]">
+            {/* Mobile Hero (Stacked Layout) - lg:hidden */}
+            <div className="lg:hidden">
+                {/* Banner Image */}
+                <div className="relative overflow-hidden bg-[#120f0d] h-[200px] xs:h-[240px] sm:h-[300px] border-b-4 border-black">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/10 z-10" />
+                    <VendorMediaImage
+                        key={displayVendor?.bannerImageUrl || displayVendor?.imageUrl || "/placeholder-vendor.jpg"}
+                        src={displayVendor?.bannerImageUrl || displayVendor?.imageUrl || "/placeholder-vendor.jpg"}
+                        fallbackSrc="https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=2070&auto=format&fit=crop"
+                        alt={displayVendor?.name}
+                        className="w-full h-full object-cover"
+                        sizes="100vw"
+                    />
+                    
+                    {/* Floating Navigation Controls */}
+                    <div className="absolute inset-x-0 top-0 z-20 px-3 pt-4">
+                        <div className="flex items-center justify-between">
+                            <Link href="/explore">
+                                <Button
+                                    variant="secondary"
+                                    size="icon"
+                                    className="h-10 w-10 rounded-full border-2 border-black bg-white text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:bg-orange-100"
+                                >
+                                    <ChevronLeft size={20} className="stroke-[3]" />
+                                </Button>
+                            </Link>
+                            <Button
+                                variant="secondary"
+                                size="icon"
+                                className={`h-10 w-10 rounded-full border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all ${isFavorite ? 'bg-red-500 text-white' : 'bg-white text-black hover:bg-orange-100'
+                                    }`}
+                                onClick={toggleFavorite}
+                            >
+                                <Heart size={16} className={isFavorite ? 'fill-current' : ''} />
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Vendor Details (Neobrutalist Stacked Card) */}
+                <div className="px-4 py-6 bg-[#fffaf4] border-b-4 border-black">
+                    {/* Badges Row */}
+                    <div className="mb-3 flex flex-wrap items-center gap-1.5">
+                        <span className="rounded-full border-2 border-black bg-white px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-black">
+                            {displayVendor?.cuisine || 'Street food'}
+                        </span>
+                        {vendorRating > 0 && (
+                            <div className="flex items-center gap-1 rounded-full border-2 border-black bg-white px-2.5 py-1 text-[10px] font-black text-black">
+                                <Star size={12} className="fill-yellow-400 text-black stroke-[1.5]" />
+                                <span>{vendorRating.toFixed(1)}</span>
+                                <span className="text-gray-500 font-bold">
+                                    ({vendorReviewCount})
+                                </span>
+                            </div>
+                        )}
+                        <div className={`flex items-center gap-1 rounded-full border-2 border-black px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.12em] ${
+                            displayVendor?.status === 'AVAILABLE' ? 'bg-emerald-300 text-black' : 'bg-zinc-300 text-black'
+                        }`}>
+                            <span className={`h-2 w-2 rounded-full border border-black ${
+                                displayVendor?.status === 'AVAILABLE' ? 'bg-emerald-600' : 'bg-zinc-600'
+                            }`}></span>
+                            {displayVendor?.status === 'AVAILABLE' ? 'Open' : displayVendor?.status || 'Closed'}
+                        </div>
+                        {promotions.length > 0 && (
+                            <div className="rounded-full border-2 border-black bg-[#fb7185] px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.12em] text-white">
+                                {promotions.length} Offer{promotions.length > 1 ? 's' : ''}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Title */}
+                    <h1 className="text-3xl font-black leading-none tracking-tight text-black mb-3 uppercase">
+                        {displayVendor?.name}
+                    </h1>
+
+                    {/* Description */}
+                    <p className="text-xs font-bold text-black/75 leading-relaxed mb-4">
+                        {displayVendor?.description || 'A local street-food favorite serving fresh plates, fast comfort food, and neighborhood flavor.'}
+                    </p>
+
+                    {/* Location & Hours List */}
+                    <div className="space-y-2 mb-5 font-bold text-xs text-black/80">
+                        <div className="flex items-start gap-2">
+                            <MapPin size={16} className="mt-0.5 flex-shrink-0 text-orange-600" />
+                            <span className="leading-snug">{displayVendor?.address || 'Location available on map'}</span>
+                        </div>
+                        {displayVendor?.hours && (
+                            <div className="flex items-center gap-2">
+                                <Clock size={16} className="flex-shrink-0 text-orange-600" />
+                                <span>{displayVendor.hours}</span>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Mobile Direct Action Buttons */}
+                    <div className="flex gap-2 w-full">
+                        <Button
+                            onClick={handleGetDirections}
+                            className="flex-1 h-11 rounded-xl bg-yellow-300 hover:bg-yellow-400 text-black border-2 border-black font-black text-xs uppercase tracking-wider shadow-[2.5px_2.5px_0px_0px_rgba(0,0,0,1)] active:translate-x-[1.5px] active:translate-y-[1.5px] active:shadow-none transition-all flex items-center justify-center gap-1.5"
+                        >
+                            <Navigation size={14} className="stroke-[3]" />
+                            Get Directions
+                        </Button>
+                        <Button
+                            variant="outline"
+                            onClick={handleShare}
+                            className="flex-1 h-11 rounded-xl bg-white hover:bg-orange-50 text-black border-2 border-black font-black text-xs uppercase tracking-wider shadow-[2.5px_2.5px_0px_0px_rgba(0,0,0,1)] active:translate-x-[1.5px] active:translate-y-[1.5px] active:shadow-none transition-all flex items-center justify-center gap-1.5"
+                        >
+                            <Share2 size={14} className="stroke-[3]" />
+                            Share Stall
+                        </Button>
+                    </div>
+                </div>
+            </div>
+
+            {/* Desktop Hero Section - hidden lg:block */}
+            <div className="hidden lg:block relative overflow-hidden bg-[#120f0d]">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(251,146,60,0.45),_transparent_25%),radial-gradient(circle_at_left,_rgba(249,115,22,0.22),_transparent_30%)]" />
                 <div className="absolute inset-0 z-10 bg-gradient-to-t from-[#120f0d] via-black/60 to-black/20" />
                 <VendorMediaImage
@@ -837,7 +968,7 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
                                         const badges = getPromotionBadges(promo)
 
                                         return (
-                                            <div key={promo.id} className="bg-gradient-to-br from-orange-50 to-red-50 border-2 border-orange-200 rounded-2xl p-6 hover:shadow-xl transition-all hover:-translate-y-1 relative overflow-hidden">
+                                            <div key={promo.id} className="bg-gradient-to-br from-orange-50 to-red-50 border-2 border-orange-200 rounded-2xl p-4 sm:p-6 hover:shadow-xl transition-all hover:-translate-y-1 relative overflow-hidden">
                                                 {/* Decorative corner */}
                                                 <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-orange-400 to-red-500 opacity-10 rounded-bl-full"></div>
 
@@ -958,7 +1089,7 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
                 {activeTab === 'about' && (
                     <div className="grid md:grid-cols-3 gap-8">
                         <div className="md:col-span-2 space-y-8">
-                            <div className="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm">
+                            <div className="bg-white border border-gray-200 rounded-2xl p-4 sm:p-8 shadow-sm">
                                 <h3 className="text-2xl font-black text-gray-900 mb-6 flex items-center gap-3">
                                     <span className="h-8 w-1 bg-gradient-to-b from-orange-500 to-red-500 rounded-full"></span>
                                     Our Story
@@ -971,7 +1102,7 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
                             </div>
 
                             {/* Features Section */}
-                            <div className="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm">
+                            <div className="bg-white border border-gray-200 rounded-2xl p-4 sm:p-8 shadow-sm">
                                 <h3 className="text-xl font-bold text-gray-900 mb-6">Why Choose Us?</h3>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div className="flex items-center gap-3 p-3 rounded-xl bg-green-50 text-green-800">
@@ -1019,7 +1150,7 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
                         </div>
 
                         <div className="space-y-6">
-                            <div className="bg-gradient-to-br from-white to-orange-50/30 rounded-2xl p-6 border border-orange-100 shadow-lg sticky top-24">
+                            <div className="bg-gradient-to-br from-white to-orange-50/30 rounded-2xl p-4 sm:p-6 border border-orange-100 shadow-lg sticky top-24">
                                 <div className="flex items-center justify-between mb-6 pb-4 border-b border-orange-100">
                                     <h3 className="font-bold text-xl text-gray-900 flex items-center gap-2">
                                         <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
@@ -1031,7 +1162,7 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
 
                                 <div className="space-y-6">
                                     {/* Interactive Google Map */}
-                                    <div className="relative h-56 rounded-xl overflow-hidden shadow-md border-2 border-orange-100 group">
+                                    <div className="relative h-44 sm:h-56 rounded-xl overflow-hidden shadow-md border-2 border-orange-100 group">
                                         {vendor.latitude && vendor.longitude ? (
                                             <iframe
                                                 src={`https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&q=${vendor.latitude},${vendor.longitude}&zoom=15`}
@@ -1069,7 +1200,7 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
                                     {/* Contact Details */}
                                     <div className="space-y-4">
                                         {/* Address */}
-                                        <div className="flex items-start gap-4 p-4 rounded-xl bg-white border border-gray-100 hover:border-orange-200 hover:shadow-md transition-all group">
+                                        <div className="flex items-start gap-3 p-3 sm:gap-4 sm:p-4 rounded-xl bg-white border border-gray-100 hover:border-orange-200 hover:shadow-md transition-all group">
                                             <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center flex-shrink-0 shadow-md group-hover:scale-110 transition-transform">
                                                 <MapPin className="text-white" size={20} />
                                             </div>
@@ -1082,7 +1213,7 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
                                         </div>
 
                                         {/* Opening Hours */}
-                                        <div className="flex items-start gap-4 p-4 rounded-xl bg-white border border-gray-100 hover:border-blue-200 hover:shadow-md transition-all group">
+                                        <div className="flex items-start gap-3 p-3 sm:gap-4 sm:p-4 rounded-xl bg-white border border-gray-100 hover:border-blue-200 hover:shadow-md transition-all group">
                                             <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center flex-shrink-0 shadow-md group-hover:scale-110 transition-transform">
                                                 <Clock className="text-white" size={20} />
                                             </div>
@@ -1105,7 +1236,7 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
 
                                         {/* Phone */}
                                         {vendor.phone && (
-                                            <div className="flex items-start gap-4 p-4 rounded-xl bg-white border border-gray-100 hover:border-green-200 hover:shadow-md transition-all group">
+                                            <div className="flex items-start gap-3 p-3 sm:gap-4 sm:p-4 rounded-xl bg-white border border-gray-100 hover:border-green-200 hover:shadow-md transition-all group">
                                                 <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center flex-shrink-0 shadow-md group-hover:scale-110 transition-transform">
                                                     <Phone className="text-white" size={20} />
                                                 </div>
@@ -1157,7 +1288,7 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
 
                             {/* Review Form */}
                             {showReviewForm && (
-                                <div className="bg-white border-3 border-black rounded-2xl p-5 sm:p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+                                <div className="bg-white border-3 border-black rounded-2xl p-4 sm:p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
                                     <h3 className="text-xl font-black mb-4 uppercase tracking-tight">Write Your Review</h3>
 
                                     {/* Star Rating */}
@@ -1242,7 +1373,7 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
                                         const isOwner = authUser && review.user?.id === authUser.id
 
                                         return (
-                                            <div key={review.id} className="bg-white border-2 border-black rounded-2xl p-4 sm:p-6 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-transform hover:-translate-y-0.5">
+                                            <div key={review.id} className="bg-white border-2 border-black rounded-2xl p-3.5 sm:p-6 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-transform hover:-translate-y-0.5">
                                                 {editingReviewId === review.id ? (
                                                     // Edit mode
                                                     <div className="space-y-4">
@@ -1350,7 +1481,7 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
                 <div className="grid grid-cols-3 gap-2 rounded-2xl border-3 border-black bg-white p-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                     <Button
                         onClick={handleGetDirections}
-                        className="h-10 sm:h-12 rounded-xl bg-[#fb923c] text-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-[10px] sm:text-xs font-black uppercase tracking-wider hover:bg-[#f97316] transition-all flex items-center justify-center gap-1.5"
+                        className="h-10 rounded-xl bg-[#fb923c] text-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-[10px] font-black uppercase tracking-wider hover:bg-[#f97316] transition-all flex items-center justify-center gap-1.5"
                     >
                         <Navigation size={14} className="stroke-[2.5]" />
                         Route
@@ -1358,7 +1489,7 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
                     <Button
                         variant="outline"
                         onClick={toggleFavorite}
-                        className={`h-10 sm:h-12 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-wider border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all flex items-center justify-center gap-1.5 ${isFavorite ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-white text-black hover:bg-orange-50'}`}
+                        className={`h-10 rounded-xl text-[10px] font-black uppercase tracking-wider border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all flex items-center justify-center gap-1.5 ${isFavorite ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-white text-black hover:bg-orange-50'}`}
                     >
                         <Heart size={14} className={`${isFavorite ? 'fill-current' : ''} stroke-[2.5]`} />
                         Save
@@ -1367,7 +1498,7 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
                         <Button
                             asChild
                             variant="outline"
-                            className="h-10 sm:h-12 rounded-xl border-2 border-black bg-white text-[10px] sm:text-xs font-black uppercase tracking-wider text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:bg-orange-50 transition-all flex items-center justify-center gap-1.5"
+                            className="h-10 rounded-xl border-2 border-black bg-white text-[10px] font-black uppercase tracking-wider text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:bg-orange-50 transition-all flex items-center justify-center gap-1.5"
                         >
                             <a href={`tel:${displayVendor.phone}`}>
                                 <Phone size={14} className="stroke-[2.5]" />
@@ -1378,7 +1509,7 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
                         <Button
                             variant="outline"
                             onClick={handleShare}
-                            className="h-10 sm:h-12 rounded-xl border-2 border-black bg-white text-[10px] sm:text-xs font-black uppercase tracking-wider text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:bg-orange-50 transition-all flex items-center justify-center gap-1.5"
+                            className="h-10 rounded-xl border-2 border-black bg-white text-[10px] font-black uppercase tracking-wider text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:bg-orange-50 transition-all flex items-center justify-center gap-1.5"
                         >
                             <Share2 size={14} className="stroke-[2.5]" />
                             Share

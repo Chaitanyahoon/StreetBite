@@ -933,7 +933,7 @@ function CommunityPageContent() {
                         Live in the last 24 hours
                     </p>
 
-                    <h1 className="text-[2.25rem] xs:text-5xl sm:text-6xl md:text-8xl font-black mb-4 sm:mb-6 tracking-tighter leading-[1.05] sm:leading-[0.9] text-black">
+                    <h1 className="text-[2.25rem] xs:text-[2.75rem] sm:text-6xl md:text-8xl font-black mb-4 sm:mb-6 tracking-tighter leading-[1.05] sm:leading-[0.9] text-black">
                         THE <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-red-600 drop-shadow-[2px_2px_0px_rgba(0,0,0,1)] sm:drop-shadow-[4px_4px_0px_rgba(0,0,0,1)]">FOODIE</span> SOCIAL
                     </h1>
 

@@ -220,7 +220,7 @@ export default function RecommendPage() {
               <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-yellow-400" />
               AI-Powered
             </div>
-            <h1 className="mt-3 sm:mt-6 text-[1.75rem] xs:text-4xl sm:text-5xl md:text-7xl font-black text-black leading-[0.9] tracking-[-0.04em]">
+            <h1 className="mt-3 sm:mt-6 text-[2.25rem] xs:text-[2.75rem] sm:text-5xl md:text-7xl font-black text-black leading-[0.9] tracking-[-0.04em]">
               WHAT SHOULD
               <br />
               <span className="text-primary drop-shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)] sm:drop-shadow-[4px_4px_0px_rgba(0,0,0,1)]">I EAT?</span>

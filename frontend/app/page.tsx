@@ -53,7 +53,7 @@ export default function Home() {
                 Find the best food fast
               </div>
 
-              <h1 className="mt-8 text-[2.75rem] leading-[1.05] sm:leading-[1] font-black tracking-[-0.06em] text-black xs:text-5xl sm:text-6xl md:text-8xl lg:text-9xl animate-slide-up">
+              <h1 className="mt-8 text-[2.25rem] xs:text-[2.75rem] sm:text-6xl md:text-8xl lg:text-9xl leading-[1.05] sm:leading-[1] font-black tracking-[-0.06em] text-black animate-slide-up">
                 FIND THE
                 <br />
                 <span className="relative inline-block mt-2 text-primary drop-shadow-[2.5px_2.5px_0px_rgba(0,0,0,1)] sm:drop-shadow-[4px_4px_0px_rgba(0,0,0,1)]">
