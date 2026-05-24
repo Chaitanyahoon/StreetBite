@@ -796,12 +796,12 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
                 </div>
             </div>
 
-            <div className="relative z-20 mx-auto -mt-10 max-w-7xl px-4 md:px-6 lg:hidden">
-                <div className="grid gap-3 rounded-2xl border-2 sm:border-3 border-black bg-white p-4 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:grid-cols-3">
+            <div className="relative z-20 mx-auto mt-6 max-w-7xl px-4 md:px-6 lg:hidden">
+                <div className="grid grid-cols-3 gap-2 rounded-[2rem] border-3 border-black bg-white p-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                     {quickStats.map((stat) => (
-                        <div key={stat.label} className="rounded-xl border-2 border-black bg-white px-4 py-4 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                            <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.22em] text-orange-700/80">{stat.label}</p>
-                            <p className="mt-1 text-xl sm:text-2xl font-black text-gray-950">{stat.value}</p>
+                        <div key={stat.label} className="rounded-2xl border-2 border-black bg-white px-2 py-3 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] flex flex-col justify-center items-center text-center">
+                            <p className="text-[9px] font-black uppercase tracking-wider text-orange-700/80 leading-none">{stat.label}</p>
+                            <p className="mt-1 text-sm xs:text-base font-black text-gray-950 leading-none">{stat.value}</p>
                         </div>
                     ))}
                 </div>
@@ -810,24 +810,24 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
             {/* Enhanced Tabs */}
             <div className="sticky top-16 z-30 mt-8 border-y-3 border-black bg-yellow-300">
                 <div className="max-w-7xl mx-auto px-4 md:px-6">
-                    <div className="flex gap-3 overflow-x-auto py-3 no-scrollbar">
+                    <div className="grid grid-cols-4 gap-1 py-3 md:flex md:w-auto md:gap-3 md:overflow-x-auto">
                         {VENDOR_DETAIL_TABS.map((tab) => (
                             <button
                                 key={tab}
                                 onClick={() => setActiveTab(tab.toLowerCase())}
-                                className={`relative rounded-xl px-4 py-2 text-xs sm:text-sm font-black uppercase tracking-wider transition-all whitespace-nowrap border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5 active:translate-y-0 ${activeTab === tab.toLowerCase()
+                                className={`relative rounded-xl py-1.5 px-0.5 md:px-4 md:py-2 text-[10px] xs:text-xs md:text-sm font-black uppercase tracking-wider transition-all whitespace-nowrap border-2 border-black shadow-[1.5px_1.5px_0px_0px_rgba(0,0,0,1)] md:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-1 ${activeTab === tab.toLowerCase()
                                     ? 'bg-black text-white'
                                     : 'bg-white text-black hover:bg-orange-100'
                                     }`}
                             >
-                                {tab}
+                                <span>{tab}</span>
                                 {tab === 'Reviews' && reviews.length > 0 && (
-                                    <span className={`ml-2 rounded-lg border border-black px-1.5 py-0.5 text-[10px] font-black ${activeTab === 'reviews' ? 'bg-white text-black' : 'bg-yellow-300 text-black'}`}>
+                                    <span className={`rounded border border-black px-1 py-0.2 text-[8px] sm:text-[10px] font-black ${activeTab === 'reviews' ? 'bg-white text-black' : 'bg-yellow-300 text-black'}`}>
                                         {reviews.length}
                                     </span>
                                 )}
                                 {tab === 'Offers' && promotions.length > 0 && (
-                                    <span className={`ml-2 rounded-lg border border-black px-1.5 py-0.5 text-[10px] font-black ${activeTab === 'offers' ? 'bg-white text-black' : 'bg-red-500 text-white'}`}>
+                                    <span className={`rounded border border-black px-1 py-0.2 text-[8px] sm:text-[10px] font-black ${activeTab === 'offers' ? 'bg-white text-black' : 'bg-red-500 text-white'}`}>
                                         {promotions.length}
                                     </span>
                                 )}
@@ -916,37 +916,37 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
                 {activeTab === 'offers' && (
                     <div className="space-y-6">
                         {/* Filter and Sort Controls */}
-                        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
+                        <div className="bg-[#fffaf4] rounded-2xl p-4 border-3 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                             <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
-                                <div className="flex-1">
-                                    <label className="text-sm font-semibold text-gray-700 mb-2 block">Filter by Type</label>
+                                <div className="flex-1 w-full">
+                                    <label className="text-xs font-black uppercase tracking-wider text-black mb-2 block">Filter by Type</label>
                                     <div className="flex gap-2 flex-wrap">
                                         <button
                                             onClick={() => setOfferFilter('all')}
-                                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${offerFilter === 'all' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                                            className={`px-3 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all border-2 border-black shadow-[2.5px_2.5px_0px_0px_rgba(0,0,0,1)] active:translate-x-[1.5px] active:translate-y-[1.5px] active:shadow-none ${offerFilter === 'all' ? 'bg-black text-white' : 'bg-white text-black hover:bg-orange-100'}`}
                                         >
                                             All Offers
                                         </button>
                                         <button
                                             onClick={() => setOfferFilter('percentage')}
-                                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${offerFilter === 'percentage' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                                            className={`px-3 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all border-2 border-black shadow-[2.5px_2.5px_0px_0px_rgba(0,0,0,1)] active:translate-x-[1.5px] active:translate-y-[1.5px] active:shadow-none ${offerFilter === 'percentage' ? 'bg-black text-white' : 'bg-white text-black hover:bg-orange-100'}`}
                                         >
                                             % OFF
                                         </button>
                                         <button
                                             onClick={() => setOfferFilter('fixed')}
-                                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${offerFilter === 'fixed' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                                            className={`px-3 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all border-2 border-black shadow-[2.5px_2.5px_0px_0px_rgba(0,0,0,1)] active:translate-x-[1.5px] active:translate-y-[1.5px] active:shadow-none ${offerFilter === 'fixed' ? 'bg-black text-white' : 'bg-white text-black hover:bg-orange-100'}`}
                                         >
                                             ₹ OFF
                                         </button>
                                     </div>
                                 </div>
-                                <div>
-                                    <label className="text-sm font-semibold text-gray-700 mb-2 block">Sort By</label>
+                                <div className="w-full md:w-auto animate-none">
+                                    <label className="text-xs font-black uppercase tracking-wider text-black mb-2 block">Sort By</label>
                                     <select
                                         value={offerSort}
                                         onChange={(e) => setOfferSort(e.target.value as any)}
-                                        className="px-4 py-2 rounded-lg border border-gray-300 text-sm font-medium focus:ring-2 focus:ring-primary focus:border-primary"
+                                        className="w-full md:w-48 px-3 py-1.5 rounded-xl border-2 border-black bg-white text-xs font-black uppercase tracking-wider focus:ring-2 focus:ring-black focus:outline-none shadow-[2.5px_2.5px_0px_0px_rgba(0,0,0,1)]"
                                     >
                                         <option value="discount">Highest Discount</option>
                                         <option value="ending">Ending Soon</option>
@@ -957,10 +957,10 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
                         </div>
 
                         {promotions.length === 0 ? (
-                            <div className="text-center py-20 bg-white rounded-2xl border-2 border-dashed border-gray-200">
+                            <div className="text-center py-20 bg-white rounded-2xl border-3 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                                 <div className="text-6xl mb-4">🎁</div>
-                                <h3 className="text-xl font-bold text-gray-900 mb-2">No Active Offers</h3>
-                                <p className="text-gray-500">Check back soon for exciting deals!</p>
+                                <h3 className="text-xl font-black text-gray-900 mb-2 uppercase tracking-tight">No Active Offers</h3>
+                                <p className="text-sm font-bold text-gray-500">Check back soon for exciting deals!</p>
                             </div>
                         ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -968,32 +968,39 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
                                         const badges = getPromotionBadges(promo)
 
                                         return (
-                                            <div key={promo.id} className="bg-gradient-to-br from-orange-50 to-red-50 border-2 border-orange-200 rounded-2xl p-4 sm:p-6 hover:shadow-xl transition-all hover:-translate-y-1 relative overflow-hidden">
+                                            <div key={promo.id} className="bg-[#fffaf4] border-3 border-black rounded-2xl p-4 sm:p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all hover:-translate-y-1 relative overflow-hidden group">
                                                 {/* Decorative corner */}
-                                                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-orange-400 to-red-500 opacity-10 rounded-bl-full"></div>
+                                                <div className="absolute top-0 right-0 w-20 h-20 bg-yellow-300 border-b-2 border-l-2 border-black opacity-10 rounded-bl-full"></div>
 
                                                 <div className="flex items-start justify-between mb-4 relative z-10">
                                                     <div className="flex-1">
                                                         {/* Badges */}
-                                                        <div className="flex items-center gap-2 mb-3 flex-wrap">
-                                                            <span className="bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wider shadow-md">
+                                                        <div className="flex items-center gap-2 mb-3.5 flex-wrap">
+                                                            <span className="bg-red-400 text-black border-2 border-black text-[10px] font-black px-2.5 py-1 rounded-xl uppercase tracking-wider shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
                                                                 {promo.discountType === 'PERCENTAGE' ? `${promo.discountValue}% OFF` : `₹${promo.discountValue} OFF`}
-                                                            </span>
-                                                            {badges.map((badge, i) => (
-                                                                <span key={i} className={`${badge.color} text-white text-xs font-bold px-2 py-1 rounded-full shadow-sm`}>
-                                                                    {badge.text}
-                                                                </span>
-                                                            ))}
+                                                             </span>
+                                                            {badges.map((badge, i) => {
+                                                                let neobrutalistBg = 'bg-white'
+                                                                if (badge.color === 'bg-red-500') neobrutalistBg = 'bg-red-400'
+                                                                else if (badge.color === 'bg-yellow-500') neobrutalistBg = 'bg-yellow-300'
+                                                                else if (badge.color === 'bg-green-500') neobrutalistBg = 'bg-emerald-400'
+
+                                                                return (
+                                                                    <span key={i} className={`${neobrutalistBg} text-black border-2 border-black text-[9px] xs:text-[10px] font-black px-2 py-1 rounded-xl shadow-[1.5px_1.5px_0px_0px_rgba(0,0,0,1)] uppercase`}>
+                                                                        {badge.text}
+                                                                    </span>
+                                                                )
+                                                            })}
                                                         </div>
-                                                        <h3 className="text-xl font-bold text-gray-900 mb-2">{promo.title}</h3>
-                                                        <p className="text-sm text-gray-600 mb-3">{promo.description}</p>
+                                                        <h3 className="text-xl font-black text-black mb-2 uppercase tracking-tight">{promo.title}</h3>
+                                                        <p className="text-xs sm:text-sm font-bold text-black/75 mb-4 leading-relaxed">{promo.description}</p>
                                                     </div>
                                                 </div>
 
                                                 {/* Promo Code */}
-                                                <div className="bg-white rounded-lg p-3 mb-4 shadow-sm">
+                                                <div className="bg-white border-2 border-black rounded-2xl p-4 mb-4 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
                                                     <div className="flex items-center justify-between mb-2">
-                                                        <span className="text-xs text-gray-500 font-medium">Promo Code</span>
+                                                        <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Promo Code</span>
                                                         <button
                                                             onClick={() => {
                                                                 navigator.clipboard.writeText(promo.promoCode)
@@ -1002,48 +1009,48 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
                                                                     description: `${promo.promoCode} copied to your clipboard.`,
                                                                 })
                                                             }}
-                                                            className="text-xs text-primary font-bold hover:underline"
+                                                            className="text-xs text-primary font-black hover:underline"
                                                         >
                                                             📋 Copy
                                                         </button>
                                                     </div>
-                                                    <div className="font-mono font-bold text-lg tracking-wider text-primary border-2 border-dashed border-primary rounded px-3 py-2 text-center bg-orange-50">
+                                                    <div className="font-mono font-black text-lg tracking-widest text-black border-3 border-dashed border-black rounded-xl px-3 py-2 text-center bg-yellow-300 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] uppercase">
                                                         {promo.promoCode}
                                                     </div>
                                                 </div>
 
                                                 {/* Details */}
-                                                <div className="flex gap-4 text-xs text-gray-600 mb-4">
+                                                <div className="flex gap-4 text-xs font-bold text-black/70 mb-4">
                                                     {promo.minOrderValue > 0 && (
                                                         <div className="flex items-center gap-1">
-                                                            <span className="font-semibold">Min. Spend:</span>
+                                                            <span className="font-black text-black uppercase text-[10px] tracking-wider">Min. Spend:</span>
                                                             <span>₹{promo.minOrderValue}</span>
                                                         </div>
                                                     )}
                                                     {promo.maxUses > 0 && (
                                                         <div className="flex items-center gap-1">
-                                                            <span className="font-semibold">Used:</span>
+                                                            <span className="font-black text-black uppercase text-[10px] tracking-wider">Used:</span>
                                                             <span>{promo.currentUses || 0}/{promo.maxUses}</span>
                                                         </div>
                                                     )}
                                                 </div>
 
                                                 {promo.endDate && (
-                                                    <div className="text-xs text-gray-500 mb-4">
+                                                    <div className="text-[10px] font-black uppercase text-gray-500 tracking-wider mb-4">
                                                         Valid till: {new Date(promo.endDate).toLocaleDateString()}
                                                     </div>
                                                 )}
 
                                                 {/* Action Buttons */}
-                                                <div className="grid grid-cols-2 gap-2">
-                                                    <button
+                                                <div className="grid grid-cols-2 gap-3">
+                                                    <Button
                                                         onClick={handleGetDirections}
-                                                        className="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-bold py-2.5 px-4 rounded-lg transition-colors"
+                                                        className="flex items-center justify-center gap-1.5 bg-[#fb923c] hover:bg-[#f97316] text-black text-xs font-black uppercase tracking-wider py-2.5 h-11 border-2 border-black rounded-xl shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:translate-x-[1.5px] active:translate-y-[1.5px] active:shadow-none transition-all"
                                                     >
-                                                        <Navigation size={16} />
+                                                        <Navigation size={14} className="stroke-[3]" />
                                                         Directions
-                                                    </button>
-                                                    <button
+                                                    </Button>
+                                                    <Button
                                                         onClick={() => {
                                                             const shareText = buildPromotionShareText(vendor?.name, promo)
 
@@ -1061,22 +1068,24 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
                                                                 })
                                                             }
                                                         }}
-                                                        className="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white text-sm font-bold py-2.5 px-4 rounded-lg transition-colors"
+                                                        className="flex items-center justify-center gap-1.5 bg-emerald-400 hover:bg-emerald-500 text-black text-xs font-black uppercase tracking-wider py-2.5 h-11 border-2 border-black rounded-xl shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:translate-x-[1.5px] active:translate-y-[1.5px] active:shadow-none transition-all"
                                                     >
-                                                        <Share2 size={16} />
-                                                        Share
-                                                    </button>
+                                                        <Share2 size={14} className="stroke-[3]" />
+                                                        Share Offer
+                                                    </Button>
                                                 </div>
 
                                                 {/* How to Redeem */}
-                                                <div className="mt-4 pt-4 border-t border-orange-200">
-                                                    <p className="text-xs font-semibold text-gray-700 mb-2">📋 How to Redeem:</p>
-                                                    <ol className="text-xs text-gray-600 space-y-1 list-decimal list-inside">
+                                                <div className="mt-5 pt-4 border-t-2 border-dashed border-black">
+                                                    <p className="text-[10px] font-black uppercase tracking-wider text-black mb-2.5 flex items-center gap-1.5">
+                                                        📋 How to Redeem:
+                                                    </p>
+                                                    <ol className="text-[10px] xs:text-xs font-bold text-black/80 space-y-1.5 list-decimal list-inside bg-white border-2 border-black p-3 rounded-xl shadow-[2.5px_2.5px_0px_0px_rgba(0,0,0,1)]">
                                                         <li>Visit {vendor?.name}</li>
-                                                        <li>Show code: <span className="font-mono font-bold text-primary">{promo.promoCode}</span></li>
+                                                        <li>Show code: <span className="font-mono font-black text-red-500 bg-red-50 border border-red-200 px-1 py-0.5 rounded">{promo.promoCode}</span></li>
                                                         <li>Mention "StreetBite offer"</li>
                                                         <li>Enjoy your discount!</li>
-                                                    </ol>
+                                                     </ol>
                                                 </div>
                                             </div>
                                         )
