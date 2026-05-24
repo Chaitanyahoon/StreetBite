@@ -54,6 +54,7 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
 
     const [vendor, setVendor] = useState<Vendor | null>(null)
     const [menuItems, setMenuItems] = useState<MenuItem[]>([])
+    const [menuSearchQuery, setMenuSearchQuery] = useState('')
     const [reviews, setReviews] = useState<Review[]>([])
     const [loading, setLoading] = useState(true)
     const [activeTab, setActiveTab] = useState('menu')
@@ -508,7 +509,12 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
         )
     }
 
-    const menuByCategory = groupMenuItemsByCategory(menuItems)
+    const filteredMenuItems = menuItems.filter((item) =>
+        item.name.toLowerCase().includes(menuSearchQuery.toLowerCase()) ||
+        item.description?.toLowerCase().includes(menuSearchQuery.toLowerCase()) ||
+        item.category?.toLowerCase().includes(menuSearchQuery.toLowerCase())
+    )
+    const menuByCategory = groupMenuItemsByCategory(filteredMenuItems)
     const activeStatusMeta = statusMeta[displayVendor?.status || 'UNAVAILABLE'] || statusMeta.UNAVAILABLE
     const vendorRating = displayVendor?.rating ?? 0
     const vendorReviewCount = reviews.length
@@ -838,8 +844,7 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
             </div>
 
             {/* Tab Content */}
-            <div className="max-w-7xl mx-auto px-4 py-10 pb-28 md:px-6 md:py-12 md:pb-12">
-                {activeTab === 'menu' && (
+            <div className="max-w-7xl mx-auto px-4 py-10 pb-28 md:px-6 md:py-12 md:pb-12">                {activeTab === 'menu' && (
                     <div className="space-y-10">
                         {menuItems.length === 0 ? (
                             <div className="text-center py-20 bg-white rounded-2xl border-2 border-dashed border-gray-200">
@@ -848,67 +853,94 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
                                 <p className="text-gray-500">This vendor hasn't added their menu yet. Check back soon!</p>
                             </div>
                         ) : (
-                            Object.entries(menuByCategory).map(([category, items]) => (
-                                <div key={category} className="space-y-6">
-                                    <h2 className="text-2xl font-black text-gray-900 flex items-center gap-3">
-                                        <span className="h-1 w-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-full"></span>
-                                        {category}
-                                    </h2>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                        {items.map((item: any) => (
-                                            <div key={item.id || item.itemId} className="group bg-white border-2 border-gray-100 rounded-2xl overflow-hidden hover:border-primary/40 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-                                                <div className="relative h-48 bg-gray-100 overflow-hidden">
-                                                    <VendorMediaImage
-                                                        key={item.imageUrl || "/placeholder-food.jpg"}
-                                                        src={item.imageUrl || "/placeholder-food.jpg"}
-                                                        fallbackSrc="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=2080&auto=format&fit=crop"
-                                                        alt={item.name}
-                                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                                                        sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
-                                                    />
-                                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                                                    {/* Availability Badge - uses real-time data */}
-                                                    {(() => {
-                                                        const itemId = item.id || item.itemId
-                                                        const isAvailable = getAvailability(itemId)
-                                                        return (
-                                                            <>
-                                                                <div className="absolute bottom-3 left-3">
-                                                                    <span className={`px-3 py-1.5 rounded-full text-xs font-bold backdrop-blur-sm shadow-sm ${isAvailable
-                                                                        ? 'bg-green-500/90 text-white'
-                                                                        : 'bg-red-500/90 text-white'
-                                                                        }`}>
-                                                                        {isAvailable ? '✓ In Stock' : '✕ Sold Out'}
-                                                                    </span>
-                                                                </div>
-                                                                {!isAvailable && (
-                                                                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                                                                        <span className="bg-gray-900/80 text-white px-4 py-2 rounded-full font-bold text-sm">
-                                                                            Currently Unavailable
-                                                                        </span>
-                                                                    </div>
-                                                                )}
-                                                            </>
-                                                        )
-                                                    })()}
-                                                </div>
-                                                <div className="p-5">
-                                                    <div className="flex justify-between items-start mb-2">
-                                                        <h3 className="font-bold text-lg text-gray-900 line-clamp-1 flex-1">{item.name}</h3>
-                                                        <span className="font-black text-primary text-lg ml-2">₹{item.price}</span>
-                                                    </div>
-                                                    <p className="text-sm text-gray-600 line-clamp-2 mb-4 min-h-[40px]">{item.description}</p>
-                                                    <div className="flex justify-between items-center">
-                                                        <span className="text-xs font-semibold bg-orange-50 text-orange-700 px-3 py-1.5 rounded-full uppercase tracking-wide">
-                                                            {item.category}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))}
+                            <>
+                                {/* Menu Search Bar */}
+                                <div className="bg-[#fffaf4] rounded-2xl p-4 border-3 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] max-w-xl">
+                                    <label className="text-xs font-black uppercase tracking-wider text-black mb-2 block">Search Dishes</label>
+                                    <div className="relative">
+                                        <input
+                                            type="text"
+                                            value={menuSearchQuery}
+                                            onChange={(e) => setMenuSearchQuery(e.target.value)}
+                                            placeholder="Search for pav bhaji, rolls, drinks..."
+                                            className="w-full px-4 py-2.5 rounded-xl border-2 border-black bg-white text-xs font-black uppercase tracking-wider focus:ring-2 focus:ring-black focus:outline-none shadow-[2.5px_2.5px_0px_0px_rgba(0,0,0,1)] pr-10"
+                                        />
+                                        <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-black text-sm">
+                                            🔍
+                                        </div>
                                     </div>
                                 </div>
-                            ))
+
+                                {filteredMenuItems.length === 0 ? (
+                                    <div className="text-center py-16 bg-white rounded-2xl border-3 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                                        <Utensils className="h-12 w-12 text-gray-400 mx-auto mb-3 animate-bounce" />
+                                        <h3 className="text-lg font-black text-gray-900 uppercase tracking-tight">No dishes found</h3>
+                                        <p className="text-xs font-bold text-gray-500 mt-1">Try searching for a different keyword or category.</p>
+                                    </div>
+                                ) : (
+                                    Object.entries(menuByCategory).map(([category, items]) => (
+                                        <div key={category} className="space-y-6">
+                                            <h2 className="text-2xl font-black text-gray-900 flex items-center gap-3">
+                                                <span className="h-1 w-12 bg-gradient-to-r from-orange-50 to-red-50 rounded-full"></span>
+                                                {category}
+                                            </h2>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                                {items.map((item: any) => (
+                                                    <div key={item.id || item.itemId} className="group bg-white border-2 border-gray-100 rounded-2xl overflow-hidden hover:border-primary/40 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                                                        <div className="relative h-48 bg-gray-100 overflow-hidden">
+                                                            <VendorMediaImage
+                                                                key={item.imageUrl || "/placeholder-food.jpg"}
+                                                                src={item.imageUrl || "/placeholder-food.jpg"}
+                                                                fallbackSrc="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=2080&auto=format&fit=crop"
+                                                                alt={item.name}
+                                                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                                                sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
+                                                            />
+                                                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                            {/* Availability Badge - uses real-time data */}
+                                                            {(() => {
+                                                                const itemId = item.id || item.itemId
+                                                                const isAvailable = getAvailability(itemId)
+                                                                return (
+                                                                    <>
+                                                                        <div className="absolute bottom-3 left-3">
+                                                                            <span className={`px-3 py-1.5 rounded-full text-xs font-bold backdrop-blur-sm shadow-sm ${isAvailable
+                                                                                ? 'bg-green-500/90 text-white'
+                                                                                : 'bg-red-500/90 text-white'
+                                                                                }`}>
+                                                                                {isAvailable ? '✓ In Stock' : '✕ Sold Out'}
+                                                                            </span>
+                                                                        </div>
+                                                                        {!isAvailable && (
+                                                                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                                                                                <span className="bg-gray-900/80 text-white px-4 py-2 rounded-full font-bold text-sm">
+                                                                                    Currently Unavailable
+                                                                                </span>
+                                                                            </div>
+                                                                        )}
+                                                                    </>
+                                                                )
+                                                            })()}
+                                                        </div>
+                                                        <div className="p-5">
+                                                            <div className="flex justify-between items-start mb-2">
+                                                                <h3 className="font-bold text-lg text-gray-900 line-clamp-1 flex-1">{item.name}</h3>
+                                                                <span className="font-black text-primary text-lg ml-2">₹{item.price}</span>
+                                                            </div>
+                                                            <p className="text-sm text-gray-600 line-clamp-2 mb-4 min-h-[40px]">{item.description}</p>
+                                                            <div className="flex justify-between items-center">
+                                                                <span className="text-xs font-semibold bg-orange-50 text-orange-700 px-3 py-1.5 rounded-full uppercase tracking-wide">
+                                                                    {item.category}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+                            </>
                         )}
                     </div>
                 )}
