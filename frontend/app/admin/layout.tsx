@@ -1,24 +1,23 @@
-import type { Metadata } from 'next'
+'use client'
+
+import { useState } from 'react'
 import { AdminSidebar } from "@/components/dashboard/admin-sidebar"
 import { AdminNavbar } from "@/components/dashboard/admin-navbar"
 import { AdminGuard } from "@/components/auth/admin-guard"
-
-export const metadata: Metadata = {
-  title: 'Admin Panel',
-  description: 'StreetBite administration dashboard for managing vendors, users, and platform settings.',
-}
 
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+
   return (
     <AdminGuard>
-      <div className="flex h-screen bg-background">
-        <AdminSidebar />
+      <div className="flex h-screen bg-background relative overflow-hidden">
+        <AdminSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         <div className="flex-1 flex flex-col overflow-hidden">
-          <AdminNavbar />
+          <AdminNavbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
           <main className="flex-1 overflow-auto">
             {children}
           </main>

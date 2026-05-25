@@ -77,78 +77,87 @@ export default function UserManagementPage() {
     }
 
     return (
-        <div className="p-8 space-y-8">
-            <div className="flex items-center justify-between">
+        <div className="p-4 sm:p-6 md:p-8 space-y-6 max-w-5xl mx-auto pb-10 pt-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold">Customer Management</h1>
-                    <p className="text-muted-foreground">Manage customer accounts and permissions</p>
+                    <h1 className="text-2xl sm:text-4xl font-black text-black uppercase tracking-tight">Customer Management</h1>
+                    <p className="text-xs sm:text-sm font-bold text-black/60 mt-1">Manage customer accounts and permissions</p>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex flex-wrap gap-2 w-full sm:w-auto">
                     <Button 
                         onClick={() => window.open('/api/newsletter/export', '_blank', 'noopener,noreferrer')}
-                        className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                        className="flex-1 sm:flex-initial bg-emerald-300 hover:bg-emerald-400 text-black border-2 border-black font-black uppercase text-xs h-10 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-y-[1.5px] active:shadow-none transition-all cursor-pointer text-center"
                     >
                         Export Newsletter (CSV)
                     </Button>
-                    <Link href="/admin">
-                        <Button variant="outline">Back to Dashboard</Button>
+                    <Link href="/admin" className="flex-1 sm:flex-initial">
+                        <Button variant="outline" className="w-full border-2 border-black bg-white hover:bg-gray-100 text-black font-black uppercase text-xs h-10 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-y-[1.5px] active:shadow-none transition-all cursor-pointer">
+                            Back
+                        </Button>
                     </Link>
                 </div>
             </div>
 
-            <Card>
-                <CardHeader>
-                    <div className="flex items-center justify-between">
-                        <CardTitle>Customers ({filteredUsers.length})</CardTitle>
-                        <div className="relative w-64">
-                            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Card className="bg-[#fffaf4] border-3 border-black rounded-2xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                <CardHeader className="border-b-2 border-black/10 pb-4">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                        <div>
+                            <CardTitle className="text-sm sm:text-base font-black uppercase tracking-wider text-black">Customers ({filteredUsers.length})</CardTitle>
+                            <CardDescription className="text-xs font-bold text-black/40">Active shoppers and review yappers</CardDescription>
+                        </div>
+                        <div className="relative w-full sm:w-64">
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-black/50" />
                             <input
                                 placeholder="Search users..."
-                                className="pl-8 h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                className="pl-9 h-10 w-full border-2 border-black rounded-xl bg-white focus-visible:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all font-bold placeholder:text-gray-400 text-xs outline-none"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
                         </div>
                     </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="pt-6">
                     <div className="space-y-4">
                         {filteredUsers.map((user) => {
                             const isActive = user.active ?? true
 
                             return (
-                            <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors">
-                                <div className="flex items-center gap-4">
-                                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                            <div key={user.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 border-2 border-black rounded-xl bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5 active:translate-y-0 active:shadow-none transition-all gap-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="h-10 w-10 rounded-xl bg-orange-100 border-2 border-black flex items-center justify-center flex-shrink-0">
                                         {user.profilePicture ? (
-                                            <Image src={user.profilePicture} alt={user.displayName || user.email} width={40} height={40} className="h-10 w-10 rounded-full object-cover" unoptimized />
+                                            <Image src={user.profilePicture} alt={user.displayName || user.email} width={40} height={40} className="h-full w-full rounded-lg object-cover" unoptimized />
                                         ) : (
-                                            <UserIcon className="h-5 w-5 text-primary" />
+                                            <UserIcon className="h-5 w-5 text-black" />
                                         )}
                                     </div>
                                     <div>
-                                        <p className="font-medium">{user.displayName}</p>
-                                        <p className="text-sm text-muted-foreground">{user.email}</p>
-                                        <div className="flex items-center gap-2 mt-1">
-                                            <span className={`text-xs px-2 py-0.5 rounded-full ${user.role === 'ADMIN' ? 'bg-emerald-100 text-emerald-700' :
-                                                user.role === 'VENDOR' ? 'bg-orange-100 text-orange-700' :
-                                                    'bg-blue-100 text-blue-700'
-                                                }`}>
+                                        <p className="font-black text-sm text-black uppercase tracking-tight leading-none">{user.displayName}</p>
+                                        <p className="text-xs font-bold text-black/50 mt-1">{user.email}</p>
+                                        <div className="flex flex-wrap items-center gap-2 mt-1.5">
+                                            <span className={`px-2 py-0.5 border-2 border-black rounded-lg text-[9px] font-black uppercase shadow-[1.5px_1.5px_0px_0px_rgba(0,0,0,1)] ${
+                                                user.role === 'ADMIN' ? 'bg-emerald-300 text-black' :
+                                                user.role === 'VENDOR' ? 'bg-orange-300 text-black' :
+                                                'bg-sky-200 text-black'
+                                            }`}>
                                                 {user.role}
                                             </span>
                                             {!isActive && (
-                                                <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 flex items-center gap-1">
+                                                <span className="px-2 py-0.5 border-2 border-black rounded-lg text-[9px] font-black uppercase shadow-[1.5px_1.5px_0px_0px_rgba(0,0,0,1)] bg-red-300 text-black flex items-center gap-1">
                                                     <ShieldAlert className="w-3 h-3" /> Banned
                                                 </span>
                                             )}
+                                            <span className="sm:hidden text-black/40 text-[10px] font-bold mt-0.5">
+                                                Joined: {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Unknown'}
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="flex items-center gap-2">
-                                    <div className="text-right mr-4 hidden md:block">
-                                        <p className="text-sm font-medium">Joined</p>
-                                        <p className="text-xs text-muted-foreground">
+                                <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto border-t sm:border-t-0 border-black/5 pt-3 sm:pt-0">
+                                    <div className="text-left sm:text-right sm:mr-4 hidden sm:block">
+                                        <p className="text-[10px] text-black/40 font-black uppercase">Joined</p>
+                                        <p className="text-xs font-bold text-black/70">
                                             {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Unknown'}
                                         </p>
                                     </div>
@@ -158,7 +167,11 @@ export default function UserManagementPage() {
                                             variant={isActive ? "outline" : "destructive"}
                                             size="sm"
                                             onClick={() => handleStatusToggle(user.id, isActive)}
-                                            className={isActive ? "text-red-600 hover:text-red-700 hover:bg-red-50" : ""}
+                                            className={`w-full sm:w-auto h-9 border-2 border-black font-black uppercase text-xs shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-y-[1.5px] active:shadow-none transition-all cursor-pointer ${
+                                                isActive 
+                                                  ? "bg-red-100 hover:bg-red-200 text-red-800" 
+                                                  : "bg-emerald-300 hover:bg-emerald-400 text-black"
+                                            }`}
                                         >
                                             {isActive ? 'Ban User' : 'Unban User'}
                                         </Button>
