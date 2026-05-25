@@ -103,6 +103,7 @@ function CommunityPageContent() {
     const nonNearbySortRef = useRef<TopicSort>('newest');
     const uiSelectionRef = useRef<{ id: string; urlSynced: boolean } | null>(null);
     const commentSubmissionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const lastReplacedHrefRef = useRef<string>('');
 
     const isSameDiscussionId = (leftId: Discussion['id'], rightId: Discussion['id']) =>
         String(leftId) === String(rightId);
@@ -192,7 +193,7 @@ function CommunityPageContent() {
             return
         }
 
-        const nextParams = new URLSearchParams(searchParams.toString())
+        const nextParams = new URLSearchParams()
         nextParams.set('tab', activeTab)
         nextParams.set('sort', topicSort)
         nextParams.set('mode', topicMode)
@@ -200,23 +201,28 @@ function CommunityPageContent() {
         const trimmedQuery = searchQuery.trim()
         if (trimmedQuery) {
             nextParams.set('q', trimmedQuery)
-        } else {
-            nextParams.delete('q')
         }
 
         if (selectedDiscussion) {
             nextParams.set('topic', String(selectedDiscussion.id))
-        } else {
-            nextParams.delete('topic')
         }
 
         const nextQueryString = nextParams.toString()
-        const currentQueryString = searchParams.toString()
-        if (nextQueryString === currentQueryString) {
+        const nextHref = nextQueryString ? `${pathname}?${nextQueryString}` : pathname
+
+        if (nextHref === lastReplacedHrefRef.current) {
             return
         }
 
-        const nextHref = nextQueryString ? `${pathname}?${nextQueryString}` : pathname
+        if (typeof window !== 'undefined') {
+            const currentHref = window.location.pathname + window.location.search
+            if (nextHref === currentHref) {
+                lastReplacedHrefRef.current = nextHref
+                return
+            }
+        }
+
+        lastReplacedHrefRef.current = nextHref
         router.replace(nextHref, { scroll: false })
     }, [
         activeTab,
@@ -227,7 +233,6 @@ function CommunityPageContent() {
         hasInitializedUrlState,
         pathname,
         router,
-        searchParams,
     ])
 
     const fetchHotTopics = useCallback(async (showLoadingState = false) => {
@@ -877,7 +882,7 @@ function CommunityPageContent() {
             return
         }
 
-        if (selectedDiscussion?.id === matchedDiscussion.id) {
+        if (selectedDiscussion && isSameDiscussionId(selectedDiscussion.id, matchedDiscussion.id)) {
             return
         }
 
@@ -933,7 +938,7 @@ function CommunityPageContent() {
                         Live in the last 24 hours
                     </p>
 
-                    <h1 className="text-[2.25rem] xs:text-[2.75rem] sm:text-6xl md:text-8xl font-black mb-4 sm:mb-6 tracking-tighter leading-[1.05] sm:leading-[0.9] text-black">
+                    <h1 className="text-[2.5rem] xs:text-[3rem] sm:text-6xl md:text-8xl font-black mb-4 sm:mb-6 tracking-tighter leading-[1] sm:leading-[0.9] text-black">
                         THE <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-red-600 drop-shadow-[2px_2px_0px_rgba(0,0,0,1)] sm:drop-shadow-[4px_4px_0px_rgba(0,0,0,1)]">FOODIE</span> SOCIAL
                     </h1>
 

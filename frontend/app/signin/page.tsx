@@ -191,7 +191,7 @@ function SignInContent() {
             >
               <Logo />
             </motion.div>
-            <motion.h1 variants={itemVariants} className="text-[2rem] sm:text-4xl md:text-5xl font-black mb-2 text-black tracking-tight">
+            <motion.h1 variants={itemVariants} className="text-[2.5rem] xs:text-[3rem] sm:text-4xl md:text-5xl font-black mb-2 text-black tracking-[-0.05em] leading-[1]">
               {showForgotPassword ? 'RESET PASSWORD' : 'WELCOME BACK!'}
             </motion.h1>
             <motion.p variants={itemVariants} className="text-sm sm:text-lg font-bold text-gray-700">

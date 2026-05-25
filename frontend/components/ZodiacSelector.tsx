@@ -67,10 +67,10 @@ export function ZodiacSelector({ onSelect }: ZodiacSelectorProps) {
                     Enter your birth date to reveal your food personality!
                 </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6 pt-2 pb-8 px-8">
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-3">
-                        <Label htmlFor="day" className="font-black text-black uppercase tracking-wider text-xs ml-1">Day</Label>
+            <CardContent className="space-y-4 sm:space-y-6 pt-2 pb-6 px-4 sm:px-8">
+                <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                    <div className="space-y-2 sm:space-y-3">
+                        <Label htmlFor="day" className="font-black text-black uppercase tracking-wider text-[10px] sm:text-xs ml-1">Day</Label>
                         <Input
                             id="day"
                             type="number"
@@ -82,11 +82,11 @@ export function ZodiacSelector({ onSelect }: ZodiacSelectorProps) {
                                 setDay(e.target.value);
                                 triggerHaptic(20);
                             }}
-                            className="h-14 border-4 border-black rounded-[1rem] text-xl font-black text-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus-visible:ring-0 focus-visible:ring-offset-0 focus:translate-x-[2px] focus:translate-y-[2px] focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all bg-[#fafafa]"
+                            className="h-11 xs:h-12 sm:h-14 border-[3px] sm:border-4 border-black rounded-[0.75rem] sm:rounded-[1rem] text-base xs:text-lg sm:text-xl font-black text-center shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus-visible:ring-0 focus-visible:ring-offset-0 focus:translate-x-[2px] focus:translate-y-[2px] focus:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] sm:focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all bg-[#fafafa]"
                         />
                     </div>
-                    <div className="space-y-3">
-                        <Label htmlFor="month" className="font-black text-black uppercase tracking-wider text-xs ml-1">Month</Label>
+                    <div className="space-y-2 sm:space-y-3">
+                        <Label htmlFor="month" className="font-black text-black uppercase tracking-wider text-[10px] sm:text-xs ml-1">Month</Label>
                         <Input
                             id="month"
                             type="number"
@@ -98,13 +98,13 @@ export function ZodiacSelector({ onSelect }: ZodiacSelectorProps) {
                                 setMonth(e.target.value);
                                 triggerHaptic(20);
                             }}
-                            className="h-14 border-4 border-black rounded-[1rem] text-xl font-black text-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus-visible:ring-0 focus-visible:ring-offset-0 focus:translate-x-[2px] focus:translate-y-[2px] focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all bg-[#fafafa]"
+                            className="h-11 xs:h-12 sm:h-14 border-[3px] sm:border-4 border-black rounded-[0.75rem] sm:rounded-[1rem] text-base xs:text-lg sm:text-xl font-black text-center shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus-visible:ring-0 focus-visible:ring-offset-0 focus:translate-x-[2px] focus:translate-y-[2px] focus:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] sm:focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all bg-[#fafafa]"
                         />
                     </div>
                 </div>
 
                 <Button
-                    className="w-full h-14 text-lg bg-orange-500 text-black hover:bg-yellow-400 font-black uppercase tracking-widest border-4 border-black rounded-[1rem] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] group hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all active:translate-y-1 active:shadow-[0px_0px_0px_0px_rgba(0,0,0,1)]"
+                    className="w-full h-11 xs:h-12 sm:h-14 text-sm xs:text-base sm:text-lg bg-orange-500 text-black hover:bg-yellow-400 font-black uppercase tracking-widest border-[3px] sm:border-4 border-black rounded-[0.75rem] sm:rounded-[1rem] shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] group hover:-translate-y-0.5 sm:hover:-translate-y-1 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]"
                     onClick={handleSubmit}
                 >
                     Reveal My Sign <span className="ml-2 group-hover:animate-bounce">🔮</span>

@@ -90,7 +90,7 @@ export default function AboutPage() {
           <div className="inline-block px-4 py-1.5 sm:px-6 sm:py-2 bg-black text-white font-black text-xs sm:text-sm uppercase tracking-widest mb-4 sm:mb-6 transform -rotate-2 rounded-lg shadow-[2.5px_2.5px_0px_0px_rgba(255,255,255,1)] sm:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
             EST. 2025
           </div>
-          <h1 className="text-[2.25rem] xs:text-[2.75rem] sm:text-5xl md:text-8xl font-black text-black mb-4 sm:mb-6 leading-[1.05] md:leading-[0.9] tracking-tighter">
+          <h1 className="text-[2.5rem] xs:text-[3rem] sm:text-5xl md:text-8xl font-black text-black mb-4 sm:mb-6 leading-[1] md:leading-[0.9] tracking-tighter">
             The <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-600 drop-shadow-[2px_2px_0px_rgba(0,0,0,1)] sm:drop-shadow-[4px_4px_0px_rgba(0,0,0,1)]">StreetBite</span><br /> Revolution
           </h1>
           <p className="text-sm sm:text-lg md:text-2xl text-black font-bold max-w-3xl mx-auto leading-relaxed border-l-4 sm:border-l-0 border-black pl-4 sm:pl-0 text-left md:text-center">

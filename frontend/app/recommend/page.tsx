@@ -127,7 +127,7 @@ export default function RecommendPage() {
                 <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-yellow-400" />
                 AI Results
               </div>
-              <h1 className="text-2xl xs:text-3xl sm:text-4xl md:text-6xl font-black text-black leading-[0.9]">
+              <h1 className="text-[2.25rem] xs:text-[2.75rem] sm:text-4xl md:text-6xl font-black text-black leading-[1] tracking-tighter">
                 YOUR <span className="text-primary drop-shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)] sm:drop-shadow-[4px_4px_0px_rgba(0,0,0,1)]">PERFECT PICKS</span>
               </h1>
               <p className="mt-2 sm:mt-4 text-[0.68rem] xs:text-xs sm:text-lg font-bold text-black/60">
@@ -220,7 +220,7 @@ export default function RecommendPage() {
               <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-yellow-400" />
               AI-Powered
             </div>
-            <h1 className="mt-3 sm:mt-6 text-[2.25rem] xs:text-[2.75rem] sm:text-5xl md:text-7xl font-black text-black leading-[0.9] tracking-[-0.04em]">
+            <h1 className="mt-3 sm:mt-6 text-[2.5rem] xs:text-[3rem] sm:text-5xl md:text-7xl font-black text-black leading-[1] tracking-[-0.05em]">
               WHAT SHOULD
               <br />
               <span className="text-primary drop-shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)] sm:drop-shadow-[4px_4px_0px_rgba(0,0,0,1)]">I EAT?</span>

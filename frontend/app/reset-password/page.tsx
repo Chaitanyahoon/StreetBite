@@ -245,7 +245,7 @@ function ResetPasswordForm() {
                         <div className="flex justify-center mb-6 hover:scale-105 transition-transform duration-300">
                             <Logo />
                         </div>
-                        <h1 className="text-3xl md:text-4xl font-black mb-3 uppercase tracking-tighter transform -rotate-2">
+                        <h1 className="text-[2.25rem] xs:text-[2.75rem] md:text-4xl font-black mb-3 uppercase tracking-tighter transform -rotate-2 leading-[1.05]">
                             Set New <span className="text-orange-500 bg-black px-2 py-0.5 transform rotate-2 inline-block border-2 border-transparent">Password</span>
                         </h1>
                         <p className="text-black font-bold text-lg max-w-xs mx-auto leading-tight">

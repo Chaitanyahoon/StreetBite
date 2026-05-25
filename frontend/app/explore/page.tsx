@@ -262,7 +262,7 @@ function ExplorePageContent() {
               <Sparkles className="h-4 w-4 text-yellow-400" />
               Explore the streets
             </div>
-            <h1 className="mt-6 sm:mt-8 text-[2.25rem] xs:text-[2.75rem] sm:text-6xl md:text-8xl lg:text-9xl leading-[1.05] sm:leading-[0.9] font-black tracking-[-0.06em] text-black">
+            <h1 className="mt-6 sm:mt-8 text-[2.5rem] xs:text-[3rem] sm:text-6xl md:text-8xl lg:text-9xl leading-[1] sm:leading-[0.9] font-black tracking-[-0.05em] text-black">
               FIND YOUR
               <br />
               <span className="relative inline-block mt-2 text-primary drop-shadow-[2.5px_2.5px_0px_rgba(0,0,0,1)] sm:drop-shadow-[4px_4px_0px_rgba(0,0,0,1)]">

@@ -217,7 +217,7 @@ export default function ProfilePage() {
           <div className="inline-block px-4 py-1.5 sm:px-6 sm:py-2 bg-yellow-300 border-2 border-black rounded-lg shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transform -rotate-1 mb-3 sm:mb-4">
             <span className="text-xs sm:text-sm font-black uppercase tracking-widest text-black">Control Center</span>
           </div>
-          <h1 className="text-3xl sm:text-5xl font-black text-black uppercase tracking-tighter drop-shadow-sm text-center">
+          <h1 className="text-[2.25rem] xs:text-[2.75rem] sm:text-5xl font-black text-black uppercase tracking-tighter drop-shadow-sm text-center leading-[1.05]">
             My Profile
           </h1>
           <p className="text-sm sm:text-lg text-gray-600 mt-1.5 sm:mt-2 font-bold text-center max-w-md leading-snug">

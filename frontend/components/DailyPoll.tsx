@@ -120,11 +120,11 @@ export function DailyPoll() {
                     <span className="font-black uppercase tracking-tight">Daily Poll</span>
                 </CardTitle>
             </CardHeader>
-            <CardContent className="pt-1.5 px-4 pb-4 sm:pt-2 sm:px-6 sm:pb-6 relative z-10 min-h-[340px] sm:min-h-[450px] flex flex-col justify-between">
-                <h3 className="text-base xs:text-lg sm:text-xl font-black text-black mb-4 leading-tight uppercase">
+            <CardContent className="pt-1.5 px-4 pb-4 sm:pt-2 sm:px-6 sm:pb-6 relative z-10 min-h-[290px] sm:min-h-[450px] flex flex-col justify-between">
+                <h3 className="text-sm xs:text-base sm:text-xl font-black text-black mb-3 sm:mb-4 leading-tight uppercase">
                     {currentPoll.question}
                 </h3>
-                <div className="space-y-3">
+                <div className="space-y-2.5 sm:space-y-3">
                     {options.map((option: PollOption, index) => {
                         const isSelected = selectedOption === index;
                         const percentage = totalVotes > 0 ? Math.round((votes[index] / totalVotes) * 100) : 0;
@@ -150,14 +150,14 @@ export function DailyPoll() {
                                     />
                                 )}
 
-                                <div className="relative z-10 p-2.5 xs:p-3 sm:p-4 flex justify-between items-center">
-                                    <span className={`font-bold text-xs sm:text-sm ${isSelected ? "text-orange-900" : "text-black"}`}>
+                                <div className="relative z-10 p-2 xs:p-2.5 sm:p-4 flex justify-between items-center">
+                                    <span className={`font-bold text-[11px] xs:text-xs sm:text-sm ${isSelected ? "text-orange-900" : "text-black"}`}>
                                         {option.text}
                                     </span>
                                     {hasVoted && (
                                         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-                                            <span className="font-black text-xs sm:text-sm text-black">{percentage}%</span>
-                                            {isSelected && <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange-600 fill-orange-100" />}
+                                            <span className="font-black text-[11px] xs:text-xs sm:text-sm text-black">{percentage}%</span>
+                                            {isSelected && <CheckCircle2 className="w-3 h-3 sm:w-4 sm:h-4 text-orange-600 fill-orange-100" />}
                                         </div>
                                     )}
                                 </div>

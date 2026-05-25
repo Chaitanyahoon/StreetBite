@@ -121,7 +121,7 @@ export function FoodPersonalityQuiz() {
             {/* Background Pattern */}
             <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />
 
-            <CardContent className="p-4 sm:p-8 relative z-10 min-h-[340px] sm:min-h-[450px] flex flex-col justify-center">
+            <CardContent className="p-3.5 sm:p-8 relative z-10 min-h-[290px] sm:min-h-[450px] flex flex-col justify-center">
                 <AnimatePresence mode="wait">
                     {(() => {
                         switch (view) {
@@ -134,28 +134,28 @@ export function FoodPersonalityQuiz() {
                                         exit={{ opacity: 0, y: -10 }}
                                         className="text-center space-y-4 sm:space-y-6"
                                     >
-                                        <div className="relative w-16 h-16 sm:w-24 sm:h-24 mx-auto">
+                                        <div className="relative w-14 h-14 sm:w-24 sm:h-24 mx-auto">
                                             <div className="absolute inset-0 bg-yellow-300 rounded-full blur-xl opacity-50 animate-pulse" />
                                             <div className="relative w-full h-full bg-black rounded-full flex items-center justify-center border-2 sm:border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)]">
-                                                <Sparkles className="w-6 h-6 sm:w-10 sm:h-10 text-yellow-300 fill-yellow-300" />
+                                                <Sparkles className="w-5.5 h-5.5 sm:w-10 sm:h-10 text-yellow-300 fill-yellow-300" />
                                             </div>
                                         </div>
 
                                         <div className="space-y-2">
-                                            <div className="inline-block px-3 py-1 bg-yellow-300 border-2 border-black rounded-full shadow-[1.5px_1.5px_0px_0px_rgba(0,0,0,1)] transform -rotate-2">
-                                                <span className="text-[10px] sm:text-xs font-black uppercase tracking-wider text-black">What's your vibe?</span>
+                                            <div className="inline-block px-2.5 py-0.5 sm:px-3 sm:py-1 bg-yellow-300 border-2 border-black rounded-full shadow-[1.5px_1.5px_0px_0px_rgba(0,0,0,1)] transform -rotate-2">
+                                                <span className="text-[9px] sm:text-xs font-black uppercase tracking-wider text-black">What's your vibe?</span>
                                             </div>
-                                            <h3 className="text-2xl xs:text-3xl sm:text-4xl font-black tracking-tighter text-black uppercase leading-none">
+                                            <h3 className="text-xl xs:text-2xl sm:text-4xl font-black tracking-tighter text-black uppercase leading-none">
                                                 Taste Archetype
                                             </h3>
-                                            <p className="text-[10px] sm:text-sm text-gray-500 font-bold tracking-widest uppercase">
+                                            <p className="text-[9px] sm:text-sm text-gray-500 font-bold tracking-widest uppercase">
                                                 Discover your culinary soul
                                             </p>
                                         </div>
 
                                         <Button
                                             onClick={handleStart}
-                                            className="w-full bg-black text-white hover:bg-gray-800 font-black tracking-widest uppercase py-4 sm:py-6 shadow-[3px_3px_0px_0px_rgba(128,128,128,1)] sm:shadow-[4px_4px_0px_0px_rgba(128,128,128,1)] border-2 sm:border-4 border-black hover:shadow-[1.5px_1.5px_0px_0px_rgba(128,128,128,1)] hover:translate-y-0.5 transition-all duration-300 text-sm sm:text-lg rounded-xl active:translate-x-[0.5px] active:translate-y-[0.5px] active:shadow-none"
+                                            className="w-full bg-black text-white hover:bg-gray-800 font-black tracking-widest uppercase h-11 sm:h-14 shadow-[2.5px_2.5px_0px_0px_rgba(128,128,128,1)] sm:shadow-[4px_4px_0px_0px_rgba(128,128,128,1)] border-2 sm:border-4 border-black hover:shadow-[1.5px_1.5px_0px_0px_rgba(128,128,128,1)] hover:translate-y-0.5 transition-all duration-300 text-xs sm:text-lg rounded-xl active:translate-x-[0.5px] active:translate-y-[0.5px] active:shadow-none"
                                         >
                                             Begin Analysis
                                         </Button>
@@ -170,38 +170,38 @@ export function FoodPersonalityQuiz() {
                                         exit={{ opacity: 0, x: -20 }}
                                         className="space-y-4 sm:space-y-6"
                                     >
-                                        <div className="flex justify-between items-end border-b-2 sm:border-b-4 border-black pb-2 sm:pb-4">
-                                            <span className="text-[10px] sm:text-xs text-black font-black tracking-[0.2em] bg-yellow-300 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded border-2 border-black shadow-[1.5px_1.5px_0px_0px_rgba(0,0,0,1)] sm:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">QUERY {currentQ + 1}</span>
+                                        <div className="flex justify-between items-end border-b-2 border-black pb-2 sm:pb-4">
+                                            <span className="text-[9px] sm:text-xs text-black font-black tracking-[0.2em] bg-yellow-300 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded border-2 border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] sm:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">QUERY {currentQ + 1}</span>
                                             <div className="flex gap-1">
                                                 {QUESTIONS.map((_, idx) => (
-                                                    <div key={idx} className={`h-1.5 w-5 sm:h-2 sm:w-8 rounded-full border border-black transition-colors duration-300 ${idx === currentQ ? 'bg-black' : idx < currentQ ? 'bg-gray-400' : 'bg-gray-100'}`} />
+                                                    <div key={idx} className={`h-1.5 w-4 sm:h-2 sm:w-8 rounded-full border border-black transition-colors duration-300 ${idx === currentQ ? 'bg-black' : idx < currentQ ? 'bg-gray-400' : 'bg-gray-100'}`} />
                                                 ))}
                                             </div>
                                         </div>
 
-                                        <h4 className="text-lg xs:text-xl sm:text-2xl font-black text-black text-center leading-tight uppercase tracking-tight">
+                                        <h4 className="text-sm xs:text-base sm:text-2xl font-black text-black text-center leading-tight uppercase tracking-tight">
                                             {QUESTIONS[currentQ].text}
                                         </h4>
 
-                                        <div className="space-y-3">
+                                        <div className="space-y-2.5">
                                             {QUESTIONS[currentQ].options.map((option, idx) => (
                                                 <motion.button
                                                     key={idx}
                                                     whileHover={{ scale: 1.02 }}
                                                     whileTap={{ scale: 0.98 }}
                                                     onClick={() => handleAnswer(option.type)}
-                                                    className="w-full p-3 xs:p-3.5 sm:p-4 text-left rounded-xl border-2 border-black hover:bg-orange-50 hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5 active:translate-x-[0.5px] active:translate-y-[0.5px] active:shadow-none transition-all duration-200 group bg-white shadow-[1.5px_1.5px_0px_0px_rgba(0,0,0,1)] sm:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                                                    className="w-full p-2.5 xs:p-3 sm:p-4 text-left rounded-xl border-2 border-black hover:bg-orange-50 hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5 active:translate-x-[0.5px] active:translate-y-[0.5px] active:shadow-none transition-all duration-200 group bg-white shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] sm:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
                                                 >
                                                     <div className="flex justify-between items-center">
                                                         <div>
-                                                            <div className="text-sm xs:text-base sm:text-lg font-black text-black group-hover:text-orange-600 transition-colors leading-tight mb-0.5">
+                                                            <div className="text-xs xs:text-sm sm:text-lg font-black text-black group-hover:text-orange-600 transition-colors leading-tight mb-0.5">
                                                                 {option.text}
                                                             </div>
-                                                            <div className="text-[9px] xs:text-[10px] sm:text-xs text-gray-500 font-bold uppercase tracking-wide group-hover:text-black leading-none">
+                                                            <div className="text-[8px] xs:text-[9px] sm:text-xs text-gray-500 font-bold uppercase tracking-wide group-hover:text-black leading-none">
                                                                 {option.sub}
                                                             </div>
                                                         </div>
-                                                        <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-black opacity-0 group-hover:opacity-100 transform group-hover:translate-x-1 duration-200" />
+                                                        <ChevronRight className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-black opacity-0 group-hover:opacity-100 transform group-hover:translate-x-1 duration-200" />
                                                     </div>
                                                 </motion.button>
                                             ))}
@@ -220,33 +220,33 @@ export function FoodPersonalityQuiz() {
                                         transition={{ duration: 0.5 }}
                                         className="text-center space-y-4 sm:space-y-6"
                                     >
-                                        <div className={`w-20 h-20 sm:w-28 sm:h-28 mx-auto rounded-full bg-gradient-to-br ${RESULTS[result].color} flex items-center justify-center shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] mb-3 sm:mb-6 border-2.5 sm:border-4 border-black relative group hover:scale-105 transition-transform`}>
-                                            <span className="text-4xl sm:text-6xl filter drop-shadow-md">{RESULTS[result].icon}</span>
-                                            <div className="absolute -top-1.5 -right-1.5 bg-black text-white text-[8px] sm:text-xs font-black px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-lg border-2 border-white transform rotate-12">
+                                        <div className={`w-16 h-16 sm:w-28 sm:h-28 mx-auto rounded-full bg-gradient-to-br ${RESULTS[result].color} flex items-center justify-center shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] mb-2.5 sm:mb-6 border-2 sm:border-4 border-black relative group hover:scale-105 transition-transform`}>
+                                            <span className="text-3xl sm:text-6xl filter drop-shadow-md">{RESULTS[result].icon}</span>
+                                            <div className="absolute -top-1 -right-1 bg-black text-white text-[7px] sm:text-xs font-black px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-lg border-2 border-white transform rotate-12">
                                                 MATCH!
                                             </div>
                                         </div>
 
                                         <div>
-                                            <h3 className="text-xl xs:text-2xl sm:text-3xl font-black text-black mb-1 sm:mb-2 uppercase tracking-tight">{RESULTS[result].title}</h3>
-                                            <div className="inline-block px-3 py-1 rounded-lg bg-black text-white border-2 border-black mb-3 sm:mb-5 shadow-[1.5px_1.5px_0px_0px_rgba(0,0,0,0.2)] transform -rotate-1">
-                                                <p className="text-[9px] sm:text-[10px] uppercase tracking-[0.2em] font-black">
+                                            <h3 className="text-lg xs:text-xl sm:text-3xl font-black text-black mb-1 sm:mb-2 uppercase tracking-tight">{RESULTS[result].title}</h3>
+                                            <div className="inline-block px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-lg bg-black text-white border-2 border-black mb-2.5 sm:mb-5 shadow-[1.5px_1.5px_0px_0px_rgba(0,0,0,0.2)] transform -rotate-1">
+                                                <p className="text-[8px] sm:text-[10px] uppercase tracking-[0.2em] font-black">
                                                     {RESULTS[result].subtitle}
                                                 </p>
                                             </div>
-                                            <div className="bg-yellow-50 p-3 sm:p-4 rounded-xl border-2 border-black">
-                                                <p className="text-xs sm:text-sm text-black leading-relaxed font-bold font-serif italic">
+                                            <div className="bg-yellow-50 p-2.5 sm:p-4 rounded-xl border-2 border-black">
+                                                <p className="text-[11px] sm:text-sm text-black leading-relaxed font-bold font-serif italic">
                                                     "{RESULTS[result].desc}"
                                                 </p>
                                             </div>
                                         </div>
 
                                         <div className="flex gap-2 sm:gap-3 pt-1 sm:pt-2">
-                                            <Button variant="ghost" onClick={resetQuiz} className="flex-1 text-black font-bold hover:bg-gray-100 border-2 border-black rounded-xl text-xs sm:text-sm h-9 sm:h-11 active:translate-x-[0.5px] active:translate-y-[0.5px]">
-                                                <RefreshCw className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" /> RESTART
+                                            <Button variant="ghost" onClick={resetQuiz} className="flex-1 text-black font-bold hover:bg-gray-100 border-2 border-black rounded-xl text-[10px] sm:text-sm h-8.5 sm:h-11 active:translate-x-[0.5px] active:translate-y-[0.5px]">
+                                                <RefreshCw className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" /> RESTART
                                             </Button>
-                                            <Button onClick={shareResult} className="flex-1 bg-yellow-400 text-black font-black border-2 border-black shadow-[1.5px_1.5px_0px_0px_rgba(0,0,0,1)] sm:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5 rounded-xl transition-all text-xs sm:text-sm h-9 sm:h-11 active:translate-x-[0.5px] active:translate-y-[0.5px] active:shadow-none">
-                                                <Share2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" /> SHARE
+                                            <Button onClick={shareResult} className="flex-1 bg-yellow-400 text-black font-black border-2 border-black shadow-[1.5px_1.5px_0px_0px_rgba(0,0,0,1)] sm:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5 rounded-xl transition-all text-[10px] sm:text-sm h-8.5 sm:h-11 active:translate-x-[0.5px] active:translate-y-[0.5px] active:shadow-none">
+                                                <Share2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" /> SHARE
                                             </Button>
                                         </div>
                                     </motion.div>

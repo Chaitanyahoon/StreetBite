@@ -157,15 +157,15 @@ export function VendorBattle() {
                         variant="outline"
                         size="sm"
                         onClick={handleSkip}
-                        className="h-8 sm:h-10 px-3 sm:px-4 rounded-full border-2 border-black bg-white font-black uppercase tracking-[0.14em] text-[10px] sm:text-xs"
+                        className="h-7.5 sm:h-10 px-2.5 sm:px-4 rounded-full border-2 border-black bg-white font-black uppercase tracking-[0.14em] text-[9px] sm:text-xs"
                     >
-                        Skip <X className="w-3.5 h-3.5 ml-1" />
+                        Skip <X className="w-3 h-3 ml-1" />
                     </Button>
                 </div>
-                <div className="flex-1 flex flex-col sm:flex-row items-stretch justify-center gap-3 sm:gap-6 relative py-2 sm:py-4 overflow-hidden">
+                <div className="flex-1 flex flex-col sm:flex-row items-stretch justify-center gap-5 sm:gap-6 relative py-2 sm:py-4 overflow-hidden">
                     {/* VS Badge */}
                     <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-none">
-                        <div className="w-9 h-9 sm:w-14 sm:h-14 rounded-full bg-black text-white font-black flex items-center justify-center border-2 sm:border-4 border-white shadow-[0_0_0_2px_black] text-xs sm:text-lg -rotate-12">
+                        <div className="w-8 h-8 sm:w-14 sm:h-14 rounded-full bg-black text-white font-black flex items-center justify-center border-2 sm:border-4 border-white shadow-[0_0_0_2px_black] text-[10px] sm:text-lg -rotate-12">
                             VS
                         </div>
                     </div>
@@ -178,9 +178,9 @@ export function VendorBattle() {
                             whileTap={{ scale: hasVoted ? 1 : 0.96 }}
                             onClick={() => handleVote(index as 0 | 1)}
                         >
-                            <div className={`h-full bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 border-2 sm:border-3 border-black transition-all duration-300 flex flex-col justify-between ${!hasVoted ? "hover:bg-yellow-50 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] shadow-[2.5px_2.5px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]" : "shadow-[2.5px_2.5px_0px_0px_rgba(0,0,0,1)]"}`}>
-                                <div className="text-center flex flex-col items-center justify-center gap-2 sm:gap-3">
-                                    <div className={`w-14 h-14 xs:w-16 xs:h-16 sm:w-24 sm:h-24 rounded-full bg-gradient-to-tr from-gray-100 to-gray-50 flex items-center justify-center text-xl sm:text-3xl border-2 sm:border-3 ${hasVoted && index === selectedIndex ? "border-green-500 bg-green-50" : "border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]"} overflow-hidden relative shrink-0`}>
+                            <div className={`h-full bg-white rounded-xl sm:rounded-2xl p-2.5 sm:p-4 border-2 sm:border-3 border-black transition-all duration-300 flex flex-col justify-between ${!hasVoted ? "hover:bg-yellow-50 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] shadow-[2.5px_2.5px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]" : "shadow-[2.5px_2.5px_0px_0px_rgba(0,0,0,1)]"}`}>
+                                <div className="text-center flex flex-col items-center justify-center gap-1.5 sm:gap-3">
+                                    <div className={`w-11 h-11 xs:w-13 xs:h-13 sm:w-24 sm:h-24 rounded-full bg-gradient-to-tr from-gray-100 to-gray-50 flex items-center justify-center text-base sm:text-3xl border-2 sm:border-3 ${hasVoted && index === selectedIndex ? "border-green-500 bg-green-50" : "border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]"} overflow-hidden relative shrink-0`}>
                                         {vendor.image ? (
                                             <Image
                                                 src={vendor.image}
@@ -191,17 +191,17 @@ export function VendorBattle() {
                                                 className="object-cover"
                                             />
                                         ) : (
-                                            <span className="transform group-hover/card:scale-110 transition-transform duration-300 text-base sm:text-2xl font-black text-black">SB</span>
+                                            <span className="transform group-hover/card:scale-110 transition-transform duration-300 text-xs sm:text-2xl font-black text-black">SB</span>
                                         )}
                                     </div>
                                     
-                                    <h3 className="font-black text-xs xs:text-sm sm:text-base leading-tight text-black w-full flex items-center justify-center uppercase tracking-tight text-center line-clamp-1 sm:line-clamp-2 px-1">
+                                    <h3 className="font-black text-[11px] xs:text-xs sm:text-base leading-tight text-black w-full flex items-center justify-center uppercase tracking-tight text-center line-clamp-1 sm:line-clamp-2 px-1">
                                         {vendor.name}
                                     </h3>
                                     
                                     {!hasVoted && (
                                         <div className="mt-0.5 sm:mt-1 text-center w-full">
-                                            <span className="inline-block rounded-md sm:rounded-lg border-2 border-black bg-emerald-400 px-2.5 py-1 text-[9px] xs:text-[10px] sm:text-xs font-black uppercase tracking-wider text-black shadow-[1.5px_1.5px_0px_0px_rgba(0,0,0,1)] sm:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] group-hover/card:bg-yellow-400 group-hover/card:translate-y-0.5 group-hover/card:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] transition-all">
+                                            <span className="inline-block rounded-md sm:rounded-lg border-2 border-black bg-emerald-400 px-2 py-0.5 sm:px-2.5 sm:py-1 text-[8px] xs:text-[9px] sm:text-xs font-black uppercase tracking-wider text-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] sm:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] group-hover/card:bg-yellow-400 group-hover/card:translate-y-0.5 group-hover/card:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] transition-all">
                                                 Tap to vote
                                             </span>
                                         </div>

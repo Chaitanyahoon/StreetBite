@@ -207,7 +207,7 @@ export function OffersHeroStats({
             <span className="text-[0.65rem] sm:text-xs font-black uppercase tracking-[0.15em] sm:tracking-[0.2em]">Fresh drops and limited codes</span>
           </div>
 
-          <h1 className="mt-5 sm:mt-8 text-[2.25rem] xs:text-[2.75rem] sm:text-5xl md:text-7xl lg:text-8xl font-black leading-[1.05] sm:leading-[0.9] tracking-[-0.04em] sm:tracking-[-0.06em] text-black">
+          <h1 className="mt-5 sm:mt-8 text-[2.5rem] xs:text-[3rem] sm:text-5xl md:text-7xl lg:text-8xl font-black leading-[1] sm:leading-[0.9] tracking-[-0.05em] sm:tracking-[-0.06em] text-black">
             STREET FOOD
             <br />
             <span className="bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent drop-shadow-[2px_2px_0px_rgba(0,0,0,1)] sm:drop-shadow-[4px_4px_0px_rgba(0,0,0,1)]">

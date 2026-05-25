@@ -236,7 +236,7 @@ export default function SignUpPage() {
               <ShieldCheck className="size-3.5" strokeWidth={3} />
               Quick Secure Setup
             </div>
-            <h1 className="text-[2.25rem] xs:text-[2.75rem] sm:text-4xl md:text-5xl font-black mb-1 sm:mb-2 text-black tracking-tight uppercase">
+            <h1 className="text-[2.5rem] xs:text-[3rem] sm:text-4xl md:text-5xl font-black mb-1 sm:mb-2 text-black tracking-[-0.05em] uppercase leading-[1]">
               Join the Feast
             </h1>
             <p className="text-xs sm:text-lg font-bold text-gray-700">Create your account and get into StreetBite fast.</p>

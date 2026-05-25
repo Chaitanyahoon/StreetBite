@@ -630,7 +630,7 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
                     </div>
 
                     {/* Title */}
-                    <h1 className="text-3xl font-black leading-none tracking-tight text-black mb-3 uppercase">
+                    <h1 className="text-[2.25rem] xs:text-[2.75rem] font-black leading-[1.05] tracking-tighter text-black mb-3 uppercase">
                         {displayVendor?.name}
                     </h1>
 
@@ -737,7 +737,7 @@ export default function VendorDetailClient({ vendorIdParams }: { vendorIdParams?
                                         </div>
                                     )}
                                 </div>
-                                <h1 className="max-w-4xl text-[2.25rem] xs:text-4xl font-black leading-[0.95] tracking-tight text-white sm:text-6xl lg:text-7xl">
+                                <h1 className="max-w-4xl text-[2.5rem] xs:text-[3rem] sm:text-6xl lg:text-7xl font-black leading-[1] sm:leading-[0.95] tracking-tighter text-white">
                                     {displayVendor?.name}
                                 </h1>
                                 <p className="mt-4 max-w-2xl text-sm leading-7 text-white/78 md:text-base">
