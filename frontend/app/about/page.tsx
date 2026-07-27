@@ -34,36 +34,11 @@ export default function AboutPage() {
   const teamMembers: TeamMember[] = [
     {
       name: "Chaitanya Patil",
-      role: "Chief Eating Officer",
-      image: "/team/abhijit.jpg",
-      favFood: "Spicy Misal Pav",
-      quote: "I code so I can eat more.",
-      stats: { spiceLevel: 'Hot', reviews: 142, badge: "CEO" }
-    },
-    {
-      name: "Abhilasha Thakur",
-      role: "Head of Hidden Gems",
-      image: "/team/abhilasha.jpg",
-      favFood: "RasGulla (Extra Syrupy)",
-      quote: "If it's not sweet, it's not food.",
-      stats: { spiceLevel: 'Lowkey', reviews: 89, badge: "EXPLORER" }
-    },
-    {
-      name: "Abhay Jadhav",
-      role: "Street Food Evangelist",
-      image: "/team/abhay.jpg",
-      imageStyle: { transform: 'scale(1.6) translateY(15px)' },
-      favFood: "Paneer Tikka Roll",
-      quote: "Spreading the gospel of flavor.",
-      stats: { spiceLevel: 'Medium', reviews: 210, badge: "VETERAN" }
-    },
-    {
-      name: "Abhijit Rede",
-      role: "Digital Cartographer",
+      role: "Chief Executive & Lead Architect",
       image: "/team/chaitanya.jpg",
-      favFood: "Vada Pav",
-      quote: "Mapping the streets, one bite at a time.",
-      stats: { spiceLevel: 'Low', reviews: 56, badge: "MAPPER" }
+      favFood: "Spicy Misal Pav",
+      quote: "Building technology to empower local street food vendors.",
+      stats: { spiceLevel: 'Hot', reviews: 142, badge: "FOUNDER" }
     }
   ]
 
@@ -154,39 +129,31 @@ export default function AboutPage() {
         </div>
       </div>
 
-      {/* Meet the Team Section */}
+      {/* Founder Section */}
       <section className="py-12 sm:py-16 md:py-24 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-4xl mx-auto">
           <motion.div
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
             variants={fadeInUp}
-            className="text-center mb-10 sm:mb-16"
+            className="text-center mb-10 sm:mb-12"
           >
-            <p className="text-black font-black text-xs sm:text-sm uppercase tracking-widest mb-3 sm:mb-4 inline-block bg-white px-3.5 py-1 border-2 border-black rounded-full shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">The Creators</p>
-            <h2 className="text-2xl xs:text-3xl sm:text-5xl font-black text-black mb-3 sm:mb-4">MEET THE SQUAD</h2>
+            <p className="text-black font-black text-xs sm:text-sm uppercase tracking-widest mb-3 sm:mb-4 inline-block bg-white px-3.5 py-1 border-2 border-black rounded-full shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">The Architect</p>
+            <h2 className="text-2xl xs:text-3xl sm:text-5xl font-black text-black mb-3 sm:mb-4">FOUNDER & CREATOR</h2>
             <p className="text-sm xs:text-base sm:text-xl text-black/70 font-bold max-w-2xl mx-auto">
-              Foodies, coders, and dreamers building the future of street food.
+              Foodie, developer, and architect building the future of local street food.
             </p>
           </motion.div>
 
           <motion.div
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
-            variants={staggerContainer}
-            className="flex md:grid overflow-x-auto md:overflow-x-visible snap-x snap-mandatory no-scrollbar gap-5 pb-6 md:pb-0 -mx-4 px-4 md:mx-0 md:px-0 md:grid-cols-2 lg:grid-cols-4"
+            viewport={{ once: true }}
+            variants={fadeInUp}
+            className="flex justify-center max-w-xs xs:max-w-sm sm:max-w-md mx-auto"
           >
-            {teamMembers.map((member, idx) => (
-              <motion.div
-                variants={fadeInUp}
-                key={idx}
-                className="shrink-0 w-[280px] xs:w-[320px] sm:w-[340px] md:w-auto snap-center hover:-translate-y-2 transition-transform duration-300"
-              >
-                <TeamCard member={member} />
-              </motion.div>
-            ))}
+            <TeamCard member={teamMembers[0]} />
           </motion.div>
         </div>
       </section>

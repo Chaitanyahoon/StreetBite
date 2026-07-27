@@ -34,7 +34,7 @@ export default function Home() {
 
 
         {/* Hero Section */}
-        <section className="relative overflow-hidden py-16 md:py-24 lg:py-28">
+        <section className="relative overflow-hidden py-10 sm:py-16 md:py-24">
           <div className="absolute inset-0 -z-10">
             <div className="absolute left-[-8%] top-10 h-56 w-56 rounded-[4rem] border-4 border-black/12 bg-orange-300/20 blur-2xl md:h-72 md:w-72" />
             <div className="absolute right-[6%] top-16 h-28 w-28 rotate-12 rounded-[2rem] border-4 border-black/12 bg-yellow-300/35 shadow-[var(--shadow-soft)] md:h-40 md:w-40" />
@@ -43,20 +43,15 @@ export default function Home() {
           </div>
 
           <div className="max-w-screen-2xl mx-auto px-4 md:px-6 text-center">
-            <div className="mx-auto max-w-5xl">
-              <div className="animate-slide-up">
+            <div className="mx-auto max-w-4xl">
+              <div className="animate-slide-up flex flex-wrap items-center justify-center gap-3">
                 <LiveCityBadge />
               </div>
 
-              <div className="mt-8 inline-flex items-center gap-2 rounded-full border-2 border-black bg-white px-4 py-2 text-[0.72rem] font-black uppercase tracking-[0.24em] text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] animate-slide-up">
-                <Sparkles className="h-4 w-4 text-primary" />
-                Find the best food fast
-              </div>
-
-              <h1 className="mt-8 text-[2.5rem] xs:text-[3rem] sm:text-6xl md:text-8xl lg:text-9xl leading-[1] sm:leading-[1] font-black tracking-[-0.05em] text-black animate-slide-up">
+              <h1 className="mt-6 text-4xl xs:text-5xl sm:text-7xl md:text-8xl lg:text-9xl leading-[1.05] sm:leading-[1] font-black tracking-[-0.04em] text-black animate-slide-up">
                 FIND THE
                 <br />
-                <span className="relative inline-block mt-2 text-primary drop-shadow-[2.5px_2.5px_0px_rgba(0,0,0,1)] sm:drop-shadow-[4px_4px_0px_rgba(0,0,0,1)]">
+                <span className="relative inline-block mt-1 sm:mt-2 text-primary drop-shadow-[3px_3px_0px_rgba(0,0,0,1)] sm:drop-shadow-[5px_5px_0px_rgba(0,0,0,1)]">
                   BEST FOOD
                   <span className="absolute -right-8 -top-8 hidden md:block">
                     <Sparkles className="h-12 w-12 fill-yellow-300 text-yellow-300 stroke-black stroke-2 animate-spin-slow" />
@@ -64,75 +59,70 @@ export default function Home() {
                 </span>
               </h1>
 
-              <p className="mt-8 max-w-2xl mx-auto text-lg font-bold leading-8 text-black/75 md:text-2xl animate-slide-up">
+              <p className="mt-5 max-w-2xl mx-auto text-base xs:text-lg sm:text-xl md:text-2xl font-bold leading-relaxed text-black/80 animate-slide-up px-2">
                 Discover hidden gems, trending stalls, and authentic flavors right in your neighborhood.
               </p>
 
-              <div className="mt-8 flex flex-row items-center justify-center gap-2.5 sm:gap-4 animate-slide-up w-full max-w-md mx-auto sm:max-w-none">
-                <Link href="/explore" className="flex-1 sm:flex-initial">
+              <div className="mt-7 flex flex-row items-center justify-center gap-3 animate-slide-up w-full max-w-sm sm:max-w-md mx-auto">
+                <Link href="/explore" className="flex-1">
                   <Button
                     size="lg"
-                    className="h-10.5 sm:h-16 w-full px-3.5 sm:px-10 text-[11px] xs:text-xs sm:text-lg font-black uppercase tracking-[0.08em] sm:tracking-[0.12em] text-white rounded-full border-2 sm:border-4 border-black bg-black shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] sm:shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] hover:bg-primary sm:hover:shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-[1px_1px_0px_0px_rgba(255,255,255,1)] sm:active:translate-x-[2px] sm:active:translate-y-[2px] sm:active:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] transition-all duration-150"
+                    className="h-12 sm:h-16 w-full px-4 sm:px-8 text-xs xs:text-sm sm:text-base md:text-lg font-black uppercase tracking-wider text-white rounded-full border-2 sm:border-4 border-black bg-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:bg-primary transition-all active:translate-x-[1px] active:translate-y-[1px]"
                   >
-                    <Search className="mr-1 h-3.5 w-3.5 sm:mr-2 sm:h-6 sm:w-6 stroke-[2.6]" />
+                    <Search className="mr-1.5 h-4 w-4 sm:h-5 sm:w-5 stroke-[2.5]" />
                     Find food
                   </Button>
                 </Link>
-                <Link href="/signup?type=vendor" className="flex-1 sm:flex-initial">
+                <Link href="/signup?type=vendor" className="flex-1">
                   <Button
                     size="lg"
                     variant="outline"
-                    className="h-10.5 sm:h-16 w-full px-3.5 sm:px-10 text-[11px] xs:text-xs sm:text-lg font-black uppercase tracking-[0.08em] sm:tracking-[0.12em] text-black rounded-full border-2 sm:border-4 border-black bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:bg-yellow-300 hover:shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] sm:active:translate-x-[2px] sm:active:translate-y-[2px] sm:active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all duration-150"
+                    className="h-12 sm:h-16 w-full px-4 sm:px-8 text-xs xs:text-sm sm:text-base md:text-lg font-black uppercase tracking-wider text-black rounded-full border-2 sm:border-4 border-black bg-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:bg-yellow-300 transition-all active:translate-x-[1px] active:translate-y-[1px]"
                   >
-                    <ChefHat className="mr-1 h-3.5 w-3.5 sm:mr-2 sm:h-6 sm:w-6 stroke-[2.6]" />
+                    <ChefHat className="mr-1.5 h-4 w-4 sm:h-5 sm:w-5 stroke-[2.5]" />
                     List stall
                   </Button>
                 </Link>
               </div>
 
-              <div className="mt-6 flex flex-row flex-wrap justify-center gap-2 text-xs font-semibold text-black/70 animate-fade-in">
-                <div className="inline-flex items-center justify-center gap-1.5 rounded-full bg-black px-2.5 py-1 text-white shadow-[var(--shadow-soft)] text-[10px] sm:text-xs">
-                  <MapPin className="h-3.5 w-3.5" />
+              <div className="mt-5 flex flex-wrap items-center justify-center gap-2 font-bold text-black/80 animate-fade-in px-2">
+                <div className="inline-flex items-center gap-1.5 rounded-full border-2 border-black bg-black px-3 py-1.5 text-xs text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                  <MapPin className="h-3.5 w-3.5 text-primary" />
                   Live discovery
                 </div>
-                <div className="inline-flex items-center justify-center gap-1.5 rounded-full border border-black/10 bg-white/80 px-2.5 py-1 shadow-[var(--shadow-soft)] text-[10px] sm:text-xs">
+                <div className="inline-flex items-center gap-1.5 rounded-full border-2 border-black bg-white px-3 py-1.5 text-xs text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
                   <Clock className="h-3.5 w-3.5 text-primary" />
                   Open-now filter
                 </div>
-                <div className="inline-flex items-center justify-center gap-1.5 rounded-full border border-black/10 bg-white/80 px-2.5 py-1 shadow-[var(--shadow-soft)] text-[10px] sm:text-xs">
+                <div className="inline-flex items-center gap-1.5 rounded-full border-2 border-black bg-white px-3 py-1.5 text-xs text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
                   <TrendingUp className="h-3.5 w-3.5 text-primary" />
                   Trending picks
                 </div>
               </div>
 
-              <div className="mt-12 grid grid-cols-3 gap-2 sm:gap-8 max-w-4xl mx-auto animate-fade-in">
+              <div className="mt-8 grid grid-cols-3 gap-2.5 sm:gap-6 max-w-3xl mx-auto animate-fade-in px-2">
                 {heroStats.map((stat, index) => {
                   const Icon = stat.icon
                   const cardClassName =
                     index === 1
-                      ? 'bg-yellow-300 sm:translate-y-6 animate-pulse-subtle'
+                      ? 'bg-yellow-300'
                       : 'bg-white'
 
                   return (
                     <div
                       key={stat.label}
-                      className={`rounded-xl sm:rounded-[1.8rem] border-2 sm:border-4 border-black px-1.5 py-2.5 sm:px-5 sm:py-5 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-transform hover:-translate-y-1 ${cardClassName}`}
+                      className={`rounded-xl sm:rounded-2xl border-2 sm:border-4 border-black px-2 py-3 sm:px-5 sm:py-5 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-transform hover:-translate-y-0.5 ${cardClassName}`}
                     >
-                      <div className="flex items-center justify-center gap-1 sm:gap-2 text-sm xs:text-base sm:text-4xl font-black text-black md:text-5xl">
+                      <div className="flex items-center justify-center gap-1 text-base xs:text-xl sm:text-3xl md:text-4xl font-black text-black">
                         <span>{stat.value}</span>
-                        {Icon ? <Icon className="h-3 w-3 fill-primary text-primary sm:h-6 sm:w-6 md:h-7 md:w-7" /> : null}
+                        {Icon ? <Icon className="h-3.5 w-3.5 sm:h-5 sm:w-5 fill-primary text-primary" /> : null}
                       </div>
-                      <p className="mt-1 text-[8px] xs:text-[9px] sm:text-[0.72rem] font-black uppercase tracking-[0.05em] xs:tracking-[0.16em] sm:tracking-[0.2em] text-black/55 md:text-xs">
+                      <p className="mt-1 text-[10px] xs:text-xs sm:text-sm font-extrabold uppercase tracking-wider text-black/75">
                         {stat.label}
                       </p>
                     </div>
                   )
                 })}
-              </div>
-
-              <div className="mt-10 inline-flex items-center gap-2 rounded-full bg-white/80 px-4 py-2 text-sm font-semibold text-black/65 shadow-[var(--shadow-soft)] backdrop-blur">
-                <ArrowRight className="h-4 w-4 text-primary" />
-                Street food, minus the guesswork
               </div>
             </div>
           </div>
